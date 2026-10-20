@@ -1,0 +1,183 @@
+using System.Windows.Media;
+using Microsoft.Win32;
+
+namespace Petal.App.Visuals;
+
+public enum ThemePreference
+{
+    System,
+    Light,
+    Dark,
+}
+
+/// <summary>Colours for the current light/dark appearance. Brushes are frozen and shared.</summary>
+public sealed class Palette
+{
+    public required bool IsDark { get; init; }
+    public required Color Accent { get; init; }
+    public required Color AccentStrong { get; init; }
+    public required Color AccentSoft { get; init; }
+    public required Color Text { get; init; }
+    public required Color TextSecondary { get; init; }
+    public required Color TextOnAccent { get; init; }
+    public required Color GlassTint { get; init; }
+    public required Color GlassEdge { get; init; }
+    public required Color PetalTop { get; init; }
+    public required Color PetalBottom { get; init; }
+    public required Color PetalStroke { get; init; }
+    public required Color HubFill { get; init; }
+    public required Color PillFill { get; init; }
+    public required Color Shadow { get; init; }
+    public required Color WindowBackground { get; init; }
+    public required Color Surface { get; init; }
+    public required Color SurfaceStrong { get; init; }
+    public required Color Divider { get; init; }
+    public required Color Control { get; init; }
+    public required Color ControlHover { get; init; }
+    public required Color ControlPressed { get; init; }
+    public required Color PreviewBackground { get; init; }
+    public required Color Danger { get; init; }
+    public required Color Success { get; init; }
+
+    public static SolidColorBrush Brush(Color c)
+    {
+        var b = new SolidColorBrush(c);
+        b.Freeze();
+        return b;
+    }
+}
+
+public static class Theme
+{
+    /// <summary>Petal's signature violet.</summary>
+    public static readonly Color BrandAccent = Color.FromRgb(0x7B, 0x5C, 0xFF);
+
+    public static event Action? Changed;
+
+    public static ThemePreference Preference { get; private set; } = ThemePreference.System;
+    public static bool UseWindowsAccent { get; private set; }
+
+    public static Palette Current { get; private set; } = Build(IsSystemDark(), BrandAccent);
+
+    public static void Configure(ThemePreference preference, bool useWindowsAccent)
+    {
+        Preference = preference;
+        UseWindowsAccent = useWindowsAccent;
+        Refresh();
+    }
+
+    public static void Refresh()
+    {
+        var dark = Preference switch
+        {
+            ThemePreference.Light => false,
+            ThemePreference.Dark => true,
+            _ => IsSystemDark(),
+        };
+        var accent = UseWindowsAccent ? WindowsAccent() ?? BrandAccent : BrandAccent;
+        Current = Build(dark, accent);
+        Changed?.Invoke();
+    }
+
+    public static bool IsSystemDark()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("AppsUseLightTheme") is int v && v == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static Color? WindowsAccent()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+            if (key?.GetValue("AccentColor") is int abgr)
+            {
+                var u = unchecked((uint)abgr);
+                return Color.FromRgb((byte)(u & 0xFF), (byte)((u >> 8) & 0xFF), (byte)((u >> 16) & 0xFF));
+            }
+        }
+        catch
+        {
+            // Fall back to the brand colour.
+        }
+        return null;
+    }
+
+    private static Color Mix(Color a, Color b, double t) => Color.FromArgb(
+        (byte)(a.A + (b.A - a.A) * t),
+        (byte)(a.R + (b.R - a.R) * t),
+        (byte)(a.G + (b.G - a.G) * t),
+        (byte)(a.B + (b.B - a.B) * t));
+
+    private static Color A(byte alpha, Color c) => Color.FromArgb(alpha, c.R, c.G, c.B);
+
+    public static Palette Build(bool dark, Color accent)
+    {
+        var white = Colors.White;
+        var black = Colors.Black;
+        return dark
+            ? new Palette
+            {
+                IsDark = true,
+                Accent = accent,
+                AccentStrong = Mix(accent, white, 0.12),
+                AccentSoft = A(0x40, accent),
+                Text = Color.FromRgb(0xF4, 0xF4, 0xF6),
+                TextSecondary = Color.FromRgb(0xA4, 0xA6, 0xAE),
+                TextOnAccent = white,
+                GlassTint = Color.FromArgb(0x8C, 0x22, 0x23, 0x28),
+                GlassEdge = Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF),
+                PetalTop = Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF),
+                PetalBottom = Color.FromArgb(0x1C, 0xFF, 0xFF, 0xFF),
+                PetalStroke = Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF),
+                HubFill = Color.FromArgb(0x30, 0x10, 0x10, 0x14),
+                PillFill = Color.FromArgb(0xD8, 0x30, 0x31, 0x38),
+                Shadow = Color.FromArgb(0x70, 0, 0, 0),
+                WindowBackground = Color.FromRgb(0x20, 0x20, 0x24),
+                Surface = Color.FromRgb(0x2A, 0x2A, 0x30),
+                SurfaceStrong = Color.FromRgb(0x34, 0x34, 0x3B),
+                Divider = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF),
+                Control = Color.FromRgb(0x3A, 0x3A, 0x42),
+                ControlHover = Color.FromRgb(0x44, 0x44, 0x4D),
+                ControlPressed = Color.FromRgb(0x33, 0x33, 0x3A),
+                PreviewBackground = Color.FromRgb(0x0E, 0x0E, 0x11),
+                Danger = Color.FromRgb(0xFF, 0x6B, 0x6B),
+                Success = Color.FromRgb(0x4A, 0xD6, 0x8C),
+            }
+            : new Palette
+            {
+                IsDark = false,
+                Accent = accent,
+                AccentStrong = Mix(accent, black, 0.12),
+                AccentSoft = A(0x2E, accent),
+                Text = Color.FromRgb(0x16, 0x16, 0x1A),
+                TextSecondary = Color.FromRgb(0x6E, 0x70, 0x78),
+                TextOnAccent = white,
+                GlassTint = Color.FromArgb(0x8A, 0xF6, 0xF6, 0xF8),
+                GlassEdge = Color.FromArgb(0xB0, 0xFF, 0xFF, 0xFF),
+                PetalTop = Color.FromArgb(0xD8, 0xFF, 0xFF, 0xFF),
+                PetalBottom = Color.FromArgb(0x9A, 0xFF, 0xFF, 0xFF),
+                PetalStroke = Color.FromArgb(0x26, 0x2A, 0x30, 0x40),
+                HubFill = Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF),
+                PillFill = Color.FromArgb(0xEE, 0xFF, 0xFF, 0xFF),
+                Shadow = Color.FromArgb(0x3C, 0x1C, 0x22, 0x36),
+                WindowBackground = Color.FromRgb(0xF7, 0xF7, 0xF8),
+                Surface = Colors.White,
+                SurfaceStrong = Color.FromRgb(0xEE, 0xEE, 0xF1),
+                Divider = Color.FromArgb(0x1C, 0x10, 0x14, 0x24),
+                Control = Color.FromRgb(0xE8, 0xE8, 0xEC),
+                ControlHover = Color.FromRgb(0xDE, 0xDE, 0xE3),
+                ControlPressed = Color.FromRgb(0xD2, 0xD2, 0xD8),
+                PreviewBackground = Color.FromRgb(0x15, 0x15, 0x18),
+                Danger = Color.FromRgb(0xE0, 0x3E, 0x3E),
+                Success = Color.FromRgb(0x1F, 0xA8, 0x62),
+            };
+    }
+}

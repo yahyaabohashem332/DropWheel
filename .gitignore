@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+testdata/*
+!testdata/.gitkeep
+tools/bin/
+*.petal-tmp
