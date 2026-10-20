@@ -6,13 +6,29 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
 | **Shift** | Convert | Every format the file can become (290 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, annotate, crop, redact, trim, split, merge… (26 tools) |
+| **Ctrl** | Tools | Compress, metadata, edit, annotate, crop, redact, trim, split, merge, read QR… (27 tools) |
 | **Alt** | Actions | Share, Float, Copy, Move, Copy Path, Terminal |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
 another key to switch wheels in place. Drop on the centre (or press Esc) to cancel.
 
 Everything runs locally. Nothing is uploaded.
+
+No drag needed: right-click files in File Explorer → **Convert with Petal** opens the same wheel at
+the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt switch wheels).
+
+## Install
+
+Run `dist\Petal-Setup-1.0.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+.NET, FFmpeg and ExifTool, so nothing else is needed. A portable ZIP is built next to it.
+
+Microsoft Office or LibreOffice, when installed, is used for slides and exact-layout Word/Excel output;
+everything else is built in. On this development PC all 290 conversion paths are available.
+
+## Tests
+
+551 tests: core and app parts (47), media engine (187), image engine (161), documents and PDF (156).
+`tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works
 
