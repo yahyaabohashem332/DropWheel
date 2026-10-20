@@ -12,13 +12,16 @@ public static class OutputNaming
     public static string ForConversion(string inputPath, FileFormat target, string? outputDirectory = null) =>
         Unique(outputDirectory ?? DirectoryOf(inputPath), Formats.Formats.BaseName(inputPath), target.WriteExtension);
 
-    public static string ForTool(string inputPath, ToolInfo tool, string? suffixOverride = null, string? outputDirectory = null)
+    /// <param name="extensionOverride">Writes a different format than usual, e.g. "flac" when compressing WAV.</param>
+    public static string ForTool(string inputPath, ToolInfo tool, string? suffixOverride = null, string? outputDirectory = null, string? extensionOverride = null)
     {
         var baseName = Formats.Formats.BaseName(inputPath);
         var suffix = suffixOverride ?? tool.OutputSuffix;
         var stem = suffix.Length == 0 ? baseName : $"{baseName} {suffix}";
         var dir = outputDirectory ?? DirectoryOf(inputPath);
 
+        if (extensionOverride is not null)
+            return Unique(dir, stem, extensionOverride);
         return tool.OutputKind switch
         {
             ToolOutputKind.Folder => Unique(dir, stem, null),

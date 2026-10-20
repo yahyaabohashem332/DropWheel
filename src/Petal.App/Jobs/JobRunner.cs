@@ -43,7 +43,8 @@ public sealed class JobRunner(ConverterRegistry converters)
     }
 
     /// <summary>Runs work items one after another on a single card.</summary>
-    public async Task RunAsync(string runningTitle, string doneTitle, IReadOnlyList<WorkItem> work, ScreenPoint at)
+    /// <param name="describe">Optional subtitle for the finished card, e.g. "3.4 MB → 1.1 MB".</param>
+    public async Task RunAsync(string runningTitle, string doneTitle, IReadOnlyList<WorkItem> work, ScreenPoint at, Func<IReadOnlyList<string>, string?>? describe = null)
     {
         if (work.Count == 0)
             return;
@@ -107,6 +108,8 @@ public sealed class JobRunner(ConverterRegistry converters)
             if (errors.Count > 0)
                 saved += $" · {errors.Count} failed";
             var results = outputs.ToList();
+            if (describe?.Invoke(results) is { Length: > 0 } detail)
+                saved = $"{saved} · {detail}";
             card.Succeed(doneTitle, saved, () => ExplorerSelection.Reveal(results));
             if (SettingsStore.Current.SelectResultInExplorer)
                 ExplorerSelection.SelectIfVisible(results);

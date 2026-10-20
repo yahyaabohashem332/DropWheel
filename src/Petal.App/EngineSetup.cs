@@ -41,6 +41,7 @@ public static class EngineSetup
         WarmUp();
         var converters = new ConverterRegistry();
         converters.Register(new ImageConverter());
+        converters.Register(new Petal.Engines.Media.MediaConverter());
         converters.Register(new ArchiveConverter());
         converters.Register(new SubtitleConverter());
         return converters;

@@ -63,7 +63,27 @@ internal static class DesignSnapshots
     }
 
     /// <summary>Tool windows added later register here so the snapshot run covers them.</summary>
-    private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at) => [];
+    private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at)
+    {
+        Petal.Core.Tools.ToolInfo T(Petal.Core.Tools.ToolId id) => Petal.Core.Tools.ToolRegistry.Get(id);
+        var video = new[] { file("weekend.mov") };
+        var audio = new[] { file("mixtape.mp3") };
+        return
+        [
+            ("compress", () => new Tools.Windows.CompressWindow(T(Petal.Core.Tools.ToolId.Compress), video, jobs, at)),
+            ("trimvideo", () => new Tools.Windows.TrimVideoWindow(T(Petal.Core.Tools.ToolId.TrimVideo), video, jobs, at)),
+            ("cropvideo", () => new Tools.Windows.CropVideoWindow(T(Petal.Core.Tools.ToolId.CropVideo), video, jobs, at)),
+            ("speed", () => new Tools.Windows.ChangeSpeedWindow(T(Petal.Core.Tools.ToolId.ChangeSpeed), video, jobs, at)),
+            ("snapshots", () => new Tools.Windows.VideoSnapshotsWindow(T(Petal.Core.Tools.ToolId.VideoSnapshots), video, jobs, at)),
+            ("split", () => new Tools.Windows.SplitVideoWindow(T(Petal.Core.Tools.ToolId.SplitVideo), video, jobs, at)),
+            ("redactvideo", () => new Tools.Windows.RedactVideoWindow(T(Petal.Core.Tools.ToolId.RedactVideo), video, jobs, at)),
+            ("normalize", () => new Tools.Windows.NormalizeWindow(T(Petal.Core.Tools.ToolId.NormalizeAudio), audio, jobs, at)),
+            ("trimaudio", () => new Tools.Windows.TrimAudioWindow(T(Petal.Core.Tools.ToolId.TrimAudio), audio, jobs, at)),
+            ("channels", () => new Tools.Windows.AudioChannelsWindow(T(Petal.Core.Tools.ToolId.AudioChannels), audio, jobs, at)),
+            ("visualizer", () => new Tools.Windows.VisualizerWindow(T(Petal.Core.Tools.ToolId.AudioVisualizer), audio, jobs, at)),
+            ("bleep", () => new Tools.Windows.BleepWindow(T(Petal.Core.Tools.ToolId.BleepAudio), audio, jobs, at)),
+        ];
+    }
 
     public static void Run(string[] args)
     {

@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +28,7 @@
     <ProjectReference Include="..\..\src\Petal.Engines.Media\Petal.Engines.Media.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Files\Petal.Engines.Files.csproj" />
+    <ProjectReference Include="..\..\src\Petal.App\Petal.App.csproj" />
   </ItemGroup>
 
   <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->

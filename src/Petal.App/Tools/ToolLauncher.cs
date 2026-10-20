@@ -26,10 +26,27 @@ public sealed class ToolLauncher(JobRunner jobs)
         [ToolId.AnnotatePhoto] = (t, f, j, a) => new AnnotateWindow(t, f[0], j, a),
         [ToolId.AddBackground] = (t, f, j, a) => new AddBackgroundWindow(t, f[0], j, a),
         [ToolId.CreateCollage] = (t, f, j, a) => new CollageWindow(t, f, j, a),
+        [ToolId.Compress] = (t, f, j, a) => new CompressWindow(t, f, j, a),
+        [ToolId.TrimVideo] = (t, f, j, a) => new TrimVideoWindow(t, f, j, a),
+        [ToolId.CropVideo] = (t, f, j, a) => new CropVideoWindow(t, f, j, a),
+        [ToolId.ChangeSpeed] = (t, f, j, a) => new ChangeSpeedWindow(t, f, j, a),
+        [ToolId.VideoSnapshots] = (t, f, j, a) => new VideoSnapshotsWindow(t, f, j, a),
+        [ToolId.SplitVideo] = (t, f, j, a) => new SplitVideoWindow(t, f, j, a),
+        [ToolId.RedactVideo] = (t, f, j, a) => new RedactVideoWindow(t, f, j, a),
+        [ToolId.JoinVideos] = (t, f, j, a) => new OrderedFilesWindow(t, f, j, a, "Playback order", "Join Videos", "Joining videos", "Videos joined",
+            (inputs, output, p, ct) => Petal.Engines.Media.VideoTools.JoinAsync(inputs, output, new Petal.Engines.Media.JoinVideosOptions { Settings = Petal.App.Settings.SettingsStore.Current.Conversion }, p, ct)),
+        [ToolId.NormalizeAudio] = (t, f, j, a) => new NormalizeWindow(t, f, j, a),
+        [ToolId.TrimAudio] = (t, f, j, a) => new TrimAudioWindow(t, f, j, a),
+        [ToolId.AudioChannels] = (t, f, j, a) => new AudioChannelsWindow(t, f, j, a),
+        [ToolId.AudioVisualizer] = (t, f, j, a) => new VisualizerWindow(t, f, j, a),
+        [ToolId.BleepAudio] = (t, f, j, a) => new BleepWindow(t, f, j, a),
     };
 
     private static readonly Dictionary<ToolId, DirectRun> Direct = new()
     {
+        [ToolId.RemoveAudio] = (tool, files, jobs, at) => jobs.RunAsync("Removing audio", "Audio removed",
+            files.Select(f => new WorkItem(f, Path.GetFileName(f), async (progress, ct) =>
+                (IReadOnlyList<string>)[await Petal.Engines.Media.VideoTools.RemoveAudioAsync(f, Petal.Core.Jobs.OutputNaming.ForTool(f, tool), progress, ct)])).ToList(), at),
         [ToolId.ExtractArchive] = (tool, files, jobs, at) => jobs.RunAsync("Extracting", "Extracted",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (progress, ct) =>
                 (IReadOnlyList<string>)[await ArchiveExtractor.ExtractAsync(f, progress, ct)])).ToList(), at),

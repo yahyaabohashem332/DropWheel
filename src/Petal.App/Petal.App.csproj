@@ -34,6 +34,9 @@
   </ItemGroup>
 
   <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->
+  <ItemGroup Condition="Exists('..\..\tools\bin\ffmpeg\ffmpeg.exe')">
+    <None Include="..\..\tools\bin\ffmpeg\*" LinkBase="tools\ffmpeg" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
   <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
     <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
