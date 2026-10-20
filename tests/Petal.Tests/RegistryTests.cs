@@ -57,16 +57,16 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_26_tools()
+    public void There_are_27_tools()
     {
-        Assert.Equal(26, ToolRegistry.All.Count);
-        Assert.Equal(26, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(27, ToolRegistry.All.Count);
+        Assert.Equal(27, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
     }
 
     [Fact]
     public void Tools_change_with_selection_size()
     {
-        Assert.Equal(7, ToolRegistry.ToolsFor([F.Jpg]).Count);
+        Assert.Equal(8, ToolRegistry.ToolsFor([F.Jpg]).Count);
         var multi = ToolRegistry.ToolsFor([F.Jpg, F.Png]).Select(t => t.Id).ToList();
         Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.CropImage, ToolId.CreatePdf, ToolId.CreateCollage], multi);
         Assert.Contains(ToolId.JoinVideos, ToolRegistry.ToolsFor([F.Mp4, F.Mov]).Select(t => t.Id));

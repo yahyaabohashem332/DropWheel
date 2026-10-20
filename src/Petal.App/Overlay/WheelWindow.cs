@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -220,20 +221,7 @@ public sealed class WheelWindow : Window
         _palette = Theme.Current;
         Sound.Warm();
 
-        var (_, work, scale) = MonitorAt(new POINT(cursor.X, cursor.Y));
-        double margin = (WheelGeometry.OuterRadius + 18) * scale;
-        int cx = (int)Math.Clamp(cursor.X, work.Left + margin, Math.Max(work.Left + margin, work.Right - margin));
-        int cy = (int)Math.Clamp(cursor.Y, work.Top + margin, Math.Max(work.Top + margin, work.Bottom - margin));
-        _anchor = new ScreenPoint(cx, cy);
-        int px = (int)Math.Round(Side * scale);
-        int left = cx - px / 2, top = cy - px / 2;
-
-        // Hint goes below the ring when there is no room above it.
-        bool hintBelow = cy - work.Top < (WheelGeometry.OuterRadius + 64) * scale;
-        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + 12 : Centre - WheelGeometry.OuterRadius - 12 - 30);
-
-        var capture = GlassCapture.CaptureBlurred(left, top, px, px, scale);
-        ApplyGlass(capture);
+        var (left, top, px) = Place(cursor);
 
         // Invisible but hit-testable everywhere, so Explorer's drag loop picks us as the target.
         _root.Visibility = Visibility.Visible;
@@ -246,10 +234,143 @@ public sealed class WheelWindow : Window
 
         SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_NOACTIVATE | SWP_SHOWWINDOW);
         _openedAt = Environment.TickCount64;
-        Log.Info($"wheel: probe at {cx},{cy} mode {mode}");
+        Log.Info($"wheel: probe at {_anchor.X},{_anchor.Y} mode {mode}");
         // Nudge the drag loop: it re-evaluates the drop target on the next mouse move.
         InjectZeroMouseMove();
         _probeTimer.Start();
+    }
+
+    /// <summary>Centres the wheel on the cursor, kept on screen, and captures the glass behind it.</summary>
+    private (int Left, int Top, int Size) Place(ScreenPoint cursor)
+    {
+        var (_, work, scale) = MonitorAt(new POINT(cursor.X, cursor.Y));
+        double margin = (WheelGeometry.OuterRadius + 18) * scale;
+        int cx = (int)Math.Clamp(cursor.X, work.Left + margin, Math.Max(work.Left + margin, work.Right - margin));
+        int cy = (int)Math.Clamp(cursor.Y, work.Top + margin, Math.Max(work.Top + margin, work.Bottom - margin));
+        _anchor = new ScreenPoint(cx, cy);
+        int px = (int)Math.Round(Side * scale);
+        int left = cx - px / 2, top = cy - px / 2;
+
+        // Hint goes below the ring when there is no room above it.
+        bool hintBelow = cy - work.Top < (WheelGeometry.OuterRadius + 64) * scale;
+        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + 12 : Centre - WheelGeometry.OuterRadius - 12 - 30);
+
+        ApplyGlass(GlassCapture.CaptureBlurred(left, top, px, px, scale));
+        return (left, top, px);
+    }
+
+    // ---------- click & keyboard mode (Explorer's context menu) ----------
+
+    private bool _interactive;
+
+    /// <summary>Maps a modifier key to the wheel it opens (follows the user's key settings).</summary>
+    public Func<Key, WheelMode?>? ModeForKey { get; set; }
+
+    /// <summary>
+    /// Opens the wheel for files chosen without dragging (e.g. "Convert with Petal" in the context
+    /// menu). Petals are clicked, or picked with the arrow keys and Enter; Shift, Ctrl and Alt switch wheels.
+    /// </summary>
+    public void OpenInteractive(IReadOnlyList<string> files, ScreenPoint cursor, WheelMode mode)
+    {
+        if (_open) CloseWheel();
+        _open = true;
+        _interactive = true;
+        _mode = mode;
+        _files = files;
+        _highlight = null;
+        _palette = Theme.Current;
+        Sound.Warm();
+        var (left, top, px) = Place(cursor);
+        _root.Visibility = Visibility.Visible;
+        _emptyCard.Visibility = Visibility.Collapsed;
+        Render(animate: true);
+        _root.Background = HitBrush;
+
+        // Allow activation so the keyboard reaches us.
+        var exStyle = (long)GetWindowLongPtr(_hwnd, GWL_EXSTYLE);
+        SetWindowLongPtr(_hwnd, GWL_EXSTYLE, new IntPtr(exStyle & ~WS_EX_NOACTIVATE));
+        SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_SHOWWINDOW);
+        Focusable = true;
+        SetForegroundWindow(_hwnd);
+        Activate();
+        Focus();
+        Keyboard.Focus(this);
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+        if (!_interactive || _content is null) return;
+        var p = e.GetPosition(_stage);
+        var index = WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _content.Items.Count);
+        if (index is not null) SetHighlight(index, null);
+    }
+
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        if (!_interactive || _content is null) return;
+        var p = e.GetPosition(_stage);
+        var v = new Vector(p.X - Centre, p.Y - Centre);
+        if (WheelGeometry.HitTest(v, _content.Items.Count) is { } index)
+            Choose(index);
+        else if (!WheelGeometry.IsOverHub(v))
+            CloseWheel();
+    }
+
+    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+        if (!_interactive) return;
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        int count = _content?.Items.Count ?? 0;
+        switch (key)
+        {
+            case Key.Escape:
+                CloseWheel();
+                break;
+            case Key.Right or Key.Down when count > 0:
+                SetHighlight(((_highlight ?? -1) + 1) % count, null);
+                break;
+            case Key.Left or Key.Up when count > 0:
+                SetHighlight(((_highlight ?? 0) - 1 + count) % count, null);
+                break;
+            case Key.Home when count > 0:
+                SetHighlight(0, null);
+                break;
+            case Key.End when count > 0:
+                SetHighlight(count - 1, null);
+                break;
+            case Key.Enter or Key.Space when _highlight is { } i:
+                Choose(i);
+                break;
+            case Key.Tab:
+                SwitchMode(_mode switch { WheelMode.Conversions => WheelMode.Tools, WheelMode.Tools => WheelMode.Actions, _ => WheelMode.Conversions });
+                break;
+            case Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt:
+                if (ModeForKey?.Invoke(key) is { } m) SwitchMode(m);
+                break;
+            default:
+                return;
+        }
+        e.Handled = true;
+    }
+
+    protected override void OnDeactivated(EventArgs e)
+    {
+        base.OnDeactivated(e);
+        if (_interactive) CloseWheel();
+    }
+
+    private void Choose(int index)
+    {
+        if (_content is null || _files is null || index >= _content.Items.Count) return;
+        var item = _content.Items[index];
+        var files = _files;
+        var at = _anchor;
+        Sound.Drop();
+        CloseWheel();
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, at));
     }
 
     private void OnProbeTick(object? sender, EventArgs e)
@@ -298,6 +419,13 @@ public sealed class WheelWindow : Window
         _files = null;
         _content = null;
         _highlight = null;
+        if (_interactive)
+        {
+            _interactive = false;
+            Focusable = false;
+            var exStyle = (long)GetWindowLongPtr(_hwnd, GWL_EXSTYLE);
+            SetWindowLongPtr(_hwnd, GWL_EXSTYLE, new IntPtr(exStyle | WS_EX_NOACTIVATE));
+        }
         _stage.BeginAnimation(OpacityProperty, null);
         _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
         _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);

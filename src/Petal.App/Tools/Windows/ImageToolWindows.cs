@@ -292,6 +292,7 @@ public static class ImageToolSetup
         CompressWindow.Backends[FormatFamily.Vector] = CompressImage;
         ToolLauncher.RegisterWindow(ToolId.CropImage, (t, f, j, a) => new CropImageWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.RedactPhoto, (t, f, j, a) => new RedactPhotoWindow(t, f[0], j, a));
+        ToolLauncher.RegisterDirect(ToolId.ReadCode, (tool, files, jobs, at) => ReadCodeAsync(files[0], at));
         ToolLauncher.RegisterDirect(ToolId.CreatePdf, (tool, files, jobs, at) =>
         {
             // Named after the first image, in selection order: "trip 1.jpg" + … → "trip 1.pdf".
@@ -302,6 +303,33 @@ public static class ImageToolSetup
                 return (IReadOnlyList<string>)[output];
             })], at);
         });
+    }
+
+    /// <summary>Reads QR codes and barcodes locally and copies what they say.</summary>
+    public static async Task ReadCodeAsync(string file, ScreenPoint at)
+    {
+        var card = Hud.HudCard.ShowAt(at, "Reading code", Path.GetFileName(file));
+        try
+        {
+            var results = await BarcodeScanner.ScanAsync(file);
+            if (results.Count == 0)
+            {
+                card.Fail("No code found", "Try a sharper or closer photo of the QR code.");
+                return;
+            }
+            var text = string.Join(Environment.NewLine, results.Select(r => r.Text));
+            Clipboard.SetText(text);
+            var first = results[0].Text;
+            bool link = Uri.TryCreate(first, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            card.Succeed(results.Count == 1 ? "Copied to clipboard" : $"{results.Count} codes copied",
+                link ? $"{first} · click to open" : first,
+                link ? () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(first) { UseShellExecute = true }) : null);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Reading a code");
+            card.Fail("Couldn't read this image", ex.Message);
+        }
     }
 
     private static async Task<string> CompressImage(string input, CompressRequest request, IProgress<double> progress, CancellationToken ct)

@@ -28,6 +28,7 @@ public enum ToolId
     OrganizePdf,
     MergePdfs,
     ExtractArchive,
+    ReadCode,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

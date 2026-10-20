@@ -286,6 +286,11 @@ public sealed class SettingsWindow : ToolWindow
             _s.LaunchAtStartup = v;
             LaunchAtLogin.Apply(v);
         }, top: 0));
+        panel.Children.Add(Switch("Right-click menu", "Add “Convert with Petal” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
+        {
+            _s.ExplorerContextMenu = v;
+            Shell.ContextMenuRegistration.Apply(v);
+        }));
         panel.Children.Add(Switch("Pause Petal", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
         var log = new Button { Content = "Open activity log", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         log.Click += (_, _) =>

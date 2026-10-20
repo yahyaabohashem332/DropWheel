@@ -34,6 +34,7 @@ public static class ToolRegistry
         new(OrganizePdf, "ORGANIZE", "Organize PDF", "grid", true, ToolSelection.Single, "Organized", ToolOutputKind.FixedFormat, "pdf"),
         new(MergePdfs, "MERGE PDF", "Merge PDFs", "copy", true, ToolSelection.MultipleOnly, "Merged", ToolOutputKind.FixedFormat, "pdf"),
         new(ExtractArchive, "EXTRACT", "Extract Archive", "archive", false, ToolSelection.SingleOrBatch, "", ToolOutputKind.Folder),
+        new(ReadCode, "READ QR", "Read QR Code", "qr", false, ToolSelection.Single, ""),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -41,7 +42,7 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, AddBackground, CropImage, RedactPhoto];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, AddBackground, CropImage, RedactPhoto, ReadCode];
     private static readonly ToolId[] ImageMulti = [Compress, Metadata, CropImage, CreatePdf, CreateCollage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
     private static readonly ToolId[] AudioSingle = [Compress, Metadata, NormalizeAudio, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];

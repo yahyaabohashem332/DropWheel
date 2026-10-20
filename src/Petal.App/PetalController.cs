@@ -31,6 +31,7 @@ public sealed class PetalController : IDisposable
             ContentProvider = BuildContent,
             HubTextProvider = Sizes.Describe,
             KeyLabel = KeyLabel,
+            ModeForKey = ModeForKey,
         };
         _wheel.ItemDropped += OnItemDropped;
         _wheel.ShowHints = SettingsStore.Current.ShowKeyHints;
@@ -47,6 +48,49 @@ public sealed class PetalController : IDisposable
     public JobRunner Jobs => _jobs;
 
     internal WheelWindow CreateWheelForSnapshots() => _wheel;
+
+    private readonly List<string> _pendingFiles = [];
+    private DispatcherTimer? _pendingTimer;
+    private ScreenPoint _pendingAt;
+
+    /// <summary>
+    /// Opens the wheel at a point for files chosen from Explorer's context menu. Explorer starts one
+    /// process per selected file, so paths that arrive within a moment are gathered into one wheel.
+    /// </summary>
+    public void ShowWheelFor(IReadOnlyList<string> files, ScreenPoint at)
+    {
+        foreach (var f in files)
+            if (!_pendingFiles.Contains(f, StringComparer.OrdinalIgnoreCase))
+                _pendingFiles.Add(f);
+        _pendingAt = at;
+        _pendingTimer ??= new DispatcherTimer(TimeSpan.FromMilliseconds(260), DispatcherPriority.Normal, (_, _) =>
+        {
+            _pendingTimer!.Stop();
+            var batch = _pendingFiles.Where(p => File.Exists(p) || Directory.Exists(p)).ToList();
+            _pendingFiles.Clear();
+            if (batch.Count == 0) return;
+            bool anyFolder = batch.Any(Directory.Exists);
+            _wheel.OpenInteractive(batch, _pendingAt, anyFolder ? WheelMode.Actions : WheelMode.Conversions);
+        }, Dispatcher.CurrentDispatcher);
+        _pendingTimer.Stop();
+        _pendingTimer.Start();
+    }
+
+    private static WheelMode? ModeForKey(System.Windows.Input.Key key)
+    {
+        var modifier = key switch
+        {
+            System.Windows.Input.Key.LeftShift or System.Windows.Input.Key.RightShift => ModifierKey.Shift,
+            System.Windows.Input.Key.LeftCtrl or System.Windows.Input.Key.RightCtrl => ModifierKey.Control,
+            System.Windows.Input.Key.LeftAlt or System.Windows.Input.Key.RightAlt => ModifierKey.Alt,
+            _ => ModifierKey.None,
+        };
+        var s = SettingsStore.Current;
+        if (modifier == s.ConvertKey) return WheelMode.Conversions;
+        if (modifier == s.ToolsKey) return WheelMode.Tools;
+        if (modifier == s.ActionsKey) return WheelMode.Actions;
+        return null;
+    }
 
     public void Start()
     {

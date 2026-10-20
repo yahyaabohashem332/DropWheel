@@ -16,7 +16,6 @@ public partial class App : Application
 {
     private const string InstanceName = "Petal.SingleInstance.v1";
     private Mutex? _instanceMutex;
-    private EventWaitHandle? _showSignal;
     private PetalController? _controller;
     private TrayIcon? _tray;
 
@@ -55,16 +54,17 @@ public partial class App : Application
             return;
         }
 
+        var command = ParseCommand(e.Args);
         _instanceMutex = new Mutex(initiallyOwned: true, InstanceName, out bool first);
         if (!first)
         {
-            // Already running: ask that instance to open its settings, then leave.
-            try { EventWaitHandle.OpenExisting(InstanceName + ".show").Set(); } catch { /* not ready yet */ }
+            // Already running: hand our request to that instance, then leave.
+            CommandChannel.Send(command ?? new PetalCommand("settings", [], 0, 0));
             Shutdown();
             return;
         }
-        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, InstanceName + ".show");
-        ThreadPool.RegisterWaitForSingleObject(_showSignal, (_, _) => Dispatcher.BeginInvoke(ShowSettings), null, Timeout.Infinite, executeOnlyOnce: false);
+        _commands.Received += c => Dispatcher.BeginInvoke(() => Handle(c));
+        _commands.Listen();
 
         DispatcherUnhandledException += (_, args) =>
         {
@@ -90,9 +90,37 @@ public partial class App : Application
 
         CreateTray();
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
-        if (!settings.OnboardingDone && !e.Args.Contains("--background"))
+        ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
+        if (command is not null)
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
+        else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
             Onboarding.WelcomeWindow.ShowSingle();
         Log.Info($"Petal started, {converters.Converters.Count} converters");
+    }
+
+    private readonly CommandChannel _commands = new();
+
+    /// <summary>"--wheel &lt;path&gt;" comes from Explorer's context menu.</summary>
+    private static PetalCommand? ParseCommand(string[] args)
+    {
+        int i = Array.IndexOf(args, "--wheel");
+        if (i < 0 || i + 1 >= args.Length)
+            return null;
+        Interop.NativeMethods.GetCursorPos(out var pt);
+        return new PetalCommand("wheel", args[(i + 1)..], pt.X, pt.Y);
+    }
+
+    private void Handle(PetalCommand command)
+    {
+        switch (command.Name)
+        {
+            case "wheel":
+                _controller?.ShowWheelFor(command.Files, new Input.ScreenPoint(command.X, command.Y));
+                break;
+            default:
+                ShowSettings();
+                break;
+        }
     }
 
     private void CreateTray()
@@ -127,6 +155,7 @@ public partial class App : Application
 
     public void Quit()
     {
+        _commands.Dispose();
         _tray?.Dispose();
         _controller?.Dispose();
         Shutdown();

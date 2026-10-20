@@ -26,6 +26,7 @@ public sealed class AppSettings
     public bool LaunchAtStartup { get; set; } = true;
     public bool Paused { get; set; }
     public bool SelectResultInExplorer { get; set; } = true;
+    public bool ExplorerContextMenu { get; set; } = true;
     public OutputLocation Output { get; set; } = OutputLocation.BesideOriginal;
     public string? OutputFolder { get; set; }
     public bool OnboardingDone { get; set; }
