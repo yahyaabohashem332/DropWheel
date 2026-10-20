@@ -10,6 +10,7 @@ using Petal.App.Overlay;
 using Petal.App.Settings;
 using Petal.App.Tools;
 using Petal.App.Visuals;
+using Petal.App.Localization;
 
 namespace Petal.App.Onboarding;
 
@@ -38,14 +39,14 @@ public sealed class WelcomeWindow : ToolWindow
     private WelcomeWindow() : base("Welcome to Petal", 600)
     {
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        PrimaryButton.Content = "Get started";
+        PrimaryButton.Content = L.T("Get started");
         PrimaryButton.Click += (_, _) =>
         {
             SettingsStore.Current.OnboardingDone = true;
             SettingsStore.Save();
             Close();
         };
-        ResetButton.Content = "Settings";
+        ResetButton.Content = L.T("Settings");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => SettingsWindow.ShowSingle();
         FooterNote = "Petal lives in the notification area.";
@@ -107,7 +108,7 @@ public sealed class WelcomeWindow : ToolWindow
         tile.SetResourceReference(Border.BackgroundProperty, "Petal.Surface");
         tile.SetResourceReference(Border.BorderBrushProperty, "Petal.ControlBorder");
         var row = new DockPanel();
-        var thumb = new Image { Width = 52, Height = 40, Stretch = Stretch.UniformToFill, Margin = new Thickness(0, 0, 14, 0) };
+        var thumb = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 52, Height = 40, Stretch = Stretch.UniformToFill, Margin = new Thickness(0, 0, 14, 0) };
         thumb.Source = new BitmapImage(new Uri(sample));
         thumb.Clip = new RectangleGeometry(new Rect(0, 0, 52, 40), 6, 6);
         DockPanel.SetDock(thumb, Dock.Left);
@@ -221,6 +222,7 @@ internal sealed class GestureDemo : Canvas
 
     public GestureDemo()
     {
+        FlowDirection = FlowDirection.LeftToRight;
         ClipToBounds = true;
         Background = new LinearGradientBrush(Color.FromRgb(0x26, 0x1E, 0x4A), Color.FromRgb(0x14, 0x14, 0x22), 90);
 
@@ -264,7 +266,7 @@ internal sealed class GestureDemo : Canvas
             Background = new SolidColorBrush(Color.FromRgb(0xF4, 0xF2, 0xFF)),
             BorderBrush = new SolidColorBrush(Color.FromRgb(0xC9, 0xC0, 0xF0)),
             BorderThickness = new Thickness(1, 1, 1, 3),
-            Child = new TextBlock { Text = "⇧ Shift", FontFamily = UiFonts.Text, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x3A, 0x9A)) },
+            Child = new TextBlock { Text = L.T("⇧ Shift"), FontFamily = UiFonts.Text, FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x3A, 0x9A)) },
         };
         Children.Add(_key);
 
@@ -277,8 +279,8 @@ internal sealed class GestureDemo : Canvas
             {
                 Children =
                 {
-                    new TextBlock { Text = "Converted to PNG", FontFamily = UiFonts.Text, FontWeight = FontWeights.SemiBold, FontSize = 13, Foreground = Brushes.Black },
-                    new TextBlock { Text = "1 of 1 saved", FontFamily = UiFonts.Text, FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(0x6E, 0x70, 0x78)) },
+                    new TextBlock { Text = L.T("Converted to PNG"), FontFamily = UiFonts.Text, FontWeight = FontWeights.SemiBold, FontSize = 13, Foreground = Brushes.Black },
+                    new TextBlock { Text = L.T("1 of 1 saved"), FontFamily = UiFonts.Text, FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(0x6E, 0x70, 0x78)) },
                 },
             },
             RenderTransformOrigin = new Point(0.5, 0.5),

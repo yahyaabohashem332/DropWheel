@@ -40,6 +40,8 @@ public static class TimeText
 /// <summary>Bars drawn from waveform peaks (0–1), centred vertically.</summary>
 public sealed class WaveformView : FrameworkElement
 {
+    public WaveformView() => FlowDirection = FlowDirection.LeftToRight;
+
     private float[] _peaks = [];
 
     public float[] Peaks
@@ -82,6 +84,8 @@ public sealed class WaveformView : FrameworkElement
 /// <summary>A row of thumbnails filling the width.</summary>
 public sealed class Filmstrip : FrameworkElement
 {
+    public Filmstrip() => FlowDirection = FlowDirection.LeftToRight;
+
     private IReadOnlyList<ImageSource> _frames = [];
 
     public IReadOnlyList<ImageSource> Frames
@@ -135,6 +139,7 @@ public sealed class TrimTimeline : Grid
 
     public TrimTimeline(UIElement background, double height = 56)
     {
+        FlowDirection = FlowDirection.LeftToRight;
         Height = height;
         var clip = new Border { CornerRadius = new CornerRadius(9), ClipToBounds = true, Child = background };
         Children.Add(clip);
@@ -301,6 +306,7 @@ public sealed class RangeLane : Canvas
 
     public RangeLane(string label, double height = 30)
     {
+        FlowDirection = FlowDirection.LeftToRight;
         Label = label;
         Height = height;
         ClipToBounds = true;

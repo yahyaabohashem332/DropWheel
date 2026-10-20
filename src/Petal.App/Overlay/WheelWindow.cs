@@ -11,6 +11,7 @@ using Petal.App.Input;
 using Petal.App.Interop;
 using Petal.App.Visuals;
 using static Petal.App.Interop.NativeMethods;
+using Petal.App.Localization;
 
 namespace Petal.App.Overlay;
 
@@ -84,7 +85,9 @@ public sealed class WheelWindow : Window
         Height = Side;
         Left = -32000;
         Top = -32000;
-        Title = "Petal wheel";
+        Title = L.T("Petal wheel");
+        // The ring is drawn in screen geometry, so it stays left-to-right; its texts set their own direction.
+        L.Apply(_root, mirror: false);
         AllowDrop = true;
         UseLayoutRounding = true;
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
@@ -578,7 +581,7 @@ public sealed class WheelWindow : Window
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
             var item = _content.Items[i2];
-            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat ? item.Label : item.Name;
+            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat ? item.Label : L.T(item.Name);
             SetHub(_lastHubLabel, Subtitle(item));
             Sound.Tick();
             if (data is not null)
@@ -592,15 +595,15 @@ public sealed class WheelWindow : Window
 
     private static string Subtitle(WheelItem item) => item.Payload switch
     {
-        Petal.Core.Formats.FileFormat => "Convert",
-        Petal.Core.Tools.ToolInfo => "Tool",
-        _ => "Action",
+        Petal.Core.Formats.FileFormat => L.T("Convert"),
+        Petal.Core.Tools.ToolInfo => L.T("Tool"),
+        _ => L.T("Action"),
     };
 
     private static string Description(WheelItem item) => item.Payload switch
     {
-        Petal.Core.Formats.FileFormat f => $"Convert to {f.Label}",
-        _ => item.Name,
+        Petal.Core.Formats.FileFormat f => L.F("Convert to {0}", f.Label),
+        _ => L.T(item.Name),
     };
 
     /// <summary>
@@ -663,6 +666,7 @@ public sealed class WheelWindow : Window
             _ring.Visibility = Visibility.Collapsed;
             _emptyCard.Visibility = Visibility.Visible;
             _emptyText.Text = _content.EmptyMessage;
+            _emptyText.FlowDirection = L.Direction;
             _emptyText.Foreground = Palette.Brush(p.Text);
             _emptyCard.Background = Palette.Brush(p.PillFill);
             _emptyCard.Child = _emptyText;
@@ -693,7 +697,7 @@ public sealed class WheelWindow : Window
             }
         }
 
-        SetHub(HubTextProvider?.Invoke(_files) ?? "", _files.Count == 1 ? "" : $"{_files.Count} items");
+        SetHub(HubTextProvider?.Invoke(_files) ?? "", _files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items"));
         ApplyPaletteToChrome(p);
 
         if (animate)
@@ -725,15 +729,16 @@ public sealed class WheelWindow : Window
 
         var text = new TextBlock
         {
-            Text = item.Label,
+            Text = L.T(item.Label),
             FontFamily = UiFonts.Display,
             FontWeight = FontWeights.SemiBold,
-            FontSize = withIcon ? (count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5),
+            FontSize = withIcon ? (L.IsArabic ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5),
             Foreground = Palette.Brush(p.Text),
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
             MaxWidth = maxWidth,
-            LineHeight = withIcon ? 9.5 : double.NaN,
+            LineHeight = withIcon ? (L.IsArabic ? 13 : 9.5) : double.NaN,
+            FlowDirection = L.Direction,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
             IsHitTestVisible = false,
         };
@@ -769,6 +774,7 @@ public sealed class WheelWindow : Window
     {
         _hubText.Text = title;
         _hubSubtext.Text = subtitle;
+        _hubText.FlowDirection = _hubSubtext.FlowDirection = L.Direction;
         _hubSubtext.Visibility = string.IsNullOrEmpty(subtitle) ? Visibility.Collapsed : Visibility.Visible;
         _hubPill.Visibility = string.IsNullOrEmpty(title) ? Visibility.Hidden : Visibility.Visible;
         _hubPill.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
@@ -779,7 +785,7 @@ public sealed class WheelWindow : Window
     private void UpdateHint()
     {
         var p = _palette;
-        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, FlowDirection = L.Direction };
         foreach (var (mode, label) in new[] { (WheelMode.Conversions, "Convert"), (WheelMode.Tools, "Tools"), (WheelMode.Actions, "Actions") })
         {
             bool active = mode == _mode;
@@ -801,7 +807,7 @@ public sealed class WheelWindow : Window
             };
             var caption = new TextBlock
             {
-                Text = label,
+                Text = L.T(label),
                 FontFamily = UiFonts.Text,
                 FontSize = 11.5,
                 FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal,

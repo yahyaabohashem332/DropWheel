@@ -312,6 +312,8 @@ public sealed class AnnotateEditor : FrameworkElement
 
     public AnnotateEditor(Canvas host)
     {
+        FlowDirection = FlowDirection.LeftToRight;
+        host.FlowDirection = FlowDirection.LeftToRight;
         _host = host;
         Focusable = true;
         Cursor = Cursors.Cross;

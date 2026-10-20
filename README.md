@@ -17,6 +17,12 @@ Everything runs locally. Nothing is uploaded.
 No drag needed: right-click files in File Explorer → **Convert with Petal** opens the same wheel at
 the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt switch wheels).
 
+**English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
+Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
+right to left, with proper Arabic plurals ("ملفان", "3 ملفات", "11 ملفًا"); pictures, timelines,
+waveforms and playback controls stay left to right, and digits stay Western so numbers read the same
+everywhere. The right-click menu entry and the notification-area menu follow the language too.
+
 ## Install
 
 Run `dist\Petal-Setup-1.0.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
@@ -27,7 +33,8 @@ everything else is built in. On this development PC all 290 conversion paths are
 
 ## Tests
 
-551 tests: core and app parts (47), media engine (187), image engine (161), documents and PDF (156).
+566 tests: core and app parts (62, including a check that every interface string has Arabic), media
+engine (187), image engine (161), documents and PDF (156).
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works
@@ -80,6 +87,12 @@ Design snapshots without a screen:
 Petal.exe --snapshots <out-folder> <background.png> <file>      # the wheel in every mode, light and dark
 Petal.exe --snapshot-tools <out-folder> <test-data-folder>       # every tool window
 ```
+
+Add `--lang ar` (or `--lang en`) to either command to render a specific language.
+
+Interface text is written in English in the code and translated through `Localization/L.cs`
+(`L.T`, `L.F` for formats, `L.P` for counts); the Arabic lives in `Localization/Arabic.cs`. The
+localization tests fail when a new English string has no Arabic entry or a translation drops a `{0}`.
 
 ## Credits
 

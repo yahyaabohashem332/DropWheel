@@ -11,6 +11,7 @@ using Petal.App.Visuals;
 using Petal.Core.Formats;
 using Petal.Core.Tools;
 using Petal.Core.Util;
+using Petal.App.Localization;
 
 namespace Petal.App.Settings;
 
@@ -39,9 +40,9 @@ public sealed class SettingsWindow : ToolWindow
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         SizeToContent = SizeToContent.Manual;
         Height = Math.Min(780, SystemParameters.WorkArea.Height - 40);
-        PrimaryButton.Content = "Done";
+        PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
-        FooterNote = $"Petal {Version} · {ConversionMatrix.TotalPaths} conversions · {ToolRegistry.All.Count} tools · 6 actions";
+        FooterNote = L.F("Petal {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, 6);
 
         var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-18, -14, -18, -16) };
         var page = new StackPanel { Margin = new Thickness(18, 14, 18, 18) };
@@ -74,7 +75,7 @@ public sealed class SettingsWindow : ToolWindow
         var grid = new Grid { Margin = new Thickness(2, 2, 2, 16) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var icon = new Image { Width = 56, Height = 56, Source = AppIcon.Large, Margin = new Thickness(0, 0, 16, 0) };
+        var icon = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 56, Height = 56, Source = AppIcon.Large, Margin = new Thickness(0, 0, 16, 0) };
         RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
         grid.Children.Add(icon);
         var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
@@ -83,7 +84,7 @@ public sealed class SettingsWindow : ToolWindow
         title.FontSize = 22;
         text.Children.Add(title);
         text.Children.Add(Text("The zero-click file converter. Drag a file, tap Shift, and drop.", "Petal.Caption"));
-        var how = new Button { Content = "How it works", Style = (Style)FindResource("Petal.SubtleButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(-8, 4, 0, 0) };
+        var how = new Button { Content = L.T("How it works"), Style = (Style)FindResource("Petal.SubtleButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(-8, 4, 0, 0) };
         how.SetResourceReference(ForegroundProperty, "Petal.Accent");
         how.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
         text.Children.Add(how);
@@ -129,6 +130,24 @@ public sealed class SettingsWindow : ToolWindow
     private UIElement AppearanceSection()
     {
         var panel = new StackPanel();
+        var language = Segments([(UiLanguage.System, "Automatic"), (UiLanguage.English, "English"), (UiLanguage.Arabic, "العربية")], _s.Language);
+        language.Changed += l =>
+        {
+            _s.Language = l;
+            Save();
+            // Rebuild this window in the new language and direction, where it was.
+            var (left, top) = (Left, Top);
+            L.Configure(l);
+            Close();
+            ShowSingle();
+            if (_open is not null)
+            {
+                _open.WindowStartupLocation = WindowStartupLocation.Manual;
+                (_open.Left, _open.Top) = (left, top);
+            }
+        };
+        panel.Children.Add(Row("Language", language, 150, 0));
+        panel.Children.Add(Text("Automatic follows the Windows display language.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         var theme = Segments([(ThemePreference.System, "System"), (ThemePreference.Light, "Light"), (ThemePreference.Dark, "Dark")], _s.Theme);
         theme.Changed += t =>
         {
@@ -136,7 +155,7 @@ public sealed class SettingsWindow : ToolWindow
             Theme.Configure(t, _s.UseWindowsAccent);
             Save();
         };
-        panel.Children.Add(Row("Theme", theme, 150, 0));
+        panel.Children.Add(Row("Theme", theme, 150, 12));
         var accent = Segments([(false, "Petal violet"), (true, "Windows accent")], _s.UseWindowsAccent);
         accent.Changed += v =>
         {
@@ -156,7 +175,7 @@ public sealed class SettingsWindow : ToolWindow
         var folderText = Text(string.IsNullOrEmpty(_s.OutputFolder) ? "No folder chosen" : _s.OutputFolder!, "Petal.Caption");
         folderText.TextTrimming = TextTrimming.CharacterEllipsis;
         folderText.TextWrapping = TextWrapping.NoWrap;
-        var choose = new Button { Content = "Choose…", HorizontalAlignment = HorizontalAlignment.Left };
+        var choose = new Button { Content = L.T("Choose…"), HorizontalAlignment = HorizontalAlignment.Left };
         var folderRow = new DockPanel { Margin = new Thickness(150, 8, 0, 0) };
         DockPanel.SetDock(choose, Dock.Left);
         folderText.Margin = new Thickness(10, 0, 0, 0);
@@ -174,7 +193,7 @@ public sealed class SettingsWindow : ToolWindow
         };
         choose.Click += (_, _) =>
         {
-            var dialog = new OpenFolderDialog { Title = "Save Petal results in" };
+            var dialog = new OpenFolderDialog { Title = L.T("Save Petal results in") };
             if (dialog.ShowDialog(this) == true)
             {
                 _s.OutputFolder = dialog.FolderName;
@@ -262,11 +281,11 @@ public sealed class SettingsWindow : ToolWindow
         var title = Text(name);
         title.FontWeight = FontWeights.SemiBold;
         text.Children.Add(title);
-        text.Children.Add(Text(path is null ? $"{purpose} — not found" : $"{purpose}", "Petal.Caption"));
+        text.Children.Add(Text(path is null ? L.F("{0} — not found", L.T(purpose)) : purpose, "Petal.Caption"));
         grid.Children.Add(text);
         if (path is null && url is not null)
         {
-            var get = new Button { Content = "Get", VerticalAlignment = VerticalAlignment.Center };
+            var get = new Button { Content = L.T("Get"), VerticalAlignment = VerticalAlignment.Center };
             get.Click += (_, _) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             Grid.SetColumn(get, 2);
             grid.Children.Add(get);
@@ -292,7 +311,7 @@ public sealed class SettingsWindow : ToolWindow
             Shell.ContextMenuRegistration.Apply(v);
         }));
         panel.Children.Add(Switch("Pause Petal", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
-        var log = new Button { Content = "Open activity log", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
+        var log = new Button { Content = L.T("Open activity log"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         log.Click += (_, _) =>
         {
             if (File.Exists(Log.FilePath))

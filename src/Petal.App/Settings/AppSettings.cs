@@ -22,6 +22,7 @@ public sealed class AppSettings
     public bool Sounds { get; set; } = true;
     public bool ShowKeyHints { get; set; } = true;
     public ThemePreference Theme { get; set; } = ThemePreference.System;
+    public Localization.UiLanguage Language { get; set; } = Localization.UiLanguage.System;
     public bool UseWindowsAccent { get; set; }
     public bool LaunchAtStartup { get; set; } = true;
     public bool Paused { get; set; }

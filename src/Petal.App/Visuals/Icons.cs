@@ -30,6 +30,7 @@ public static partial class Icons
         return new Path
         {
             Data = Geometry(key),
+            FlowDirection = FlowDirection.LeftToRight,
             Stroke = stroke,
             StrokeThickness = strokeWidth,
             StrokeStartLineCap = PenLineCap.Round,

@@ -5,6 +5,7 @@ using Petal.App.Settings;
 using Petal.App.Shell;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
+using Petal.App.Localization;
 
 namespace Petal.App.Jobs;
 
@@ -39,7 +40,7 @@ public sealed class JobRunner(ConverterRegistry converters)
                 return result.OutputPaths;
             }));
         }
-        return RunAsync($"Converting to {target.Label}", $"Converted to {target.Label}", work, at);
+        return RunAsync(L.F("Converting to {0}", target.Label), L.F("Converted to {0}", target.Label), work, at);
     }
 
     /// <summary>Runs work items one after another on a single card.</summary>
@@ -68,11 +69,11 @@ public sealed class JobRunner(ConverterRegistry converters)
                 var progress = new Progress<double>(f =>
                 {
                     double overall = (index + Math.Clamp(f, 0, 1)) / work.Count;
-                    var prefix = work.Count > 1 ? $"{index + 1} of {work.Count} · " : "";
+                    var prefix = work.Count > 1 ? L.F("{0} of {1}", index + 1, work.Count) + " · " : "";
                     card.SetText(runningTitle, $"{prefix}{item.Label} · {Math.Round(Math.Clamp(f, 0, 1) * 100)}%");
                     card.SetProgress(overall);
                 });
-                card.SetText(runningTitle, work.Count > 1 ? $"{i + 1} of {work.Count} · {item.Label}" : item.Label);
+                card.SetText(runningTitle, work.Count > 1 ? L.F("{0} of {1}", i + 1, work.Count) + " · " + item.Label : item.Label);
                 try
                 {
                     var produced = await Task.Run(() => item.Run(progress, cts.Token), cts.Token);
@@ -95,18 +96,18 @@ public sealed class JobRunner(ConverterRegistry converters)
 
         if (cts.IsCancellationRequested)
         {
-            card.Fail("Cancelled", outputs.Count > 0 ? $"{outputs.Count} of {work.Count} saved before cancelling" : "Nothing was saved");
+            card.Fail(L.T("Cancelled"), outputs.Count > 0 ? L.F("{0} of {1} saved before cancelling", outputs.Count, work.Count) : L.T("Nothing was saved"));
         }
         else if (errors.Count == work.Count)
         {
-            card.Fail(work.Count == 1 ? "Couldn't finish" : $"None of {work.Count} could be processed", errors[0].Message);
+            card.Fail(work.Count == 1 ? L.T("Couldn't finish") : L.F("None of {0} could be processed", work.Count), errors[0].Message);
             Log.Error($"{runningTitle}: {string.Join("; ", errors.Select(e => $"{e.Name}: {e.Message}"))}");
         }
         else
         {
-            var saved = outputs.Count == 1 ? "1 of 1 saved" : $"{work.Count - errors.Count} of {work.Count} saved";
+            var saved = L.F("{0} of {1} saved", work.Count - errors.Count, work.Count);
             if (errors.Count > 0)
-                saved += $" · {errors.Count} failed";
+                saved += " · " + L.F("{0} failed", errors.Count);
             var results = outputs.ToList();
             if (describe?.Invoke(results) is { Length: > 0 } detail)
                 saved = $"{saved} · {detail}";
@@ -118,8 +119,10 @@ public sealed class JobRunner(ConverterRegistry converters)
 
     private static string Friendly(Exception ex) => ex switch
     {
-        UnauthorizedAccessException => "Petal is not allowed to save in that folder.",
-        IOException io when io.HResult == unchecked((int)0x80070070) => "The disk is full.",
-        _ => ex.Message.Length > 160 ? ex.Message[..160] + "…" : ex.Message,
+        UnauthorizedAccessException => L.T("Petal is not allowed to save in that folder."),
+        IOException io when io.HResult == unchecked((int)0x80070070) => L.T("The disk is full."),
+        _ => Shorten(L.T(ex.Message)),
     };
+
+    private static string Shorten(string message) => message.Length > 160 ? message[..160] + "…" : message;
 }

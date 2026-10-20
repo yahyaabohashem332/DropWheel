@@ -7,6 +7,7 @@ using Petal.App.Jobs;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Files.Metadata;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -25,7 +26,7 @@ public sealed class MetadataWindow : ToolWindow
     private readonly StackPanel _summary = new() { Margin = new Thickness(0, 0, 0, 10) };
     private readonly Dictionary<string, MetadataEdit> _edits = [];
     private IReadOnlyList<MetadataField> _fields = [];
-    private readonly Button _removeAll = new() { Content = "Remove All", Margin = new Thickness(0, 0, 10, 0) };
+    private readonly Button _removeAll = new() { Content = L.T("Remove All"), Margin = new Thickness(0, 0, 10, 0) };
 
     public MetadataWindow(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base(tool.Name, files.Count == 1 ? 520 : 400)
     {
@@ -34,7 +35,7 @@ public sealed class MetadataWindow : ToolWindow
         _jobs = jobs;
         _at = at;
 
-        PrimaryButton.Content = "Save";
+        PrimaryButton.Content = L.T("Save");
         _removeAll.Click += (_, _) => RemoveAll();
         // "Remove All" sits beside Save, as a second action.
         if (PrimaryButton.Parent is DockPanel dock)
@@ -45,7 +46,7 @@ public sealed class MetadataWindow : ToolWindow
 
         if (files.Count > 1)
         {
-            Body.Children.Add(Text($"{files.Count} files selected", "Petal.Section"));
+            Body.Children.Add(Text(L.P(files.Count, "{0} file selected", "{0} files selected"), "Petal.Section"));
             Body.Children.Add(Text("Remove All strips location, camera, author and editing history from every file, saving clean copies next to the originals.", "Petal.Caption"));
             PrimaryButton.Visibility = Visibility.Collapsed;
             _removeAll.Style = (Style)FindResource("Petal.PrimaryButton");
@@ -56,7 +57,7 @@ public sealed class MetadataWindow : ToolWindow
 
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         DockPanel.SetDock(_search, Dock.Right);
-        _search.ToolTip = "Search metadata";
+        _search.ToolTip = L.T("Search metadata");
         _search.TextChanged += (_, _) => Fill();
         header.Children.Add(_search);
         var name = Text(Path.GetFileName(files[0]), "Petal.Caption");
@@ -120,7 +121,7 @@ public sealed class MetadataWindow : ToolWindow
                 _list.Children.Add(FieldRow(field));
         }
         if (_list.Children.Count == 0)
-            _list.Children.Add(Text(query.Length > 0 ? "No matching fields." : "This file has no metadata.", "Petal.Caption"));
+            _list.Children.Add(Text(L.T(query.Length > 0 ? "No matching fields." : "This file has no metadata."), "Petal.Caption"));
     }
 
     private UIElement FieldRow(MetadataField field)
@@ -134,13 +135,15 @@ public sealed class MetadataWindow : ToolWindow
         label.TextTrimming = TextTrimming.CharacterEllipsis;
         label.Margin = new Thickness(0, 0, 10, 0);
         label.ToolTip = $"{field.Group}:{field.Name}";
+        // Tag names and values are the file's own data, so they read left to right in any language.
+        label.FlowDirection = FlowDirection.LeftToRight;
         grid.Children.Add(label);
 
         bool removed = _edits.TryGetValue(field.Key, out var edit) && edit.Value is null;
         UIElement value;
         if (field.Editable && !removed)
         {
-            var box = new TextBox { Text = edit?.Value ?? field.Value, MinHeight = 26, Padding = new Thickness(6, 2, 6, 2) };
+            var box = new TextBox { Text = edit?.Value ?? field.Value, MinHeight = 26, Padding = new Thickness(6, 2, 6, 2), FlowDirection = FlowDirection.LeftToRight };
             box.TextChanged += (_, _) =>
             {
                 if (box.Text == field.Value) _edits.Remove(field.Key);
@@ -151,9 +154,10 @@ public sealed class MetadataWindow : ToolWindow
         }
         else
         {
-            var t = Text(removed ? "Removed" : field.Value);
+            var t = Text(removed ? L.T("Removed") : field.Value);
             t.TextWrapping = TextWrapping.Wrap;
             t.VerticalAlignment = VerticalAlignment.Center;
+            if (!removed) t.FlowDirection = FlowDirection.LeftToRight;
             if (removed) t.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
             value = t;
         }
@@ -162,7 +166,7 @@ public sealed class MetadataWindow : ToolWindow
 
         if (field.Removable)
         {
-            var minus = IconButton(removed ? "undo" : "minus", removed ? "Keep this field" : "Remove this field", 13);
+            var minus = IconButton(removed ? "undo" : "minus", L.T(removed ? "Keep this field" : "Remove this field"), 13);
             minus.Width = minus.Height = 24;
             minus.Click += (_, _) =>
             {
@@ -199,7 +203,7 @@ public sealed class MetadataWindow : ToolWindow
         "GPS" => "Location (GPS)",
         "File" or "System" => "File",
         "Composite" => "Calculated",
-        "QuickTime" or "ItemList" or "Keys" or "UserData" => $"Movie ({group})",
+        "QuickTime" or "ItemList" or "Keys" or "UserData" => L.F("Movie ({0})", group),
         _ => group,
     };
 

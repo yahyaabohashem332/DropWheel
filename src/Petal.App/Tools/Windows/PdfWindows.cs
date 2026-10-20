@@ -10,6 +10,7 @@ using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Documents.Pdf;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -22,8 +23,8 @@ public sealed class OrganizePdfWindow : ToolWindow
     private readonly ScreenPoint _at;
     private readonly PageGrid _grid = new();
     private readonly TextBlock _count = new();
-    private readonly Button _resetOrder = new() { Content = "Reset Order" };
-    private readonly CheckBox _uniform = new() { Content = "Make all pages the same width", Margin = new Thickness(0, 12, 0, 0) };
+    private readonly Button _resetOrder = new() { Content = L.T("Reset Order") };
+    private readonly CheckBox _uniform = new() { Content = L.T("Make all pages the same width"), Margin = new Thickness(0, 12, 0, 0) };
     private PdfDocumentView? _view;
     private int _pageCount;
 
@@ -51,7 +52,7 @@ public sealed class OrganizePdfWindow : ToolWindow
 
         _grid.Changed += Sync;
         _resetOrder.Click += (_, _) => _grid.Load(_pageCount);
-        PrimaryButton.Content = "Save Organized PDF";
+        PrimaryButton.Content = L.T("Save Organized PDF");
         PrimaryButton.Click += (_, _) => Save();
         FooterNote = Path.GetFileName(OutputNaming.ForTool(file, tool));
         Closed += (_, _) => _view?.Dispose();
@@ -97,7 +98,7 @@ public sealed class OrganizePdfWindow : ToolWindow
     private void Sync()
     {
         int n = _grid.Pages.Count;
-        _count.Text = n == 1 ? "1 page" : $"{n} pages";
+        _count.Text = L.P(n, "{0} page", "{0} pages");
         _resetOrder.IsEnabled = !_grid.IsOriginalOrder(_pageCount);
         PrimaryButton.IsEnabled = n > 0;
     }

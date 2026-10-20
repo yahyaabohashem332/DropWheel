@@ -11,6 +11,7 @@ using Petal.Core.Actions;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
+using Petal.App.Localization;
 
 namespace Petal.App;
 
@@ -130,12 +131,12 @@ public sealed class PetalController : IDisposable
             {
                 var formats = FormatsOf(files);
                 if (formats is null)
-                    return new WheelContent([], $"Folders can't be converted. Tap {actionsKey} for file actions.");
+                    return new WheelContent([], L.F("Folders can't be converted. Tap {0} for file actions.", actionsKey));
                 var targets = _jobs.Converters.AvailableTargets(formats);
                 return new WheelContent(targets.Select(WheelItem.From).ToList(),
                     files.Count > 1
-                        ? $"These files have no format in common. Tap {actionsKey} for file actions."
-                        : $"No conversions for this format. Tap {actionsKey} for file actions.");
+                        ? L.F("These files have no format in common. Tap {0} for file actions.", actionsKey)
+                        : L.F("No conversions for this format. Tap {0} for file actions.", actionsKey));
             }
 
             default:
@@ -143,7 +144,7 @@ public sealed class PetalController : IDisposable
                 var formats = FormatsOf(files);
                 var tools = formats is null ? [] : ToolRegistry.ToolsFor(formats).Where(_tools.IsAvailable).ToList();
                 return new WheelContent(tools.Select(WheelItem.From).ToList(),
-                    $"No tools for {(files.Count > 1 ? "this selection" : "this format")}. Tap {convert} to convert or {actionsKey} for file actions.");
+                    files.Count > 1 ? L.F("No tools for this selection. Tap {0} to convert or {1} for file actions.", convert, actionsKey) : L.F("No tools for this format. Tap {0} to convert or {1} for file actions.", convert, actionsKey));
             }
         }
     }

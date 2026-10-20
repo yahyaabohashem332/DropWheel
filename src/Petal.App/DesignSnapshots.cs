@@ -142,15 +142,21 @@ internal static class DesignSnapshots
             Child = content,
             BorderBrush = Palette.Brush(Theme.Current.Divider),
             BorderThickness = new Thickness(1),
+            FlowDirection = window.FlowDirection,
         };
+        Localization.L.Apply(frame, mirror: false);
         if (!double.IsNaN(height)) frame.Height = height;
         else if (window.SizeToContent == SizeToContent.Manual) frame.Height = window.Height;
         frame.Measure(new Size(window.Width, double.PositiveInfinity));
         var size = new Size(window.Width, double.IsNaN(frame.Height) ? frame.DesiredSize.Height : frame.Height);
         frame.Arrange(new Rect(size));
-        frame.UpdateLayout();
+        // A left-to-right parent, so a right-to-left frame is mirrored as it is in a real window.
+        var host = new System.Windows.Controls.Border { Child = frame };
+        host.Measure(size);
+        host.Arrange(new Rect(size));
+        host.UpdateLayout();
         var bitmap = new RenderTargetBitmap((int)Math.Ceiling(size.Width * 2), (int)Math.Ceiling(size.Height * 2), 192, 192, PixelFormats.Pbgra32);
-        bitmap.Render(frame);
+        bitmap.Render(host);
         bitmap.Freeze();
         return bitmap;
     }

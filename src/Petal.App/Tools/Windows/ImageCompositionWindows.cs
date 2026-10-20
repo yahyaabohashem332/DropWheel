@@ -10,6 +10,7 @@ using Petal.App.Jobs;
 using Petal.App.Tools.Parts;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -40,7 +41,7 @@ public abstract class SingleImageWindow : ToolWindow
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, Tool.Name, MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, ex.Message, L.T(Tool.Name), MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         Close();
@@ -48,7 +49,7 @@ public abstract class SingleImageWindow : ToolWindow
         if (extension is not null)
             output = Path.ChangeExtension(output, extension);
         var quality = Petal.App.Settings.SettingsStore.Current.Conversion.ImageQuality;
-        _ = Jobs.RunAsync($"Saving {Tool.Name.ToLowerInvariant()}", Tool.Name, [new WorkItem(File, Path.GetFileName(File), (progress, ct) =>
+        _ = Jobs.RunAsync(L.F("Saving {0}", L.IsArabic ? L.T(Tool.Name) : Tool.Name.ToLowerInvariant()), Tool.Name, [new WorkItem(File, Path.GetFileName(File), (progress, ct) =>
         {
             progress.Report(0.3);
             ImageLoader.Save(image, output, quality);
@@ -100,7 +101,7 @@ public sealed class AnnotateWindow : SingleImageWindow
                 CornerRadius = new CornerRadius(9),
                 Margin = new Thickness(2),
                 Cursor = Cursors.Hand,
-                ToolTip = tip,
+                ToolTip = L.T(tip),
                 Child = ThemedIcon(icon, 18),
             };
             ((FrameworkElement)tile.Child).HorizontalAlignment = HorizontalAlignment.Center;
@@ -132,7 +133,7 @@ public sealed class AnnotateWindow : SingleImageWindow
 
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => _editor.Clear();
-        PrimaryButton.Content = "Save Annotated Copy";
+        PrimaryButton.Content = L.T("Save Annotated Copy");
         PrimaryButton.Click += (_, _) => SaveRendered(_editor.RenderFull, "png");
         _editor.Changed += Sync;
         SelectTool(AnnotationTool.Arrow);
@@ -208,7 +209,7 @@ public sealed class AnnotateWindow : SingleImageWindow
 
 public sealed class AddBackgroundWindow : SingleImageWindow
 {
-    private readonly Image _preview = new() { Stretch = Stretch.Uniform };
+    private readonly Image _preview = new() { FlowDirection = FlowDirection.LeftToRight, Stretch = Stretch.Uniform };
     private readonly LabeledSlider _padding;
     private readonly LabeledSlider _corners;
     private readonly LabeledSlider _shadow;
@@ -257,7 +258,7 @@ public sealed class AddBackgroundWindow : SingleImageWindow
             _ratio.Value = BackgroundRatio.Auto;
             Select(BackgroundFill.Gradients[0]);
         };
-        PrimaryButton.Content = "Save with Background";
+        PrimaryButton.Content = L.T("Save with Background");
         PrimaryButton.Click += (_, _) =>
         {
             if (_photo is null) return;
@@ -349,7 +350,7 @@ public sealed class AddBackgroundWindow : SingleImageWindow
             BorderThickness = new Thickness(2),
             Background = fill.Create(new Rect(0, 0, 34, 34)),
             Cursor = Cursors.Hand,
-            ToolTip = fill.Name,
+            ToolTip = L.T(fill.Name),
         };
         swatch.MouseLeftButtonUp += (_, _) => Select(fill);
         _swatches.Add((fill, swatch));
@@ -377,7 +378,7 @@ public sealed class CollageWindow : ToolWindow
     private readonly ToolInfo _tool;
     private readonly JobRunner _jobs;
     private readonly ScreenPoint _at;
-    private readonly Image _preview = new() { Stretch = Stretch.Uniform };
+    private readonly Image _preview = new() { FlowDirection = FlowDirection.LeftToRight, Stretch = Stretch.Uniform };
     private readonly Segmented<CollageLayout> _layout;
     private readonly ComboBox _canvas;
     private readonly ComboBox _width;
@@ -411,7 +412,7 @@ public sealed class CollageWindow : ToolWindow
         _fit = Choice([(true, "Fill cells (crop edges)"), (false, "Fit whole images")], true);
         Body.Children.Add(Row("Image fit", _fit, 100, 8));
 
-        var more = new Expander { Header = "Spacing & background", Margin = new Thickness(0, 10, 0, 0) };
+        var more = new Expander { Header = L.T("Spacing & background"), Margin = new Thickness(0, 10, 0, 0) };
         var morePanel = new StackPanel();
         _spacing = Slider(0, 120, 24, v => $"{v:0} px", 1);
         _corners = Slider(0, 120, 16, v => $"{v:0} px", 1);
@@ -422,7 +423,7 @@ public sealed class CollageWindow : ToolWindow
         more.Content = morePanel;
         Body.Children.Add(more);
 
-        var orderExpander = new Expander { Header = "Image order" };
+        var orderExpander = new Expander { Header = L.T("Image order") };
         _order = new OrderList(files);
         orderExpander.Content = new ScrollViewer { Content = _order, MaxHeight = 220, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         Body.Children.Add(orderExpander);
@@ -433,8 +434,8 @@ public sealed class CollageWindow : ToolWindow
         _background.Changed += _ => Refresh();
         _order.Changed += Refresh;
 
-        FooterNote = $"{files.Count} images";
-        PrimaryButton.Content = "Create Collage";
+        FooterNote = L.P(files.Count, "{0} image", "{0} images");
+        PrimaryButton.Content = L.T("Create Collage");
         PrimaryButton.Click += (_, _) => Save();
         Loaded += async (_, _) =>
         {
@@ -472,7 +473,7 @@ public sealed class CollageWindow : ToolWindow
         var options = Options();
         Close();
         var output = OutputNaming.ForTool(order[0], _tool);
-        _ = _jobs.RunAsync("Creating collage", "Collage created", [new WorkItem(order[0], $"{order.Count} images", async (progress, ct) =>
+        _ = _jobs.RunAsync("Creating collage", "Collage created", [new WorkItem(order[0], L.P(order.Count, "{0} image", "{0} images"), async (progress, ct) =>
         {
             var full = new List<BitmapSource>();
             for (int i = 0; i < order.Count; i++)

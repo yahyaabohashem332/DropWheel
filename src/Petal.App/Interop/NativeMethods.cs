@@ -31,6 +31,8 @@ internal static partial class NativeMethods
     public const int SM_CXDRAG = 68, SM_CYDRAG = 69;
 
     public const int GWL_EXSTYLE = -20;
+    public const int GWL_STYLE = -16;
+    public const int WS_SYSMENU = 0x00080000;
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_NOACTIVATE = 0x08000000;
     public const int WS_EX_TOPMOST = 0x00000008;

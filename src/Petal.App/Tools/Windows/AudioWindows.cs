@@ -11,6 +11,7 @@ using Petal.App.Tools.Parts;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Media;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -38,7 +39,7 @@ public abstract class AudioToolWindow : MediaToolWindow
         void Paint(bool playing) => button.Content = new StackPanel
         {
             Orientation = Orientation.Horizontal,
-            Children = { ThemedIcon(playing ? "pause" : "play", 13), new TextBlock { Text = "  " + (playing ? "Stop" : label), VerticalAlignment = VerticalAlignment.Center } },
+            Children = { ThemedIcon(playing ? "pause" : "play", 13), new TextBlock { Text = "  " + L.T(playing ? "Stop" : label), VerticalAlignment = VerticalAlignment.Center } },
         };
         Paint(false);
         button.Click += (_, _) => toggle();
@@ -80,13 +81,13 @@ public sealed class NormalizeWindow : AudioToolWindow
         else
         {
             _play = new Button();
-            Body.Children.Add(Text($"{files.Count} recordings", "Petal.Section"));
+            Body.Children.Add(Text(L.P(files.Count, "{0} recording", "{0} recordings"), "Petal.Section"));
         }
         Body.Children.Add(Row("Target loudness", _target, 120, 14));
         Body.Children.Add(Row("Loudness range", _range, 120, 10));
         Body.Children.Add(Row("True peak limit", _peak, 120, 10));
         Body.Children.Add(Text("−16 LUFS is a balanced default for spoken audio and music. The true peak limit helps prevent clipping after encoding.", "Petal.Caption").WithMarginT(12));
-        PrimaryButton.Content = "Normalize Audio";
+        PrimaryButton.Content = L.T("Normalize Audio");
         PrimaryButton.Click += (_, _) => Apply();
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) =>
@@ -110,11 +111,11 @@ public sealed class NormalizeWindow : AudioToolWindow
         if (Files.Count > 1) return;
         _wave.Peaks = await Peaks.LoadAsync(File, 300);
         _ = Player.LoadAsync(File);
-        _measured.Text = "Measuring loudness…";
+        _measured.Text = L.T("Measuring loudness…");
         try
         {
             var stats = await AudioTools.MeasureLoudnessAsync(File);
-            _measured.Text = $"Now: {stats.IntegratedLufs.ToString("0.0", CultureInfo.CurrentCulture)} LUFS · peak {stats.TruePeakDbtp.ToString("0.0", CultureInfo.CurrentCulture)} dBTP · range {stats.LoudnessRangeLu.ToString("0.0", CultureInfo.CurrentCulture)} LU";
+            _measured.Text = L.F("Now: {0} LUFS · peak {1} dBTP · range {2} LU", stats.IntegratedLufs.ToString("0.0", CultureInfo.CurrentCulture), stats.TruePeakDbtp.ToString("0.0", CultureInfo.CurrentCulture), stats.LoudnessRangeLu.ToString("0.0", CultureInfo.CurrentCulture));
         }
         catch (Exception ex)
         {
@@ -142,7 +143,7 @@ public sealed class TrimAudioWindow : AudioToolWindow
     private readonly WaveformView _wave = new();
     private readonly ContentControl _host = new();
     private readonly TextBlock _selected = new();
-    private readonly CheckBox _silence = new() { Content = "Trim silent ends automatically", Margin = new Thickness(0, 12, 0, 0) };
+    private readonly CheckBox _silence = new() { Content = L.T("Trim silent ends automatically"), Margin = new Thickness(0, 12, 0, 0) };
     private TrimTimeline? _timeline;
     private TextBox? _startBox, _endBox;
     private Button? _play;
@@ -158,7 +159,7 @@ public sealed class TrimAudioWindow : AudioToolWindow
         Body.Children.Add(_host);
         Body.Children.Add(_silence);
         _silence.Checked += async (_, _) => await DetectSilenceAsync();
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
     }
 
@@ -171,7 +172,7 @@ public sealed class TrimAudioWindow : AudioToolWindow
         _timeline.RangeChanged += (_, _) => Sync();
         _host.Content = _timeline;
 
-        var times = new Grid { Margin = new Thickness(0, 8, 0, 0) };
+        var times = new Grid { Margin = new Thickness(0, 8, 0, 0), FlowDirection = FlowDirection.LeftToRight };
         _startBox = TimeBox(0, t => _timeline.SetRange(t, _timeline.End));
         _endBox = TimeBox(info.DurationSeconds, t => _timeline.SetRange(_timeline.Start, t));
         var start = new StackPanel { Orientation = Orientation.Horizontal, Children = { Text("Start ", "Petal.Label"), _startBox } };
@@ -211,7 +212,7 @@ public sealed class TrimAudioWindow : AudioToolWindow
     private void Sync()
     {
         if (_timeline is null) return;
-        _selected.Text = $"{TimeText.Format(_timeline.End - _timeline.Start)} selected";
+        _selected.Text = L.F("{0} selected", TimeText.Format(_timeline.End - _timeline.Start));
         if (_startBox is not null && !_startBox.IsKeyboardFocused) _startBox.Text = TimeText.Format(_timeline.Start);
         if (_endBox is not null && !_endBox.IsKeyboardFocused) _endBox.Text = TimeText.Format(_timeline.End);
     }
@@ -246,10 +247,10 @@ public sealed class AudioChannelsWindow : AudioToolWindow
         Body.Children.Add(Row("Output", _mode, 110, 12));
         Body.Children.Add(Row("Left volume", _leftVolume, 110, 10));
         Body.Children.Add(Row("Right volume", _rightVolume, 110, 8));
-        _playOutput = new Button { HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(110, 12, 0, 0), Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { ThemedIcon("play", 13), new TextBlock { Text = "  Play Output" } } } };
+        _playOutput = new Button { HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(110, 12, 0, 0), Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { ThemedIcon("play", 13), new TextBlock { Text = L.T("  Play Output") } } } };
         _playOutput.Click += async (_, _) => await PlayOutputAsync();
         Body.Children.Add(_playOutput);
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
         _mode.Changed += _ => Sync();
         _leftVolume.Changed += _ => Sync();
@@ -265,7 +266,7 @@ public sealed class AudioChannelsWindow : AudioToolWindow
         ((TextBlock)badge.Child).SetResourceReference(TextBlock.ForegroundProperty, "Petal.Accent");
         DockPanel.SetDock(badge, Dock.Left);
         dock.Children.Add(badge);
-        var play = IconButton("play", $"Play the {(label == "L" ? "left" : "right")} channel", 14);
+        var play = IconButton("play", label == "L" ? "Play the left channel" : "Play the right channel", 14);
         DockPanel.SetDock(play, Dock.Right);
         play.Click += (_, _) =>
         {
@@ -334,8 +335,8 @@ public sealed class VisualizerWindow : AudioToolWindow
     private readonly ColorWell _accent = new(Petal.App.Visuals.Theme.BrandAccent);
     private readonly Border _frame = new() { Background = Brushes.Black, CornerRadius = new CornerRadius(10), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, ClipToBounds = true };
     private readonly WaveformView _wave = new() { BarWidth = 4, Gap = 3, Margin = new Thickness(18, 30, 18, 30) };
-    private readonly Image _still = new() { Stretch = Stretch.UniformToFill };
-    private readonly Button _choose = new() { Content = "Choose image…", HorizontalAlignment = HorizontalAlignment.Left };
+    private readonly Image _still = new() { FlowDirection = FlowDirection.LeftToRight, Stretch = Stretch.UniformToFill };
+    private readonly Button _choose = new() { Content = L.T("Choose image…"), HorizontalAlignment = HorizontalAlignment.Left };
     private readonly Grid _imageRow;
     private string? _imagePath;
 
@@ -355,7 +356,7 @@ public sealed class VisualizerWindow : AudioToolWindow
         Body.Children.Add(_imageRow);
         _choose.Click += (_, _) =>
         {
-            var dialog = new OpenFileDialog { Filter = "Images|*.png;*.jpg;*.jpeg;*.webp;*.bmp" };
+            var dialog = new OpenFileDialog { Filter = L.T("Images") + "|*.png;*.jpg;*.jpeg;*.webp;*.bmp" };
             if (dialog.ShowDialog(this) == true)
             {
                 _imagePath = dialog.FileName;
@@ -366,7 +367,7 @@ public sealed class VisualizerWindow : AudioToolWindow
         _style.Changed += _ => Sync();
         _shape.Changed += _ => Sync();
         _accent.Changed += _ => Sync();
-        PrimaryButton.Content = "Create Visualization";
+        PrimaryButton.Content = L.T("Create Visualization");
         PrimaryButton.Click += (_, _) => Apply();
         Sync();
     }
@@ -401,7 +402,7 @@ public sealed class VisualizerWindow : AudioToolWindow
 
 public sealed class BleepWindow : AudioToolWindow
 {
-    private readonly RangeLane _bleeps = new("Bleep", 34) { ClipText = "Bleep" };
+    private readonly RangeLane _bleeps = new("Bleep", 34) { ClipText = L.T("Bleep") };
     private readonly WaveformView _wave = new();
     private readonly TextBlock _count = new();
     private readonly TextBlock _start = new();
@@ -436,7 +437,8 @@ public sealed class BleepWindow : AudioToolWindow
         lanes.Children.Add(audioLane);
         Body.Children.Add(lanes);
 
-        var times = new Grid { Margin = new Thickness(54, 4, 0, 0) };
+        // Under the lanes, which sit beside their labels (on the right in Arabic).
+        var times = new Grid { Margin = L.IsArabic ? new Thickness(0, 4, 54, 0) : new Thickness(54, 4, 0, 0), FlowDirection = FlowDirection.LeftToRight };
         _start.Style = _end.Style = (Style)FindResource("Petal.Mono");
         _end.HorizontalAlignment = HorizontalAlignment.Right;
         times.Children.Add(_start);
@@ -453,7 +455,7 @@ public sealed class BleepWindow : AudioToolWindow
         preview.Children.Add(withBleeps);
         Body.Children.Add(Row("Preview", preview, 70, 12));
 
-        PrimaryButton.Content = "Save Bleeped Copy";
+        PrimaryButton.Content = L.T("Save Bleeped Copy");
         PrimaryButton.Click += (_, _) => Apply();
         _bleeps.Changed += Sync;
         Player.PositionChanged += t => _playhead.Margin = new Thickness(_wave.ActualWidth * t / Math.Max(0.01, Player.Duration), 0, 0, 0);
@@ -492,9 +494,9 @@ public sealed class BleepWindow : AudioToolWindow
     private void Sync()
     {
         int n = _bleeps.Ranges.Count;
-        _count.Text = $"Bleeps  {n}";
+        _count.Text = L.F("Bleeps  {0}", n);
         PrimaryButton.IsEnabled = n > 0;
-        FooterNote = n == 0 ? "Add at least one bleep range." : Path.GetFileName(OutputNaming.ForTool(File, Tool));
+        FooterNote = n == 0 ? L.T("Add at least one bleep range.") : Path.GetFileName(OutputNaming.ForTool(File, Tool));
     }
 
     private void Apply()

@@ -9,6 +9,7 @@ using Petal.App.Input;
 using Petal.App.Shell;
 using Petal.Core.Actions;
 using Petal.Core.Util;
+using Petal.App.Localization;
 
 namespace Petal.App.Actions;
 
@@ -23,11 +24,11 @@ public sealed class FileActionRunner
         {
             case FileActionId.Copy:
                 CopyFiles(paths);
-                Toast(at, paths.Count == 1 ? "Copied" : $"Copied {paths.Count} items", "Paste in File Explorer with Ctrl+V");
+                Toast(at, paths.Count == 1 ? L.T("Copied") : L.P(paths.Count, "Copied {0} item", "Copied {0} items"), L.T("Paste in File Explorer with Ctrl+V"));
                 break;
             case FileActionId.CopyPath:
                 Clipboard.SetText(string.Join(Environment.NewLine, paths));
-                Toast(at, paths.Count == 1 ? "Path copied" : $"{paths.Count} paths copied", paths.Count == 1 ? paths[0] : "One path per line");
+                Toast(at, paths.Count == 1 ? L.T("Path copied") : L.P(paths.Count, "{0} path copied", "{0} paths copied"), paths.Count == 1 ? paths[0] : L.T("One path per line"));
                 break;
             case FileActionId.Move:
                 Move(paths, at);
@@ -68,7 +69,7 @@ public sealed class FileActionRunner
     {
         var dialog = new OpenFolderDialog
         {
-            Title = paths.Count == 1 ? $"Move “{Path.GetFileName(paths[0])}” to" : $"Move {paths.Count} items to",
+            Title = paths.Count == 1 ? L.F("Move “{0}” to", Path.GetFileName(paths[0])) : L.P(paths.Count, "Move {0} item to", "Move {0} items to"),
             InitialDirectory = Path.GetDirectoryName(paths[0]),
         };
         if (dialog.ShowDialog() != true)
@@ -96,7 +97,7 @@ public sealed class FileActionRunner
         if (moved.Count > 0)
         {
             var card = HudCard.ShowAt(at, "Moved", "");
-            card.Succeed(moved.Count == 1 ? "Moved" : $"Moved {moved.Count} items", Path.GetFileName(destination), () => ExplorerSelection.Reveal(moved));
+            card.Succeed(moved.Count == 1 ? L.T("Moved") : L.P(moved.Count, "Moved {0} item", "Moved {0} items"), Path.GetFileName(destination), () => ExplorerSelection.Reveal(moved));
         }
     }
 

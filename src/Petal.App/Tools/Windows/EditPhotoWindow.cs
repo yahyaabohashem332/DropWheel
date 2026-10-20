@@ -11,6 +11,7 @@ using Petal.App.Jobs;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Imaging;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -24,10 +25,10 @@ public sealed class EditPhotoWindow : ToolWindow
     private readonly string _file;
     private readonly JobRunner _jobs;
     private readonly ScreenPoint _at;
-    private readonly Image _preview = new() { Stretch = Stretch.Uniform };
+    private readonly Image _preview = new() { FlowDirection = FlowDirection.LeftToRight, Stretch = Stretch.Uniform };
     private readonly HistogramView _histogram = new() { Height = 46 };
     private readonly Dictionary<PhotoAdjustmentSlider, (Slider Slider, TextBlock Value)> _rows = [];
-    private readonly Button _compare = new() { Content = "Hold to compare", Style = null };
+    private readonly Button _compare = new() { Content = L.T("Hold to compare"), Style = null };
     private PhotoEditSession? _session;
     private WriteableBitmap? _bitmap;
     private BitmapSource? _original;
@@ -66,7 +67,7 @@ public sealed class EditPhotoWindow : ToolWindow
             if (spec.Section != section)
             {
                 section = spec.Section;
-                var title = SectionTitle(section);
+                var title = SectionTitle(L.T(section, "photo"));
                 title.Margin = new Thickness(0, list.Children.Count == 0 ? 2 : 14, 0, 4);
                 title.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Accent");
                 list.Children.Add(title);
@@ -77,7 +78,7 @@ public sealed class EditPhotoWindow : ToolWindow
 
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => SetAll(PhotoAdjustments.Neutral);
-        PrimaryButton.Content = "Save Edited Copy";
+        PrimaryButton.Content = L.T("Save Edited Copy");
         PrimaryButton.IsEnabled = false;
         PrimaryButton.Click += (_, _) => Save();
         FooterNote = Path.GetFileName(OutputNaming.ForTool(file, tool));
@@ -127,12 +128,13 @@ public sealed class EditPhotoWindow : ToolWindow
         grid.Children.Add(slider);
 
         var value = Text(Format(spec, spec.Get(_adjustments)), "Petal.Value");
+        value.FlowDirection = FlowDirection.LeftToRight;
         value.HorizontalAlignment = HorizontalAlignment.Right;
         value.Margin = new Thickness(6, 0, 4, 0);
         Grid.SetColumn(value, 2);
         grid.Children.Add(value);
 
-        var reset = IconButton("rotateCcw", $"Reset {spec.Label}", 13);
+        var reset = IconButton("rotateCcw", L.F("Reset {0}", L.T(spec.Label)), 13);
         reset.Width = reset.Height = 24;
         reset.Click += (_, _) => slider.Value = 0;
         Grid.SetColumn(reset, 3);

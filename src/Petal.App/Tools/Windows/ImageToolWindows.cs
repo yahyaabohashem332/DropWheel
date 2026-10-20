@@ -11,6 +11,7 @@ using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Imaging;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -45,7 +46,7 @@ public sealed class CropImageWindow : ToolWindow
         }
         else
         {
-            Body.Children.Add(Text($"{files.Count} images", "Petal.Section"));
+            Body.Children.Add(Text(L.P(files.Count, "{0} image", "{0} images"), "Petal.Section"));
             Body.Children.Add(Text("Each image is cropped around its centre to the ratio or size you choose.", "Petal.Caption"));
         }
 
@@ -86,9 +87,9 @@ public sealed class CropImageWindow : ToolWindow
             _ratio.Value = 0;
             _crop.Reset();
         };
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
-        FooterNote = batch ? $"{files.Count} files" : Path.GetFileName(OutputNaming.ForTool(files[0], tool));
+        FooterNote = batch ? L.P(files.Count, "{0} file", "{0} files") : Path.GetFileName(OutputNaming.ForTool(files[0], tool));
 
         if (!batch)
         {
@@ -170,8 +171,8 @@ public sealed class RedactPhotoWindow : ToolWindow
     private readonly RedactionCanvas _canvas = new();
     private readonly Segmented<RedactionStyle> _style;
     private readonly ColorWell _color = new(Colors.Black);
-    private readonly Button _faces = new() { Content = "Faces" };
-    private readonly Button _text = new() { Content = "Text", Margin = new Thickness(8, 0, 0, 0) };
+    private readonly Button _faces = new() { Content = L.T("Faces") };
+    private readonly Button _text = new() { Content = L.T("Text"), Margin = new Thickness(8, 0, 0, 0) };
     private readonly TextBlock _status = new();
 
     public RedactPhotoWindow(ToolInfo tool, string file, JobRunner jobs, ScreenPoint at) : base(tool.Name, 420)
@@ -202,7 +203,7 @@ public sealed class RedactPhotoWindow : ToolWindow
 
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => _canvas.Clear();
-        PrimaryButton.Content = "Save Redacted Copy";
+        PrimaryButton.Content = L.T("Save Redacted Copy");
         PrimaryButton.Click += (_, _) => Apply();
         PrimaryButton.IsEnabled = false;
         _canvas.Changed += () => PrimaryButton.IsEnabled = _canvas.Boxes.Count > 0;
@@ -237,7 +238,7 @@ public sealed class RedactPhotoWindow : ToolWindow
     private async Task DetectAsync(bool faces)
     {
         _faces.IsEnabled = _text.IsEnabled = false;
-        _status.Text = faces ? "Looking for faces…" : "Looking for text…";
+        _status.Text = L.T(faces ? "Looking for faces…" : "Looking for text…");
         try
         {
             IReadOnlyList<PixelRect> rects = faces
@@ -249,17 +250,14 @@ public sealed class RedactPhotoWindow : ToolWindow
                 double pad = Math.Max(r.Width, r.Height) * (faces ? 0.12 : 0.06);
                 _canvas.Add(new Rect(Math.Max(0, r.X - pad), Math.Max(0, r.Y - pad), r.Width + pad * 2, r.Height + pad * 2));
             }
-            _status.Text = rects.Count switch
-            {
-                0 => faces ? "No faces found." : "No text found.",
-                1 => faces ? "Covered 1 face." : "Covered 1 line of text.",
-                _ => faces ? $"Covered {rects.Count} faces." : $"Covered {rects.Count} lines of text.",
-            };
+            _status.Text = rects.Count == 0
+                ? L.T(faces ? "No faces found." : "No text found.")
+                : faces ? L.P(rects.Count, "Covered {0} face.", "Covered {0} faces.") : L.P(rects.Count, "Covered {0} line of text.", "Covered {0} lines of text.");
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Detecting areas to redact");
-            _status.Text = "Detection isn't available on this PC.";
+            _status.Text = L.T("Detection isn't available on this PC.");
         }
         finally
         {
@@ -298,7 +296,7 @@ public static class ImageToolSetup
         {
             // Named after the first image, in selection order: "trip 1.jpg" + … → "trip 1.pdf".
             var output = OutputNaming.ForTool(files[0], tool);
-            return jobs.RunAsync("Creating PDF", "PDF created", [new WorkItem(files[0], $"{files.Count} images", async (p, ct) =>
+            return jobs.RunAsync("Creating PDF", "PDF created", [new WorkItem(files[0], L.P(files.Count, "{0} image", "{0} images"), async (p, ct) =>
             {
                 await PdfCreator.CreateAsync(files, output, new PdfCreateOptions(), p, ct);
                 return (IReadOnlyList<string>)[output];
@@ -322,8 +320,8 @@ public static class ImageToolSetup
             Clipboard.SetText(text);
             var first = results[0].Text;
             bool link = Uri.TryCreate(first, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-            card.Succeed(results.Count == 1 ? "Copied to clipboard" : $"{results.Count} codes copied",
-                link ? $"{first} · click to open" : first,
+            card.Succeed(results.Count == 1 ? L.T("Copied to clipboard") : L.P(results.Count, "{0} code copied", "{0} codes copied"),
+                link ? first + " · " + L.T("click to open") : first,
                 link ? () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(first) { UseShellExecute = true }) : null);
         }
         catch (Exception ex)

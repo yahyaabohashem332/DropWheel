@@ -11,6 +11,7 @@ using Petal.App.Input;
 using Petal.App.Shell;
 using Petal.App.Visuals;
 using static Petal.App.Interop.NativeMethods;
+using Petal.App.Localization;
 
 namespace Petal.App.Actions;
 
@@ -32,6 +33,7 @@ public sealed class FloatShelf : Window
     public FloatShelf()
     {
         WindowStyle = WindowStyle.None;
+        L.Apply(this);
         AllowsTransparency = true;
         Background = Brushes.Transparent;
         Topmost = true;
@@ -40,7 +42,7 @@ public sealed class FloatShelf : Window
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
         AllowDrop = true;
-        Title = "Float";
+        Title = L.T("Float");
         Content = Build();
         DragOver += (_, e) =>
         {
@@ -152,7 +154,7 @@ public sealed class FloatShelf : Window
             CornerRadius = new CornerRadius(12),
             Margin = new Thickness(4, 0, 0, 0),
             Background = Brushes.Transparent,
-            ToolTip = tip,
+            ToolTip = L.T(tip),
             Cursor = Cursors.Hand,
             Child = Icons.Create(icon, 13, Palette.Brush(p.TextSecondary), 2.2),
         };
@@ -172,12 +174,7 @@ public sealed class FloatShelf : Window
     private void Refresh()
     {
         var p = Theme.Current;
-        _title.Text = _items.Count switch
-        {
-            0 => "Drop files here",
-            1 => "1 item",
-            _ => $"{_items.Count} items",
-        };
+        _title.Text = _items.Count == 0 ? L.T("Drop files here") : L.P(_items.Count, "{0} item", "{0} items");
         _grid.Children.Clear();
         foreach (var path in _items)
             _grid.Children.Add(Tile(path, p));
@@ -186,7 +183,7 @@ public sealed class FloatShelf : Window
     private FrameworkElement Tile(string path, Palette p)
     {
         var stack = new StackPanel { Width = 84, Margin = new Thickness(4) };
-        var image = new Image { Width = 48, Height = 48, Source = ShellIcons.Thumbnail(path, 96), Margin = new Thickness(0, 4, 0, 4) };
+        var image = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 48, Height = 48, Source = ShellIcons.Thumbnail(path, 96), Margin = new Thickness(0, 4, 0, 4) };
         stack.Children.Add(image);
         stack.Children.Add(new TextBlock
         {

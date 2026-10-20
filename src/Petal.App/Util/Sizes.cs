@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO;
+using Petal.App.Localization;
 
 namespace Petal.App.Util;
 
@@ -7,7 +8,7 @@ public static class Sizes
 {
     public static string Format(long bytes)
     {
-        string[] units = ["bytes", "KB", "MB", "GB", "TB"];
+        string[] units = [L.T("bytes"), L.T("KB"), L.T("MB"), L.T("GB"), L.T("TB")];
         double value = bytes;
         int unit = 0;
         while (value >= 1000 && unit < units.Length - 1)
@@ -16,7 +17,7 @@ public static class Sizes
             unit++;
         }
         if (unit == 0)
-            return bytes == 1 ? "1 byte" : $"{bytes} bytes";
+            return L.P((int)bytes, "{0} byte", "{0} bytes");
         var format = value >= 100 ? "0" : value >= 10 ? "0.#" : "0.#";
         return value.ToString(format, CultureInfo.CurrentCulture) + " " + units[unit];
     }
@@ -41,9 +42,9 @@ public static class Sizes
             }
         }
         if (paths.Count == 1 && folders == 1)
-            return "Folder";
+            return L.T("Folder");
         if (folders == paths.Count)
-            return $"{folders} folders";
+            return L.P(folders, "{0} folder", "{0} folders");
         return Format(total);
     }
 }

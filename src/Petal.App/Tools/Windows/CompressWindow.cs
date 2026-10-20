@@ -10,6 +10,7 @@ using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Media;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -65,7 +66,7 @@ public sealed class CompressWindow : ToolWindow
         _original = files.Sum(f => new FileInfo(f).Length);
 
         Body.Children.Add(Text(FileLabel(files), "Petal.Caption"));
-        Body.Children.Add(Text($"Original size: {Sizes.Format(_original)}", "Petal.Body").WithMarginT(2));
+        Body.Children.Add(Text(L.F("Original size: {0}", Sizes.Format(_original)), "Petal.Body").WithMarginT(2));
 
         _mode = Segments([(CompressMode.Preset, "Preset"), (CompressMode.TargetSize, "Target size"), (CompressMode.Percentage, "Percentage")], CompressMode.Preset);
         _mode.Changed += _ => Sync();
@@ -87,7 +88,7 @@ public sealed class CompressWindow : ToolWindow
         _targetRow = Row("Target size", targetBox, 110, 12);
         Body.Children.Add(_targetRow);
 
-        _percent = Slider(10, 90, 50, v => $"{v:0}% smaller", 5);
+        _percent = Slider(10, 90, 50, v => L.F("{0}% smaller", v.ToString("0", CultureInfo.CurrentCulture)), 5);
         _percentRow = Row("Reduce by", _percent, 110, 12);
         Body.Children.Add(_percentRow);
 
@@ -101,10 +102,10 @@ public sealed class CompressWindow : ToolWindow
         if (sizeOptions.Length > 0)
             Body.Children.Add(Row(_family == FormatFamily.Video ? "Resolution" : "Image size", _size, 110, 12));
 
-        PrimaryButton.Content = "Compress";
+        PrimaryButton.Content = L.T("Compress");
         PrimaryButton.Click += (_, _) => Apply();
         PrimaryButton.IsEnabled = Backends.ContainsKey(_family);
-        FooterNote = files.Count == 1 ? Path.GetFileName(OutputFor(files[0])) : $"{files.Count} files";
+        FooterNote = files.Count == 1 ? Path.GetFileName(OutputFor(files[0])) : L.P(files.Count, "{0} file", "{0} files");
         Sync();
     }
 
@@ -119,7 +120,7 @@ public sealed class CompressWindow : ToolWindow
         _presetPanel.Visibility = _mode.Value == CompressMode.Preset ? Visibility.Visible : Visibility.Collapsed;
         _targetRow.Visibility = _mode.Value == CompressMode.TargetSize ? Visibility.Visible : Visibility.Collapsed;
         _percentRow.Visibility = _mode.Value == CompressMode.Percentage ? Visibility.Visible : Visibility.Collapsed;
-        _presetCaption.Text = _preset.Value ? "Much smaller files; some quality loss may be visible." : "Smaller files with little visible quality loss.";
+        _presetCaption.Text = L.T(_preset.Value ? "Much smaller files; some quality loss may be visible." : "Smaller files with little visible quality loss.");
     }
 
     private CompressRequest Request()
@@ -139,7 +140,7 @@ public sealed class CompressWindow : ToolWindow
         var work = _files.Select(file => new WorkItem(file, Path.GetFileName(file), async (p, ct) =>
         {
             var family = Formats.FromPath(file)?.Family ?? _family;
-            var backend = Backends.GetValueOrDefault(family) ?? throw new NotSupportedException("This file type can't be compressed yet.");
+            var backend = Backends.GetValueOrDefault(family) ?? throw new NotSupportedException(L.T("This file type can't be compressed yet."));
             return (IReadOnlyList<string>)[await backend(file, request, p, ct)];
         })).ToList();
         long before = _original;
@@ -149,8 +150,8 @@ public sealed class CompressWindow : ToolWindow
             if (after <= 0) return null;
             double saved = 1 - (double)after / before;
             return saved > 0
-                ? $"{Sizes.Format(before)} → {Sizes.Format(after)} ({saved:P0} smaller)"
-                : "already as small as it gets";
+                ? L.F("{0} → {1} ({2} smaller)", Sizes.Format(before), Sizes.Format(after), saved.ToString("P0", CultureInfo.CurrentCulture))
+                : L.T("already as small as it gets");
         });
     }
 

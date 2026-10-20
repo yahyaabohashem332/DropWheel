@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using NAudio.Wave;
 using Petal.Engines.Media;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Parts;
 
@@ -21,6 +22,7 @@ public sealed class FrameView : Grid
 
     public FrameView(string path, int maxWidth = 960)
     {
+        FlowDirection = FlowDirection.LeftToRight;
         _path = path;
         _maxWidth = maxWidth;
         Children.Add(_image);
@@ -192,6 +194,7 @@ public sealed class TransportBar : DockPanel
 
     public TransportBar(bool showPlay = true, bool showSteps = true)
     {
+        FlowDirection = FlowDirection.LeftToRight;
         Margin = new Thickness(0, 8, 0, 0);
         _time.Style = (Style)Application.Current.FindResource("Petal.Mono");
         _time.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
@@ -211,7 +214,7 @@ public sealed class TransportBar : DockPanel
         var b = new Button
         {
             Style = (Style)Application.Current.FindResource("Petal.IconButton"),
-            ToolTip = tip,
+            ToolTip = L.T(tip),
             Content = ToolWindow.ThemedIcon(icon, 16),
         };
         b.Click += (_, _) => click();

@@ -11,6 +11,7 @@ using Petal.App.Tools.Parts;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Media;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -116,7 +117,7 @@ public sealed class TrimVideoWindow : VideoToolWindow
 {
     private readonly ContentControl _timelineHost = new();
     private readonly TextBlock _selected = new();
-    private readonly CheckBox _fast = new() { Content = "Fast trim (no re-encoding, cuts at keyframes)", Margin = new Thickness(0, 10, 0, 0) };
+    private readonly CheckBox _fast = new() { Content = L.T("Fast trim (no re-encoding, cuts at keyframes)"), Margin = new Thickness(0, 10, 0, 0) };
     private TrimTimeline? _timeline;
     private TextBox? _startBox, _endBox;
 
@@ -131,7 +132,7 @@ public sealed class TrimVideoWindow : VideoToolWindow
         Body.Children.Add(_timelineHost);
         Body.Children.Add(Transport);
         Body.Children.Add(_fast);
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
     }
 
@@ -145,7 +146,7 @@ public sealed class TrimVideoWindow : VideoToolWindow
         _timeline.Scrubbed += t => Seek(t);
         _timelineHost.Content = _timeline;
 
-        var times = new Grid { Margin = new Thickness(0, 8, 0, 0) };
+        var times = new Grid { Margin = new Thickness(0, 8, 0, 0), FlowDirection = FlowDirection.LeftToRight };
         _startBox = TimeBox(0, t => _timeline.SetRange(t, _timeline.End));
         _endBox = TimeBox(info.DurationSeconds, t => _timeline.SetRange(_timeline.Start, t));
         var start = new StackPanel { Orientation = Orientation.Horizontal };
@@ -168,7 +169,7 @@ public sealed class TrimVideoWindow : VideoToolWindow
     private void Sync()
     {
         if (_timeline is null) return;
-        _selected.Text = $"{TimeText.Format(_timeline.End - _timeline.Start)} selected";
+        _selected.Text = L.F("{0} selected", TimeText.Format(_timeline.End - _timeline.Start));
         if (_startBox is not null && !_startBox.IsKeyboardFocused) _startBox.Text = TimeText.Format(_timeline.Start);
         if (_endBox is not null && !_endBox.IsKeyboardFocused) _endBox.Text = TimeText.Format(_timeline.End);
     }
@@ -233,7 +234,7 @@ public sealed class CropVideoWindow : VideoToolWindow
             ratio.Value = 0;
             _crop.Reset();
         };
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
     }
 
@@ -275,12 +276,13 @@ public sealed class ChangeSpeedWindow : VideoToolWindow
     private static readonly double[] Stops = [0.25, 0.5, 1, 1.5, 2, 4];
     private readonly Slider _speed = new() { Minimum = 0, Maximum = Stops.Length - 1, Value = 2, IsSnapToTickEnabled = true, TickFrequency = 1, TickPlacement = System.Windows.Controls.Primitives.TickPlacement.BottomRight };
     private readonly TextBlock _value = new();
-    private readonly CheckBox _pitch = new() { Content = "Keep the voice's pitch", IsChecked = true, Margin = new Thickness(0, 12, 0, 0) };
+    private readonly CheckBox _pitch = new() { Content = L.T("Keep the voice's pitch"), IsChecked = true, Margin = new Thickness(0, 12, 0, 0) };
 
     public ChangeSpeedWindow(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base(tool, files, jobs, at)
     {
         var header = new DockPanel { Margin = new Thickness(0, 14, 0, 4) };
         _value.Style = (Style)FindResource("Petal.Value");
+        _value.FlowDirection = FlowDirection.LeftToRight;
         _value.FontWeight = FontWeights.SemiBold;
         DockPanel.SetDock(_value, Dock.Right);
         header.Children.Add(_value);
@@ -300,7 +302,7 @@ public sealed class ChangeSpeedWindow : VideoToolWindow
         Body.Children.Add(_pitch);
         Body.Children.Add(Transport);
         _speed.ValueChanged += (_, _) => Sync();
-        PrimaryButton.Content = "Apply";
+        PrimaryButton.Content = L.T("Apply");
         PrimaryButton.Click += (_, _) => Apply();
         Sync();
     }
@@ -345,7 +347,7 @@ public sealed class VideoSnapshotsWindow : VideoToolWindow
         Body.Children.Add(Transport);
         Body.Children.Add(Divider().WithMarginT(10));
         var row = new DockPanel { Margin = new Thickness(0, 10, 0, 6) };
-        var add = new Button { Content = "Add Frame" };
+        var add = new Button { Content = L.T("Add Frame") };
         add.Click += (_, _) => AddFrame();
         DockPanel.SetDock(add, Dock.Right);
         row.Children.Add(add);
@@ -375,7 +377,7 @@ public sealed class VideoSnapshotsWindow : VideoToolWindow
         var t = Math.Round(Position, 3);
         if (_times.Any(x => Math.Abs(x - t) < 0.001)) return;
         _times.Add(t);
-        var image = new Image { Width = 112, Height = 64, Stretch = Stretch.UniformToFill, Source = Frame.Image.Source };
+        var image = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 112, Height = 64, Stretch = Stretch.UniformToFill, Source = Frame.Image.Source };
         image.Clip = new RectangleGeometry(new Rect(0, 0, 112, 64), 8, 8);
         var chip = new Border { CornerRadius = new CornerRadius(5), Padding = new Thickness(5, 1, 5, 1), Margin = new Thickness(4), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Bottom, Background = new SolidColorBrush(Color.FromArgb(0xB0, 0, 0, 0)), Child = new TextBlock { Text = TimeText.Format(t), Foreground = Brushes.White, FontSize = 10.5, FontFamily = Petal.App.Visuals.UiFonts.Mono } };
         var remove = IconButton("x", "Remove", 11, filled: true);
@@ -400,8 +402,8 @@ public sealed class VideoSnapshotsWindow : VideoToolWindow
 
     private void Sync()
     {
-        _count.Text = _times.Count == 0 ? "No frames yet" : $"{_times.Count} selected";
-        PrimaryButton.Content = _times.Count == 1 ? "Save 1 Frame" : $"Save {_times.Count} Frames";
+        _count.Text = _times.Count == 0 ? L.T("No frames yet") : L.F("{0} selected", _times.Count);
+        PrimaryButton.Content = L.P(_times.Count, "Save {0} Frame", "Save {0} Frames");
         PrimaryButton.IsEnabled = _times.Count > 0;
     }
 
@@ -436,7 +438,7 @@ public sealed class SplitVideoWindow : VideoToolWindow
     public SplitVideoWindow(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base(tool, files, jobs, at)
     {
         var row = new DockPanel { Margin = new Thickness(0, 12, 0, 8) };
-        var add = new Button { Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { ThemedIcon("scissors", 14), new TextBlock { Text = "  Add Split" } } } };
+        var add = new Button { Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { ThemedIcon("scissors", 14), new TextBlock { Text = "  " + L.T("Add Split") } } } };
         add.Click += (_, _) => AddPoint(Position);
         DockPanel.SetDock(add, Dock.Right);
         row.Children.Add(add);
@@ -455,7 +457,7 @@ public sealed class SplitVideoWindow : VideoToolWindow
         var plus = IconButton("plus", "More", 13, filled: true);
         minus.Click += (_, _) => Step(-1);
         plus.Click += (_, _) => Step(1);
-        var set = new Button { Content = "Set", Margin = new Thickness(10, 0, 0, 0) };
+        var set = new Button { Content = L.T("Set"), Margin = new Thickness(10, 0, 0, 0) };
         set.Click += (_, _) => SetEqual();
         equal.Children.Add(minus);
         equal.Children.Add(_parts);
@@ -463,7 +465,7 @@ public sealed class SplitVideoWindow : VideoToolWindow
         equal.Children.Add(set);
         Body.Children.Add(Row("Equal clips", equal, 100, 10));
 
-        PrimaryButton.Content = "Split Video";
+        PrimaryButton.Content = L.T("Split Video");
         PrimaryButton.Click += (_, _) => Apply();
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) =>
@@ -511,9 +513,9 @@ public sealed class SplitVideoWindow : VideoToolWindow
 
     private void Sync()
     {
-        _count.Text = _points.Count == 1 ? "1 split point" : $"{_points.Count} split points";
+        _count.Text = L.P(_points.Count, "{0} split point", "{0} split points");
         PrimaryButton.IsEnabled = _points.Count > 0;
-        FooterNote = _points.Count > 0 ? $"{_points.Count + 1} clips in “{Path.GetFileName(OutputNaming.ForTool(File, Tool))}”" : Path.GetFileName(OutputNaming.ForTool(File, Tool));
+        FooterNote = _points.Count > 0 ? L.F("{0} clips in “{1}”", _points.Count + 1, Path.GetFileName(OutputNaming.ForTool(File, Tool))) : Path.GetFileName(OutputNaming.ForTool(File, Tool));
         _markers.Children.Clear();
         if (_timeline is null || _timeline.ActualWidth <= 0) return;
         foreach (var p in _points)
@@ -573,7 +575,7 @@ public sealed class RedactVideoWindow : VideoToolWindow
         Body.Children.Add(_scrub);
         _scrub.ValueChanged += (_, e) => Seek(e.NewValue * Duration);
         Body.Children.Add(Transport);
-        PrimaryButton.Content = "Save Redacted Copy";
+        PrimaryButton.Content = L.T("Save Redacted Copy");
         PrimaryButton.Click += (_, _) => Apply();
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => _canvas.Clear();
@@ -608,7 +610,7 @@ public sealed class RedactVideoWindow : VideoToolWindow
             _laneFor.Remove(gone);
         foreach (var box in boxes.Where(b => !_laneFor.ContainsKey(b)))
         {
-            var lane = new RangeLane($"Box {box.Number}", 28) { Duration = Duration, Single = true, ClipText = $"Box {box.Number}" };
+            var lane = new RangeLane(L.F("Box {0}", box.Number), 28) { Duration = Duration, Single = true, ClipText = L.F("Box {0}", box.Number) };
             lane.Add(0, Duration);
             _laneFor[box] = lane;
         }
@@ -662,7 +664,7 @@ public sealed class OrderedFilesWindow : ToolWindow
             var items = order.Items.ToList();
             var output = OutputNaming.ForTool(items[0], tool);
             Close();
-            _ = jobs.RunAsync(running, done, [new WorkItem(items[0], $"{items.Count} files", async (p, ct) => [await run(items, output, p, ct)])], at);
+            _ = jobs.RunAsync(running, done, [new WorkItem(items[0], L.P(items.Count, "{0} file", "{0} files"), async (p, ct) => [await run(items, output, p, ct)])], at);
         };
     }
 }

@@ -37,6 +37,7 @@ public sealed class CropOverlay : Grid
 
     public CropOverlay()
     {
+        FlowDirection = FlowDirection.LeftToRight;
         Children.Add(_image);
         Children.Add(_canvas);
         _canvas.Children.Add(_shade);

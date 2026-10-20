@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using Petal.App.Input;
 using Petal.App.Visuals;
 using static Petal.App.Interop.NativeMethods;
+using Petal.App.Localization;
 
 namespace Petal.App.Hud;
 
@@ -57,7 +58,7 @@ public sealed class HudCard : Window
         Topmost = true;
         Width = CardWidth + CardMargin * 2;
         Height = CardHeight + CardMargin * 2;
-        Title = "Petal";
+        Title = L.T("Petal");
         Content = Build();
         _dismissTimer.Tick += (_, _) => Dismiss();
     }
@@ -83,8 +84,8 @@ public sealed class HudCard : Window
     public static HudCard ShowAt(ScreenPoint at, string title, string subtitle)
     {
         var card = new HudCard();
-        card._title.Text = title;
-        card._subtitle.Text = subtitle;
+        card._title.Text = Localization.L.T(title);
+        card._subtitle.Text = Localization.L.T(subtitle);
         card.Show();
 
         var (_, work, scale) = MonitorAt(new POINT(at.X, at.Y));
@@ -120,8 +121,8 @@ public sealed class HudCard : Window
 
     public void SetText(string title, string subtitle)
     {
-        _title.Text = title;
-        _subtitle.Text = subtitle;
+        _title.Text = Localization.L.T(title);
+        _subtitle.Text = Localization.L.T(subtitle);
     }
 
     /// <summary>Progress from 0 to 1, or null when unknown (shows a sweeping bar).</summary>
@@ -228,6 +229,7 @@ public sealed class HudCard : Window
     {
         var p = _palette;
         var root = new Grid();
+        Localization.L.Apply(root);
         _card.Width = CardWidth;
         _card.Height = CardHeight;
         _card.CornerRadius = new CornerRadius(20);
@@ -261,7 +263,7 @@ public sealed class HudCard : Window
         _closeButton.VerticalAlignment = VerticalAlignment.Top;
         _closeButton.HorizontalAlignment = HorizontalAlignment.Left;
         _closeButton.Cursor = Cursors.Hand;
-        _closeButton.ToolTip = "Cancel";
+        _closeButton.ToolTip = Localization.L.T("Cancel");
         var x = Icons.Create("x", 12, Palette.Brush(p.TextSecondary), 2.4);
         x.HorizontalAlignment = HorizontalAlignment.Center;
         x.VerticalAlignment = VerticalAlignment.Center;

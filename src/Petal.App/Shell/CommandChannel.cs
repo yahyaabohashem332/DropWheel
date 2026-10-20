@@ -93,7 +93,7 @@ public static class ContextMenuRegistration
                 Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(FoldersKey, throwOnMissingSubKey: false);
                 return;
             }
-            foreach (var (key, label) in new[] { (FilesKey, "Convert with Petal"), (FoldersKey, "Petal actions") })
+            foreach (var (key, label) in new[] { (FilesKey, Localization.L.T("Convert with Petal")), (FoldersKey, Localization.L.T("Petal actions")) })
             {
                 using var verb = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(key);
                 verb.SetValue("MUIVerb", label);

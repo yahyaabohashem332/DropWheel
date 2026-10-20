@@ -12,6 +12,7 @@ using Petal.App.Visuals;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Media;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Windows;
 
@@ -29,7 +30,7 @@ public abstract class MediaToolWindow : ToolWindow
         Files = files;
         Jobs = jobs;
         At = at;
-        FooterNote = files.Count == 1 ? Path.GetFileName(OutputNaming.ForTool(files[0], tool)) : $"{files.Count} files";
+        FooterNote = files.Count == 1 ? Path.GetFileName(OutputNaming.ForTool(files[0], tool)) : L.P(files.Count, "{0} file", "{0} files");
         Closed += (_, _) => StopPlayback();
         PreviewKeyDown += OnKeys;
         Loaded += async (_, _) =>
@@ -158,7 +159,7 @@ public abstract class MediaToolWindow : ToolWindow
 
     protected static TextBox TimeBox(double seconds, Action<double> changed)
     {
-        var box = new TextBox { Text = TimeText.Format(seconds), Width = 92, FontFamily = UiFonts.Mono, HorizontalContentAlignment = HorizontalAlignment.Center };
+        var box = new TextBox { FlowDirection = FlowDirection.LeftToRight, Text = TimeText.Format(seconds), Width = 92, FontFamily = UiFonts.Mono, HorizontalContentAlignment = HorizontalAlignment.Center };
         box.LostKeyboardFocus += (_, _) => Commit();
         box.KeyDown += (_, e) => { if (e.Key == Key.Enter) Commit(); };
         void Commit()

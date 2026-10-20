@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +9,7 @@ using Petal.App.Shell;
 using Petal.App.Visuals;
 using Petal.Core.Jobs;
 using Petal.Engines.Imaging;
+using Petal.App.Localization;
 
 namespace Petal.App;
 
@@ -27,28 +28,34 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        if (e.Args.Length >= 3 && e.Args[0] == "--snapshot-tools")
+        // "--lang ar|en" forces a language (used for design snapshots).
+        int langArg = Array.IndexOf(e.Args, "--lang");
+        if (langArg >= 0 && langArg + 1 < e.Args.Length)
+            L.Initialize(e.Args[langArg + 1] == "ar" ? UiLanguage.Arabic : UiLanguage.English);
+        string[] args = langArg >= 0 ? e.Args.Where((_, i) => i != langArg && i != langArg + 1).ToArray() : e.Args;
+
+        if (args.Length >= 3 && args[0] == "--snapshot-tools")
         {
             ThemeResources.Install(this);
             Dispatcher.BeginInvoke(async () =>
             {
-                try { await DesignSnapshots.RunToolsAsync(e.Args); }
-                catch (Exception ex) { File.WriteAllText(Path.Combine(e.Args[1], "error.txt"), ex.ToString()); }
+                try { await DesignSnapshots.RunToolsAsync(args); }
+                catch (Exception ex) { File.WriteAllText(Path.Combine(args[1], "error.txt"), ex.ToString()); }
                 Shutdown();
             });
             return;
         }
 
-        if (e.Args.Length >= 3 && e.Args[0] == "--snapshots")
+        if (args.Length >= 3 && args[0] == "--snapshots")
         {
             ThemeResources.Install(this);
             try
             {
-                DesignSnapshots.Run(e.Args);
+                DesignSnapshots.Run(args);
             }
             catch (Exception ex)
             {
-                File.WriteAllText(Path.Combine(e.Args[1], "error.txt"), ex.ToString());
+                File.WriteAllText(Path.Combine(args[1], "error.txt"), ex.ToString());
             }
             Shutdown();
             return;
@@ -79,6 +86,13 @@ public partial class App : Application
         };
 
         var settings = SettingsStore.Load();
+        if (langArg < 0)
+            L.Initialize(settings.Language);
+        L.Changed += () =>
+        {
+            BuildTrayMenu();
+            ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
+        };
         Theme.Configure(settings.Theme, settings.UseWindowsAccent);
         ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
@@ -126,22 +140,30 @@ public partial class App : Application
     private void CreateTray()
     {
         var icon = Path.Combine(AppContext.BaseDirectory, "Assets", "Petal.ico");
-        _tray = new TrayIcon(icon, "Petal — drag a file and tap Shift");
+        _tray = new TrayIcon(icon, L.T("Petal — drag a file and tap Shift"));
         _tray.Clicked += ShowSettings;
+        BuildTrayMenu();
+    }
 
+    private void BuildTrayMenu()
+    {
+        if (_tray is null)
+            return;
+        _tray.SetTooltip(L.T(SettingsStore.Current.Paused ? "Petal — paused" : "Petal — drag a file and tap Shift"));
         var menu = new ContextMenu();
-        var pause = new MenuItem { Header = "Pause Petal", IsCheckable = true, IsChecked = SettingsStore.Current.Paused };
+        L.Apply(menu);
+        var pause = new MenuItem { Header = L.T("Pause Petal"), IsCheckable = true, IsChecked = SettingsStore.Current.Paused };
         pause.Click += (_, _) =>
         {
             SettingsStore.Current.Paused = pause.IsChecked;
             SettingsStore.Save();
-            _tray?.SetTooltip(pause.IsChecked ? "Petal — paused" : "Petal — drag a file and tap Shift");
+            _tray?.SetTooltip(L.T(pause.IsChecked ? "Petal — paused" : "Petal — drag a file and tap Shift"));
         };
-        var settingsItem = new MenuItem { Header = "Settings…" };
+        var settingsItem = new MenuItem { Header = L.T("Settings…") };
         settingsItem.Click += (_, _) => ShowSettings();
-        var howItem = new MenuItem { Header = "How it works" };
+        var howItem = new MenuItem { Header = L.T("How it works") };
         howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
-        var quit = new MenuItem { Header = "Quit Petal" };
+        var quit = new MenuItem { Header = L.T("Quit Petal") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
         menu.Items.Add(howItem);

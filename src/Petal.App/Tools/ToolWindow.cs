@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shell;
 using Petal.App.Input;
 using Petal.App.Interop;
+using Petal.App.Localization;
 using Petal.App.Visuals;
 using static Petal.App.Interop.NativeMethods;
 
@@ -27,8 +28,9 @@ public abstract class ToolWindow : Window
 
     protected ToolWindow(string title, double width = 400)
     {
-        Title = title;
+        Title = L.T(title);
         Width = width;
+        L.Apply(this);
         SizeToContent = SizeToContent.Height;
         ResizeMode = ResizeMode.NoResize;
         WindowStartupLocation = WindowStartupLocation.Manual;
@@ -57,7 +59,7 @@ public abstract class ToolWindow : Window
 
         // Header
         var header = new Grid { Height = 44 };
-        _title.Text = title;
+        _title.Text = L.T(title);
         _title.Style = (Style)Application.Current.FindResource("Petal.Title");
         _title.HorizontalAlignment = HorizontalAlignment.Center;
         _title.VerticalAlignment = VerticalAlignment.Center;
@@ -88,7 +90,7 @@ public abstract class ToolWindow : Window
         _footer.LastChildFill = true;
         PrimaryButton = new Button { Style = (Style)Application.Current.FindResource("Petal.PrimaryButton"), IsDefault = true, MinWidth = 88 };
         DockPanel.SetDock(PrimaryButton, Dock.Right);
-        ResetButton = new Button { Content = "Reset", Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 10, 0) };
+        ResetButton = new Button { Content = L.T("Reset"), Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 10, 0) };
         DockPanel.SetDock(ResetButton, Dock.Left);
         _footerNote.Style = (Style)Application.Current.FindResource("Petal.Caption");
         _footerNote.VerticalAlignment = VerticalAlignment.Center;
@@ -112,7 +114,14 @@ public abstract class ToolWindow : Window
                 Close();
             }
         };
-        SourceInitialized += (_, _) => ApplyTheme();
+        SourceInitialized += (_, _) =>
+        {
+            // Without the system menu, Windows stops drawing its own close glyph in the glass
+            // frame under ours. Esc and the header button close the window.
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            SetWindowLongPtr(hwnd, GWL_STYLE, (IntPtr)((long)GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_SYSMENU));
+            ApplyTheme();
+        };
         Theme.Changed += OnThemeChanged;
         Closed += (_, _) => Theme.Changed -= OnThemeChanged;
     }
@@ -127,7 +136,7 @@ public abstract class ToolWindow : Window
     protected string FooterNote
     {
         get => _footerNote.Text;
-        set => _footerNote.Text = value;
+        set => _footerNote.Text = L.T(value);
     }
 
     private void OnThemeChanged() => Dispatcher.BeginInvoke(ApplyTheme);
@@ -176,10 +185,10 @@ public abstract class ToolWindow : Window
         var button = new Button
         {
             Style = (Style)Application.Current.FindResource(filled ? "Petal.FilledIconButton" : "Petal.IconButton"),
-            ToolTip = tooltip,
+            ToolTip = L.T(tooltip),
             Content = ThemedIcon(icon, size),
         };
-        System.Windows.Automation.AutomationProperties.SetName(button, tooltip);
+        System.Windows.Automation.AutomationProperties.SetName(button, L.T(tooltip));
         return button;
     }
 
@@ -193,7 +202,7 @@ public abstract class ToolWindow : Window
 
     protected static TextBlock Text(string text, string style = "Petal.Body") => new()
     {
-        Text = text,
+        Text = L.T(text),
         Style = (Style)Application.Current.FindResource(style),
     };
 
@@ -231,7 +240,7 @@ public abstract class ToolWindow : Window
         var combo = new ComboBox { MinWidth = 160 };
         foreach (var (value, label) in options)
         {
-            var item = new ComboBoxItem { Content = label, Tag = value };
+            var item = new ComboBoxItem { Content = L.T(label), Tag = value };
             combo.Items.Add(item);
             if (EqualityComparer<T>.Default.Equals(value, selected))
                 combo.SelectedItem = item;
@@ -258,7 +267,7 @@ public abstract class ToolWindow : Window
     }
 
     protected static string FileLabel(IReadOnlyList<string> files) =>
-        files.Count == 1 ? Path.GetFileName(files[0]) : $"{files.Count} files";
+        files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
 }
 
 internal static class ElementExtensions

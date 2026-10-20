@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using WinRT;
+using Petal.App.Localization;
 
 namespace Petal.App.Shell;
 
@@ -41,7 +42,7 @@ public static class ShareSheet
                 Opacity = 0,
                 Left = pt.X,
                 Top = pt.Y,
-                Title = "Share",
+                Title = L.T("Share"),
             };
             host.Show();
             _host = host;
@@ -63,7 +64,7 @@ public static class ShareSheet
                         else if (File.Exists(p))
                             items.Add(await StorageFile.GetFileFromPathAsync(p));
                     }
-                    args.Request.Data.Properties.Title = paths.Count == 1 ? Path.GetFileName(paths[0]) : $"{paths.Count} items";
+                    args.Request.Data.Properties.Title = paths.Count == 1 ? Path.GetFileName(paths[0]) : L.P(paths.Count, "{0} item", "{0} items");
                     args.Request.Data.SetStorageItems(items);
                 }
                 finally

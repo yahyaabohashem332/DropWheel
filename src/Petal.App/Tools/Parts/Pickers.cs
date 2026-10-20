@@ -57,7 +57,7 @@ public sealed class OrderList : StackPanel
         number.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
         DockPanel.SetDock(number, Dock.Left);
         dock.Children.Add(number);
-        var thumb = new Image { Width = 36, Height = 28, Stretch = Stretch.UniformToFill, Source = ShellIcons.Thumbnail(path, 64), Margin = new Thickness(0, 0, 10, 0) };
+        var thumb = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 36, Height = 28, Stretch = Stretch.UniformToFill, Source = ShellIcons.Thumbnail(path, 64), Margin = new Thickness(0, 0, 10, 0) };
         thumb.Clip = new RectangleGeometry(new Rect(0, 0, 36, 28), 4, 4);
         DockPanel.SetDock(thumb, Dock.Left);
         dock.Children.Add(thumb);
@@ -233,7 +233,7 @@ public sealed class RedactionBox(Rect rect)
 /// </summary>
 public sealed class RedactionCanvas : Grid
 {
-    private readonly Image _image = new() { Stretch = Stretch.Uniform };
+    private readonly Image _image = new() { FlowDirection = FlowDirection.LeftToRight, Stretch = Stretch.Uniform };
     private readonly Canvas _canvas = new() { Background = Brushes.Transparent, ClipToBounds = true, Cursor = Cursors.Cross };
     private readonly List<(RedactionBox Box, Border Visual)> _boxes = [];
     private Size _source;
@@ -248,6 +248,7 @@ public sealed class RedactionCanvas : Grid
 
     public RedactionCanvas()
     {
+        FlowDirection = FlowDirection.LeftToRight;
         Children.Add(_image);
         Children.Add(_canvas);
         Focusable = true;

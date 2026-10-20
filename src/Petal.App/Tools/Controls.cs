@@ -23,7 +23,7 @@ public sealed class Segmented<T> : Border where T : notnull
         {
             var button = new RadioButton
             {
-                Content = label,
+                Content = Localization.L.T(label),
                 GroupName = group,
                 Style = (Style)Application.Current.FindResource("Petal.Segment"),
                 IsChecked = EqualityComparer<T>.Default.Equals(value, selected),
@@ -87,6 +87,7 @@ public sealed class LabeledSlider : Grid
         {
             Style = (Style)Application.Current.FindResource("Petal.Value"),
             HorizontalAlignment = HorizontalAlignment.Right,
+            FlowDirection = FlowDirection.LeftToRight,
             Text = format(value),
         };
         SetColumn(_value, 1);

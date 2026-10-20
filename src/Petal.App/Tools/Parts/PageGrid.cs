@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using Petal.App.Localization;
 
 namespace Petal.App.Tools.Parts;
 
@@ -25,6 +26,7 @@ public sealed class PageGrid : WrapPanel
 
     public PageGrid()
     {
+        FlowDirection = FlowDirection.LeftToRight;
         _pages.CollectionChanged += (_, _) =>
         {
             Rebuild();
@@ -125,7 +127,7 @@ public sealed class PageGrid : WrapPanel
             Width = 26,
             Height = 26,
             Margin = new Thickness(3, 0, 0, 0),
-            ToolTip = tip,
+            ToolTip = L.T(tip),
             Content = ToolWindow.ThemedIcon(icon, 13, "Petal.Text", 2.2),
         };
         b.Click += (_, e) =>
