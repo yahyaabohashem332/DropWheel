@@ -21,6 +21,7 @@ public sealed class AppSettings
 
     public bool Sounds { get; set; } = true;
     public bool ShowKeyHints { get; set; } = true;
+    public string QuickShortcut { get; set; } = Input.Shortcut.Default.ToString();
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public Localization.UiLanguage Language { get; set; } = Localization.UiLanguage.System;
     public bool UseWindowsAccent { get; set; }

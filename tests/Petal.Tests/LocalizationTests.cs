@@ -23,6 +23,8 @@ public partial class LocalizationTests
         "Shift", "Ctrl", "Alt", "Win", "⇧ Shift", "Shift ⇧", "Windows ⊞", "English",
         "FFmpeg", "Microsoft Office", "4K (2160p)", "Full HD (1080p)", "HD (720p)", "SD (480p)",
         "ID3v2_3", "ID3v2_4", "ID3v1", "Vorbis",
+        // Key names as printed on keycaps, and Windows class names.
+        "Enter", "Backspace", "Progman", "SHELLDLL_DefView", "Petal shortcut",
     };
 
     private static readonly Regex Literal = MakeLiteral();

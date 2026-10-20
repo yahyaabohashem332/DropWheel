@@ -42,6 +42,8 @@ public sealed class GestureController : IDisposable
 
     public void Start() => _hook.Start();
 
+    public bool IsDragging => Volatile.Read(ref _dragging);
+
     private static AppSettings Settings => SettingsStore.Current;
 
     private WheelMode? ModeFor(ModifierKey key)

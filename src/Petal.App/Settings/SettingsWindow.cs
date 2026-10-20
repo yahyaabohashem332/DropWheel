@@ -21,6 +21,7 @@ public sealed class SettingsWindow : ToolWindow
     private static SettingsWindow? _open;
     private readonly AppSettings _s = SettingsStore.Current;
     private readonly TextBlock _keyWarning = new();
+    private readonly TextBlock _shortcutWarning = new();
 
     public static void ShowSingle()
     {
@@ -115,7 +116,102 @@ public sealed class SettingsWindow : ToolWindow
         _keyWarning.Margin = new Thickness(150, 6, 0, 0);
         panel.Children.Add(_keyWarning);
         ValidateKeys();
+        panel.Children.Add(Row("Quick shortcut", ShortcutPicker(), 150, 16));
+        panel.Children.Add(Text("With files selected in File Explorer, it opens the wheel for them. Otherwise it opens Petal.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        _shortcutWarning.Style = (Style)FindResource("Petal.Caption");
+        _shortcutWarning.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
+        _shortcutWarning.Margin = new Thickness(150, 6, 0, 0);
+        _shortcutWarning.Visibility = Visibility.Collapsed;
+        panel.Children.Add(_shortcutWarning);
         return panel;
+    }
+
+    /// <summary>
+    /// Click the button, then press the keys. Esc cancels; the two small buttons restore the
+    /// default and turn the shortcut off. Windows is asked first, so a combination another
+    /// program owns is refused with a message instead of silently not working.
+    /// </summary>
+    private UIElement ShortcutPicker()
+    {
+        var hotkey = App.Current.Hotkey;
+        var saved = Shortcut.Parse(_s.QuickShortcut);
+        bool recording = false;
+        var record = new Button { MinWidth = 180, ToolTip = L.T("Click, then press the keys you want.") };
+        void Show() => record.Content = recording ? L.T("Press the new shortcut…") : saved?.Display ?? L.T("Off");
+        void Warn(string? text)
+        {
+            _shortcutWarning.Text = text ?? "";
+            _shortcutWarning.Visibility = text is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+        void Stop()
+        {
+            recording = false;
+            hotkey?.Resume();
+            Show();
+        }
+        void Apply(Shortcut? shortcut)
+        {
+            recording = false;
+            if (hotkey is null || hotkey.Register(shortcut))
+            {
+                saved = shortcut;
+                _s.QuickShortcut = shortcut?.ToString() ?? "";
+                Save();
+                Warn(null);
+            }
+            else
+            {
+                Warn(L.F("Another program already uses {0}. Choose a different shortcut.", shortcut!.Display));
+            }
+            Show();
+        }
+
+        record.Click += (_, _) =>
+        {
+            if (recording) return;
+            recording = true;
+            // Let the current shortcut through, so it can be pressed again.
+            hotkey?.Suspend();
+            Warn(null);
+            Show();
+            record.Focus();
+        };
+        record.PreviewKeyDown += (_, e) =>
+        {
+            if (!recording) return;
+            e.Handled = true;
+            var key = e.Key == System.Windows.Input.Key.System ? e.SystemKey : e.Key;
+            if (key == System.Windows.Input.Key.Escape)
+            {
+                Stop();
+                return;
+            }
+            if (Shortcut.IsModifier(key) || key is System.Windows.Input.Key.ImeProcessed or System.Windows.Input.Key.DeadCharProcessed)
+                return;
+            var candidate = new Shortcut(System.Windows.Input.Keyboard.Modifiers, key);
+            if (!candidate.IsValid)
+            {
+                Warn(L.T("Use Ctrl, Alt or Windows together with another key."));
+                return;
+            }
+            Apply(candidate);
+        };
+        record.LostKeyboardFocus += (_, _) => { if (recording) Stop(); };
+
+        var reset = IconButton("rotateCcw", "Restore the default shortcut", 14);
+        reset.Click += (_, _) => Apply(Shortcut.Default);
+        var off = IconButton("x", "Turn the shortcut off", 14);
+        off.Click += (_, _) => Apply(null);
+
+        // A saved shortcut that Windows refused at start-up belongs to another program.
+        if (saved is not null && hotkey is not null && hotkey.Current is null)
+            Warn(L.F("Another program already uses {0}. Choose a different shortcut.", saved.Display));
+        Show();
+        return new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Children = { record, reset.WithMargin(6, 0, 0, 0), off.WithMargin(2, 0, 0, 0) },
+        };
     }
 
     private void ValidateKeys()

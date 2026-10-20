@@ -19,10 +19,14 @@ public partial class App : Application
     private Mutex? _instanceMutex;
     private PetalController? _controller;
     private TrayIcon? _tray;
+    private GlobalHotkey? _hotkey;
 
     public static new App Current => (App)Application.Current;
 
     public PetalController Controller => _controller!;
+
+    /// <summary>The system-wide shortcut; null in design-snapshot runs.</summary>
+    public GlobalHotkey? Hotkey => _hotkey;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -103,6 +107,10 @@ public partial class App : Application
         _controller.Start();
 
         CreateTray();
+        _hotkey = new GlobalHotkey();
+        _hotkey.Pressed += OnShortcut;
+        if (Input.Shortcut.Parse(settings.QuickShortcut) is { } shortcut && !_hotkey.Register(shortcut))
+            Log.Info($"{shortcut} is already used by another program");
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
         ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
         if (command is not null)
@@ -175,9 +183,43 @@ public partial class App : Application
 
     public void ShowSettings() => SettingsWindow.ShowSingle();
 
+    /// <summary>
+    /// The shortcut: with files selected in the File Explorer window in front (or on the desktop),
+    /// the wheel opens for them; otherwise Petal's main window opens. Pressed again, it closes the wheel.
+    /// </summary>
+    private async void OnShortcut()
+    {
+        if (_controller is null || _controller.IsDragging)
+            return;
+        if (_controller.IsWheelOpen)
+        {
+            _controller.CloseWheel();
+            return;
+        }
+        var front = Interop.NativeMethods.GetForegroundWindow();
+        var files = await ExplorerSelection.SelectionInAsync(front);
+        if (files.Count == 0)
+        {
+            ShowSettings();
+            return;
+        }
+        _controller.OpenWheelNow(files, WheelPointFor(front));
+    }
+
+    /// <summary>At the mouse when it is over that window, else in the middle of the window.</summary>
+    private static Input.ScreenPoint WheelPointFor(IntPtr window)
+    {
+        Interop.NativeMethods.GetCursorPos(out var cursor);
+        if (!Interop.NativeMethods.GetWindowRect(window, out var rect) || rect.Width <= 0
+            || (cursor.X >= rect.Left && cursor.X < rect.Right && cursor.Y >= rect.Top && cursor.Y < rect.Bottom))
+            return new Input.ScreenPoint(cursor.X, cursor.Y);
+        return new Input.ScreenPoint(rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
+    }
+
     public void Quit()
     {
         _commands.Dispose();
+        _hotkey?.Dispose();
         _tray?.Dispose();
         _controller?.Dispose();
         Shutdown();

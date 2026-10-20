@@ -153,4 +153,121 @@ public static class ExplorerSelection
             Marshal.FinalReleaseComObject(shell);
         }
     }
+
+    // ---------- reading the selection ----------
+
+    private static readonly Guid SID_STopLevelBrowser = new("4C96BE40-915C-11CF-99D3-00AA004AE837");
+    private static readonly Guid IID_IShellBrowser = new("000214E2-0000-0000-C000-000000000046");
+
+    [ComImport, Guid("6D5140C1-7436-11CE-8034-00AA006009FA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IServiceProvider
+    {
+        [PreserveSig]
+        int QueryService(ref Guid service, ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out object result);
+    }
+
+    // Only the first method (from IOleWindow) is needed: the window of a folder tab.
+    [ComImport, Guid("000214E2-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellBrowser
+    {
+        [PreserveSig]
+        int GetWindow(out IntPtr hwnd);
+    }
+
+    /// <summary>
+    /// The files and folders selected in a File Explorer window (its active tab) or on the desktop,
+    /// given that window's handle. Empty for any other window, or when nothing is selected.
+    /// </summary>
+    public static Task<IReadOnlyList<string>> SelectionInAsync(IntPtr window)
+    {
+        var result = new TaskCompletionSource<IReadOnlyList<string>>();
+        // Shell automation wants a single-threaded apartment and talks to Explorer across processes,
+        // so it runs off the UI thread.
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                result.SetResult(SelectionIn(window));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Reading the Explorer selection");
+                result.SetResult([]);
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.IsBackground = true;
+        thread.Start();
+        return result.Task;
+    }
+
+    private static IReadOnlyList<string> SelectionIn(IntPtr window)
+    {
+        var kind = Interop.NativeMethods.ClassNameOf(window);
+        bool desktop = kind is "Progman" or "WorkerW" && Interop.NativeMethods.FindWindowEx(window, IntPtr.Zero, "SHELLDLL_DefView", null) != IntPtr.Zero;
+        if (!desktop && kind is not ("CabinetWClass" or "ExploreWClass"))
+            return [];
+
+        var shellType = Type.GetTypeFromProgID("Shell.Application");
+        if (shellType is null)
+            return [];
+        dynamic shell = Activator.CreateInstance(shellType)!;
+        try
+        {
+            dynamic windows = shell.Windows();
+            dynamic? document = desktop
+                ? windows.FindWindowSW(0, null, SWC_DESKTOP, out int _, SWFO_NEEDDISPATCH)?.Document
+                : FolderViewOf(windows, window);
+            if (document is null)
+                return [];
+            var paths = new List<string>();
+            foreach (dynamic item in document.SelectedItems())
+            {
+                // Virtual items (This PC, Recycle Bin, phones) have no file-system path.
+                string? path = item.Path;
+                if (!string.IsNullOrEmpty(path) && (File.Exists(path) || Directory.Exists(path)))
+                    paths.Add(path);
+            }
+            return paths;
+        }
+        finally
+        {
+            Marshal.FinalReleaseComObject(shell);
+        }
+    }
+
+    /// <summary>The folder view of an Explorer window; with tabs (Windows 11), the active tab's.</summary>
+    private static dynamic? FolderViewOf(dynamic windows, IntPtr window)
+    {
+        var matches = new List<dynamic>();
+        foreach (dynamic w in windows)
+        {
+            try
+            {
+                if ((long)w.HWND == window.ToInt64())
+                    matches.Add(w);
+            }
+            catch
+            {
+                // Windows without a handle.
+            }
+        }
+        if (matches.Count <= 1)
+            return matches.Count == 1 ? matches[0].Document : null;
+
+        // The active tab is the first tab window in z-order.
+        var activeTab = Interop.NativeMethods.FindWindowEx(window, IntPtr.Zero, "ShellTabWindowClass", null);
+        foreach (var w in matches)
+        {
+            if ((object)w is IServiceProvider services)
+            {
+                var service = SID_STopLevelBrowser;
+                var iid = IID_IShellBrowser;
+                if (services.QueryService(ref service, ref iid, out var browser) == 0 && browser is IShellBrowser shellBrowser
+                    && shellBrowser.GetWindow(out var tab) == 0 && tab == activeTab)
+                    return w.Document;
+            }
+        }
+        return matches[0].Document;
+    }
 }

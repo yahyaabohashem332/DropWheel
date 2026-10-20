@@ -265,6 +265,8 @@ public sealed class WheelWindow : Window
     // ---------- click & keyboard mode (Explorer's context menu) ----------
 
     private bool _interactive;
+    // The window that had the keyboard before the keyboard-driven wheel took it.
+    private IntPtr _returnFocusTo;
 
     /// <summary>Maps a modifier key to the wheel it opens (follows the user's key settings).</summary>
     public Func<Key, WheelMode?>? ModeForKey { get; set; }
@@ -294,6 +296,8 @@ public sealed class WheelWindow : Window
         SetWindowLongPtr(_hwnd, GWL_EXSTYLE, new IntPtr(exStyle & ~WS_EX_NOACTIVATE));
         SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_SHOWWINDOW);
         Focusable = true;
+        var front = GetForegroundWindow();
+        _returnFocusTo = front != _hwnd ? front : IntPtr.Zero;
         SetForegroundWindow(_hwnd);
         Activate();
         Focus();
@@ -344,13 +348,13 @@ public sealed class WheelWindow : Window
             case Key.End when count > 0:
                 SetHighlight(count - 1, null);
                 break;
-            case Key.Enter or Key.Space when _highlight is { } i:
+            case Key.Enter or Key.Space when _highlight is { } i && !e.IsRepeat:
                 Choose(i);
                 break;
             case Key.Tab:
                 SwitchMode(_mode switch { WheelMode.Conversions => WheelMode.Tools, WheelMode.Tools => WheelMode.Actions, _ => WheelMode.Conversions });
                 break;
-            case Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt:
+            case Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt when !e.IsRepeat:
                 if (ModeForKey?.Invoke(key) is { } m) SwitchMode(m);
                 break;
             default:
@@ -362,7 +366,8 @@ public sealed class WheelWindow : Window
     protected override void OnDeactivated(EventArgs e)
     {
         base.OnDeactivated(e);
-        if (_interactive) CloseWheel();
+        // Something else took the keyboard; leave it there.
+        if (_interactive) CloseWheel(returnFocus: false);
     }
 
     private void Choose(int index)
@@ -372,7 +377,11 @@ public sealed class WheelWindow : Window
         var files = _files;
         var at = _anchor;
         Sound.Drop();
-        CloseWheel();
+        // A tool window, the share sheet or a folder picker takes the keyboard next; otherwise
+        // (conversions, copying) it goes back to File Explorer.
+        bool opensWindow = item.Payload is Petal.Core.Tools.ToolInfo { HasWindow: true }
+            || item.Payload is Petal.Core.Actions.FileActionInfo { Id: Petal.Core.Actions.FileActionId.Share or Petal.Core.Actions.FileActionId.Float or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal };
+        CloseWheel(returnFocus: !opensWindow);
         Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, at));
     }
 
@@ -411,7 +420,7 @@ public sealed class WheelWindow : Window
 
     public void Cancel() => CloseWheel();
 
-    private void CloseWheel()
+    private void CloseWheel(bool returnFocus = true)
     {
         _probeTimer.Stop();
         _releaseTimer.Stop();
@@ -428,6 +437,9 @@ public sealed class WheelWindow : Window
             Focusable = false;
             var exStyle = (long)GetWindowLongPtr(_hwnd, GWL_EXSTYLE);
             SetWindowLongPtr(_hwnd, GWL_EXSTYLE, new IntPtr(exStyle | WS_EX_NOACTIVATE));
+            if (returnFocus && _returnFocusTo != IntPtr.Zero)
+                SetForegroundWindow(_returnFocusTo);
+            _returnFocusTo = IntPtr.Zero;
         }
         _stage.BeginAnimation(OpacityProperty, null);
         _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);

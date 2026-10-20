@@ -17,6 +17,12 @@ Everything runs locally. Nothing is uploaded.
 No drag needed: right-click files in File Explorer → **Convert with Petal** opens the same wheel at
 the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt switch wheels).
 
+**Keyboard shortcut — Ctrl + Win + Z.** With files selected in the File Explorer window in front (or
+on the desktop), it opens the wheel for them; with nothing selected, it opens Petal. Press it again
+to close the wheel. Change it in Settings › Keys: click the button and press the new keys. Petal asks
+Windows first and says so when another program already owns a combination. (Ctrl + Win + Enter is
+Narrator's, which is why the default is different.)
+
 **English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
 Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
 right to left, with proper Arabic plurals ("ملفان", "3 ملفات", "11 ملفًا"); pictures, timelines,
@@ -33,7 +39,7 @@ everything else is built in. On this development PC all 290 conversion paths are
 
 ## Tests
 
-566 tests: core and app parts (62, including a check that every interface string has Arabic), media
+582 tests: core and app parts (78, including a check that every interface string has Arabic), media
 engine (187), image engine (161), documents and PDF (156).
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 

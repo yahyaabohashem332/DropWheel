@@ -50,6 +50,16 @@ public sealed class PetalController : IDisposable
 
     internal WheelWindow CreateWheelForSnapshots() => _wheel;
 
+    public bool IsWheelOpen => _wheel.IsOpen;
+
+    public bool IsDragging => _gestures.IsDragging;
+
+    public void CloseWheel() => _wheel.Cancel();
+
+    /// <summary>Opens the keyboard-driven wheel at once, for files chosen with the shortcut.</summary>
+    public void OpenWheelNow(IReadOnlyList<string> files, ScreenPoint at) =>
+        _wheel.OpenInteractive(files, at, files.Any(Directory.Exists) ? WheelMode.Actions : WheelMode.Conversions);
+
     private readonly List<string> _pendingFiles = [];
     private DispatcherTimer? _pendingTimer;
     private ScreenPoint _pendingAt;
