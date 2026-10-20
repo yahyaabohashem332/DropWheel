@@ -77,7 +77,7 @@ public sealed class PcmPlayer : IDisposable
 {
     private readonly DispatcherTimer _tick = new() { Interval = TimeSpan.FromMilliseconds(33) };
     private PcmAudio? _audio;
-    private WaveOutEvent? _output;
+    private WaveOut? _output;
     private RangeProvider? _provider;
 
     public event Action<double>? PositionChanged;
@@ -114,7 +114,7 @@ public sealed class PcmPlayer : IDisposable
         if (_audio is null) return;
         Stop();
         _provider = new RangeProvider(_audio, from, to, this);
-        _output = new WaveOutEvent { BufferMilliseconds = 60, NumberOfBuffers = 2 };
+        _output = new WaveOut { BufferMilliseconds = 60, NumberOfBuffers = 2 };
         _output.Init(_provider);
         _output.PlaybackStopped += (_, _) => Dispatcher.CurrentDispatcher.BeginInvoke(() => { });
         _output.Play();

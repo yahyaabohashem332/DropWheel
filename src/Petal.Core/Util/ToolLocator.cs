@@ -16,7 +16,29 @@ public static class ToolLocator
     /// <summary>LibreOffice's soffice.exe, used for slides and high-fidelity office conversions.</summary>
     public static string? LibreOffice => Find("soffice.exe",
         @"%ProgramFiles%\LibreOffice\program\soffice.exe",
-        @"%ProgramFiles(x86)%\LibreOffice\program\soffice.exe");
+        @"%ProgramFiles(x86)%\LibreOffice\program\soffice.exe",
+        LibreOfficeFromRegistry() ?? "");
+
+    /// <summary>LibreOffice records its install folder under UNO\InstallPath, even for custom locations.</summary>
+    private static string? LibreOfficeFromRegistry()
+    {
+        if (!OperatingSystem.IsWindows())
+            return null;
+        try
+        {
+            foreach (var hive in new[] { Microsoft.Win32.Registry.LocalMachine, Microsoft.Win32.Registry.CurrentUser })
+            {
+                using var key = hive.OpenSubKey(@"SOFTWARE\LibreOffice\UNO\InstallPath");
+                if (key?.GetValue(null) is string dir && dir.Length > 0)
+                    return Path.Combine(dir, "soffice.exe");
+            }
+        }
+        catch
+        {
+            // No access to the registry: fall back to the usual folders.
+        }
+        return null;
+    }
 
     public static string BundledToolsDirectory => Path.Combine(AppContext.BaseDirectory, "tools");
 

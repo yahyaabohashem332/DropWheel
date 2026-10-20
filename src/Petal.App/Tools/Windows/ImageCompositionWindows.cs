@@ -26,7 +26,7 @@ public abstract class SingleImageWindow : ToolWindow
     }
 
     protected ToolInfo Tool { get; }
-    protected new string File { get; }
+    protected string File { get; }
     protected JobRunner Jobs { get; }
     protected ScreenPoint At { get; }
 

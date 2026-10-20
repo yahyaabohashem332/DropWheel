@@ -84,7 +84,7 @@ public sealed class OrganizePdfWindow : ToolWindow
         {
             var view = _view;
             var bitmap = await Task.Run(() => view.RenderPage(page, 220));
-            var source = BitmapSource.Create(bitmap.Width, bitmap.Height, 96, 96, PixelFormats.Bgra32, null, bitmap.Pixels, bitmap.Stride);
+            var source = BitmapSource.Create(bitmap.Width, bitmap.Height, 96, 96, PixelFormats.Pbgra32, null, bitmap.Pixels, bitmap.Stride);
             source.Freeze();
             return source;
         }

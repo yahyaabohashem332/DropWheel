@@ -10,4 +10,28 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Petal.Engines.Documents.Tests" />
+  </ItemGroup>
+
+  <!--
+    Licences: everything here is MIT, Apache-2.0 or BSD-2-Clause.
+    PDFsharp/MigraDoc is pinned to 6.2.4: from 6.5.0 on they are AGPL-3.0 and must not be used.
+    SixLabors.Fonts (pulled in by ClosedXML) is pinned to 1.0.x, the last Apache-2.0 line.
+  -->
+  <ItemGroup>
+    <PackageReference Include="PDFsharp-MigraDoc" Version="[6.2.4]" />
+    <PackageReference Include="PDFsharp" Version="[6.2.4]" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+    <PackageReference Include="SixLabors.Fonts" Version="[1.0.1]" />
+    <PackageReference Include="ExcelDataReader" Version="3.9.0" />
+    <PackageReference Include="Markdig" Version="1.4.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
+    <!-- PDFsharp 6.2.4 pulls Pkcs 8.0.1, which has published advisories. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+
 </Project>
