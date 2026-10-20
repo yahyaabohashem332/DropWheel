@@ -447,6 +447,43 @@
         </Setter>
     </Style>
 
+    <!-- ===== Password box: the same field as a text box ===== -->
+    <Style TargetType="PasswordBox">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Petal.Field}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Petal.ControlBorder}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource Petal.Accent}" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Border x:Name="Chrome" CornerRadius="7" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            <Border x:Name="FocusLine" Height="2" VerticalAlignment="Bottom" CornerRadius="0,0,7,7" Background="{DynamicResource Petal.Accent}" Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusLine" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Petal.TextSecondary}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ===== Combo box ===== -->
     <Style x:Key="Petal.ComboToggle" TargetType="ToggleButton">
         <Setter Property="Focusable" Value="False" />

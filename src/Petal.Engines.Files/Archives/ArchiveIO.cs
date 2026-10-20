@@ -128,7 +128,7 @@ public static class ArchiveIO
     /// <summary>Archive paths always use forward slashes and never start with one.</summary>
     public static string Normalize(string path) => path.Replace('\\', '/').TrimStart('/');
 
-    private static bool AlreadyCompressed(string name) => Path.GetExtension(name).ToLowerInvariant() is
+    internal static bool AlreadyCompressed(string name) => Path.GetExtension(name).ToLowerInvariant() is
         ".zip" or ".gz" or ".7z" or ".rar" or ".jpg" or ".jpeg" or ".png" or ".webp" or ".heic" or ".avif" or
         ".mp3" or ".m4a" or ".aac" or ".ogg" or ".opus" or ".mp4" or ".mov" or ".mkv" or ".webm";
 

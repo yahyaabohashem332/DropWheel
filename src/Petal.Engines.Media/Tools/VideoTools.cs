@@ -323,6 +323,45 @@ public static class VideoTools
         return output;
     }
 
+    /// <summary>
+    /// Lays a transparent PNG over every frame, for watermarks. <see cref="WatermarkVideoOptions.Overlay"/>
+    /// draws it at the video's display size (rotation applied). Audio is copied.
+    /// </summary>
+    public static async Task<string> WatermarkAsync(string input, string output, WatermarkVideoOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        var info = await ToolSupport.ProbeAsync(input, output, cancellationToken).ConfigureAwait(false);
+        ToolSupport.RequireVideo(info);
+        var target = Containers.ForOutput(output, input);
+        var png = Path.Combine(Path.GetTempPath(), $"petal-watermark-{Guid.NewGuid():N}.png");
+        await File.WriteAllBytesAsync(png, options.Overlay(info.Width, info.Height), cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var plan = ToolSupport.Plan(input, info, target, options.EffectiveSettings) with
+            {
+                // The unlabelled ends are the video stream itself: null passes it to [main].
+                VideoFilter = $"null[main];movie={FilterPath(png)},format=rgba[mark];[main][mark]overlay=0:0:format=auto",
+                Audio = ToolSupport.CopyAudioIfPossible(info, target),
+            };
+            await MediaEncoder.RunAsync(plan, output, new SafeProgress(progress), cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            try { File.Delete(png); } catch (IOException) { }
+        }
+        return output;
+    }
+
+    /// <summary>
+    /// A file path inside a filter graph: escaped once for the filter's options (":" and quotes)
+    /// and once more for the graph itself (brackets, commas, semicolons, backslashes).
+    /// </summary>
+    internal static string FilterPath(string path)
+    {
+        var forward = path.Replace('\\', '/');
+        var option = System.Text.RegularExpressions.Regex.Replace(forward, @"[\\:']", m => "\\" + m.Value);
+        return System.Text.RegularExpressions.Regex.Replace(option, @"[\\'\[\],;]", m => "\\" + m.Value);
+    }
+
     private readonly record struct Box(int X, int Y, int W, int H, string? Enable);
 
     private static Box? Fit(RedactionBox b, int frameWidth, int frameHeight)

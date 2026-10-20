@@ -6,8 +6,8 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
 | **Shift** | Convert | Every format the file can become (290 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, annotate, crop, redact, trim, split, merge, read QR… (27 tools) |
-| **Alt** | Actions | Share, Float, Copy, Move, Copy Path, Terminal |
+| **Ctrl** | Tools | Compress, metadata, edit, resize, watermark, crop, redact, copy text, trim, split, PDF password, page numbers, sign… (34 tools) |
+| **Alt** | Actions | Share, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
 another key to switch wheels in place. Drop on the centre (or press Esc) to cancel.
@@ -22,6 +22,24 @@ on the desktop), it opens the wheel for them; with nothing selected, it opens Pe
 to close the wheel. Change it in Settings › Keys: click the button and press the new keys. Petal asks
 Windows first and says so when another program already owns a combination. (Ctrl + Win + Enter is
 Narrator's, which is why the default is different.)
+
+**Everyday file chores, also on the wheels:**
+
+* **Resize & Rotate** — by percentage, width, height or a box; quarter turns and flips; one photo with a
+  live preview or a whole selection.
+* **Add Watermark** — text (Arabic included) or a logo, placed in one of nine spots or repeated
+  across; on photos, on every frame of a video, or on every PDF page. The last watermark is remembered.
+* **Copy Text** — reads the text in a photo or screenshot with Windows' own OCR (every installed
+  language is tried; the cleanest reading wins) and puts it on the clipboard.
+* **PDF tools** — password protection with AES-256 (or removing a password you know), page numbers as
+  real text, a drawn, typed or scanned signature placed on a page (a picture, not a certificate
+  signature), and extracting every picture (JPEGs saved as they are, each picture once).
+* **Rename** — a pattern with the name, a running number, the date a photo was taken and the folder,
+  plus find & replace and letter case; previewed with clashes flagged before anything changes, and
+  undone from the confirmation card.
+* **Compress to ZIP** — files and folders into one archive, with an optional AES-256 password.
+* **Create QR Code** (notification-area menu or the main window) — text, links or a Wi-Fi network,
+  saved as PNG or SVG or copied.
 
 **English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
 Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
@@ -39,8 +57,8 @@ everything else is built in. On this development PC all 290 conversion paths are
 
 ## Tests
 
-582 tests: core and app parts (78, including a check that every interface string has Arabic), media
-engine (187), image engine (161), documents and PDF (156).
+634 tests: core and app parts (96, including a check that every interface string has Arabic), media
+engine (191), image engine (178), documents and PDF (169).
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works
@@ -104,4 +122,4 @@ localization tests fail when a new English string has no Arabic entry or a trans
 
 Icons: [Lucide](https://lucide.dev) (ISC). FFmpeg (GPL build, run as a separate program),
 ExifTool by Phil Harvey (Artistic/GPL), ImageMagick (Apache 2.0 style), NAudio (MIT),
-SharpCompress (MIT). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.
+SharpCompress (MIT), SharpZipLib (MIT, AES-encrypted ZIP), ZXing.Net (Apache 2.0, QR codes). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.

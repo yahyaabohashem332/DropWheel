@@ -169,11 +169,14 @@ public partial class App : Application
         };
         var settingsItem = new MenuItem { Header = L.T("Settings…") };
         settingsItem.Click += (_, _) => ShowSettings();
+        var qrItem = new MenuItem { Header = L.T("Create QR Code…") };
+        qrItem.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
         var howItem = new MenuItem { Header = L.T("How it works") };
         howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
         var quit = new MenuItem { Header = L.T("Quit Petal") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
+        menu.Items.Add(qrItem);
         menu.Items.Add(howItem);
         menu.Items.Add(pause);
         menu.Items.Add(new Separator());

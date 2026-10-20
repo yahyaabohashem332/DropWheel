@@ -79,6 +79,41 @@ public static class ImageRedactor
                 .ToList();
         }, cancellationToken);
 
+    /// <summary>
+    /// All the text in a picture, line by line in reading order, for copying. Every installed OCR
+    /// language reads it and the cleanest result wins, so an Arabic photo is read correctly on an
+    /// English system and the other way round.
+    /// </summary>
+    public static Task<string> ReadTextAsync(string path, CancellationToken cancellationToken = default) =>
+        Task.Run(async () =>
+        {
+            using var image = ImageLoader.Load(path);
+            var (bitmap, _) = Downscaled(image, Math.Min(OcrMaxSize, (int)OcrEngine.MaxImageDimension));
+            var engines = OcrEngines();
+            if (engines.Count == 0)
+                throw new InvalidOperationException("No Windows OCR language is installed. Add one under Settings › Time & language › Language.");
+            using var input = ToSoftwareBitmap(bitmap);
+            string best = "";
+            double bestScore = -1;
+            foreach (var engine in engines)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var ocr = await engine.RecognizeAsync(input).AsTask(cancellationToken);
+                var text = string.Join(Environment.NewLine, ocr.Lines.Select(l => l.Text));
+                // A script read with the wrong language comes out as fragments and punctuation.
+                int letters = text.Count(char.IsLetterOrDigit);
+                int visible = Math.Max(1, text.Count(c => !char.IsWhiteSpace(c)));
+                double quality = (double)letters / visible;
+                double score = letters * quality * quality;
+                if (score > bestScore)
+                {
+                    best = text;
+                    bestScore = score;
+                }
+            }
+            return best.Trim();
+        }, cancellationToken);
+
     /// <summary>Text detection on a buffer the UI already holds; boxes are in that buffer's pixels.</summary>
     public static async Task<IReadOnlyList<DetectedText>> DetectTextAsync(BgraBitmap bitmap, TextGranularity granularity = TextGranularity.Lines,
         CancellationToken cancellationToken = default)

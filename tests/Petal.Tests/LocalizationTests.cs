@@ -25,6 +25,8 @@ public partial class LocalizationTests
         "ID3v2_3", "ID3v2_4", "ID3v1", "Vorbis",
         // Key names as printed on keycaps, and Windows class names.
         "Enter", "Backspace", "Progman", "SHELLDLL_DefView", "Petal shortcut",
+        // Font names, a template part, a unit and a file-name suffix (file names stay in English).
+        "Segoe UI", "Segoe Script", "Segoe Print", "Ink Free", "Cell", "pt", "PNG · SVG", "Unlocked",
     };
 
     private static readonly Regex Literal = MakeLiteral();

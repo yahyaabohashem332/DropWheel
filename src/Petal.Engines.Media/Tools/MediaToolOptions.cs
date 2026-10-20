@@ -20,3 +20,6 @@ public sealed record MediaTimeRange(double Start, double End)
 
     public override string ToString() => $"{Start:0.###}–{End:0.###} s";
 }
+
+/// <param name="Overlay">Given the display width and height, returns a transparent PNG of that size.</param>
+public sealed record WatermarkVideoOptions(Func<int, int, byte[]> Overlay) : MediaToolOptions;

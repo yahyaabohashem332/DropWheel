@@ -756,6 +756,7 @@ public sealed class WheelWindow : Window
         };
         if (!withIcon)
             text.LineStackingStrategy = LineStackingStrategy.MaxHeight;
+        FitWords(text, maxWidth, withIcon);
 
         FrameworkElement element;
         Path? icon = null;
@@ -780,6 +781,32 @@ public sealed class WheelWindow : Window
         Canvas.SetTop(element, pos.Y - size.Height / 2);
         _labels.Children.Add(element);
         _petalLabels.Add((text, icon));
+    }
+
+    /// <summary>
+    /// Shrinks a petal label until its widest word fits the petal, so a crowded wheel never breaks
+    /// "COMPRESS" into "COMPRES / S". Several words may still wrap onto two lines.
+    /// </summary>
+    private void FitWords(TextBlock text, double maxWidth, bool withIcon)
+    {
+        double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        var typeface = new Typeface(text.FontFamily, text.FontStyle, text.FontWeight, text.FontStretch);
+        var words = text.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        double Widest(double size) => words.Max(w =>
+            new FormattedText(w, System.Globalization.CultureInfo.CurrentUICulture, text.FlowDirection, typeface, size, Brushes.Black, dip).WidthIncludingTrailingWhitespace);
+        if (words.Length == 0)
+            return;
+        // A single word may reach slightly past the label box: the petal is wider than the chord there.
+        double room = maxWidth + 4, fontSize = text.FontSize, smallest = withIcon ? 6 : 9;
+        while (fontSize > smallest && Widest(fontSize) > room)
+            fontSize -= 0.25;
+        text.MaxWidth = Math.Max(text.MaxWidth, Math.Min(room, Widest(fontSize) + 1));
+        if (fontSize == text.FontSize)
+            return;
+        // The line height was chosen for the original size; keep the same proportion.
+        if (withIcon)
+            text.LineHeight = text.LineHeight / text.FontSize * fontSize;
+        text.FontSize = fontSize;
     }
 
     private void SetHub(string title, string subtitle)

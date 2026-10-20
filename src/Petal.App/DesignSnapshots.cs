@@ -85,6 +85,16 @@ internal static class DesignSnapshots
             ("cropimage", () => new Tools.Windows.CropImageWindow(T(Petal.Core.Tools.ToolId.CropImage), [file("figures.png")], jobs, at)),
             ("redactphoto", () => new Tools.Windows.RedactPhotoWindow(T(Petal.Core.Tools.ToolId.RedactPhoto), file("landscape.jpg"), jobs, at)),
             ("organizepdf", () => new Tools.Windows.OrganizePdfWindow(T(Petal.Core.Tools.ToolId.OrganizePdf), file("album.pdf"), jobs, at)),
+            ("resize", () => new Tools.Windows.ResizeImageWindow(T(Petal.Core.Tools.ToolId.ResizeImage), [file("landscape.jpg")], jobs, at)),
+            ("resizebatch", () => new Tools.Windows.ResizeImageWindow(T(Petal.Core.Tools.ToolId.ResizeImage), [file("landscape.jpg"), file("figures.png")], jobs, at)),
+            ("watermark", () => new Tools.Windows.WatermarkWindow(T(Petal.Core.Tools.ToolId.Watermark), [file("landscape.jpg")], jobs, at)),
+            ("watermarkpdf", () => new Tools.Windows.WatermarkWindow(T(Petal.Core.Tools.ToolId.Watermark), [file("album.pdf")], jobs, at)),
+            ("password", () => new Tools.Windows.PdfPasswordWindow(T(Petal.Core.Tools.ToolId.ProtectPdf), [file("album.pdf")], jobs, at)),
+            ("pagenumbers", () => new Tools.Windows.PageNumbersWindow(T(Petal.Core.Tools.ToolId.NumberPages), [file("album.pdf")], jobs, at)),
+            ("signpdf", () => new Tools.Windows.SignPdfWindow(T(Petal.Core.Tools.ToolId.SignPdf), file("album.pdf"), jobs, at)),
+            ("zip", () => new Tools.Windows.ZipWindow([file("landscape.jpg"), file("album.pdf")], jobs, at)),
+            ("rename", () => new Tools.Windows.RenameWindow([file("landscape.jpg"), file("figures.png"), file("weekend.mov")], at)),
+            ("qr", () => (Window)typeof(Tools.Windows.QrWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null)),
         ];
     }
 

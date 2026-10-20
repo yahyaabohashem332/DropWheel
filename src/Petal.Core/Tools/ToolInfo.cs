@@ -29,6 +29,13 @@ public enum ToolId
     MergePdfs,
     ExtractArchive,
     ReadCode,
+    ResizeImage,
+    Watermark,
+    CopyText,
+    ProtectPdf,
+    NumberPages,
+    SignPdf,
+    ExtractImages,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

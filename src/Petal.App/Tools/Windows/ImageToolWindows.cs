@@ -291,7 +291,11 @@ public static class ImageToolSetup
         ToolLauncher.RegisterWindow(ToolId.CropImage, (t, f, j, a) => new CropImageWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.RedactPhoto, (t, f, j, a) => new RedactPhotoWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.EditPhoto, (t, f, j, a) => new EditPhotoWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.ResizeImage, (t, f, j, a) => new ResizeImageWindow(t, f, j, a));
+        // One watermark window for photos, videos and PDFs.
+        ToolLauncher.RegisterWindow(ToolId.Watermark, (t, f, j, a) => new WatermarkWindow(t, f, j, a));
         ToolLauncher.RegisterDirect(ToolId.ReadCode, (tool, files, jobs, at) => ReadCodeAsync(files[0], at));
+        ToolLauncher.RegisterDirect(ToolId.CopyText, (tool, files, jobs, at) => CopyTextAsync(files[0], at));
         ToolLauncher.RegisterDirect(ToolId.CreatePdf, (tool, files, jobs, at) =>
         {
             // Named after the first image, in selection order: "trip 1.jpg" + … → "trip 1.pdf".
@@ -302,6 +306,32 @@ public static class ImageToolSetup
                 return (IReadOnlyList<string>)[output];
             })], at);
         });
+    }
+
+    /// <summary>Reads the text in a photo or screenshot with Windows' own OCR and copies it.</summary>
+    public static async Task CopyTextAsync(string file, ScreenPoint at)
+    {
+        var card = Hud.HudCard.ShowAt(at, "Reading text", Path.GetFileName(file));
+        try
+        {
+            var text = await ImageRedactor.ReadTextAsync(file);
+            if (text.Length == 0)
+            {
+                card.Fail("No text found", "Try a sharper picture, or add its language under Windows Settings › Time & language.");
+                return;
+            }
+            Clipboard.SetText(text);
+            var lines = text.Split('\n');
+            var first = lines[0].Trim();
+            if (first.Length > 48)
+                first = first[..48] + "…";
+            card.Succeed(L.T("Text copied"), L.P(lines.Length, "{0} line", "{0} lines") + " · " + first, null);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Copying text from an image");
+            card.Fail("Couldn't read this image", ex.Message);
+        }
     }
 
     /// <summary>Reads QR codes and barcodes locally and copies what they say.</summary>

@@ -124,6 +124,16 @@ public static class PdfToolSetup
     {
         CompressWindow.Backends[FormatFamily.Pdf] = CompressPdf;
         ToolLauncher.RegisterWindow(ToolId.OrganizePdf, (t, f, j, a) => new OrganizePdfWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.ProtectPdf, (t, f, j, a) => new PdfPasswordWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.NumberPages, (t, f, j, a) => new PageNumbersWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.SignPdf, (t, f, j, a) => new SignPdfWindow(t, f[0], j, a));
+        ToolLauncher.RegisterDirect(ToolId.ExtractImages, (tool, files, jobs, at) => jobs.RunAsync("Extracting pictures", "Pictures extracted",
+            files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>
+            {
+                var folder = OutputNaming.ForTool(f, tool);
+                await PdfStamper.ExtractImagesAsync(f, folder, null, p, ct);
+                return (IReadOnlyList<string>)[folder];
+            })).ToList(), at));
         ToolLauncher.RegisterWindow(ToolId.MergePdfs, (t, f, j, a) => new OrderedFilesWindow(t, f, j, a, "Document order", "Merge PDFs", "Merging PDFs", "PDFs merged",
             async (inputs, output, p, ct) =>
             {

@@ -88,7 +88,10 @@ public sealed class SettingsWindow : ToolWindow
         var how = new Button { Content = L.T("How it works"), Style = (Style)FindResource("Petal.SubtleButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(-8, 4, 0, 0) };
         how.SetResourceReference(ForegroundProperty, "Petal.Accent");
         how.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
-        text.Children.Add(how);
+        var qr = new Button { Content = L.T("Create QR Code"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
+        qr.SetResourceReference(ForegroundProperty, "Petal.Accent");
+        qr.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
+        text.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { how, qr } });
         grid.Children.Add(text);
         return grid;
     }

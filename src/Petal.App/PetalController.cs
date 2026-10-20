@@ -39,7 +39,7 @@ public sealed class PetalController : IDisposable
         SettingsStore.Saved += s => _wheel.ShowHints = s.ShowKeyHints;
         _jobs = new JobRunner(converters);
         _tools = new ToolLauncher(_jobs);
-        _actions = new FileActionRunner();
+        _actions = new FileActionRunner(_jobs);
         _gestures = new GestureController(_wheel, ui);
         SettingsStore.Saved += s => Sound.Enabled = s.Sounds;
     }

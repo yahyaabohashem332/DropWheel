@@ -33,11 +33,25 @@ public sealed class AppSettings
     public string? OutputFolder { get; set; }
     public bool OnboardingDone { get; set; }
     public ConversionSettings Conversion { get; set; } = new();
+    public WatermarkSettings Watermark { get; set; } = new();
 
     public string? OutputDirectoryFor(string input) =>
         Output == OutputLocation.Folder && !string.IsNullOrWhiteSpace(OutputFolder) && Directory.Exists(OutputFolder)
             ? OutputFolder
             : null;
+}
+
+/// <summary>The last watermark used, so the next one starts from it.</summary>
+public sealed class WatermarkSettings
+{
+    public bool UsePicture { get; set; }
+    public string Text { get; set; } = "";
+    public string? PicturePath { get; set; }
+    public string Color { get; set; } = "#FFFFFF";
+    public double Size { get; set; } = 0.3;
+    public double Opacity { get; set; } = 0.6;
+    public string Place { get; set; } = "BottomRight";
+    public bool Tiled { get; set; }
 }
 
 public static class SettingsStore

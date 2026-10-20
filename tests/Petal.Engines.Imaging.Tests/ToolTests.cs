@@ -409,6 +409,30 @@ public sealed class RedactTests
         Assert.True(words.Count >= 3);
     }
 
+    [Fact]
+    public async Task ReadsTextLineByLine()
+    {
+        var dir = Fixtures.NewDirectory();
+        var path = Path.Combine(dir, "lines.png");
+        using (var label = new MagickImage("label:PETAL COPY\nTEXT 2026", new MagickReadSettings
+        {
+            FontPointsize = 90,
+            Font = "Arial",
+            BackgroundColor = MagickColors.White,
+            FillColor = MagickColors.Black,
+        }))
+        {
+            label.BorderColor = MagickColors.White;
+            label.Border(60);
+            label.Write(path, MagickFormat.Png);
+        }
+        var text = await ImageRedactor.ReadTextAsync(path);
+        var lines = text.Split('\n', StringSplitOptions.TrimEntries);
+        Assert.Equal(2, lines.Length);
+        Assert.Contains("COPY", lines[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("2026", lines[1]);
+    }
+
     private static double Roughness(MagickImage image)
     {
         using var copy = (MagickImage)image.Clone();

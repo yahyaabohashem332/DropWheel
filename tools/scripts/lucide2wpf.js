@@ -27,6 +27,9 @@ const map = {
   flipH: 'flip-horizontal-2', rotateCcw: 'rotate-ccw', duplicate: 'copy-plus', fileImage: 'file-image',
   presentation: 'presentation', sheet: 'sheet', book: 'book-open', captions: 'captions', star: 'star',
   wand: 'wand-sparkles', qr: 'qr-code',
+  resize: 'scaling', flipV: 'flip-vertical-2', folderZip: 'folder-archive', rename: 'text-cursor-input',
+  stamp: 'stamp', lock: 'lock-keyhole', unlock: 'lock-open', pageNumbers: 'list-ordered', signature: 'signature',
+  images: 'images', textSelect: 'text-select',
 };
 
 const fmt = n => (Math.round(n * 1000) / 1000).toString();
