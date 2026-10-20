@@ -15,6 +15,56 @@ namespace Petal.App;
 /// </summary>
 internal static class DesignSnapshots
 {
+    /// <summary>"Petal.exe --snapshot-tools &lt;folder&gt; &lt;test data folder&gt;" renders each tool window with sample files.</summary>
+    public static async Task RunToolsAsync(string[] args)
+    {
+        var output = args[1];
+        var data = args[2];
+        Directory.CreateDirectory(output);
+        var converters = new ConverterRegistry();
+        converters.Register(new ImageConverter());
+        var jobs = new Jobs.JobRunner(converters);
+        var at = new Input.ScreenPoint(-4000, -4000);
+        string F(string name) => Path.Combine(data, name);
+        var cases = new List<(string Name, Func<Window> Create)>
+        {
+            ("annotate", () => new Tools.Windows.AnnotateWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.AnnotatePhoto), F("landscape.jpg"), jobs, at)),
+            ("addbg", () => new Tools.Windows.AddBackgroundWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.AddBackground), F("figures.png"), jobs, at)),
+            ("collage", () => new Tools.Windows.CollageWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.CreateCollage), [F("landscape.jpg"), F("figures.png"), F("landscape.jpg")], jobs, at)),
+            ("metadata", () => new Tools.Windows.MetadataWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.Metadata), [F("landscape.jpg")], jobs, at)),
+        };
+        foreach (var extra in ExtraToolCases(F, jobs, at))
+            cases.Add(extra);
+        var only = args.Length > 3 ? args[3] : null;
+        foreach (var dark in new[] { false, true })
+        {
+            Theme.Configure(dark ? ThemePreference.Dark : ThemePreference.Light, false);
+            foreach (var (name, create) in cases)
+            {
+                if (only is not null && !name.Equals(only, StringComparison.OrdinalIgnoreCase)) continue;
+                try
+                {
+                    var window = create();
+                    window.WindowStartupLocation = WindowStartupLocation.Manual;
+                    window.Left = -6000;
+                    window.Top = -6000;
+                    window.ShowActivated = false;
+                    window.Show();
+                    await Task.Delay(2500);
+                    Save(RenderWindow(window), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
+                    window.Close();
+                }
+                catch (Exception ex)
+                {
+                    File.AppendAllText(Path.Combine(output, "error.txt"), $"{name}: {ex}{Environment.NewLine}");
+                }
+            }
+        }
+    }
+
+    /// <summary>Tool windows added later register here so the snapshot run covers them.</summary>
+    private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at) => [];
+
     public static void Run(string[] args)
     {
         var output = args[1];

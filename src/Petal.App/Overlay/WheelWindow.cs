@@ -66,6 +66,7 @@ public sealed class WheelWindow : Window
     private ScreenPoint _anchor;
     private Palette _palette = Theme.Current;
     private ImageBrush? _glass;
+    private long _openedAt;
 
     public WheelWindow(FeedbackSound sound)
     {
@@ -120,6 +121,9 @@ public sealed class WheelWindow : Window
 
     public bool IsOpen => _open;
 
+    /// <summary>Show the "Shift Convert · Ctrl Tools · Alt Actions" strip above the ring.</summary>
+    public bool ShowHints { get; set; } = true;
+
     public WheelMode Mode => _mode;
 
     // ---------- lifetime ----------
@@ -149,6 +153,33 @@ public sealed class WheelWindow : Window
     {
         Show();
         Park();
+        // Build every kind of wheel once while hidden so the first real one opens without JIT delay.
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
+        {
+            try
+            {
+                _files = [System.IO.Path.Combine(System.IO.Path.GetTempPath(), "petal-warmup.jpg")];
+                foreach (var mode in Enum.GetValues<WheelMode>())
+                {
+                    _mode = mode;
+                    Render(animate: false);
+                    SetHighlight(0, null);
+                }
+                _root.Measure(new Size(Side, Side));
+                _root.Arrange(new Rect(0, 0, Side, Side));
+            }
+            catch
+            {
+                // Warm-up only.
+            }
+            finally
+            {
+                _files = null;
+                _content = null;
+                _highlight = null;
+                Park();
+            }
+        });
     }
 
     private void Park()
@@ -214,6 +245,8 @@ public sealed class WheelWindow : Window
         _probeTicks = 0;
 
         SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        _openedAt = Environment.TickCount64;
+        Log.Info($"wheel: probe at {cx},{cy} mode {mode}");
         // Nudge the drag loop: it re-evaluates the drop target on the next mouse move.
         InjectZeroMouseMove();
         _probeTimer.Start();
@@ -319,6 +352,7 @@ public sealed class WheelWindow : Window
             _files = files;
             _probing = false;
             _probeTimer.Stop();
+            Log.Info($"wheel: DragEnter after {Environment.TickCount64 - _openedAt} ms, {files.Count} file(s)");
             Render(animate: true);
         }
 
@@ -367,18 +401,17 @@ public sealed class WheelWindow : Window
         var item = content.Items[i];
         Sound.Drop();
 
-        // Let the petal stay lit for a couple of frames, then vanish instantly.
-        var close = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(55) };
+        // Let the petal stay lit for a couple of frames, then vanish instantly. Only then run the
+        // action: opening a tool window can keep the UI thread busy, and the wheel must not linger.
+        var drop = new ScreenPoint(point.X, point.Y);
+        var close = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(50) };
         close.Tick += (_, _) =>
         {
             close.Stop();
             CloseWheel();
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, drop));
         };
         close.Start();
-
-        // Run the action after returning from Drop, so Explorer's drag loop finishes first.
-        var drop = new ScreenPoint(point.X, point.Y);
-        Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, drop));
     }
 
     private int? HitTest(DragEventArgs e)
@@ -543,6 +576,7 @@ public sealed class WheelWindow : Window
             _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 190, Motion.Bloom, from: 0.38));
             _labels.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0, delayMs: 55));
             _hint.BeginAnimation(OpacityProperty, Motion.To(1, 160, Motion.Standard, from: 0, delayMs: 120));
+            _hint.Visibility = ShowHints ? Visibility.Visible : Visibility.Collapsed;
         }
         else
         {

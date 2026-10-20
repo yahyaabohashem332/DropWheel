@@ -33,6 +33,8 @@ public sealed class PetalController : IDisposable
             KeyLabel = KeyLabel,
         };
         _wheel.ItemDropped += OnItemDropped;
+        _wheel.ShowHints = SettingsStore.Current.ShowKeyHints;
+        SettingsStore.Saved += s => _wheel.ShowHints = s.ShowKeyHints;
         _jobs = new JobRunner(converters);
         _tools = new ToolLauncher(_jobs);
         _actions = new FileActionRunner();

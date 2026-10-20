@@ -28,6 +28,18 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        if (e.Args.Length >= 3 && e.Args[0] == "--snapshot-tools")
+        {
+            ThemeResources.Install(this);
+            Dispatcher.BeginInvoke(async () =>
+            {
+                try { await DesignSnapshots.RunToolsAsync(e.Args); }
+                catch (Exception ex) { File.WriteAllText(Path.Combine(e.Args[1], "error.txt"), ex.ToString()); }
+                Shutdown();
+            });
+            return;
+        }
+
         if (e.Args.Length >= 3 && e.Args[0] == "--snapshots")
         {
             ThemeResources.Install(this);
@@ -71,8 +83,7 @@ public partial class App : Application
         ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
-        var converters = new ConverterRegistry();
-        converters.Register(new ImageConverter());
+        var converters = EngineSetup.CreateConverters();
 
         _controller = new PetalController(converters, Dispatcher);
         _controller.Start();

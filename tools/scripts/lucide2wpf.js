@@ -80,7 +80,11 @@ function normalizePath(d) {
     out.push(args.join(' '));
   }
   // Each <path> starts from the origin, so a leading relative "m" is really absolute once paths are joined.
-  if (out[0] === 'm') out[0] = 'M';
+  // Pairs after a leading "m" are relative line-tos, so split them off with an explicit "l".
+  if (out[0] === 'm') {
+    out[0] = 'M';
+    if (out.length > 2 && !/^[A-Za-z]$/.test(out[2])) out.splice(2, 0, 'l');
+  }
   return out.join(' ').replace(/\s+/g, ' ').trim();
 }
 

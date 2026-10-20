@@ -13,7 +13,7 @@ namespace Petal.DragHarness;
 /// <summary>
 /// Options: --files a;b --key shift|ctrl|alt [--key2 ...] --petal N --count N --shots dir [--mode drop|cancel|outside]
 /// </summary>
-public sealed record HarnessScript(string[] Files, string Key, string? Key2, int Petal, int Count, string ShotsDir, string Mode, int HoverAll)
+public sealed record HarnessScript(string[] Files, string Key, string? Key2, int Petal, int Count, string ShotsDir, string Mode, int HoverAll, int WaitAfterTap)
 {
     public static HarnessScript Parse(string[] args)
     {
@@ -30,7 +30,8 @@ public sealed record HarnessScript(string[] Files, string Key, string? Key2, int
             int.Parse(Get("--count", "8")),
             Get("--shots", Path.GetTempPath()),
             Get("--mode", "drop"),
-            int.Parse(Get("--hover-all", "0")));
+            int.Parse(Get("--hover-all", "0")),
+            int.Parse(Get("--wait-after-tap", "260")));
     }
 }
 
@@ -121,7 +122,7 @@ public sealed class HarnessWindow : Window
         Thread.Sleep(150);
         Input.Tap(_script.Key);
         Log($"tapped {_script.Key} at {ax},{ay}");
-        Thread.Sleep(260);
+        Thread.Sleep(_script.WaitAfterTap);
         Screen.Save(ax, ay, 560, Path.Combine(_script.ShotsDir, "1-open.png"));
 
         if (_script.Key2 is { Length: > 0 } key2)
