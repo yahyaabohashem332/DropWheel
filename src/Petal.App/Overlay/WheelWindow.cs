@@ -380,7 +380,7 @@ public sealed class WheelWindow : Window
         // A tool window, the share sheet or a folder picker takes the keyboard next; otherwise
         // (conversions, copying) it goes back to File Explorer.
         bool opensWindow = item.Payload is Petal.Core.Tools.ToolInfo { HasWindow: true }
-            || item.Payload is Petal.Core.Actions.FileActionInfo { Id: Petal.Core.Actions.FileActionId.Share or Petal.Core.Actions.FileActionId.Float or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal };
+            || item.Payload is Petal.Core.Actions.FileActionInfo { Id: Petal.Core.Actions.FileActionId.Share or Petal.Core.Actions.FileActionId.Phone or Petal.Core.Actions.FileActionId.Float or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal };
         CloseWheel(returnFocus: !opensWindow);
         Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, at));
     }
@@ -593,7 +593,7 @@ public sealed class WheelWindow : Window
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
             var item = _content.Items[i2];
-            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat ? item.Label : L.T(item.Name);
+            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite ? item.Label : L.T(item.Name);
             SetHub(_lastHubLabel, Subtitle(item));
             Sound.Tick();
             if (data is not null)
@@ -608,6 +608,8 @@ public sealed class WheelWindow : Window
     private static string Subtitle(WheelItem item) => item.Payload switch
     {
         Petal.Core.Formats.FileFormat => L.T("Convert"),
+        // A favourite's petal shows its name; the centre adds what it does ("WEBP · 1600 px").
+        Petal.Core.Jobs.Favourite => item.Name,
         Petal.Core.Tools.ToolInfo => L.T("Tool"),
         _ => L.T("Action"),
     };
@@ -705,7 +707,7 @@ public sealed class WheelWindow : Window
                 };
                 _petals.Children.Add(path);
                 _petalPaths.Add(path);
-                AddLabel(item, i, n, tools, p);
+                AddLabel(item, i, n, tools || item.Payload is Petal.Core.Jobs.Favourite, p);
             }
         }
 

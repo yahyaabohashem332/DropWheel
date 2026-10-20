@@ -26,7 +26,16 @@ public sealed class ConversionSettings
     /// <summary>Use hardware video encoders when the GPU has them.</summary>
     public bool HardwareVideoEncoding { get; set; } = true;
 
+    /// <summary>
+    /// Longest side of picture and video results in pixels; 0 keeps the source size. Only
+    /// favourites set it, so it is not saved with the user's defaults.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int MaxLongEdge { get; set; }
+
     public static ConversionSettings Default { get; } = new();
+
+    public ConversionSettings Clone() => (ConversionSettings)MemberwiseClone();
 }
 
 public sealed record ConversionJob(string InputPath, FileFormat From, FileFormat To, string OutputPath, ConversionSettings Settings);
@@ -37,6 +46,15 @@ public sealed record JobResult(IReadOnlyList<string> OutputPaths)
     public static JobResult Single(string path) => new([path]);
 
     public string Primary => OutputPaths[0];
+}
+
+/// <summary>
+/// A converter that can also save a file again in its own format with other settings (smaller,
+/// lower quality), for favourites such as "JPG, 1600 px".
+/// </summary>
+public interface IResaver
+{
+    bool CanResave(FileFormat format);
 }
 
 public interface IConverter
@@ -62,6 +80,10 @@ public sealed class ConverterRegistry
         ConversionMatrix.CanConvert(from, to) ? _converters.FirstOrDefault(c => c.CanConvert(from, to)) : null;
 
     public bool CanConvert(FileFormat from, FileFormat to) => Find(from, to) is not null;
+
+    /// <summary>The converter that re-saves files of <paramref name="format"/> in the same format, if any.</summary>
+    public IConverter? FindResaver(FileFormat format) =>
+        _converters.FirstOrDefault(c => c is IResaver r && r.CanResave(format));
 
     /// <summary>The wheel's conversion targets, filtered to what this machine can actually do.</summary>
     public IReadOnlyList<FileFormat> AvailableTargets(IReadOnlyCollection<FileFormat> sources) =>

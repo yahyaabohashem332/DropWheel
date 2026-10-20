@@ -57,12 +57,12 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_34_tools_and_8_actions()
+    public void There_are_35_tools_and_9_actions()
     {
-        Assert.Equal(34, ToolRegistry.All.Count);
-        Assert.Equal(34, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(35, ToolRegistry.All.Count);
+        Assert.Equal(35, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
-        Assert.Equal(8, Petal.Core.Actions.FileActionRegistry.All.Count);
+        Assert.Equal(9, Petal.Core.Actions.FileActionRegistry.All.Count);
     }
 
     [Fact]
@@ -70,7 +70,9 @@ public class RegistryTests
     {
         Assert.Equal(11, ToolRegistry.ToolsFor([F.Jpg]).Count);
         var multi = ToolRegistry.ToolsFor([F.Jpg, F.Png]).Select(t => t.Id).ToList();
-        Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.CreatePdf, ToolId.CreateCollage], multi);
+        Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.RemoveBackground, ToolId.CreatePdf, ToolId.CreateCollage], multi);
+        Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp3]).Select(t => t.Id));
+        Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp4, F.Mov]).Select(t => t.Id));
         Assert.Contains(ToolId.Watermark, ToolRegistry.ToolsFor([F.Mp4]).Select(t => t.Id));
         Assert.Contains(ToolId.SignPdf, ToolRegistry.ToolsFor([F.Pdf]).Select(t => t.Id));
         Assert.DoesNotContain(ToolId.SignPdf, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));

@@ -249,6 +249,8 @@ public sealed class RenameWindow : ToolWindow
         try
         {
             var done = BatchRename.Apply(plan);
+            Jobs.History.Add(L.P(done.Count, "Renamed {0} item", "Renamed {0} items"), done.Select(d => d.From).ToList(), [],
+                done.Select(d => new Jobs.RenamedPath(d.From, d.To)).ToList());
             var card = HudCard.ShowAt(_at, "Renamed", "");
             card.Succeed(L.P(done.Count, "Renamed {0} item", "Renamed {0} items"), L.T("Click to undo"), () =>
             {

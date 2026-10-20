@@ -61,4 +61,17 @@ if (-not (Test-Path (Join-Path $ffDir 'ffmpeg.exe'))) {
     Remove-Item $tmp -Recurse -Force
 }
 Write-Host "FFmpeg: $((& (Join-Path $ffDir 'ffmpeg.exe') -hide_banner -version | Select-Object -First 1))"
+# Real-ESRGAN general x4v3 (BSD-3-Clause), Qualcomm AI Hub's ONNX export: the AI enlargement model.
+$esrganDir = Join-Path $Destination 'models\realesrgan-x4v3'
+if (-not (Test-Path (Join-Path $esrganDir 'real_esrgan_general_x4v3.onnx'))) {
+    $zip = Join-Path $downloads 'real_esrgan_general_x4v3-onnx-float.zip'
+    Get-Verified 'https://qaihub-public-assets.s3.us-west-2.amazonaws.com/qai-hub-models/models/real_esrgan_general_x4v3/releases/v0.64.0/real_esrgan_general_x4v3-onnx-float.zip' $zip 'fc094329b24a00c936ebc1cc4c51bc59633e7dc36f4a553344342171cbd3c7cf'
+    $tmp = Join-Path $downloads 'esrgan-x'
+    Expand-Archive $zip -DestinationPath $tmp -Force
+    New-Item -ItemType Directory -Force $esrganDir | Out-Null
+    # The graph and its external weights must keep their names; the graph refers to the .data file.
+    Copy-Item (Join-Path $tmp 'real_esrgan_general_x4v3-onnx-float\*') $esrganDir -Force
+    Remove-Item $tmp -Recurse -Force
+}
+Write-Host "Models: $((Get-ChildItem (Join-Path $Destination 'models') -Recurse -File).Name -join ', ')"
 Write-Host "Helper programs are in $Destination"

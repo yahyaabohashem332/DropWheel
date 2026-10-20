@@ -35,6 +35,12 @@ public sealed record ImageTransform
 
     public bool FlipHorizontal { get; init; }
     public bool FlipVertical { get; init; }
+
+    /// <summary>
+    /// When enlarging, let the AI model add the detail (Real-ESRGAN, up to 4×) instead of only
+    /// smoothing pixels. Pictures too large for it are enlarged the ordinary way.
+    /// </summary>
+    public bool AiEnlarge { get; init; }
 }
 
 /// <summary>Resize &amp; Rotate tool.</summary>
@@ -65,13 +71,21 @@ public static class ImageTransformer
         Task.Run(async () =>
         {
             var format = ImageFormats.Detect(inputPath);
-            using var image = ImageLoader.Load(inputPath, format);
-            progress?.Report(0.35);
-            Apply(image, transform);
-            cancellationToken.ThrowIfCancellationRequested();
-            progress?.Report(0.6);
-            var target = ToolSupport.OutputFormat(outputPath, format);
-            await ImageWriter.WriteAsync(image, outputPath, target, ToolSupport.WriteOptions(image, format, target), cancellationToken);
+            using var source = ImageLoader.Load(inputPath, format);
+            progress?.Report(0.15);
+            var image = Apply(source, transform, InlineProgress.Slice(progress, 0.15, 0.85), cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                progress?.Report(0.85);
+                var target = ToolSupport.OutputFormat(outputPath, format);
+                await ImageWriter.WriteAsync(image, outputPath, target, ToolSupport.WriteOptions(source, format, target), cancellationToken);
+            }
+            finally
+            {
+                if (!ReferenceEquals(image, source))
+                    image.Dispose();
+            }
             progress?.Report(1);
         }, cancellationToken);
 
@@ -80,7 +94,8 @@ public static class ImageTransformer
         ToolSupport.RunBatchAsync(items, i => (i.InputPath, i.OutputPath),
             (i, p, ct) => TransformAsync(i.InputPath, i.OutputPath, transform, p, ct), progress, cancellationToken);
 
-    internal static void Apply(MagickImage image, ImageTransform t)
+    /// <summary>Applies the transform; returns <paramref name="image"/> itself, or a new image when AI enlarged it.</summary>
+    internal static MagickImage Apply(MagickImage image, ImageTransform t, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         bool changed = false;
         int turns = QuarterTurns(t.Rotation);
@@ -100,17 +115,25 @@ public static class ImageTransformer
             changed = true;
         }
         var (w, h) = TargetSize((int)image.Width, (int)image.Height, t with { Rotation = 0 });
-        if (w != image.Width || h != image.Height)
+        var result = image;
+        if (t.AiEnlarge && (w > image.Width || h > image.Height) && AiUpscaler.CanEnlarge((int)image.Width, (int)image.Height))
         {
-            image.FilterType = FilterType.Lanczos;
-            image.Resize(new MagickGeometry((uint)w, (uint)h) { IgnoreAspectRatio = true });
+            // 4× with the model, then exactly to the asked size (down, or further up).
+            result = AiUpscaler.Upscale(image, progress, cancellationToken);
+            changed = true;
+        }
+        if (w != result.Width || h != result.Height)
+        {
+            result.FilterType = FilterType.Lanczos;
+            result.Resize(new MagickGeometry((uint)w, (uint)h) { IgnoreAspectRatio = true });
             changed = true;
         }
         if (changed)
         {
-            image.ResetPage();
-            MetadataHygiene.AfterGeometryChange(image);
+            result.ResetPage();
+            MetadataHygiene.AfterGeometryChange(result);
         }
+        return result;
     }
 
     private static int QuarterTurns(int degrees) => ((degrees / 90) % 4 + 4) % 4;

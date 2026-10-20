@@ -312,3 +312,52 @@ public class ConverterTests
         await Assert.ThrowsAsync<MediaException>(() => MediaProbe.ProbeAsync(path));
     }
 }
+
+public class FavouriteMediaTests
+{
+    private static readonly MediaConverter Converter = new();
+
+    [Fact]
+    public async Task Plans_scaling_and_re_encoding_only_when_asked()
+    {
+        var big = await Fixtures.GetAsync("big.mov");
+        var info = await MediaProbe.ProbeAsync(big);
+
+        // A plain MOV to MP4 copies the H.264 stream.
+        var plain = MediaConverter.Plan(new ConversionJob(big, F.Mov, F.Mp4, "out.mp4", new ConversionSettings()), info);
+        Assert.Equal(StreamMode.Copy, plain.Video);
+
+        // With a size limit it is encoded and scaled, keeping 16:9 with even sides.
+        var small = MediaConverter.Plan(new ConversionJob(big, F.Mov, F.Mp4, "out.mp4", new ConversionSettings { MaxLongEdge = 160 }), info);
+        Assert.Equal(StreamMode.Encode, small.Video);
+        Assert.Equal("scale=160:90:flags=lanczos", small.VideoFilter);
+
+        // A limit the video already fits does nothing.
+        var roomy = MediaConverter.Plan(new ConversionJob(big, F.Mov, F.Mp4, "out.mp4", new ConversionSettings { MaxLongEdge = 1280 }), info);
+        Assert.Equal(StreamMode.Copy, roomy.Video);
+
+        // Saving in its own format always re-encodes, or nothing would change.
+        var mp3 = await Fixtures.GetAsync("audio.mp3");
+        var resave = MediaConverter.Plan(new ConversionJob(mp3, F.Mp3, F.Mp3, "out.mp3", new ConversionSettings { AudioBitrateKbps = 96 }), await MediaProbe.ProbeAsync(mp3));
+        Assert.Equal(StreamMode.Encode, resave.Audio);
+        Assert.True(Converter.CanResave(F.Mp4));
+        Assert.True(Converter.CanResave(F.Mp3));
+        Assert.False(Converter.CanResave(F.Png));
+    }
+
+    [Fact]
+    public async Task Makes_a_smaller_copy_in_the_same_format()
+    {
+        var input = await Fixtures.GetAsync("hq.mp4");
+        var dir = Fixtures.NewDir();
+        var output = Path.Combine(dir, "hq 160.mp4");
+
+        await Converter.ConvertAsync(new ConversionJob(input, F.Mp4, F.Mp4, output, new ConversionSettings { MaxLongEdge = 160, VideoCrf = 28 }), null, CancellationToken.None);
+
+        var info = await MediaAssert.ValidAsync(output, duration: 5.0, tolerance: 0.3);
+        Assert.Equal((160, 120), (info.Video!.Width, info.Video.Height));
+        Assert.True(info.HasAudio);
+        Assert.True(new FileInfo(output).Length < new FileInfo(input).Length);
+        MediaAssert.NoTempFiles(dir);
+    }
+}

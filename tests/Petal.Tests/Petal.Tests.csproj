@@ -29,11 +29,16 @@
     <ProjectReference Include="..\..\src\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Files\Petal.Engines.Files.csproj" />
     <ProjectReference Include="..\..\src\Petal.App\Petal.App.csproj" />
+    <ProjectReference Include="..\..\src\Petal.Cli\Petal.Cli.csproj" />
   </ItemGroup>
 
   <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->
   <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
     <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('..\..\tools\bin\models')">
+    <None Include="..\..\tools\bin\models\**\*" LinkBase="tools\models" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
 </Project>

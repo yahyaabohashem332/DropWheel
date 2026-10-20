@@ -3,6 +3,7 @@ namespace Petal.Core.Actions;
 public enum FileActionId
 {
     Share,
+    Phone,
     Float,
     Copy,
     Move,
@@ -19,6 +20,7 @@ public static class FileActionRegistry
     public static readonly IReadOnlyList<FileActionInfo> All =
     [
         new(FileActionId.Share, "SHARE", "Share", "share", "Send files and folders with Nearby Sharing or any app in the Windows share sheet."),
+        new(FileActionId.Phone, "TO PHONE", "Send to Phone", "smartphone", "Show a QR code to scan with a phone on the same Wi-Fi, then save the files on it. Nothing goes through the internet."),
         new(FileActionId.Float, "FLOAT", "Float", "pin", "Keep files on a floating shelf. Pin it to a screen edge and drag files into another app."),
         new(FileActionId.Copy, "COPY", "Copy", "clipboard", "Copy files to the clipboard, ready to paste in File Explorer."),
         new(FileActionId.Move, "MOVE", "Move", "folderInput", "Choose a destination folder and move the originals there."),

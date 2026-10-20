@@ -41,4 +41,8 @@
     <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('..\..\tools\bin\models')">
+    <None Include="..\..\tools\bin\models\**\*" LinkBase="tools\models" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
 </Project>

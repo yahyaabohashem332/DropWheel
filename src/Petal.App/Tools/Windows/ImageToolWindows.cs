@@ -294,8 +294,8 @@ public static class ImageToolSetup
         ToolLauncher.RegisterWindow(ToolId.ResizeImage, (t, f, j, a) => new ResizeImageWindow(t, f, j, a));
         // One watermark window for photos, videos and PDFs.
         ToolLauncher.RegisterWindow(ToolId.Watermark, (t, f, j, a) => new WatermarkWindow(t, f, j, a));
-        ToolLauncher.RegisterDirect(ToolId.ReadCode, (tool, files, jobs, at) => ReadCodeAsync(files[0], at));
         ToolLauncher.RegisterDirect(ToolId.CopyText, (tool, files, jobs, at) => CopyTextAsync(files[0], at));
+        ToolLauncher.RegisterWindow(ToolId.RemoveBackground, (t, f, j, a) => new RemoveBackgroundWindow(t, f, j, a));
         ToolLauncher.RegisterDirect(ToolId.CreatePdf, (tool, files, jobs, at) =>
         {
             // Named after the first image, in selection order: "trip 1.jpg" + … → "trip 1.pdf".
@@ -308,12 +308,22 @@ public static class ImageToolSetup
         });
     }
 
-    /// <summary>Reads the text in a photo or screenshot with Windows' own OCR and copies it.</summary>
+    /// <summary>
+    /// Copies what a picture says: the contents of any QR code or barcode in it, otherwise its
+    /// text, read with Windows' own OCR.
+    /// </summary>
     public static async Task CopyTextAsync(string file, ScreenPoint at)
     {
         var card = Hud.HudCard.ShowAt(at, "Reading text", Path.GetFileName(file));
         try
         {
+            // Codes first: decoding them is quick and exact.
+            var codes = await BarcodeScanner.ScanAsync(file);
+            if (codes.Count > 0)
+            {
+                CopyCodes(card, codes);
+                return;
+            }
             var text = await ImageRedactor.ReadTextAsync(file);
             if (text.Length == 0)
             {
@@ -334,31 +344,16 @@ public static class ImageToolSetup
         }
     }
 
-    /// <summary>Reads QR codes and barcodes locally and copies what they say.</summary>
-    public static async Task ReadCodeAsync(string file, ScreenPoint at)
+    /// <summary>Copies what the codes say; a link opens on a click.</summary>
+    private static void CopyCodes(Hud.HudCard card, IReadOnlyList<BarcodeResult> results)
     {
-        var card = Hud.HudCard.ShowAt(at, "Reading code", Path.GetFileName(file));
-        try
-        {
-            var results = await BarcodeScanner.ScanAsync(file);
-            if (results.Count == 0)
-            {
-                card.Fail("No code found", "Try a sharper or closer photo of the QR code.");
-                return;
-            }
-            var text = string.Join(Environment.NewLine, results.Select(r => r.Text));
-            Clipboard.SetText(text);
-            var first = results[0].Text;
-            bool link = Uri.TryCreate(first, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-            card.Succeed(results.Count == 1 ? L.T("Copied to clipboard") : L.P(results.Count, "{0} code copied", "{0} codes copied"),
-                link ? first + " · " + L.T("click to open") : first,
-                link ? () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(first) { UseShellExecute = true }) : null);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Reading a code");
-            card.Fail("Couldn't read this image", ex.Message);
-        }
+        var text = string.Join(Environment.NewLine, results.Select(r => r.Text));
+        Clipboard.SetText(text);
+        var first = results[0].Text;
+        bool link = Uri.TryCreate(first, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        card.Succeed(results.Count == 1 ? L.T("Code copied") : L.P(results.Count, "{0} code copied", "{0} codes copied"),
+            link ? first + " · " + L.T("click to open") : first,
+            link ? () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(first) { UseShellExecute = true }) : null);
     }
 
     private static async Task<string> CompressImage(string input, CompressRequest request, IProgress<double> progress, CancellationToken ct)

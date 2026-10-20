@@ -5,9 +5,9 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
-| **Shift** | Convert | Every format the file can become (290 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, resize, watermark, crop, redact, copy text, trim, split, PDF password, page numbers, sign… (34 tools) |
-| **Alt** | Actions | Share, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal |
+| **Shift** | Convert | Your starred favourites first, then every format the file can become (290 conversion paths) |
+| **Ctrl** | Tools | Compress, metadata, edit, remove background, resize, watermark, crop, redact, copy text or QR, transcribe, trim, split, PDF password, page numbers, sign… (35 tools) |
+| **Alt** | Actions | Share, Send to Phone, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
 another key to switch wheels in place. Drop on the centre (or press Esc) to cancel.
@@ -39,7 +39,40 @@ Narrator's, which is why the default is different.)
   undone from the confirmation card.
 * **Compress to ZIP** — files and folders into one archive, with an optional AES-256 password.
 * **Create QR Code** (notification-area menu or the main window) — text, links or a Wi-Fi network,
-  saved as PNG or SVG or copied.
+  saved as PNG or SVG or copied. **Copy Text** also reads QR codes and barcodes in a picture.
+
+**On-device AI** — nothing leaves the PC; every model is checked against a pinned SHA-256.
+
+* **Remove Background** — BiRefNet-lite cuts out the subject (hair included) for a transparent PNG,
+  a white or coloured background, optionally cropped to the subject. The 224 MB model downloads once,
+  from the tool window.
+* **Transcribe** — Whisper (Fast · Balanced · Accurate, the last one strong in Arabic) turns speech
+  in audio or video into subtitles (.srt) and/or text, in the spoken language or translated into
+  English, and can add them to the video as a track or burned into the picture (Arabic shaped and
+  right to left). Uses the graphics card through Vulkan when it can.
+* **AI enlargement** in Resize — Real-ESRGAN (bundled, 4.5 MB) adds detail when a picture is made
+  larger, on the graphics card through DirectML, else on the processor.
+
+**Make Petal yours:**
+
+* **Favourites** (Settings › Favourites) — a format plus a longest side and a quality, such as
+  "WEBP 1600" or "MP4 720p". They sit first on the conversion wheel with a star, and also make
+  smaller copies of files already in that format.
+* **History** (notification-area menu or Settings) — what Petal made lately, newest first: show a
+  result in File Explorer, or undo it (results go to the Recycle Bin; renames are put back).
+* **Automations** (Settings › Automations) — watch a folder such as Downloads and convert each new
+  file once it has finished arriving (pictures, videos, audio or documents), to a format or with a
+  favourite. Results go to a "Petal" folder inside it, so a rule never feeds itself.
+* **Send to Phone** (Actions wheel) — a QR code for a phone on the same Wi-Fi: it opens a page with
+  the files (folders, and everything at once, as ZIP) and, when allowed, lets the phone send files
+  back to Downloads. A small web server on this PC's local address under a random secret path; it
+  stops when the window closes or after 15 idle minutes.
+* **Command line** — `petal convert *.heic --to jpg --max 2048`, `petal resize`, `petal compress`,
+  `petal zip`, `petal qr`, `petal text`, `petal codes`, `petal info`, `petal formats`. Installed as
+  `Petal.com` beside `Petal.exe` (setup can add it to PATH); `petal help` lists the options.
+* **Updates** — set an update address (an `update.json` over https, or a shared folder) in
+  Settings › Updates and Petal checks once a day; the installer is verified against the feed's
+  SHA-256 and installs quietly. No address is set by default, so a plain install never phones home.
 
 **English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
 Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
@@ -49,16 +82,19 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.0.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
-.NET, FFmpeg and ExifTool, so nothing else is needed. A portable ZIP is built next to it.
+Run `dist\Petal-Setup-1.1.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+.NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the background and
+speech models download from their tool windows when first used. Setup can also add the `petal`
+command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
 
 Microsoft Office or LibreOffice, when installed, is used for slides and exact-layout Word/Excel output;
 everything else is built in. On this development PC all 290 conversion paths are available.
 
 ## Tests
 
-634 tests: core and app parts (96, including a check that every interface string has Arabic), media
-engine (191), image engine (178), documents and PDF (169).
+718 tests: core, app and command line (166, including a check that every interface string has
+Arabic), media engine (199, transcription included), image engine (184, AI models included),
+documents and PDF (169).
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works
@@ -87,6 +123,7 @@ src/Petal.Engines.Media     audio/video conversions and tools (FFmpeg)
 src/Petal.Engines.Documents PDF, documents, spreadsheets, slides, EPUB
 src/Petal.Engines.Files     archives, subtitles, ExifTool metadata
 src/Petal.App               WPF app: tray, gesture hooks, wheel, HUD, tool windows, settings
+src/Petal.Cli               the command line, published as Petal.com
 tests/Petal.Tests           unit and integration tests
 tests/Petal.DragHarness     drives a real shell drag (SHDoDragDrop) + key taps for end-to-end tests
 tools/scripts               icon generation, helper-program download, packaging
@@ -97,7 +134,7 @@ tools/scripts               icon generation, helper-program download, packaging
 Requirements: Windows 10 1809+ (x64), .NET 10 SDK.
 
 ```powershell
-pwsh tools\scripts\fetch-tools.ps1      # FFmpeg + ExifTool into tools\bin (checksums verified)
+pwsh tools\scripts\fetch-tools.ps1      # FFmpeg, ExifTool and Real-ESRGAN into tools\bin (checksums verified)
 dotnet build Petal.sln
 dotnet test tests\Petal.Tests
 src\Petal.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Petal.exe
@@ -122,4 +159,7 @@ localization tests fail when a new English string has no Arabic entry or a trans
 
 Icons: [Lucide](https://lucide.dev) (ISC). FFmpeg (GPL build, run as a separate program),
 ExifTool by Phil Harvey (Artistic/GPL), ImageMagick (Apache 2.0 style), NAudio (MIT),
-SharpCompress (MIT), SharpZipLib (MIT, AES-encrypted ZIP), ZXing.Net (Apache 2.0, QR codes). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.
+SharpCompress (MIT), SharpZipLib (MIT, AES-encrypted ZIP), ZXing.Net (Apache 2.0, QR codes),
+ONNX Runtime (MIT) with DirectML (Microsoft redistributable licence), Whisper.net and whisper.cpp
+(MIT) with OpenAI's Whisper models (MIT), BiRefNet (MIT), Real-ESRGAN (BSD-3-Clause, ONNX export by
+Qualcomm AI Hub). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.

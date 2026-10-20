@@ -12,6 +12,10 @@ public static class OutputNaming
     public static string ForConversion(string inputPath, FileFormat target, string? outputDirectory = null) =>
         Unique(outputDirectory ?? DirectoryOf(inputPath), Formats.Formats.BaseName(inputPath), target.WriteExtension);
 
+    /// <summary>A file saved again with something changed, e.g. "photo 1600.jpg" beside "photo.jpg".</summary>
+    public static string WithSuffix(string inputPath, string suffix, string extension, string? outputDirectory = null) =>
+        Unique(outputDirectory ?? DirectoryOf(inputPath), $"{Formats.Formats.BaseName(inputPath)} {suffix}", extension);
+
     /// <param name="extensionOverride">Writes a different format than usual, e.g. "flac" when compressing WAV.</param>
     public static string ForTool(string inputPath, ToolInfo tool, string? suffixOverride = null, string? outputDirectory = null, string? extensionOverride = null)
     {

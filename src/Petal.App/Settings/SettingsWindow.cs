@@ -43,7 +43,7 @@ public sealed class SettingsWindow : ToolWindow
         Height = Math.Min(780, SystemParameters.WorkArea.Height - 40);
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
-        FooterNote = L.F("Petal {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, 6);
+        FooterNote = L.F("Petal {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, Petal.Core.Actions.FileActionRegistry.All.Count);
 
         var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-18, -14, -18, -16) };
         var page = new StackPanel { Margin = new Thickness(18, 14, 18, 18) };
@@ -59,10 +59,13 @@ public sealed class SettingsWindow : ToolWindow
         page.Children.Add(Hero());
         page.Children.Add(Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()));
         page.Children.Add(Card("Appearance", null, AppearanceSection()));
+        page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
+        page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
         page.Children.Add(Card("Results", null, OutputSection()));
         page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
         page.Children.Add(Card("Helpers", "Petal uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
         page.Children.Add(Card("General", null, GeneralSection()));
+        page.Children.Add(Card("Updates", null, UpdatesSection()));
     }
 
     private static string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0";
@@ -91,7 +94,10 @@ public sealed class SettingsWindow : ToolWindow
         var qr = new Button { Content = L.T("Create QR Code"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
         qr.SetResourceReference(ForegroundProperty, "Petal.Accent");
         qr.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
-        text.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { how, qr } });
+        var history = new Button { Content = L.T("History"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
+        history.SetResourceReference(ForegroundProperty, "Petal.Accent");
+        history.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
+        text.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { how, qr, history } });
         grid.Children.Add(text);
         return grid;
     }
@@ -396,6 +402,258 @@ public sealed class SettingsWindow : ToolWindow
         return grid;
     }
 
+    private readonly StackPanel _favourites = new();
+
+    private UIElement FavouritesSection()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(_favourites);
+        var add = new Button { Content = L.T("Add a Favourite…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
+        add.Click += (_, _) => Edit(null);
+        panel.Children.Add(add);
+        FillFavourites();
+        return panel;
+
+        void Edit(Petal.Core.Jobs.Favourite? existing)
+        {
+            var window = new FavouriteWindow(existing, saved =>
+            {
+                int i = _s.Favourites.FindIndex(f => f.Id == saved.Id);
+                if (i >= 0)
+                    _s.Favourites[i] = saved;
+                else
+                    _s.Favourites.Add(saved);
+                Save();
+                FillFavourites();
+            }, removed =>
+            {
+                _s.Favourites.RemoveAll(f => f.Id == removed.Id);
+                Save();
+                FillFavourites();
+            })
+            { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            window.ShowDialog();
+        }
+
+        void FillFavourites()
+        {
+            _favourites.Children.Clear();
+            add.IsEnabled = _s.Favourites.Count < MaxFavourites;
+            if (_s.Favourites.Count == 0)
+            {
+                _favourites.Children.Add(Text("None yet. Try “WEBP, 1600 px” for pictures you put online, or “MP4, 720p” for videos you send.", "Petal.Caption"));
+                return;
+            }
+            foreach (var favourite in _s.Favourites.ToList())
+            {
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var star = ThemedIcon("star", 16, "Petal.Accent");
+                star.VerticalAlignment = VerticalAlignment.Center;
+                star.Margin = new Thickness(0, 0, 10, 0);
+                row.Children.Add(star);
+                var words = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                var name = Text(Jobs.FavouriteText.Label(favourite), "Petal.Body");
+                name.FontWeight = FontWeights.SemiBold;
+                words.Children.Add(name);
+                words.Children.Add(Text(Jobs.FavouriteText.Describe(favourite), "Petal.Caption"));
+                Grid.SetColumn(words, 1);
+                row.Children.Add(words);
+                var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                int index = _s.Favourites.IndexOf(favourite);
+                var up = IconButton("chevronUp", "Move up", 15);
+                up.IsEnabled = index > 0;
+                up.Click += (_, _) =>
+                {
+                    _s.Favourites.RemoveAt(index);
+                    _s.Favourites.Insert(index - 1, favourite);
+                    Save();
+                    FillFavourites();
+                };
+                var edit = IconButton("pencil", "Change", 15);
+                edit.Click += (_, _) => Edit(favourite);
+                var remove = IconButton("trash", "Remove", 15);
+                remove.Click += (_, _) =>
+                {
+                    _s.Favourites.Remove(favourite);
+                    Save();
+                    FillFavourites();
+                };
+                buttons.Children.Add(up);
+                buttons.Children.Add(edit);
+                buttons.Children.Add(remove);
+                Grid.SetColumn(buttons, 2);
+                row.Children.Add(buttons);
+                _favourites.Children.Add(row);
+            }
+        }
+    }
+
+    private readonly StackPanel _automations = new();
+
+    private UIElement AutomationsSection()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(_automations);
+        var add = new Button { Content = L.T("Add an Automation…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
+        add.Click += (_, _) => Edit(null);
+        panel.Children.Add(add);
+        Fill();
+        return panel;
+
+        void Edit(Petal.Core.Jobs.WatchRule? existing)
+        {
+            var window = new AutomationWindow(existing, saved =>
+            {
+                int i = _s.Automations.FindIndex(r => r.Id == saved.Id);
+                if (i >= 0)
+                    _s.Automations[i] = saved;
+                else
+                    _s.Automations.Add(saved);
+                Save();
+                Fill();
+            }, removed =>
+            {
+                _s.Automations.RemoveAll(r => r.Id == removed.Id);
+                Save();
+                Fill();
+            })
+            { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            window.ShowDialog();
+        }
+
+        void Fill()
+        {
+            _automations.Children.Clear();
+            add.IsEnabled = _s.Automations.Count < MaxAutomations;
+            if (_s.Automations.Count == 0)
+            {
+                _automations.Children.Add(Text("None yet.", "Petal.Caption"));
+                return;
+            }
+            foreach (var rule in _s.Automations.ToList())
+            {
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var on = new CheckBox { IsChecked = rule.Enabled, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), ToolTip = L.T("On") };
+                on.Click += (_, _) =>
+                {
+                    rule.Enabled = on.IsChecked == true;
+                    Save();
+                };
+                row.Children.Add(on);
+                var words = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                var name = Text(AutomationWindow.Describe(rule), "Petal.Body");
+                name.FontWeight = FontWeights.SemiBold;
+                name.TextTrimming = TextTrimming.CharacterEllipsis;
+                words.Children.Add(name);
+                var where = Text(Directory.Exists(rule.Folder) ? rule.Folder : L.F("{0} — folder not found", rule.Folder), "Petal.Caption");
+                where.TextTrimming = TextTrimming.CharacterEllipsis;
+                where.FlowDirection = FlowDirection.LeftToRight;
+                where.HorizontalAlignment = L.IsArabic ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                if (!Directory.Exists(rule.Folder))
+                    where.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
+                words.Children.Add(where);
+                Grid.SetColumn(words, 1);
+                row.Children.Add(words);
+                var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                var open = IconButton("folderOpen", "Open the results folder", 15);
+                open.IsEnabled = Directory.Exists(rule.OutputFolder);
+                open.Click += (_, _) => Process.Start(new ProcessStartInfo(rule.OutputFolder) { UseShellExecute = true });
+                var edit = IconButton("pencil", "Change", 15);
+                edit.Click += (_, _) => Edit(rule);
+                var remove = IconButton("trash", "Remove", 15);
+                remove.Click += (_, _) =>
+                {
+                    _s.Automations.Remove(rule);
+                    Save();
+                    Fill();
+                };
+                buttons.Children.Add(open);
+                buttons.Children.Add(edit);
+                buttons.Children.Add(remove);
+                Grid.SetColumn(buttons, 2);
+                row.Children.Add(buttons);
+                _automations.Children.Add(row);
+            }
+        }
+    }
+
+    private const int MaxAutomations = 8;
+
+    private UIElement UpdatesSection()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(Text(L.F("This is Petal {0}.", Shell.UpdateService.CurrentText), "Petal.Body"));
+        var feed = new TextBox { Text = _s.UpdateFeed, FlowDirection = FlowDirection.LeftToRight };
+        feed.LostFocus += (_, _) =>
+        {
+            if (feed.Text.Trim() == _s.UpdateFeed)
+                return;
+            _s.UpdateFeed = feed.Text.Trim();
+            _s.LastUpdateCheck = null;
+            Save();
+        };
+        panel.Children.Add(Row("Update address", feed, 150, 12));
+        panel.Children.Add(Text("Where Petal looks for new versions: an update.json over https, or in a shared folder. Leave it empty and Petal never looks.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Switch("Check once a day", "Show a small card when a new version is out. Nothing is installed without asking.", _s.CheckForUpdates, v => _s.CheckForUpdates = v));
+        var status = Text("", "Petal.Caption");
+        status.TextWrapping = TextWrapping.Wrap;
+        var check = new Button { Content = L.T("Check Now"), HorizontalAlignment = HorizontalAlignment.Left };
+        check.Click += async (_, _) =>
+        {
+            _s.UpdateFeed = feed.Text.Trim();
+            Save();
+            status.ClearValue(TextBlock.ForegroundProperty);
+            if (_s.UpdateFeed.Length == 0)
+            {
+                status.Text = L.T("No update address is set, so there is nowhere to look.");
+                return;
+            }
+            check.IsEnabled = false;
+            status.Text = L.T("Checking…");
+            try
+            {
+                var update = await Shell.UpdateService.CheckAsync();
+                _s.LastUpdateCheck = DateTime.UtcNow;
+                Save();
+                if (update is null)
+                {
+                    status.Text = L.T("Petal is up to date.");
+                }
+                else
+                {
+                    status.Text = L.F("Petal {0} is available", update.Version);
+                    Shell.UpdateWindow.ShowFor(update);
+                }
+            }
+            catch (UpdateException ex)
+            {
+                status.Text = L.T(ex.Message);
+                status.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
+            }
+            finally
+            {
+                check.IsEnabled = true;
+            }
+        };
+        var row = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
+        DockPanel.SetDock(check, Dock.Left);
+        row.Children.Add(check);
+        status.VerticalAlignment = VerticalAlignment.Center;
+        status.Margin = new Thickness(12, 0, 0, 0);
+        row.Children.Add(status);
+        panel.Children.Add(row);
+        return panel;
+    }
+
+    /// <summary>More than this crowds the wheel.</summary>
+    private const int MaxFavourites = 6;
+
     private UIElement GeneralSection()
     {
         var panel = new StackPanel();
@@ -410,7 +668,8 @@ public sealed class SettingsWindow : ToolWindow
             Shell.ContextMenuRegistration.Apply(v);
         }));
         panel.Children.Add(Switch("Pause Petal", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
-        var log = new Button { Content = L.T("Open activity log"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
+        panel.Children.Add(Switch("Keep a history", "Remember what Petal made, so you can find a result again or undo it.", _s.KeepHistory, v => _s.KeepHistory = v));
+        var log =new Button { Content = L.T("Open activity log"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         log.Click += (_, _) =>
         {
             if (File.Exists(Log.FilePath))

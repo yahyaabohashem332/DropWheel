@@ -40,6 +40,7 @@ public sealed class ToolLauncher(JobRunner jobs)
         [ToolId.AudioChannels] = (t, f, j, a) => new AudioChannelsWindow(t, f, j, a),
         [ToolId.AudioVisualizer] = (t, f, j, a) => new VisualizerWindow(t, f, j, a),
         [ToolId.BleepAudio] = (t, f, j, a) => new BleepWindow(t, f, j, a),
+        [ToolId.Transcribe] = (t, f, j, a) => new TranscribeWindow(t, f, j, a),
     };
 
     private static readonly Dictionary<ToolId, DirectRun> Direct = new()

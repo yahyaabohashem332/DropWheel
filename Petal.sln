@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Petal.Engines.Imaging.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Petal.Engines.Documents.Tests", "tests\Petal.Engines.Documents.Tests\Petal.Engines.Documents.Tests.csproj", "{104F164F-3FF6-431E-A1BD-E4FDDF3058C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Petal.Cli", "src\Petal.Cli\Petal.Cli.csproj", "{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,18 @@ Global
 		{104F164F-3FF6-431E-A1BD-E4FDDF3058C2}.Release|x64.Build.0 = Release|Any CPU
 		{104F164F-3FF6-431E-A1BD-E4FDDF3058C2}.Release|x86.ActiveCfg = Release|Any CPU
 		{104F164F-3FF6-431E-A1BD-E4FDDF3058C2}.Release|x86.Build.0 = Release|Any CPU
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|Any CPU.Build.0 = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|x64.ActiveCfg = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|x64.Build.0 = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|x86.ActiveCfg = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Debug|x86.Build.0 = Debug|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|Any CPU.ActiveCfg = Release|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|Any CPU.Build.0 = Release|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|x64.ActiveCfg = Release|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|x64.Build.0 = Release|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|x86.ActiveCfg = Release|x64
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -187,5 +201,6 @@ Global
 		{44D76428-F19E-4E0E-85F9-31BA001A1FCE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{FB065677-47C6-43DC-BE5A-B456D16D2675} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{104F164F-3FF6-431E-A1BD-E4FDDF3058C2} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{052AB856-EFDD-4B66-8DFB-B7DCDB26C276} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

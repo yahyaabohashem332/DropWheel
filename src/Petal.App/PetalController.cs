@@ -23,6 +23,8 @@ public sealed class PetalController : IDisposable
     private readonly JobRunner _jobs;
     private readonly ToolLauncher _tools;
     private readonly FileActionRunner _actions;
+    private readonly FolderWatcher _folders;
+    private string _automations = "";
 
     public PetalController(ConverterRegistry converters, Dispatcher ui)
     {
@@ -41,7 +43,19 @@ public sealed class PetalController : IDisposable
         _tools = new ToolLauncher(_jobs);
         _actions = new FileActionRunner(_jobs);
         _gestures = new GestureController(_wheel, ui);
+        _folders = new FolderWatcher(_jobs, ui);
         SettingsStore.Saved += s => Sound.Enabled = s.Sounds;
+        SettingsStore.Saved += s => WatchFolders(s);
+    }
+
+    /// <summary>(Re)starts the watched folders when their rules changed.</summary>
+    private void WatchFolders(AppSettings settings)
+    {
+        var now = System.Text.Json.JsonSerializer.Serialize(settings.Automations);
+        if (now == _automations)
+            return;
+        _automations = now;
+        _folders.Apply(settings.Automations);
     }
 
     public FeedbackSound Sound { get; }
@@ -107,6 +121,7 @@ public sealed class PetalController : IDisposable
     {
         _wheel.Prepare();
         _gestures.Start();
+        WatchFolders(SettingsStore.Current);
     }
 
     private static string KeyLabel(WheelMode mode)
@@ -143,7 +158,8 @@ public sealed class PetalController : IDisposable
                 if (formats is null)
                     return new WheelContent([], L.F("Folders can't be converted. Tap {0} for file actions.", actionsKey));
                 var targets = _jobs.Converters.AvailableTargets(formats);
-                return new WheelContent(targets.Select(WheelItem.From).ToList(),
+                var favourites = formats.Count == 0 ? [] : SettingsStore.Current.Favourites.Where(f => f.AppliesTo(formats, _jobs.Converters));
+                return new WheelContent(favourites.Select(WheelItem.From).Concat(targets.Select(WheelItem.From)).ToList(),
                     files.Count > 1
                         ? L.F("These files have no format in common. Tap {0} for file actions.", actionsKey)
                         : L.F("No conversions for this format. Tap {0} for file actions.", actionsKey));
@@ -183,6 +199,9 @@ public sealed class PetalController : IDisposable
                 case FileFormat target:
                     await _jobs.ConvertAsync(files, target, at);
                     break;
+                case Favourite favourite:
+                    await _jobs.ConvertAsync(files, favourite, at);
+                    break;
                 case ToolInfo tool:
                     await _tools.LaunchAsync(tool, files, at);
                     break;
@@ -200,6 +219,7 @@ public sealed class PetalController : IDisposable
     public void Dispose()
     {
         _gestures.Dispose();
+        _folders.Dispose();
         Sound.Dispose();
         _wheel.Close();
     }

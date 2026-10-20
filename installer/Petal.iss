@@ -33,6 +33,7 @@ SolidCompression=yes
 WizardStyle=modern
 CloseApplications=force
 RestartApplications=no
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -41,6 +42,7 @@ Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
 [Tasks]
 Name: "startup"; Description: "Start Petal when I sign in to Windows"; GroupDescription: "Options:"
 Name: "contextmenu"; Description: "Add ""Convert with Petal"" to File Explorer's right-click menu"; GroupDescription: "Options:"
+Name: "path"; Description: "Add the ""petal"" command to the command line (PATH)"; GroupDescription: "Options:"; Flags: unchecked
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -56,12 +58,46 @@ Root: HKCU; Subkey: "Software\Classes\*\shell\Petal\command"; ValueType: string;
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Petal actions"; Tasks: contextmenu; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\Petal.exe"",0"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Petal.exe"" --wheel ""%1"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Tasks: path; Check: NeedsAddPath(ExpandConstant('{app}'))
 
 [Run]
 Filename: "{app}\Petal.exe"; Description: "Start Petal now"; Flags: nowait postinstall skipifsilent
+; Updates install silently from inside Petal: start it again afterwards.
+Filename: "{app}\Petal.exe"; Parameters: "--background"; Flags: nowait; Check: WizardSilent
 
 [UninstallRun]
 Filename: "{cmd}"; Parameters: "/c taskkill /im Petal.exe /f"; Flags: runhidden; RunOnceId: "StopPetal"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{localappdata}\Petal"
+
+[Code]
+function NeedsAddPath(Dir: string): Boolean;
+var
+  Current: string;
+begin
+  if not RegQueryStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', Current) then
+    Result := True
+  else
+    Result := Pos(';' + Uppercase(Dir) + ';', ';' + Uppercase(Current) + ';') = 0;
+end;
+
+{ Take Petal's folder back out of the user's PATH. }
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  Current, Dir: string;
+  P: Integer;
+begin
+  if CurUninstallStep <> usPostUninstall then
+    exit;
+  if not RegQueryStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', Current) then
+    exit;
+  Dir := ExpandConstant('{app}');
+  P := Pos(';' + Uppercase(Dir) + ';', ';' + Uppercase(Current) + ';');
+  if P = 0 then
+    exit;
+  Delete(Current, P, Length(Dir) + 1);
+  if (Length(Current) > 0) and (Current[Length(Current)] = ';') then
+    Delete(Current, Length(Current), 1);
+  RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', Current);
+end;

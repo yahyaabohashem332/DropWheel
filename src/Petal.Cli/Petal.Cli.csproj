@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Petal's command line. Published next to Petal.exe and renamed Petal.com, so typing "petal" in a
+    terminal runs this console program (Windows tries .com before .exe) while Start and Explorer
+    keep using the windowed app.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <AssemblyName>petal-cli</AssemblyName>
+    <RootNamespace>Petal.Cli</RootNamespace>
+    <ApplicationIcon>..\Petal.App\Assets\Petal.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Petal.Core\Petal.Core.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Imaging\Petal.Engines.Imaging.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Media\Petal.Engines.Media.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Files\Petal.Engines.Files.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Petal.Tests" />
+  </ItemGroup>
+
+  <!-- The same helper programs as the app, for running from the build folder. -->
+  <ItemGroup Condition="Exists('..\..\tools\bin\ffmpeg\ffmpeg.exe')">
+    <None Include="..\..\tools\bin\ffmpeg\*" LinkBase="tools\ffmpeg" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
+    <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\..\tools\bin\models')">
+    <None Include="..\..\tools\bin\models\**\*" LinkBase="tools\models" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>

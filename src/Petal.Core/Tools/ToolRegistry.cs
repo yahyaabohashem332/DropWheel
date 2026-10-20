@@ -34,14 +34,15 @@ public static class ToolRegistry
         new(OrganizePdf, "ORGANIZE", "Organize PDF", "grid", true, ToolSelection.Single, "Organized", ToolOutputKind.FixedFormat, "pdf"),
         new(MergePdfs, "MERGE PDF", "Merge PDFs", "copy", true, ToolSelection.MultipleOnly, "Merged", ToolOutputKind.FixedFormat, "pdf"),
         new(ExtractArchive, "EXTRACT", "Extract Archive", "archive", false, ToolSelection.SingleOrBatch, "", ToolOutputKind.Folder),
-        new(ReadCode, "READ QR", "Read QR Code", "qr", false, ToolSelection.Single, ""),
         new(ResizeImage, "RESIZE", "Resize & Rotate", "resize", true, ToolSelection.SingleOrBatch, "Resized"),
         new(Watermark, "WATERMARK", "Add Watermark", "stamp", true, ToolSelection.SingleOrBatch, "Watermarked"),
-        new(CopyText, "COPY TEXT", "Copy Text", "textSelect", false, ToolSelection.Single, ""),
+        new(CopyText, "TEXT · QR", "Copy Text or QR Code", "textSelect", false, ToolSelection.Single, ""),
         new(ProtectPdf, "PASSWORD", "Password", "lock", true, ToolSelection.SingleOrBatch, "Protected"),
         new(NumberPages, "NUMBERS", "Add Page Numbers", "pageNumbers", true, ToolSelection.SingleOrBatch, "Numbered"),
         new(SignPdf, "SIGN", "Sign PDF", "signature", true, ToolSelection.Single, "Signed"),
         new(ExtractImages, "IMAGES", "Extract Images", "images", false, ToolSelection.SingleOrBatch, "Images", ToolOutputKind.Folder),
+        new(RemoveBackground, "REMOVE BG", "Remove Background", "eraser", true, ToolSelection.SingleOrBatch, "No Background"),
+        new(Transcribe, "SUBTITLES", "Transcribe", "captions", true, ToolSelection.SingleOrBatch, "Subtitled"),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -49,13 +50,13 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText, ReadCode];
-    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, CreatePdf, CreateCollage];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText];
+    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, CreateCollage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, NormalizeAudio, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
-    private static readonly ToolId[] AudioMulti = [Compress, Metadata, NormalizeAudio];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, RemoveAudio, TrimVideo, CropVideo, ChangeSpeed, VideoSnapshots, SplitVideo, RedactVideo, Watermark];
-    private static readonly ToolId[] VideoMulti = [Compress, Metadata, RemoveAudio, JoinVideos, Watermark];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, Transcribe, RemoveAudio, TrimVideo, CropVideo, ChangeSpeed, VideoSnapshots, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
     private static readonly ToolId[] PdfSingle = [Compress, Metadata, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, ExtractImages];
     private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, ExtractImages];

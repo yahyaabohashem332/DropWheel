@@ -110,6 +110,15 @@ public sealed class HudCard : Window
 
     private int _screenX, _screenY;
 
+    /// <summary>Above the notification area, for work nobody dropped anywhere (watched folders).</summary>
+    public static ScreenPoint CornerPoint()
+    {
+        var (_, work, scale) = MonitorAt(new POINT(0, 0));
+        return new ScreenPoint(
+            work.Right - (int)Math.Round((CardWidth / 2 + CardMargin) * scale),
+            work.Bottom - (int)Math.Round((CardHeight / 2 + CardMargin) * scale));
+    }
+
     private void Pop()
     {
         _card.Opacity = 0;

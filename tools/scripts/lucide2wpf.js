@@ -29,7 +29,8 @@ const map = {
   wand: 'wand-sparkles', qr: 'qr-code',
   resize: 'scaling', flipV: 'flip-vertical-2', folderZip: 'folder-archive', rename: 'text-cursor-input',
   stamp: 'stamp', lock: 'lock-keyhole', unlock: 'lock-open', pageNumbers: 'list-ordered', signature: 'signature',
-  images: 'images', textSelect: 'text-select',
+  images: 'images', textSelect: 'text-select', eraser: 'eraser', history: 'history', folderSync: 'folder-sync',
+  smartphone: 'smartphone', download: 'download',
 };
 
 const fmt = n => (Math.round(n * 1000) / 1000).toString();

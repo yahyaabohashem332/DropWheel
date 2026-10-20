@@ -13,7 +13,7 @@ using Petal.App.Localization;
 
 namespace Petal.App.Actions;
 
-/// <summary>The actions wheel: Share, Float, Copy, Move, Rename, ZIP, Copy Path and Terminal.</summary>
+/// <summary>The actions wheel: Share, Send to Phone, Float, Copy, Move, Rename, ZIP, Copy Path and Terminal.</summary>
 public sealed class FileActionRunner(Jobs.JobRunner jobs)
 {
     private FloatShelf? _shelf;
@@ -38,6 +38,9 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
                 break;
             case FileActionId.Share:
                 ShareSheet.Show(paths);
+                break;
+            case FileActionId.Phone:
+                PhoneWindow.ShowFor(paths, at);
                 break;
             case FileActionId.Rename:
                 new Tools.Windows.RenameWindow(paths, at).ShowNear(at);

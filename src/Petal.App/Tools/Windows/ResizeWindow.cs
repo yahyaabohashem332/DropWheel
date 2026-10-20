@@ -30,6 +30,8 @@ public sealed class ResizeImageWindow : ToolWindow
     private readonly TextBox _width = new() { Width = 76, FlowDirection = FlowDirection.LeftToRight };
     private readonly TextBox _height = new() { Width = 76, FlowDirection = FlowDirection.LeftToRight };
     private readonly CheckBox _enlarge = new() { Content = L.T("Allow making images larger"), Margin = new Thickness(0, 10, 0, 0) };
+    private readonly CheckBox _ai = new() { Content = L.T("Enlarge with AI for sharper detail"), Margin = new Thickness(0, 8, 0, 0), IsChecked = true };
+    private readonly TextBlock _aiNote = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24, 2, 0, 0) };
     private readonly Grid _percentRow;
     private readonly Grid _sizeRow;
     private readonly TextBlock _sizeLabel;
@@ -88,6 +90,11 @@ public sealed class ResizeImageWindow : ToolWindow
         _enlarge.Checked += (_, _) => Sync();
         _enlarge.Unchecked += (_, _) => Sync();
         Body.Children.Add(_enlarge);
+        _ai.Checked += (_, _) => Sync();
+        _ai.Unchecked += (_, _) => Sync();
+        Body.Children.Add(_ai);
+        _aiNote.Style = (Style)FindResource("Petal.Caption");
+        Body.Children.Add(_aiNote);
 
         var turns = new StackPanel { Orientation = Orientation.Horizontal };
         var left = IconButton("rotateCcw", "Rotate left", 16);
@@ -154,6 +161,7 @@ public sealed class ResizeImageWindow : ToolWindow
             Width = Math.Max(0, w),
             Height = Math.Max(0, h),
             Enlarge = _enlarge.IsChecked == true || (_mode.Value == SizeMode.Percent && _percent.Value > 100),
+            AiEnlarge = _ai.IsChecked == true && _ai.IsEnabled,
             Rotation = _rotation,
             FlipHorizontal = _flipH,
             FlipVertical = _flipV,
@@ -194,6 +202,19 @@ public sealed class ResizeImageWindow : ToolWindow
             _ => true,
         };
         PrimaryButton.IsEnabled = ready;
+
+        // AI enlargement: offered whenever the result can come out larger than the original.
+        bool enlarging = _source is { } src
+            ? ImageTransformer.TargetSize(src.Width, src.Height, t) is var size && (size.Width > src.Width || size.Height > src.Height)
+            : t.Enlarge && mode != SizeMode.None;
+        bool fits = _source is not { } original || AiUpscaler.CanEnlarge(original.Width, original.Height);
+        _ai.Visibility = _aiNote.Visibility = enlarging ? Visibility.Visible : Visibility.Collapsed;
+        _ai.IsEnabled = AiUpscaler.IsReady && fits;
+        _aiNote.Text = !AiUpscaler.IsReady
+            ? L.T("The enlargement model is missing. Reinstall Petal to restore it.")
+            : !fits
+                ? L.T("AI enlargement works on pictures up to about 4 megapixels; this one is enlarged the ordinary way.")
+                : L.T("Real-ESRGAN adds detail instead of only smoothing pixels. Runs on this PC.");
         if (_source is { } s)
         {
             var (tw, th) = ImageTransformer.TargetSize(s.Width, s.Height, t);

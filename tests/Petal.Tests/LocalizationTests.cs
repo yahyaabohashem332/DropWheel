@@ -27,6 +27,8 @@ public partial class LocalizationTests
         "Enter", "Backspace", "Progman", "SHELLDLL_DefView", "Petal shortcut",
         // Font names, a template part, a unit and a file-name suffix (file names stay in English).
         "Segoe UI", "Segoe Script", "Segoe Print", "Ink Free", "Cell", "pt", "PNG · SVG", "Unlocked",
+        // Date and time patterns, and a sample installer name in the design snapshots.
+        "HH:mm", "yyyy-MM-dd", "Petal-Setup-1.1.0.exe",
     };
 
     private static readonly Regex Literal = MakeLiteral();

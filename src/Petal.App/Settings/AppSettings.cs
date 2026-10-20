@@ -32,8 +32,21 @@ public sealed class AppSettings
     public OutputLocation Output { get; set; } = OutputLocation.BesideOriginal;
     public string? OutputFolder { get; set; }
     public bool OnboardingDone { get; set; }
+    public bool KeepHistory { get; set; } = true;
+
+    /// <summary>An update feed (update.json over https, or a file path). Empty: no updates are looked for.</summary>
+    public string UpdateFeed { get; set; } = "";
+    public bool CheckForUpdates { get; set; } = true;
+    public DateTime? LastUpdateCheck { get; set; }
+    public string? SkippedVersion { get; set; }
     public ConversionSettings Conversion { get; set; } = new();
     public WatermarkSettings Watermark { get; set; } = new();
+
+    /// <summary>Starred conversions shown first on the conversion wheel, in this order.</summary>
+    public List<Favourite> Favourites { get; set; } = [];
+
+    /// <summary>Watched folders whose new files are converted automatically.</summary>
+    public List<WatchRule> Automations { get; set; } = [];
 
     public string? OutputDirectoryFor(string input) =>
         Output == OutputLocation.Folder && !string.IsNullOrWhiteSpace(OutputFolder) && Directory.Exists(OutputFolder)

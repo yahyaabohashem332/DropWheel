@@ -1,4 +1,5 @@
 using ImageMagick;
+using Petal.Core.Jobs;
 using F = Petal.Core.Formats.Formats;
 
 namespace Petal.Engines.Imaging.Tests;
@@ -132,4 +133,50 @@ public sealed class QrTests
     [Fact]
     public void Empty_text_is_refused() =>
         Assert.Throws<ArgumentException>(() => QrGenerator.Encode(""));
+}
+
+public class FavouriteSizeTests
+{
+    private readonly ImageConverter _converter = new();
+
+    [Fact]
+    public async Task Shrinks_to_the_longest_side_and_can_resave_in_the_same_format()
+    {
+        var dir = Fixtures.NewDirectory();
+        using (var photo = Fixtures.Photo(640, 480))
+        {
+            var jpg = Fixtures.Save(photo, dir, F.Jpg);
+            var output = Path.Combine(dir, "small.jpg");
+            var settings = new ConversionSettings { MaxLongEdge = 200 };
+
+            Assert.True(_converter.CanResave(F.Jpg));
+            await _converter.ConvertAsync(new ConversionJob(jpg, F.Jpg, F.Jpg, output, settings), null, CancellationToken.None);
+            using var small = new MagickImage(output);
+            Assert.Equal((200u, 150u), (small.Width, small.Height));
+
+            // Portrait pictures are limited by their height.
+            var tall = Path.Combine(dir, "tall.png");
+            using (var rotated = (MagickImage)photo.Clone())
+            {
+                rotated.Rotate(90);
+                rotated.Write(tall);
+            }
+            var webp = Path.Combine(dir, "tall.webp");
+            await _converter.ConvertAsync(new ConversionJob(tall, F.Png, F.Webp, webp, settings), null, CancellationToken.None);
+            using var portrait = new MagickImage(webp);
+            Assert.Equal((150u, 200u), (portrait.Width, portrait.Height));
+        }
+
+        // Smaller pictures are never enlarged.
+        using var tiny = Fixtures.Quadrants();
+        var png = Fixtures.Save(tiny, dir, F.Png, "tiny");
+        var same = Path.Combine(dir, "tiny 200.png");
+        await _converter.ConvertAsync(new ConversionJob(png, F.Png, F.Png, same, new ConversionSettings { MaxLongEdge = 200 }), null, CancellationToken.None);
+        using var kept = new MagickImage(same);
+        Assert.Equal((64u, 48u), (kept.Width, kept.Height));
+
+        Assert.False(_converter.CanResave(F.Svg));
+        Assert.False(_converter.CanResave(F.Pdf));
+        Directory.Delete(dir, true);
+    }
 }

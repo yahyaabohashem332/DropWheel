@@ -95,7 +95,47 @@ internal static class DesignSnapshots
             ("zip", () => new Tools.Windows.ZipWindow([file("landscape.jpg"), file("album.pdf")], jobs, at)),
             ("rename", () => new Tools.Windows.RenameWindow([file("landscape.jpg"), file("figures.png"), file("weekend.mov")], at)),
             ("qr", () => (Window)typeof(Tools.Windows.QrWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null)),
+            ("removebg", () => new Tools.Windows.RemoveBackgroundWindow(T(Petal.Core.Tools.ToolId.RemoveBackground), [file("figures.png")], jobs, at)),
+            ("transcribe", () => new Tools.Windows.TranscribeWindow(T(Petal.Core.Tools.ToolId.Transcribe), video, jobs, at)),
+            ("history", () => { SampleHistory(file); return Private<Tools.Windows.HistoryWindow>(); }),
+            ("favourite", () => new Settings.FavouriteWindow(new Favourite { Format = "webp", LongestSide = 1600, Quality = 80 }, _ => { }, _ => { })),
+            ("automation", () => new Settings.AutomationWindow(new WatchRule { Folder = Path.GetDirectoryName(file("landscape.jpg"))!, Kind = WatchedKind.Pictures, Target = "jpg" }, _ => { }, _ => { })),
+            ("phone", () => Actions.PhoneWindow.ForSnapshot([file("landscape.jpg"), file("weekend.mov"), file("album.pdf")])),
+            ("update", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
+                .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "Petal-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
         ];
+    }
+
+    private static T Private<T>() where T : Window =>
+        (T)typeof(T).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
+
+    /// <summary>A few made-up history entries in a scratch file, so snapshots never show the user's own.</summary>
+    private static void SampleHistory(Func<string, string> file)
+    {
+        Jobs.History.FilePath = Path.Combine(Path.GetTempPath(), "petal-snapshot-history.json");
+        Jobs.History.Reload();
+        Jobs.History.Clear();
+        Jobs.History.Add(Localization.L.P(3, "Renamed {0} item", "Renamed {0} items"), [], [], [new Jobs.RenamedPath(file("a.jpg"), file("landscape.jpg"))]);
+        Jobs.History.Add(Localization.L.F("Converted to {0}", "PDF"), [file("landscape.jpg")], [file("album.pdf")]);
+        Jobs.History.Add(Localization.L.T("Background removed"), [file("landscape.jpg")], [file("figures.png")]);
+        // The oldest one shown as undone, written directly: snapshots never move real files.
+        var entries = Jobs.History.Entries.ToList();
+        entries[^1] = entries[^1] with { Undone = true };
+        File.WriteAllText(Jobs.History.FilePath, System.Text.Json.JsonSerializer.Serialize(entries));
+        Jobs.History.Reload();
+    }
+
+    /// <summary>Favourites and automations to show in snapshots of Settings and the wheel (never saved).</summary>
+    private static void SampleSettings(string folder)
+    {
+        var s = Settings.SettingsStore.Current;
+        s.Favourites =
+        [
+            new Favourite { Format = "webp", LongestSide = 1600, Quality = 80 },
+            new Favourite { Format = "jpg", LongestSide = 1024, Name = Localization.L.T("Email") },
+            new Favourite { Format = "mp4", LongestSide = 1280, Quality = 24 },
+        ];
+        s.Automations = [new WatchRule { Folder = folder, Kind = WatchedKind.Pictures, Target = "jpg" }];
     }
 
     public static void Run(string[] args)
@@ -106,6 +146,7 @@ internal static class DesignSnapshots
         Directory.CreateDirectory(output);
 
         var converters = EngineSetup.CreateConverters();
+        SampleSettings(Path.GetDirectoryName(Path.GetFullPath(files.FirstOrDefault() ?? args[2]))!);
         var controller = new PetalController(converters, Application.Current.Dispatcher);
         var wheel = controller.CreateWheelForSnapshots();
 
@@ -122,6 +163,10 @@ internal static class DesignSnapshots
                 Save(RenderWindow(window), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
                 window.Close();
             }
+            // The whole Settings page, every card, for reviewing the lower sections.
+            var full = CreateSettings();
+            Save(RenderWindow(full, 3600), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
+            full.Close();
             foreach (var mode in Enum.GetValues<WheelMode>())
             {
                 foreach (int? highlight in new int?[] { null, 1 })

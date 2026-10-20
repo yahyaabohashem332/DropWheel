@@ -1,6 +1,8 @@
 using Petal.Core.Actions;
 using Petal.Core.Formats;
+using Petal.Core.Jobs;
 using Petal.Core.Tools;
+using Petal.App.Jobs;
 using Petal.App.Localization;
 
 namespace Petal.App.Overlay;
@@ -12,10 +14,12 @@ public enum WheelMode
     Actions,
 }
 
-/// <summary>One petal. <see cref="Payload"/> is a <see cref="FileFormat"/>, <see cref="ToolInfo"/> or <see cref="FileActionInfo"/>.</summary>
+/// <summary>One petal. <see cref="Payload"/> is a <see cref="FileFormat"/>, <see cref="Favourite"/>, <see cref="ToolInfo"/> or <see cref="FileActionInfo"/>.</summary>
 public sealed record WheelItem(string Label, string Name, string? Icon, object Payload)
 {
     public static WheelItem From(FileFormat format) => new(format.Label, L.F("Convert to {0}", format.Label), null, format);
+
+    public static WheelItem From(Favourite favourite) => new(FavouriteText.Label(favourite), FavouriteText.Describe(favourite), "star", favourite);
 
     public static WheelItem From(ToolInfo tool) => new(tool.WheelTitle, tool.Name, tool.Icon, tool);
 

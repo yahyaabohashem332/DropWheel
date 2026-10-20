@@ -20,7 +20,8 @@ public sealed class JobRunner(ConverterRegistry converters)
 
     public ConverterRegistry Converters { get; } = converters;
 
-    public Task ConvertAsync(IReadOnlyList<string> files, FileFormat target, ScreenPoint at)
+    /// <param name="outputDirectory">Where results go instead of the usual place (watched folders).</param>
+    public Task ConvertAsync(IReadOnlyList<string> files, FileFormat target, ScreenPoint at, string? outputDirectory = null)
     {
         var settings = SettingsStore.Current;
         var work = new List<WorkItem>();
@@ -34,13 +35,42 @@ public sealed class JobRunner(ConverterRegistry converters)
                 continue;
             work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
             {
-                var output = OutputNaming.ForConversion(file, target, settings.OutputDirectoryFor(file));
+                var output = OutputNaming.ForConversion(file, target, outputDirectory ?? settings.OutputDirectoryFor(file));
                 var job = new ConversionJob(file, from, target, output, settings.Conversion);
                 var result = await converter.ConvertAsync(job, progress, ct);
                 return result.OutputPaths;
             }));
         }
         return RunAsync(L.F("Converting to {0}", target.Label), L.F("Converted to {0}", target.Label), work, at);
+    }
+
+    /// <summary>A starred conversion: the favourite's format, size and quality.</summary>
+    public Task ConvertAsync(IReadOnlyList<string> files, Favourite favourite, ScreenPoint at, string? outputDirectory = null)
+    {
+        if (favourite.Target is not { } target)
+            return Task.CompletedTask;
+        var settings = SettingsStore.Current;
+        var conversion = favourite.Apply(settings.Conversion);
+        var work = new List<WorkItem>();
+        foreach (var file in files)
+        {
+            var from = Formats.FromPath(file);
+            if (from is null || favourite.ConverterFor(from, Converters) is not { } converter)
+                continue;
+            work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
+            {
+                var dir = outputDirectory ?? settings.OutputDirectoryFor(file);
+                // Saved again in its own format: keep the original and say what changed in the name.
+                var output = from == target
+                    ? OutputNaming.WithSuffix(file, FavouriteText.Suffix(favourite), target.WriteExtension, dir)
+                    : OutputNaming.ForConversion(file, target, dir);
+                var job = new ConversionJob(file, from, target, output, conversion);
+                var result = await converter.ConvertAsync(job, progress, ct);
+                return result.OutputPaths;
+            }));
+        }
+        var label = FavouriteText.Label(favourite);
+        return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at);
     }
 
     /// <summary>Runs work items one after another on a single card.</summary>
@@ -112,6 +142,7 @@ public sealed class JobRunner(ConverterRegistry converters)
             if (describe?.Invoke(results) is { Length: > 0 } detail)
                 saved = $"{saved} · {detail}";
             card.Succeed(doneTitle, saved, () => ExplorerSelection.Reveal(results));
+            History.Add(doneTitle, work.Select(w => w.InputPath).Distinct(StringComparer.OrdinalIgnoreCase).ToList(), results);
             if (SettingsStore.Current.SelectResultInExplorer)
                 ExplorerSelection.SelectIfVisible(results);
         }

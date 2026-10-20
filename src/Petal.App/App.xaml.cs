@@ -92,6 +92,7 @@ public partial class App : Application
         var settings = SettingsStore.Load();
         if (langArg < 0)
             L.Initialize(settings.Language);
+        Jobs.History.Enabled = () => SettingsStore.Current.KeepHistory;
         L.Changed += () =>
         {
             BuildTrayMenu();
@@ -117,6 +118,7 @@ public partial class App : Application
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
             Onboarding.WelcomeWindow.ShowSingle();
+        _ = UpdateService.CheckInBackgroundAsync();
         Log.Info($"Petal started, {converters.Converters.Count} converters");
     }
 
@@ -171,12 +173,15 @@ public partial class App : Application
         settingsItem.Click += (_, _) => ShowSettings();
         var qrItem = new MenuItem { Header = L.T("Create QR Code…") };
         qrItem.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
+        var historyItem = new MenuItem { Header = L.T("History…") };
+        historyItem.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
         var howItem = new MenuItem { Header = L.T("How it works") };
         howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
         var quit = new MenuItem { Header = L.T("Quit Petal") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
         menu.Items.Add(qrItem);
+        menu.Items.Add(historyItem);
         menu.Items.Add(howItem);
         menu.Items.Add(pause);
         menu.Items.Add(new Separator());
