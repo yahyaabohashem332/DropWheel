@@ -21,8 +21,7 @@ internal static class DesignSnapshots
         var output = args[1];
         var data = args[2];
         Directory.CreateDirectory(output);
-        var converters = new ConverterRegistry();
-        converters.Register(new ImageConverter());
+        var converters = EngineSetup.CreateConverters();
         var jobs = new Jobs.JobRunner(converters);
         var at = new Input.ScreenPoint(-4000, -4000);
         string F(string name) => Path.Combine(data, name);
@@ -96,8 +95,7 @@ internal static class DesignSnapshots
         var files = args.Skip(3).ToList();
         Directory.CreateDirectory(output);
 
-        var converters = new ConverterRegistry();
-        converters.Register(new ImageConverter());
+        var converters = EngineSetup.CreateConverters();
         var controller = new PetalController(converters, Application.Current.Dispatcher);
         var wheel = controller.CreateWheelForSnapshots();
 
