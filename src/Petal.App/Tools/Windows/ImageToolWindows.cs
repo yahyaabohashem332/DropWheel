@@ -292,6 +292,7 @@ public static class ImageToolSetup
         CompressWindow.Backends[FormatFamily.Vector] = CompressImage;
         ToolLauncher.RegisterWindow(ToolId.CropImage, (t, f, j, a) => new CropImageWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.RedactPhoto, (t, f, j, a) => new RedactPhotoWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.EditPhoto, (t, f, j, a) => new EditPhotoWindow(t, f[0], j, a));
         ToolLauncher.RegisterDirect(ToolId.ReadCode, (tool, files, jobs, at) => ReadCodeAsync(files[0], at));
         ToolLauncher.RegisterDirect(ToolId.CreatePdf, (tool, files, jobs, at) =>
         {

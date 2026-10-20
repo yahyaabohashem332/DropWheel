@@ -82,6 +82,9 @@ internal static class DesignSnapshots
             ("channels", () => new Tools.Windows.AudioChannelsWindow(T(Petal.Core.Tools.ToolId.AudioChannels), audio, jobs, at)),
             ("visualizer", () => new Tools.Windows.VisualizerWindow(T(Petal.Core.Tools.ToolId.AudioVisualizer), audio, jobs, at)),
             ("bleep", () => new Tools.Windows.BleepWindow(T(Petal.Core.Tools.ToolId.BleepAudio), audio, jobs, at)),
+            ("editphoto", () => new Tools.Windows.EditPhotoWindow(T(Petal.Core.Tools.ToolId.EditPhoto), file("landscape.jpg"), jobs, at)),
+            ("cropimage", () => new Tools.Windows.CropImageWindow(T(Petal.Core.Tools.ToolId.CropImage), [file("figures.png")], jobs, at)),
+            ("redactphoto", () => new Tools.Windows.RedactPhotoWindow(T(Petal.Core.Tools.ToolId.RedactPhoto), file("landscape.jpg"), jobs, at)),
         ];
     }
 
