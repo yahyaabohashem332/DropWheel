@@ -28,6 +28,21 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        if (e.Args.Length >= 3 && e.Args[0] == "--snapshots")
+        {
+            ThemeResources.Install(this);
+            try
+            {
+                DesignSnapshots.Run(e.Args);
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(Path.Combine(e.Args[1], "error.txt"), ex.ToString());
+            }
+            Shutdown();
+            return;
+        }
+
         _instanceMutex = new Mutex(initiallyOwned: true, InstanceName, out bool first);
         if (!first)
         {
@@ -53,6 +68,7 @@ public partial class App : Application
 
         var settings = SettingsStore.Load();
         Theme.Configure(settings.Theme, settings.UseWindowsAccent);
+        ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
         var converters = new ConverterRegistry();
@@ -63,6 +79,8 @@ public partial class App : Application
 
         CreateTray();
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
+        if (!settings.OnboardingDone && !e.Args.Contains("--background"))
+            Onboarding.WelcomeWindow.ShowSingle();
         Log.Info($"Petal started, {converters.Converters.Count} converters");
     }
 
@@ -82,19 +100,19 @@ public partial class App : Application
         };
         var settingsItem = new MenuItem { Header = "Settings…" };
         settingsItem.Click += (_, _) => ShowSettings();
+        var howItem = new MenuItem { Header = "How it works" };
+        howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
         var quit = new MenuItem { Header = "Quit Petal" };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
+        menu.Items.Add(howItem);
         menu.Items.Add(pause);
         menu.Items.Add(new Separator());
         menu.Items.Add(quit);
         _tray.Menu = menu;
     }
 
-    public void ShowSettings()
-    {
-        // Filled in once the settings window exists.
-    }
+    public void ShowSettings() => SettingsWindow.ShowSingle();
 
     public void Quit()
     {

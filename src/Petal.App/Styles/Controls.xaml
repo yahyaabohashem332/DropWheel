@@ -1,4 +1,767 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Placeholder; the full design system is defined in Styles/Controls.xaml once tool windows exist. -->
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- Fallbacks; ThemeResources replaces these at start-up and on every theme change. -->
+    <SolidColorBrush x:Key="Petal.Text" Color="#16161A" />
+    <SolidColorBrush x:Key="Petal.TextSecondary" Color="#6E7078" />
+    <SolidColorBrush x:Key="Petal.TextDisabled" Color="#7016161A" />
+    <SolidColorBrush x:Key="Petal.Accent" Color="#7B5CFF" />
+    <SolidColorBrush x:Key="Petal.AccentHover" Color="#6C51E0" />
+    <SolidColorBrush x:Key="Petal.AccentPressed" Color="#624ACC" />
+    <SolidColorBrush x:Key="Petal.AccentSoft" Color="#2E7B5CFF" />
+    <SolidColorBrush x:Key="Petal.OnAccent" Color="White" />
+    <SolidColorBrush x:Key="Petal.Window" Color="#F7F7F8" />
+    <SolidColorBrush x:Key="Petal.Surface" Color="White" />
+    <SolidColorBrush x:Key="Petal.SurfaceStrong" Color="#EEEEF1" />
+    <SolidColorBrush x:Key="Petal.Divider" Color="#1C101424" />
+    <SolidColorBrush x:Key="Petal.Control" Color="#E8E8EC" />
+    <SolidColorBrush x:Key="Petal.ControlHover" Color="#DEDEE3" />
+    <SolidColorBrush x:Key="Petal.ControlPressed" Color="#D2D2D8" />
+    <SolidColorBrush x:Key="Petal.ControlBorder" Color="#1E000000" />
+    <SolidColorBrush x:Key="Petal.Track" Color="#1C000000" />
+    <SolidColorBrush x:Key="Petal.Thumb" Color="White" />
+    <SolidColorBrush x:Key="Petal.Preview" Color="#151518" />
+    <SolidColorBrush x:Key="Petal.Danger" Color="#E03E3E" />
+    <SolidColorBrush x:Key="Petal.Success" Color="#1FA862" />
+    <SolidColorBrush x:Key="Petal.Field" Color="White" />
+    <SolidColorBrush x:Key="Petal.Popup" Color="White" />
+    <SolidColorBrush x:Key="Petal.Hover" Color="#0C000000" />
+    <SolidColorBrush x:Key="Petal.Selection" Color="#387B5CFF" />
+    <Color x:Key="Petal.AccentColor">#7B5CFF</Color>
+    <Color x:Key="Petal.ShadowColor">#202040</Color>
+    <sys:Double x:Key="Petal.ShadowOpacity">0.16</sys:Double>
+
+    <FontFamily x:Key="Petal.Font">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="Petal.DisplayFont">Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="Petal.MonoFont">Cascadia Mono, Consolas</FontFamily>
+
+    <!-- ===== Text ===== -->
+    <Style x:Key="Petal.Body" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="Petal.Label" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="Foreground" Value="{DynamicResource Petal.TextSecondary}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+    <Style x:Key="Petal.Caption" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.TextSecondary}" />
+        <Setter Property="LineHeight" Value="17" />
+    </Style>
+    <Style x:Key="Petal.Section" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="0,4,0,8" />
+    </Style>
+    <Style x:Key="Petal.Title" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.DisplayFont}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style x:Key="Petal.Value" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="Petal.Mono" TargetType="TextBlock" BasedOn="{StaticResource Petal.Body}">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.MonoFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <!-- ===== Focus ===== -->
+    <Style x:Key="Petal.FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Margin="-3" CornerRadius="9" BorderThickness="2" BorderBrush="{DynamicResource Petal.Accent}" SnapsToDevicePixels="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Buttons ===== -->
+    <Style TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Petal.Control}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Petal.ControlBorder}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="14,6,14,7" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Petal.FocusVisual}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource Petal.TextDisabled}" />
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Petal.PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Foreground" Value="{DynamicResource Petal.OnAccent}" />
+        <Setter Property="Background" Value="{DynamicResource Petal.Accent}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="16,6,16,7" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.AccentHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.AccentPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Control}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Petal.TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Petal.SubtleButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="MinHeight" Value="26" />
+    </Style>
+
+    <!-- Round icon button: put an icon (Path) as Content. -->
+    <Style x:Key="Petal.IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" CornerRadius="15">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.35" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Petal.FilledIconButton" TargetType="Button" BasedOn="{StaticResource Petal.IconButton}">
+        <Setter Property="Background" Value="{DynamicResource Petal.Control}" />
+    </Style>
+
+    <!-- ===== Check box ===== -->
+    <Style TargetType="CheckBox">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Petal.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="5" BorderThickness="1.2"
+                                BorderBrush="{DynamicResource Petal.TextSecondary}" Background="{DynamicResource Petal.Field}" VerticalAlignment="Center">
+                            <Path x:Name="Mark" Data="M3.5,9 L7.2,12.6 L14.5,5.2" Stroke="{DynamicResource Petal.OnAccent}" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
+                        </Border>
+                        <ContentPresenter Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{DynamicResource Petal.Accent}" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource Petal.Accent}" />
+                            <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource Petal.Accent}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- On/off switch, Windows style. Use with CheckBox Style="{StaticResource Petal.Switch}". -->
+    <Style x:Key="Petal.Switch" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Petal.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Border x:Name="Track" Grid.Column="1" Width="40" Height="20" CornerRadius="10" BorderThickness="1.2"
+                                BorderBrush="{DynamicResource Petal.TextSecondary}" Background="Transparent" VerticalAlignment="Center">
+                            <Ellipse x:Name="Knob" Width="12" Height="12" HorizontalAlignment="Left" Margin="3,0,0,0" Fill="{DynamicResource Petal.TextSecondary}" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource Petal.Accent}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Petal.Accent}" />
+                            <Setter TargetName="Knob" Property="Fill" Value="{DynamicResource Petal.OnAccent}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="Knob" Property="Margin" Value="0,0,3,0" />
+                            <Setter TargetName="Knob" Property="Width" Value="14" />
+                            <Setter TargetName="Knob" Property="Height" Value="14" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Segmented control (RadioButtons in a Petal.Segments panel) ===== -->
+    <Style x:Key="Petal.Segments" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Petal.Control}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style x:Key="Petal.Segment" TargetType="RadioButton">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.TextSecondary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinWidth" Value="44" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Petal.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Chrome" CornerRadius="6" Padding="10,4,10,5" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Surface}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter TargetName="Chrome" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect BlurRadius="6" ShadowDepth="1" Direction="270" Opacity="0.14" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Slider ===== -->
+    <Style x:Key="Petal.SliderTrackButton" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent">
+                        <Border Height="4" CornerRadius="2" Background="{TemplateBinding Background}" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="Petal.SliderThumb" TargetType="Thumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Grid Width="18" Height="18">
+                        <Ellipse Fill="{DynamicResource Petal.Thumb}" Stroke="{DynamicResource Petal.ControlBorder}" StrokeThickness="1">
+                            <Ellipse.Effect>
+                                <DropShadowEffect BlurRadius="5" ShadowDepth="1" Direction="270" Opacity="0.22" />
+                            </Ellipse.Effect>
+                        </Ellipse>
+                        <Ellipse x:Name="Dot" Width="8" Height="8" Fill="{DynamicResource Petal.Accent}" RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <ScaleTransform x:Name="DotScale" ScaleX="1" ScaleY="1" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX" To="1.25" Duration="0:0:0.1" />
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleY" To="1.25" Duration="0:0:0.1" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.1" />
+                                        <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.1" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Dot" Property="Width" Value="6" />
+                            <Setter TargetName="Dot" Property="Height" Value="6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Slider">
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="IsMoveToPointEnabled" Value="True" />
+        <Setter Property="MinHeight" Value="22" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid Background="Transparent">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Border Height="4" CornerRadius="2" Background="{DynamicResource Petal.Track}" VerticalAlignment="Center" Margin="9,0" />
+                        <Track x:Name="PART_Track" MinHeight="22">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource Petal.SliderTrackButton}" Background="{DynamicResource Petal.Accent}" Command="Slider.DecreaseLarge" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource Petal.SliderTrackButton}" Background="Transparent" Command="Slider.IncreaseLarge" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource Petal.SliderThumb}" />
+                            </Track.Thumb>
+                        </Track>
+                        <TickBar x:Name="Ticks" Grid.Row="1" Height="5" Margin="9,2,9,0" Placement="Bottom" Fill="{DynamicResource Petal.TextSecondary}"
+                                 Visibility="Collapsed" Opacity="0.5" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="TickPlacement" Value="BottomRight">
+                            <Setter TargetName="Ticks" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Text box ===== -->
+    <Style TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Petal.Field}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Petal.ControlBorder}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource Petal.Accent}" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Chrome" CornerRadius="7" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            <Border x:Name="FocusLine" Height="2" VerticalAlignment="Bottom" CornerRadius="0,0,7,7" Background="{DynamicResource Petal.Accent}" Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusLine" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Petal.TextSecondary}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Combo box ===== -->
+    <Style x:Key="Petal.ComboToggle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome" CornerRadius="7" Background="{DynamicResource Petal.Control}">
+                        <Path x:Name="Chevron" Data="M0,0 L4,4 L8,0" Stroke="{DynamicResource Petal.TextSecondary}" StrokeThickness="1.6"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,1,11,0" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.ControlPressed}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Petal.FocusVisual}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton Style="{StaticResource Petal.ComboToggle}"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press" />
+                        <ContentPresenter Margin="11,5,30,6" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"
+                                          Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                        <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True"
+                               Focusable="False" PopupAnimation="Fade" VerticalOffset="4">
+                            <Border Margin="10,0,10,14" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}" Background="{DynamicResource Petal.Popup}"
+                                    BorderBrush="{DynamicResource Petal.ControlBorder}" BorderThickness="1" CornerRadius="10" Padding="4">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.2" />
+                                </Border.Effect>
+                                <ScrollViewer SnapsToDevicePixels="True">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="Chrome" CornerRadius="6" Padding="10,6" Background="Transparent">
+                        <Grid>
+                            <Border x:Name="Pill" Width="3" Height="14" CornerRadius="1.5" Background="{DynamicResource Petal.Accent}"
+                                    HorizontalAlignment="Left" Margin="-7,0,0,0" Visibility="Collapsed" />
+                            <ContentPresenter />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Hover}" />
+                            <Setter TargetName="Pill" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Scroll bars: thin, rounded, no arrows ===== -->
+    <Style x:Key="Petal.ScrollThumb" TargetType="Thumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border CornerRadius="3" Background="{DynamicResource Petal.TextSecondary}" Opacity="0.45" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="Petal.ScrollPage" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ScrollBar">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="MinWidth" Value="8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Track x:Name="PART_Track" IsDirectionReversed="True" Margin="1,2">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Style="{StaticResource Petal.ScrollPage}" Command="ScrollBar.PageUpCommand" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Style="{StaticResource Petal.ScrollPage}" Command="ScrollBar.PageDownCommand" />
+                        </Track.IncreaseRepeatButton>
+                        <Track.Thumb>
+                            <Thumb Style="{StaticResource Petal.ScrollThumb}" />
+                        </Track.Thumb>
+                    </Track>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Height" Value="8" />
+                <Setter Property="MinHeight" Value="8" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Track x:Name="PART_Track" Margin="2,1">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource Petal.ScrollPage}" Command="ScrollBar.PageLeftCommand" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource Petal.ScrollPage}" Command="ScrollBar.PageRightCommand" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource Petal.ScrollThumb}" />
+                                </Track.Thumb>
+                            </Track>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===== Tool tips ===== -->
+    <Style TargetType="ToolTip">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Margin="8,4,8,12" Padding="9,5,9,6" CornerRadius="7" Background="{DynamicResource Petal.Popup}"
+                            BorderBrush="{DynamicResource Petal.ControlBorder}" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Opacity="0.18" />
+                        </Border.Effect>
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Context menus (tray) ===== -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Margin="10,6,10,16" Padding="4" MinWidth="210" CornerRadius="10" Background="{DynamicResource Petal.Popup}"
+                            BorderBrush="{DynamicResource Petal.ControlBorder}" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" ShadowDepth="5" Direction="270" Opacity="0.22" />
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Chrome" CornerRadius="6" Padding="10,7,14,7" Background="Transparent">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Path x:Name="Check" Data="M1,6 L4.6,9.6 L11,3" Stroke="{DynamicResource Petal.Accent}" StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" VerticalAlignment="Center" Visibility="Collapsed" />
+                            <ContentPresenter x:Name="IconHost" ContentSource="Icon" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="24,0,0,0" Foreground="{DynamicResource Petal.TextSecondary}" FontSize="12" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource Petal.TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Separator">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Margin="8,4" Background="{DynamicResource Petal.Divider}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Expander (disclosure rows) ===== -->
+    <Style TargetType="Expander">
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="FontFamily" Value="{StaticResource Petal.Font}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Expander">
+                    <StackPanel>
+                        <ToggleButton IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Cursor="Hand">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="Transparent" Padding="0,7">
+                                        <DockPanel>
+                                            <Path x:Name="Arrow" DockPanel.Dock="Left" Data="M0,0 L4,4 L0,8" Stroke="{DynamicResource Petal.TextSecondary}" StrokeThickness="1.6"
+                                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" VerticalAlignment="Center" Margin="2,0,10,0"
+                                                  RenderTransformOrigin="0.5,0.5">
+                                                <Path.RenderTransform>
+                                                    <RotateTransform x:Name="Turn" Angle="0" />
+                                                </Path.RenderTransform>
+                                            </Path>
+                                            <ContentPresenter VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Arrow" Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <RotateTransform Angle="90" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                            <ContentPresenter Content="{TemplateBinding Header}" />
+                        </ToggleButton>
+                        <ContentPresenter x:Name="Body" Visibility="Collapsed" Margin="0,4,0,4" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="Body" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== List box (order lists, settings lists) ===== -->
+    <Style TargetType="ListBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource Petal.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="Chrome" CornerRadius="8" Padding="{TemplateBinding Padding}" Background="Transparent" Margin="0,1">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Petal.Selection}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
 </ResourceDictionary>

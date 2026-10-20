@@ -1,0 +1,295 @@
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shell;
+using Petal.App.Input;
+using Petal.App.Interop;
+using Petal.App.Visuals;
+using static Petal.App.Interop.NativeMethods;
+
+namespace Petal.App.Tools;
+
+/// <summary>
+/// Shared chrome for every tool window: a compact, translucent window with a centred title,
+/// a close button, the tool's controls, and a footer with Reset on the left and the primary
+/// action on the right. Enter runs the primary action and Esc closes.
+/// </summary>
+public abstract class ToolWindow : Window
+{
+    private readonly Grid _layout = new();
+    private readonly Border _surface = new();
+    private readonly TextBlock _title = new();
+    private readonly DockPanel _footer = new();
+    private readonly TextBlock _footerNote = new();
+    private bool _translucent;
+
+    protected ToolWindow(string title, double width = 400)
+    {
+        Title = title;
+        Width = width;
+        SizeToContent = SizeToContent.Height;
+        ResizeMode = ResizeMode.NoResize;
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        ShowInTaskbar = true;
+        FontFamily = UiFonts.Text;
+        UseLayoutRounding = true;
+        Background = Brushes.Transparent;
+        SetResourceReference(ForegroundProperty, "Petal.Text");
+        TextOptions.SetTextFormattingMode(this, TextFormattingMode.Ideal);
+        Icon = AppIcon.Source;
+
+        WindowChrome.SetWindowChrome(this, new WindowChrome
+        {
+            CaptionHeight = 44,
+            ResizeBorderThickness = new Thickness(0),
+            GlassFrameThickness = new Thickness(-1),
+            CornerRadius = new CornerRadius(8),
+            UseAeroCaptionButtons = false,
+        });
+
+        _layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        _layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        _layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        _layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        _layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        // Header
+        var header = new Grid { Height = 44 };
+        _title.Text = title;
+        _title.Style = (Style)Application.Current.FindResource("Petal.Title");
+        _title.HorizontalAlignment = HorizontalAlignment.Center;
+        _title.VerticalAlignment = VerticalAlignment.Center;
+        _title.Margin = new Thickness(48, 0, 48, 0);
+        header.Children.Add(_title);
+        var close = IconButton("x", "Close (Esc)", 15);
+        close.HorizontalAlignment = HorizontalAlignment.Right;
+        close.Margin = new Thickness(0, 0, 8, 0);
+        close.Click += (_, _) => Close();
+        WindowChrome.SetIsHitTestVisibleInChrome(close, true);
+        header.Children.Add(close);
+        _layout.Children.Add(header);
+
+        var divider = Divider();
+        Grid.SetRow(divider, 1);
+        _layout.Children.Add(divider);
+
+        Body = new StackPanel { Margin = new Thickness(18, 14, 18, 16) };
+        var bodyHost = new ContentControl { Content = Body, Focusable = false };
+        Grid.SetRow(bodyHost, 2);
+        _layout.Children.Add(bodyHost);
+
+        var footerDivider = Divider();
+        Grid.SetRow(footerDivider, 3);
+        _layout.Children.Add(footerDivider);
+
+        _footer.Margin = new Thickness(14, 10, 14, 12);
+        _footer.LastChildFill = true;
+        PrimaryButton = new Button { Style = (Style)Application.Current.FindResource("Petal.PrimaryButton"), IsDefault = true, MinWidth = 88 };
+        DockPanel.SetDock(PrimaryButton, Dock.Right);
+        ResetButton = new Button { Content = "Reset", Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 10, 0) };
+        DockPanel.SetDock(ResetButton, Dock.Left);
+        _footerNote.Style = (Style)Application.Current.FindResource("Petal.Caption");
+        _footerNote.VerticalAlignment = VerticalAlignment.Center;
+        _footerNote.TextTrimming = TextTrimming.CharacterEllipsis;
+        _footerNote.TextWrapping = TextWrapping.NoWrap;
+        _footerNote.Margin = new Thickness(2, 0, 12, 0);
+        _footer.Children.Add(PrimaryButton);
+        _footer.Children.Add(ResetButton);
+        _footer.Children.Add(_footerNote);
+        Grid.SetRow(_footer, 4);
+        _layout.Children.Add(_footer);
+
+        _surface.Child = _layout;
+        Content = _surface;
+
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                Close();
+            }
+        };
+        SourceInitialized += (_, _) => ApplyTheme();
+        Theme.Changed += OnThemeChanged;
+        Closed += (_, _) => Theme.Changed -= OnThemeChanged;
+    }
+
+    protected StackPanel Body { get; }
+
+    protected Button PrimaryButton { get; }
+
+    protected Button ResetButton { get; }
+
+    /// <summary>Small grey text left of the primary button, e.g. the name of the file that will be saved.</summary>
+    protected string FooterNote
+    {
+        get => _footerNote.Text;
+        set => _footerNote.Text = value;
+    }
+
+    private void OnThemeChanged() => Dispatcher.BeginInvoke(ApplyTheme);
+
+    private void ApplyTheme()
+    {
+        var p = Theme.Current;
+        var tint = p.IsDark ? Color.FromArgb(0xCC, 0x24, 0x24, 0x2A) : Color.FromArgb(0xC8, 0xF6, 0xF6, 0xF8);
+        _translucent = Backdrop.Apply(this, p.IsDark, tint);
+        // Over a blur the content still gets a light wash so text stays readable on busy wallpapers.
+        _surface.Background = _translucent
+            ? Palette.Brush(p.IsDark ? Color.FromArgb(Backdrop.IsWindows11 ? (byte)0x50 : (byte)0x00, 0x20, 0x20, 0x24) : Color.FromArgb(Backdrop.IsWindows11 ? (byte)0x60 : (byte)0x00, 0xFA, 0xFA, 0xFB))
+            : Palette.Brush(p.WindowBackground);
+    }
+
+    /// <summary>Shows the window centred on a screen point (physical pixels), kept on that monitor.</summary>
+    public void ShowNear(ScreenPoint at)
+    {
+        var (_, work, scale) = MonitorAt(new POINT(at.X, at.Y));
+        Opacity = 1;
+        Show();
+        UpdateLayout();
+        double w = ActualWidth * scale, h = ActualHeight * scale;
+        double x = Math.Clamp(at.X - w / 2, work.Left + 8, work.Right - w - 8);
+        double y = Math.Clamp(at.Y - h / 2, work.Top + 8, work.Bottom - h - 8);
+        Left = x / scale;
+        Top = y / scale;
+        Activate();
+        // Bring to the front even though Explorer had focus during the drag.
+        Topmost = true;
+        Topmost = false;
+        Focus();
+    }
+
+    // ---------- building blocks ----------
+
+    protected static Border Divider() => new Border
+    {
+        Height = 1,
+        Background = (Brush)Application.Current.FindResource("Petal.Divider"),
+        SnapsToDevicePixels = true,
+    }.WithDynamic(Border.BackgroundProperty, "Petal.Divider");
+
+    protected static Button IconButton(string icon, string tooltip, double size = 16, bool filled = false)
+    {
+        var button = new Button
+        {
+            Style = (Style)Application.Current.FindResource(filled ? "Petal.FilledIconButton" : "Petal.IconButton"),
+            ToolTip = tooltip,
+            Content = ThemedIcon(icon, size),
+        };
+        System.Windows.Automation.AutomationProperties.SetName(button, tooltip);
+        return button;
+    }
+
+    /// <summary>An icon whose stroke follows the theme's text colour.</summary>
+    public static System.Windows.Shapes.Path ThemedIcon(string icon, double size, string brushKey = "Petal.Text", double stroke = 2)
+    {
+        var path = Icons.Create(icon, size, Brushes.Black, stroke);
+        path.SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, brushKey);
+        return path;
+    }
+
+    protected static TextBlock Text(string text, string style = "Petal.Body") => new()
+    {
+        Text = text,
+        Style = (Style)Application.Current.FindResource(style),
+    };
+
+    protected static TextBlock SectionTitle(string text)
+    {
+        var t = Text(text, "Petal.Section");
+        return t;
+    }
+
+    /// <summary>A "label …… control" row, the standard layout of every settings line.</summary>
+    protected static Grid Row(string label, UIElement control, double labelWidth = 120, double top = 6)
+    {
+        var grid = new Grid { Margin = new Thickness(0, top, 0, 0) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(labelWidth) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var l = Text(label, "Petal.Label");
+        grid.Children.Add(l);
+        Grid.SetColumn(control, 1);
+        if (control is FrameworkElement fe && fe.HorizontalAlignment == HorizontalAlignment.Stretch && control is not System.Windows.Controls.Slider)
+            fe.HorizontalAlignment = HorizontalAlignment.Stretch;
+        grid.Children.Add(control);
+        return grid;
+    }
+
+    /// <summary>Segmented control: one choice among a few short options.</summary>
+    protected static Segmented<T> Segments<T>(IEnumerable<(T Value, string Label)> options, T selected) where T : notnull =>
+        new(options, selected);
+
+    /// <summary>A slider with its value shown on the right, e.g. "Padding   ———o———   160 px".</summary>
+    protected static LabeledSlider Slider(double min, double max, double value, Func<double, string> format, double step = 1, bool ticks = false) =>
+        new(min, max, value, format, step, ticks);
+
+    protected static ComboBox Choice<T>(IEnumerable<(T Value, string Label)> options, T selected) where T : notnull
+    {
+        var combo = new ComboBox { MinWidth = 160 };
+        foreach (var (value, label) in options)
+        {
+            var item = new ComboBoxItem { Content = label, Tag = value };
+            combo.Items.Add(item);
+            if (EqualityComparer<T>.Default.Equals(value, selected))
+                combo.SelectedItem = item;
+        }
+        if (combo.SelectedIndex < 0 && combo.Items.Count > 0)
+            combo.SelectedIndex = 0;
+        return combo;
+    }
+
+    protected static T ValueOf<T>(ComboBox combo) => combo.SelectedItem is ComboBoxItem { Tag: T value } ? value : default!;
+
+    /// <summary>The dark, rounded panel tool windows show media in.</summary>
+    protected static Border PreviewPanel(UIElement child, double height)
+    {
+        var border = new Border
+        {
+            CornerRadius = new CornerRadius(12),
+            Height = height,
+            ClipToBounds = true,
+            Child = child,
+        };
+        border.SetResourceReference(Border.BackgroundProperty, "Petal.Preview");
+        return border;
+    }
+
+    protected static string FileLabel(IReadOnlyList<string> files) =>
+        files.Count == 1 ? Path.GetFileName(files[0]) : $"{files.Count} files";
+}
+
+internal static class ElementExtensions
+{
+    public static T WithDynamic<T>(this T element, DependencyProperty property, string key) where T : FrameworkElement
+    {
+        element.SetResourceReference(property, key);
+        return element;
+    }
+}
+
+/// <summary>Petal's icon as an ImageSource for window title bars and the taskbar.</summary>
+internal static class AppIcon
+{
+    private static ImageSource? _source;
+
+    public static ImageSource? Source => _source ??= Load();
+
+    /// <summary>The 256 px artwork, for places that show the icon large.</summary>
+    public static ImageSource Large { get; } = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Petal-256.png"));
+
+    private static ImageSource? Load()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "Assets", "Petal.ico");
+            return File.Exists(path) ? System.Windows.Media.Imaging.BitmapFrame.Create(new Uri(path)) : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

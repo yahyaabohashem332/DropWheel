@@ -44,6 +44,8 @@ public sealed class PetalController : IDisposable
 
     public JobRunner Jobs => _jobs;
 
+    internal WheelWindow CreateWheelForSnapshots() => _wheel;
+
     public void Start()
     {
         _wheel.Prepare();

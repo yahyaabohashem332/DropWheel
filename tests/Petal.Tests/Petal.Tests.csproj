@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -25,6 +25,11 @@
     <ProjectReference Include="..\..\src\Petal.Engines.Media\Petal.Engines.Media.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Files\Petal.Engines.Files.csproj" />
+  </ItemGroup>
+
+  <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->
+  <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
+    <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
 </Project>

@@ -442,6 +442,42 @@ public sealed class WheelWindow : Window
         _ => item.Name,
     };
 
+    /// <summary>
+    /// Renders the wheel over a background image without a screen, for design reviews and tests.
+    /// </summary>
+    internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false)
+    {
+        _palette = Theme.Current;
+        _files = files;
+        _mode = mode;
+        _open = true;
+        var crop = new CroppedBitmap(background, new Int32Rect(
+            Math.Max(0, (background.PixelWidth - (int)Side) / 2),
+            Math.Max(0, (background.PixelHeight - (int)Side) / 2),
+            Math.Min((int)Side, background.PixelWidth),
+            Math.Min((int)Side, background.PixelHeight)));
+        ApplyGlass(GlassCapture.Blur(crop));
+        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + 12 : Centre - WheelGeometry.OuterRadius - 12 - 30);
+        _root.Visibility = Visibility.Visible;
+        Render(animate: false);
+        SetHighlight(highlight, null);
+
+        var frame = new Grid { Width = Side, Height = Side };
+        frame.Children.Add(new Image { Source = crop, Stretch = Stretch.UniformToFill });
+        Content = null;
+        frame.Children.Add(_root);
+        frame.Measure(new Size(Side, Side));
+        frame.Arrange(new Rect(0, 0, Side, Side));
+        frame.UpdateLayout();
+        var bitmap = new RenderTargetBitmap((int)Side * 2, (int)Side * 2, 192, 192, PixelFormats.Pbgra32);
+        bitmap.Render(frame);
+        bitmap.Freeze();
+        frame.Children.Remove(_root);
+        Content = _root;
+        _open = false;
+        return bitmap;
+    }
+
     // ---------- rendering ----------
 
     private void Render(bool animate)
@@ -649,7 +685,7 @@ public sealed class WheelWindow : Window
         _tintRing.Fill = Palette.Brush(p.GlassTint);
         _tintHub.Fill = Palette.Brush(p.HubFill);
         _rim.Stroke = Palette.Brush(p.GlassEdge);
-        _groove.Stroke = Palette.Brush(p.IsDark ? Color.FromArgb(0x22, 255, 255, 255) : Color.FromArgb(0x16, 0, 0, 0));
+        _groove.Stroke = Palette.Brush(p.IsDark ? Color.FromArgb(0x2A, 255, 255, 255) : Color.FromArgb(0x90, 255, 255, 255));
         _shadow.Fill = new RadialGradientBrush(
         [
             new GradientStop(p.Shadow, 0.78),
@@ -718,7 +754,7 @@ public sealed class WheelWindow : Window
         _shadow.IsHitTestVisible = false;
         _ring.Children.Add(_shadow);
 
-        _glassRing.Data = WheelGeometry.Ring(WheelGeometry.HubRadius + 3, WheelGeometry.OuterRadius);
+        _glassRing.Data = WheelGeometry.Ring(WheelGeometry.HubRadius, WheelGeometry.OuterRadius);
         _glassRing.IsHitTestVisible = false;
         _ring.Children.Add(_glassRing);
         _tintRing.Data = _glassRing.Data;
@@ -743,7 +779,7 @@ public sealed class WheelWindow : Window
         _rim.IsHitTestVisible = false;
         _ring.Children.Add(_rim);
 
-        double grooveR = WheelGeometry.HubRadius + 3;
+        double grooveR = WheelGeometry.HubRadius + 0.5;
         _groove.Width = _groove.Height = grooveR * 2;
         Canvas.SetLeft(_groove, -grooveR);
         Canvas.SetTop(_groove, -grooveR);

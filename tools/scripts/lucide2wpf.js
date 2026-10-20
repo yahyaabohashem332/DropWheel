@@ -79,6 +79,8 @@ function normalizePath(d) {
     }
     out.push(args.join(' '));
   }
+  // Each <path> starts from the origin, so a leading relative "m" is really absolute once paths are joined.
+  if (out[0] === 'm') out[0] = 'M';
   return out.join(' ').replace(/\s+/g, ' ').trim();
 }
 

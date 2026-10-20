@@ -39,6 +39,27 @@ public static class GlassCapture
         return bitmap;
     }
 
+    /// <summary>Applies the same frosting to an existing image (used for off-screen snapshots).</summary>
+    public static BitmapSource Blur(BitmapSource source, double scale = 1)
+    {
+        var bgra = new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+        int width = bgra.PixelWidth, height = bgra.PixelHeight;
+        var pixels = new byte[width * height * 4];
+        bgra.CopyPixels(pixels, width * 4, 0);
+        int w = Math.Max(1, width / 2), h = Math.Max(1, height / 2);
+        var small = Downsample(pixels, width, height, w, h);
+        int radius = (int)Math.Round(9 * scale);
+        for (int pass = 0; pass < 3; pass++)
+        {
+            BoxBlurHorizontal(small, w, h, radius);
+            BoxBlurVertical(small, w, h, radius);
+        }
+        Saturate(small, 1.45f);
+        var bitmap = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, small, w * 4);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
     private static byte[]? CaptureScreen(int left, int top, int width, int height)
     {
         IntPtr screen = GetDC(IntPtr.Zero);
