@@ -39,6 +39,7 @@ public static class EngineSetup
     public static ConverterRegistry CreateConverters()
     {
         WarmUp();
+        Tools.Windows.ImageToolSetup.Register();
         var converters = new ConverterRegistry();
         converters.Register(new ImageConverter());
         converters.Register(new Petal.Engines.Media.MediaConverter());
