@@ -237,7 +237,7 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.5.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.5.1.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
