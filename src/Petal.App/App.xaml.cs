@@ -106,6 +106,7 @@ public partial class App : Application
 
         _controller = new PetalController(converters, Dispatcher);
         _controller.Start();
+        Search.SearchService.Start(converters);
 
         CreateTray();
         _hotkey = new GlobalHotkey();
@@ -171,6 +172,14 @@ public partial class App : Application
         };
         var settingsItem = new MenuItem { Header = L.T("Settings…") };
         settingsItem.Click += (_, _) => ShowSettings();
+        var scanItem = new MenuItem { Header = L.T("Scan with Phone…") };
+        scanItem.Click += (_, _) => Actions.ScanWindow.ShowSingle();
+        var searchItem = new MenuItem { Header = L.T("Search by Meaning…") };
+        searchItem.Click += (_, _) => Search.SearchWindow.ShowSingle();
+        var askItem = new MenuItem { Header = L.T("Ask Petal…") };
+        askItem.Click += (_, _) => { if (_controller is not null) Tools.Windows.AskWindow.ChooseAndShow(_controller.Jobs); };
+        var duplicatesItem = new MenuItem { Header = L.T("Find Duplicates…") };
+        duplicatesItem.Click += (_, _) => Tools.Windows.DuplicatesWindow.ChooseAndShow();
         var qrItem = new MenuItem { Header = L.T("Create QR Code…") };
         qrItem.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
         var historyItem = new MenuItem { Header = L.T("History…") };
@@ -180,6 +189,10 @@ public partial class App : Application
         var quit = new MenuItem { Header = L.T("Quit Petal") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
+        menu.Items.Add(searchItem);
+        menu.Items.Add(askItem);
+        menu.Items.Add(scanItem);
+        menu.Items.Add(duplicatesItem);
         menu.Items.Add(qrItem);
         menu.Items.Add(historyItem);
         menu.Items.Add(howItem);
@@ -206,12 +219,25 @@ public partial class App : Application
         }
         var front = Interop.NativeMethods.GetForegroundWindow();
         var files = await ExplorerSelection.SelectionInAsync(front);
-        if (files.Count == 0)
+        if (files.Count > 0)
         {
-            ShowSettings();
+            _controller.OpenWheelNow(files, WheelPointFor(front));
             return;
         }
-        _controller.OpenWheelNow(files, WheelPointFor(front));
+        // Nothing selected: the clipboard's files, picture or text, else Petal itself.
+        switch (SettingsStore.Current.ClipboardShortcut ? ClipboardSource.Take() : null)
+        {
+            case ClipboardContent.Files clip:
+                Interop.NativeMethods.GetCursorPos(out var cursor);
+                _controller.OpenWheelNow(clip.Paths, new Input.ScreenPoint(cursor.X, cursor.Y));
+                break;
+            case ClipboardContent.Link link:
+                Tools.Windows.QrWindow.ShowSingle(link.Url);
+                break;
+            default:
+                ShowSettings();
+                break;
+        }
     }
 
     /// <summary>At the mouse when it is over that window, else in the middle of the window.</summary>
@@ -230,6 +256,7 @@ public partial class App : Application
         _hotkey?.Dispose();
         _tray?.Dispose();
         _controller?.Dispose();
+        Search.SearchService.Stop();
         Shutdown();
     }
 

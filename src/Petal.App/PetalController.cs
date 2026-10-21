@@ -169,7 +169,11 @@ public sealed class PetalController : IDisposable
             {
                 var formats = FormatsOf(files);
                 var tools = formats is null ? [] : ToolRegistry.ToolsFor(formats).Where(_tools.IsAvailable).ToList();
-                return new WheelContent(tools.Select(WheelItem.From).ToList(),
+                // Recipes that fit the selection come first, like favourites on the conversion wheel.
+                var recipes = formats is null or { Count: 0 } ? [] : SettingsStore.Current.Recipes.Where(r => r.OnWheel && r.AppliesTo(formats, _jobs.Converters));
+                // The user's own petals, by extension, so they also work for files Petal doesn't know.
+                var petals = Petal.Recipes.CustomPetal.LoadAll().Where(p => p.Takes(files));
+                return new WheelContent(recipes.Select(WheelItem.From).Concat(petals.Select(WheelItem.From)).Concat(tools.Select(WheelItem.From)).ToList(),
                     files.Count > 1 ? L.F("No tools for this selection. Tap {0} to convert or {1} for file actions.", convert, actionsKey) : L.F("No tools for this format. Tap {0} to convert or {1} for file actions.", convert, actionsKey));
             }
         }
@@ -201,6 +205,12 @@ public sealed class PetalController : IDisposable
                     break;
                 case Favourite favourite:
                     await _jobs.ConvertAsync(files, favourite, at);
+                    break;
+                case Petal.Recipes.Recipe recipe:
+                    await _jobs.RunRecipeAsync(files, recipe, at);
+                    break;
+                case Petal.Recipes.CustomPetal petal:
+                    Actions.CustomPetalRunner.Run(petal, files, _jobs, at);
                     break;
                 case ToolInfo tool:
                     await _tools.LaunchAsync(tool, files, at);

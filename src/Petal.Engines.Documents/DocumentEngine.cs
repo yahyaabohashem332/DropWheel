@@ -32,4 +32,7 @@ public static class DocumentEngine
 
     /// <summary>Installed OCR languages as BCP-47 tags, for a language picker.</summary>
     public static IReadOnlyList<string> OcrLanguages => OcrService.InstalledLanguages;
+
+    /// <summary>A text file's contents, whatever its encoding (UTF-8/16 with or without a BOM, or the system code page).</summary>
+    public static string ReadTextFile(string path) => Text.TextFile.ReadAllText(path);
 }

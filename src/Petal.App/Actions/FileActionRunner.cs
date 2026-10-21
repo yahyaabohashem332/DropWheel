@@ -13,7 +13,7 @@ using Petal.App.Localization;
 
 namespace Petal.App.Actions;
 
-/// <summary>The actions wheel: Share, Send to Phone, Float, Copy, Move, Rename, ZIP, Copy Path and Terminal.</summary>
+/// <summary>The actions wheel: Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path and Terminal.</summary>
 public sealed class FileActionRunner(Jobs.JobRunner jobs)
 {
     private FloatShelf? _shelf;
@@ -42,11 +42,19 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             case FileActionId.Phone:
                 PhoneWindow.ShowFor(paths, at);
                 break;
+            case FileActionId.Clean:
+                return CleanAsync(paths, at);
             case FileActionId.Rename:
                 new Tools.Windows.RenameWindow(paths, at).ShowNear(at);
                 break;
             case FileActionId.Zip:
                 new Tools.Windows.ZipWindow(paths, jobs, at).ShowNear(at);
+                break;
+            case FileActionId.Ask:
+                Tools.Windows.AskWindow.Show(paths, jobs, at);
+                break;
+            case FileActionId.Duplicates:
+                Tools.Windows.DuplicatesWindow.Show(paths, at);
                 break;
             case FileActionId.Float:
                 _shelf ??= new FloatShelf();
@@ -55,6 +63,24 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
                 break;
         }
         return Task.CompletedTask;
+    }
+
+    /// <summary>Clean copies ("photo Clean.jpg") beside each file; folders and unsupported files are skipped.</summary>
+    private Task CleanAsync(IReadOnlyList<string> paths, ScreenPoint at)
+    {
+        var files = paths.Where(File.Exists).ToList();
+        var work = files.Where(Petal.Recipes.SharingCleaner.CanClean).Select(file => new Jobs.WorkItem(file, Path.GetFileName(file), async (p, ct) =>
+        {
+            var output = Petal.Core.Jobs.OutputNaming.WithSuffix(file, "Clean", Petal.Core.Jobs.OutputNaming.ExtensionOf(file));
+            await Petal.Recipes.SharingCleaner.CleanAsync(file, output, p, ct);
+            return (IReadOnlyList<string>)[output];
+        })).ToList();
+        if (work.Count == 0)
+        {
+            Toast(at, L.T("Nothing to clean"), L.T("Photos, videos, audio, PDFs and Office files can be cleaned."));
+            return Task.CompletedTask;
+        }
+        return jobs.RunAsync("Cleaning for sharing", "Cleaned for sharing", work, at);
     }
 
     private static void Toast(ScreenPoint at, string title, string subtitle)

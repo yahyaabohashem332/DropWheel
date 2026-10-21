@@ -17,6 +17,7 @@ using Petal.Core.Tools;
 using Petal.Engines.Documents.Pdf;
 using Petal.Engines.Imaging;
 using Petal.Engines.Media;
+using Petal.Recipes;
 
 namespace Petal.App.Tools.Windows;
 

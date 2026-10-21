@@ -7,6 +7,7 @@ namespace Petal.App.Jobs;
 
 /// <param name="Title">What happened, as the progress card said it ("Converted to PNG").</param>
 /// <param name="Renames">For a rename: each file's old and new path, so it can be put back.</param>
+/// <param name="Recycled">Files Petal moved to the Recycle Bin (duplicates), so they can be put back.</param>
 public sealed record HistoryEntry(
     Guid Id,
     DateTime Time,
@@ -14,7 +15,8 @@ public sealed record HistoryEntry(
     IReadOnlyList<string> Inputs,
     IReadOnlyList<string> Outputs,
     IReadOnlyList<RenamedPath>? Renames = null,
-    bool Undone = false);
+    bool Undone = false,
+    IReadOnlyList<string>? Recycled = null);
 
 public sealed record RenamedPath(string From, string To);
 
@@ -62,6 +64,22 @@ public static class History
         Changed?.Invoke();
     }
 
+    /// <summary>Files moved to the Recycle Bin; undoing puts them back.</summary>
+    public static void AddRecycled(string title, IReadOnlyList<string> recycled)
+    {
+        if (!Enabled() || recycled.Count == 0)
+            return;
+        lock (Gate)
+        {
+            var entries = Load();
+            entries.Insert(0, new HistoryEntry(Guid.NewGuid(), DateTime.Now, title, recycled, [], Recycled: recycled));
+            if (entries.Count > Limit)
+                entries.RemoveRange(Limit, entries.Count - Limit);
+            Save(entries);
+        }
+        Changed?.Invoke();
+    }
+
     public static void Clear()
     {
         lock (Gate)
@@ -88,6 +106,10 @@ public static class History
         if (entry.Renames is { Count: > 0 } renames)
         {
             count = BatchRename.Undo(renames.Select(r => (r.From, r.To)).ToList()).Count;
+        }
+        else if (entry.Recycled is { Count: > 0 } recycled)
+        {
+            count = Util.RecycleBin.Restore(recycled).Count;
         }
         else
         {
@@ -124,6 +146,10 @@ public static class History
     /// <summary>The results of an entry that are still where Petal put them.</summary>
     public static IReadOnlyList<string> Existing(HistoryEntry entry) =>
         (entry.Renames is { Count: > 0 } r ? r.Select(x => x.To) : entry.Outputs).Where(p => File.Exists(p) || Directory.Exists(p)).ToList();
+
+    /// <summary>Recycled files that are still gone from where they were, and so can be put back.</summary>
+    public static IReadOnlyList<string> Restorable(HistoryEntry entry) =>
+        (entry.Recycled ?? []).Where(p => !File.Exists(p) && !Directory.Exists(p)).ToList();
 
     private static List<HistoryEntry> Load()
     {

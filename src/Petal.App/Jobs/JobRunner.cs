@@ -73,6 +73,17 @@ public sealed class JobRunner(ConverterRegistry converters)
         return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at);
     }
 
+    /// <summary>A recipe over the files, as one job: its steps can combine them (a ZIP, one PDF).</summary>
+    public Task RunRecipeAsync(IReadOnlyList<string> files, Petal.Recipes.Recipe recipe, ScreenPoint at, string? outputDirectory = null)
+    {
+        var settings = SettingsStore.Current;
+        var runner = new Petal.Recipes.RecipeRunner(Converters, settings.Conversion);
+        var label = files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
+        var work = new WorkItem(files[0], label, (progress, ct) =>
+            runner.RunAsync(recipe, files, outputDirectory ?? (files.Count > 0 ? settings.OutputDirectoryFor(files[0]) : null), progress, ct));
+        return RunAsync(L.F("Running {0}", recipe.Name), L.F("{0}: done", recipe.Name), [work], at);
+    }
+
     /// <summary>Runs work items one after another on a single card.</summary>
     /// <param name="describe">Optional subtitle for the finished card, e.g. "3.4 MB → 1.1 MB".</param>
     public async Task RunAsync(string runningTitle, string doneTitle, IReadOnlyList<WorkItem> work, ScreenPoint at, Func<IReadOnlyList<string>, string?>? describe = null)
@@ -150,6 +161,8 @@ public sealed class JobRunner(ConverterRegistry converters)
 
     private static string Friendly(Exception ex) => ex switch
     {
+        Petal.Engines.Documents.Pdf.PdfOpenException { LockedForChanges: true } => L.T("Its author has locked this PDF against changes."),
+        Petal.Engines.Documents.Pdf.PdfOpenException { NeedsPassword: true } => L.T("This PDF is protected by a password."),
         UnauthorizedAccessException => L.T("Petal is not allowed to save in that folder."),
         IOException io when io.HResult == unchecked((int)0x80070070) => L.T("The disk is full."),
         _ => Shorten(L.T(ex.Message)),

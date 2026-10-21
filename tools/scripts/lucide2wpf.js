@@ -31,6 +31,10 @@ const map = {
   stamp: 'stamp', lock: 'lock-keyhole', unlock: 'lock-open', pageNumbers: 'list-ordered', signature: 'signature',
   images: 'images', textSelect: 'text-select', eraser: 'eraser', history: 'history', folderSync: 'folder-sync',
   smartphone: 'smartphone', download: 'download',
+  shieldCheck: 'shield-check', clipboardPaste: 'clipboard-paste', workflow: 'workflow', scanLine: 'scan-line',
+  fileSearch: 'file-search', speech: 'speech', copyX: 'copy-x', ask: 'message-square-text', scanSearch: 'scan-search',
+  folderCog: 'folder-cog', puzzle: 'puzzle', brush: 'brush', micVocal: 'mic-vocal', languages: 'languages',
+  bookAudio: 'book-audio', listPlus: 'list-plus',
 };
 
 const fmt = n => (Math.round(n * 1000) / 1000).toString();

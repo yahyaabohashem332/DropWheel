@@ -79,8 +79,37 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
         if (to != F.Png && to != F.Jpg)
             OutputVerifier.ContainsText(text, Fixtures.Token);
 
+        // Strict checks, beyond what lenient readers accept: Office schemas, PDF structure.
+        foreach (var file in files)
+            AssertStrictlyValid(file, to);
+
         // No temporary files left behind.
         Assert.Empty(Directory.EnumerateFileSystemEntries(dir, "*.petal-tmp", SearchOption.AllDirectories));
         Assert.Empty(Fixtures.LingeringOfficeProcesses(before));
+    }
+
+    /// <summary>
+    /// What Word, Excel, PowerPoint and Acrobat insist on: Office files that follow the schema (or
+    /// Office offers to "repair" them) and PDFs whose every reference resolves, with no empty page.
+    /// </summary>
+    internal static void AssertStrictlyValid(string file, FileFormat format)
+    {
+        if (format == F.Pdf)
+        {
+            PdfStructureTests.AssertReferencesResolve(file);
+            PdfPageBoxTests.AssertNoEmptyBoxes(file);
+            return;
+        }
+        if (format != F.Docx && format != F.Xlsx && format != F.Pptx)
+            return;
+        using DocumentFormat.OpenXml.Packaging.OpenXmlPackage package = format.Id switch
+        {
+            "docx" => DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(file, false),
+            "xlsx" => DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Open(file, false),
+            _ => DocumentFormat.OpenXml.Packaging.PresentationDocument.Open(file, false),
+        };
+        var errors = new DocumentFormat.OpenXml.Validation.OpenXmlValidator(DocumentFormat.OpenXml.FileFormatVersions.Office2019)
+            .Validate(package).Take(5).Select(e => $"{e.Part?.Uri} {e.Path?.XPath}: {e.Description}").ToList();
+        Assert.True(errors.Count == 0, $"{Path.GetFileName(file)} breaks the Office schema:\n" + string.Join("\n", errors));
     }
 }

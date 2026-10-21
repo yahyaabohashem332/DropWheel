@@ -16,6 +16,7 @@ using Petal.App.Visuals;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
 using Petal.Engines.Documents.Pdf;
+using Petal.Recipes;
 
 namespace Petal.App.Tools.Windows;
 
@@ -239,7 +240,12 @@ public sealed class PageNumbersWindow : ToolWindow
         catch (Exception ex)
         {
             Log.Error(ex, "Page numbers preview");
-            FooterNote = ex is PdfOpenException { NeedsPassword: true } ? "Remove the PDF's password first." : "Couldn't open this PDF.";
+            FooterNote = ex switch
+            {
+                PdfOpenException { NeedsPassword: true } => "Remove the PDF's password first.",
+                PdfOpenException { LockedForChanges: true } => "Its author has locked this PDF against changes.",
+                _ => "Couldn't open this PDF.",
+            };
             PrimaryButton.IsEnabled = false;
         }
         Draw();
@@ -382,7 +388,12 @@ public sealed class SignPdfWindow : ToolWindow
             catch (Exception ex)
             {
                 Log.Error(ex, "Opening PDF to sign");
-                FooterNote = ex is PdfOpenException { NeedsPassword: true } ? "Remove the PDF's password first." : "Couldn't open this PDF.";
+                FooterNote = ex switch
+                {
+                    PdfOpenException { NeedsPassword: true } => "Remove the PDF's password first.",
+                    PdfOpenException { LockedForChanges: true } => "Its author has locked this PDF against changes.",
+                    _ => "Couldn't open this PDF.",
+                };
             }
             await LoadPreviewPageAsync();
         };
@@ -473,7 +484,7 @@ public sealed class SignPdfWindow : ToolWindow
     {
         // Handwriting-style fonts that come with Windows, in order of preference.
         var family = new[] { "Segoe Script", "Ink Free", "Segoe Print" }.FirstOrDefault(f => Fonts.SystemFontFamilies.Any(s => s.Source == f)) ?? "Segoe UI";
-        bool rtl = name.Any(c => c is >= '֐' and <= 'ࣿ');
+        bool rtl = name.Any(c => c is >= '\u0590' and <= '\u08FF');
         var text = new FormattedText(name, CultureInfo.CurrentUICulture, rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
             new Typeface(new FontFamily(rtl ? "Segoe UI" : family), FontStyles.Italic, FontWeights.Normal, FontStretches.Normal), 120, new SolidColorBrush(Ink), 1.0);
         var geometry = text.BuildGeometry(new Point(0, 0));

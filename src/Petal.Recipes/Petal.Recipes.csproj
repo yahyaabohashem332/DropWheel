@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Recipes (chained steps) and what they share between the app and the command line: the
+       watermark renderer (WPF lays out Arabic text) and Clean for Sharing. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Petal.Core\Petal.Core.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Imaging\Petal.Engines.Imaging.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Media\Petal.Engines.Media.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
+    <ProjectReference Include="..\Petal.Engines.Files\Petal.Engines.Files.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Petal.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+  </ItemGroup>
+
+</Project>

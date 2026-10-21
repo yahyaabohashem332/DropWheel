@@ -86,14 +86,20 @@ public sealed class FolderWatcher : IDisposable
     /// <summary>The rule's action can handle this file (a format the favourite or conversion takes).</summary>
     private bool Fits(WatchRule rule, string path)
     {
+        if (rule.Action == WatchAction.Organize)
+            return true;
         if (Formats.FromPath(path) is not { } from)
             return false;
         return rule.Action switch
         {
             WatchAction.Favourite => FavouriteOf(rule)?.ConverterFor(from, _jobs.Converters) is not null,
+            WatchAction.Recipe => RecipeOf(rule)?.AppliesTo([from], _jobs.Converters) == true,
             _ => Formats.FromId(rule.Target) is { } target && _jobs.Converters.Find(from, target) is not null,
         };
     }
+
+    private static Petal.Recipes.Recipe? RecipeOf(WatchRule rule) =>
+        Guid.TryParse(rule.Target, out var id) ? SettingsStore.Current.Recipes.FirstOrDefault(r => r.Id == id) : null;
 
     private static Favourite? FavouriteOf(WatchRule rule) =>
         Guid.TryParse(rule.Target, out var id) ? SettingsStore.Current.Favourites.FirstOrDefault(f => f.Id == id) : null;
@@ -103,6 +109,11 @@ public sealed class FolderWatcher : IDisposable
         var existing = files.Where(File.Exists).ToList();
         if (existing.Count == 0)
             return;
+        if (rule.Action == WatchAction.Organize)
+        {
+            _ = OrganizeAsync(rule, existing);
+            return;
+        }
         try
         {
             Directory.CreateDirectory(rule.OutputFolder);
@@ -113,9 +124,52 @@ public sealed class FolderWatcher : IDisposable
             return;
         }
         var at = HudCard.CornerPoint();
+        if (rule.Action == WatchAction.Recipe)
+        {
+            if (RecipeOf(rule) is { } recipe)
+                _ = _jobs.RunRecipeAsync(existing, recipe, at, rule.OutputFolder);
+            return;
+        }
         _ = rule.Action == WatchAction.Favourite
             ? FavouriteOf(rule) is { } favourite ? _jobs.ConvertAsync(existing, favourite, at, rule.OutputFolder) : Task.CompletedTask
             : Formats.FromId(rule.Target) is { } target ? _jobs.ConvertAsync(existing, target, at, rule.OutputFolder) : Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Sorts the files into folders, then says so on a card. Moves are kept in History as renames,
+    /// so Undo puts every file back where it arrived.
+    /// </summary>
+    private async Task OrganizeAsync(WatchRule rule, IReadOnlyList<string> files)
+    {
+        var options = new Petal.Recipes.OrganizeOptions
+        {
+            ByKind = rule.SortByKind,
+            Screenshots = rule.SortScreenshots,
+            Invoices = rule.SortInvoices,
+            RenameByDate = rule.RenameByDate,
+        };
+        bool arabic = Localization.L.IsArabic;
+        var moves = new List<RenamedPath>();
+        foreach (var file in files)
+        {
+            try
+            {
+                var moved = await Task.Run(() => Petal.Recipes.Organizer.OrganizeAsync(file, rule.Folder, options, arabic, _jobs.Converters, SettingsStore.Current.Conversion));
+                if (moved is not null)
+                    moves.Add(new RenamedPath(file, moved));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Error(ex, $"Sorting {file}");
+            }
+        }
+        if (moves.Count == 0)
+            return;
+        var title = Localization.L.P(moves.Count, "Sorted {0} file", "Sorted {0} files");
+        History.Add(title, moves.Select(m => m.From).ToList(), [], moves);
+        var folders = moves.Select(m => Path.GetFileName(Path.GetDirectoryName(m.To)!)).Distinct().ToList();
+        var card = HudCard.ShowAt(HudCard.CornerPoint(), title, "");
+        card.Succeed(title, string.Join(", ", folders), () => Shell.ExplorerSelection.Reveal(moves.Select(m => m.To).ToList()));
     }
 
     /// <summary>

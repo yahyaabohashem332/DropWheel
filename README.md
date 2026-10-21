@@ -6,8 +6,8 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
 | **Shift** | Convert | Your starred favourites first, then every format the file can become (290 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, remove background, resize, watermark, crop, redact, copy text or QR, transcribe, trim, split, PDF password, page numbers, sign… (35 tools) |
-| **Alt** | Actions | Share, Send to Phone, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal |
+| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign… (41 tools), your recipes and your own petals |
+| **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal, Find Duplicates |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
 another key to switch wheels in place. Drop on the centre (or press Esc) to cancel.
@@ -21,7 +21,9 @@ the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt s
 on the desktop), it opens the wheel for them; with nothing selected, it opens Petal. Press it again
 to close the wheel. Change it in Settings › Keys: click the button and press the new keys. Petal asks
 Windows first and says so when another program already owns a combination. (Ctrl + Win + Enter is
-Narrator's, which is why the default is different.)
+Narrator's, which is why the default is different.) With nothing selected, the shortcut can open the
+wheel for what is on the clipboard instead: copied files, a screenshot, or text (a copied link
+becomes a QR code).
 
 **Everyday file chores, also on the wheels:**
 
@@ -40,6 +42,18 @@ Narrator's, which is why the default is different.)
 * **Compress to ZIP** — files and folders into one archive, with an optional AES-256 password.
 * **Create QR Code** (notification-area menu or the main window) — text, links or a Wi-Fi network,
   saved as PNG or SVG or copied. **Copy Text** also reads QR codes and barcodes in a picture.
+* **Compress for an app** — WhatsApp, Telegram, email, Discord and other presets that keep a file
+  under the app's limit.
+* **Make Searchable** — scanned PDFs and photos of pages get an invisible text layer from Windows'
+  OCR (Arabic included, in reading order), so they can be searched and copied; pictures become one PDF.
+* **Clean for Sharing** — copies without the location, device and author details hidden in photos,
+  videos, PDFs and Office files. Send to Phone offers it when a photo shows where it was taken.
+* **Scan with Phone** (notification-area menu) — a QR code opens a camera page on a phone on the same
+  Wi-Fi; Petal finds each page's corners, straightens it, cleans it up (colour, grey or black & white)
+  and saves the pages as one searchable PDF on the PC.
+* **Find Duplicates** (Actions wheel or notification-area menu) — identical files, and photos or videos
+  copied at another size, in a selection or folders; extra copies go to the Recycle Bin and History
+  can put them back.
 
 **On-device AI** — nothing leaves the PC; every model is checked against a pinned SHA-256.
 
@@ -52,9 +66,35 @@ Narrator's, which is why the default is different.)
   right to left). Uses the graphics card through Vulkan when it can.
 * **AI enlargement** in Resize — Real-ESRGAN (bundled, 4.5 MB) adds detail when a picture is made
   larger, on the graphics card through DirectML, else on the processor.
+* **Read Aloud** — PDFs, Word files, e-books and text become an MP3 audiobook, with Windows' voices
+  or the natural Piper voices Kareem (Arabic, diacritised automatically) and Joe (English).
+* **Ask Petal** (Actions wheel) — say what to do with the files in English or Arabic ("اضغطها
+  للواتساب", "make them 1080 px WEBP and zip them"). Petal shows the steps before anything runs and
+  can save them as a recipe. Common requests are understood without a model; Qwen2.5 1.5B through
+  llama.cpp understands requests worded freely.
+* **Search by Meaning** (notification-area menu, Settings › Search) — an index on this PC of the words
+  in documents, screenshots and subtitles, and of what photos and videos show (multilingual CLIP), so
+  "beach at sunset" or "فاتورة الكهرباء" finds files. It reads only the folders you choose, while
+  the PC is idle.
+* **Remove Noise** — DeepFilterNet 3 takes hum, hiss and room noise out of speech in recordings and
+  videos (the picture is copied as it is).
+* **Separate Vocals** — Hybrid Transformer Demucs splits a song into vocals and music, or four parts.
+* **Erase Object** — brush over a passer-by or a cable and LaMa fills the area in.
+* **Arabic subtitles** — Translate to Arabic turns English SRT/VTT subtitles into Arabic with Opus-MT;
+  Transcribe can write Arabic subtitles for speech in any language.
+
+Each model downloads once from its tool window (sizes: natural voices 85 MB each, Ask Petal 1.1 GB,
+search 227 MB, noise 27 MB, vocals 181 MB, eraser 208 MB, translation 114 MB) and is checked against
+a pinned SHA-256.
 
 **Make Petal yours:**
 
+* **Recipes** (Settings › Recipes) — several steps as one petal on the tools wheel: remove the
+  background, resize, add a watermark, convert, make searchable, rename, combine into a PDF, zip…
+  Each step works on what the one before made.
+* **Your own petals** (Settings › Your Petals) — a small JSON file in `%APPDATA%\Petal\petals` adds a
+  tool that runs a program of your choice on the files it accepts. Petal shows the exact command
+  before a petal's first run, and again whenever its file changes.
 * **Favourites** (Settings › Favourites) — a format plus a longest side and a quality, such as
   "WEBP 1600" or "MP4 720p". They sit first on the conversion wheel with a star, and also make
   smaller copies of files already in that format.
@@ -62,13 +102,17 @@ Narrator's, which is why the default is different.)
   result in File Explorer, or undo it (results go to the Recycle Bin; renames are put back).
 * **Automations** (Settings › Automations) — watch a folder such as Downloads and convert each new
   file once it has finished arriving (pictures, videos, audio or documents), to a format or with a
-  favourite. Results go to a "Petal" folder inside it, so a rule never feeds itself.
+  favourite or a recipe. Results go to a "Petal" folder inside it, so a rule never feeds itself. A
+  rule can also sort a folder: screenshots, invoices and everything else by kind into their own
+  folders, and photos renamed after the day they were taken; History can put them back.
 * **Send to Phone** (Actions wheel) — a QR code for a phone on the same Wi-Fi: it opens a page with
   the files (folders, and everything at once, as ZIP) and, when allowed, lets the phone send files
   back to Downloads. A small web server on this PC's local address under a random secret path; it
   stops when the window closes or after 15 idle minutes.
 * **Command line** — `petal convert *.heic --to jpg --max 2048`, `petal resize`, `petal compress`,
-  `petal zip`, `petal qr`, `petal text`, `petal codes`, `petal info`, `petal formats`. Installed as
+  `petal zip`, `petal qr`, `petal text`, `petal codes`, `petal info`, `petal formats`, `petal run
+  <recipe>`, `petal searchable`, `petal speak`, `petal ask "…"`, `petal search`, `petal denoise`,
+  `petal separate`, `petal translate`. Installed as
   `Petal.com` beside `Petal.exe` (setup can add it to PATH); `petal help` lists the options.
 * **Updates** — set an update address (an `update.json` over https, or a shared folder) in
   Settings › Updates and Petal checks once a day; the installer is verified against the feed's
@@ -82,9 +126,9 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.1.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
-.NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the background and
-speech models download from their tool windows when first used. Setup can also add the `petal`
+Run `dist\Petal-Setup-1.2.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+.NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
+download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
 
 Microsoft Office or LibreOffice, when installed, is used for slides and exact-layout Word/Excel output;
@@ -92,9 +136,12 @@ everything else is built in. On this development PC all 290 conversion paths are
 
 ## Tests
 
-718 tests: core, app and command line (166, including a check that every interface string has
-Arabic), media engine (199, transcription included), image engine (184, AI models included),
-documents and PDF (169).
+833 tests: core, app and command line (223, including a check that every interface string has
+Arabic), media engine (216, transcription, voices, noise removal and vocal separation included),
+image engine (211, AI models included), documents and PDF (183). Tests that need a downloaded
+model look for it in a folder named by an environment variable (`PETAL_LLM`, `PETAL_VOICES`,
+`PETAL_SEARCH_MODELS`, `PETAL_DEEPFILTER`, `PETAL_DEMUCS`, `PETAL_LAMA`, `PETAL_OPUS`) and say
+they were skipped otherwise.
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works
@@ -162,4 +209,7 @@ ExifTool by Phil Harvey (Artistic/GPL), ImageMagick (Apache 2.0 style), NAudio (
 SharpCompress (MIT), SharpZipLib (MIT, AES-encrypted ZIP), ZXing.Net (Apache 2.0, QR codes),
 ONNX Runtime (MIT) with DirectML (Microsoft redistributable licence), Whisper.net and whisper.cpp
 (MIT) with OpenAI's Whisper models (MIT), BiRefNet (MIT), Real-ESRGAN (BSD-3-Clause, ONNX export by
-Qualcomm AI Hub). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.
+Qualcomm AI Hub), Piper (MIT) with the Kareem and Joe voices, llama.cpp (MIT) with Qwen2.5 1.5B
+Instruct (Apache 2.0), CLIP ViT-B/32 (MIT) and multilingual CLIP text (Apache 2.0), DeepFilterNet
+(MIT), Demucs (MIT), LaMa (Apache 2.0), Opus-MT by Helsinki-NLP (CC-BY 4.0 data, Apache 2.0 ONNX
+export), PDFsharp and PdfPig (MIT), Microsoft.Data.Sqlite (MIT). Inspired by the Mac app Tangerine; Petal shares no code, art or assets with it.

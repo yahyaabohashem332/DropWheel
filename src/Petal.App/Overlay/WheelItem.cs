@@ -21,7 +21,12 @@ public sealed record WheelItem(string Label, string Name, string? Icon, object P
 
     public static WheelItem From(Favourite favourite) => new(FavouriteText.Label(favourite), FavouriteText.Describe(favourite), "star", favourite);
 
+    public static WheelItem From(Petal.Recipes.Recipe recipe) => new(recipe.Name, RecipeText.Describe(recipe), "workflow", recipe);
+
     public static WheelItem From(ToolInfo tool) => new(tool.WheelTitle, tool.Name, tool.Icon, tool);
+
+    public static WheelItem From(Petal.Recipes.CustomPetal petal) => new(petal.DisplayName(L.IsArabic), petal.DisplayDescription(L.IsArabic) ?? petal.DisplayName(L.IsArabic),
+        petal.Icon is { } icon && Visuals.Icons.Keys.Contains(icon) ? icon : "puzzle", petal);
 
     public static WheelItem From(FileActionInfo action) => new(action.WheelTitle, action.Name, action.Icon, action);
 }

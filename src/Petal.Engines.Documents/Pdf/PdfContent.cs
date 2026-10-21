@@ -105,20 +105,13 @@ internal static class PdfContent
 
     private static PdfPageContent ReadPage(Page page, int index, PdfContentOptions options)
     {
-        var box = page.CropBox.Bounds;
-        var rotation = ((page.Rotation.Value % 360) + 360) % 360;
-        double boxW = box.Width, boxH = box.Height;
-        var swap = rotation is 90 or 270;
-        var content = new PdfPageContent { Index = index, Width = swap ? boxH : boxW, Height = swap ? boxW : boxH };
+        // PdfPig already gives positions on the page as displayed (its /Rotate applied, the
+        // visible box's bottom-left at the origin, y up), with Width and Height to match.
+        double width = page.Width, height = page.Height;
+        var content = new PdfPageContent { Index = index, Width = width, Height = height };
 
-        // Maps a point in PDF user space to top-left display coordinates.
-        (double X, double Y) Map(double x, double y) => rotation switch
-        {
-            90 => (y - box.Bottom, x - box.Left),
-            180 => (box.Right - x, y - box.Bottom),
-            270 => (box.Top - y, box.Right - x),
-            _ => (x - box.Left, box.Top - y),
-        };
+        // Maps a PdfPig point to top-left display coordinates.
+        (double X, double Y) Map(double x, double y) => (x, height - y);
 
         IEnumerable<Word> words;
         try
@@ -135,7 +128,8 @@ internal static class PdfContent
             var letters = word.Letters.Where(l => !string.IsNullOrWhiteSpace(l.Value)).ToList();
             if (letters.Count == 0)
                 continue;
-            if (rotation == 0 && word.TextOrientation is not (TextOrientation.Horizontal or TextOrientation.Other))
+            // Sideways or upside-down as displayed (a vertical label, say): not part of the flow.
+            if (word.TextOrientation is not (TextOrientation.Horizontal or TextOrientation.Other))
                 continue;
 
             var size = Median(letters.Select(l => l.PointSize > 0.5 ? l.PointSize : l.FontSize));
@@ -148,32 +142,14 @@ internal static class PdfContent
             var text = string.Concat(ordered.Select(l => l.Value));
             if (rtl)
                 text = Bidi.NormalizeExtracted(text);
-            text = text.Replace(' ', ' ').Trim();
+            text = text.Replace('\u00A0', ' ').Trim();
             if (text.Length == 0)
                 continue;
 
-            double left, right, top, bottom;
-            if (rotation == 0)
-            {
-                var baseline = Median(letters.Select(l => l.StartBaseLine.Y));
-                left = letters.Min(l => Math.Min(l.StartBaseLine.X, l.BoundingBox.Left)) - box.Left;
-                right = letters.Max(l => Math.Max(l.EndBaseLine.X, l.BoundingBox.Right)) - box.Left;
-                var y = box.Top - baseline;
-                top = y - 0.78 * size;
-                bottom = y + 0.22 * size;
-            }
-            else
-            {
-                var r = word.BoundingBox;
-                var a = Map(r.Left, r.Bottom);
-                var b = Map(r.Right, r.Top);
-                left = Math.Min(a.X, b.X);
-                right = Math.Max(a.X, b.X);
-                top = Math.Min(a.Y, b.Y);
-                bottom = Math.Max(a.Y, b.Y);
-                if (bottom - top > (right - left) * 1.5 && letters.Count > 2)
-                    continue; // vertical text
-            }
+            var baseline = height - Median(letters.Select(l => l.StartBaseLine.Y));
+            double left = letters.Min(l => Math.Min(l.StartBaseLine.X, l.BoundingBox.Left));
+            double right = letters.Max(l => Math.Max(l.EndBaseLine.X, l.BoundingBox.Right));
+            double top = baseline - 0.78 * size, bottom = baseline + 0.22 * size;
 
             var font = letters[0].FontDetails;
             var name = letters[0].FontName ?? font?.Name ?? "";

@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Petal.Engines.Media\Petal.Engines.Media.csproj" />
     <ProjectReference Include="..\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\Petal.Engines.Files\Petal.Engines.Files.csproj" />
+    <ProjectReference Include="..\Petal.Recipes\Petal.Recipes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

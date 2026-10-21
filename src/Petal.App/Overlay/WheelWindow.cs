@@ -593,7 +593,7 @@ public sealed class WheelWindow : Window
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
             var item = _content.Items[i2];
-            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite ? item.Label : L.T(item.Name);
+            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe ? item.Label : L.T(item.Name);
             SetHub(_lastHubLabel, Subtitle(item));
             Sound.Tick();
             if (data is not null)
@@ -610,6 +610,7 @@ public sealed class WheelWindow : Window
         Petal.Core.Formats.FileFormat => L.T("Convert"),
         // A favourite's petal shows its name; the centre adds what it does ("WEBP · 1600 px").
         Petal.Core.Jobs.Favourite => item.Name,
+        Petal.Recipes.Recipe => L.T("Recipe"),
         Petal.Core.Tools.ToolInfo => L.T("Tool"),
         _ => L.T("Action"),
     };

@@ -214,7 +214,7 @@ internal sealed class RtfReader
             switch (c)
             {
                 case '\\' or '{' or '}': AddChar(c); break;
-                case '~': AddChar(' '); break;
+                case '~': AddChar('\u00A0'); break;
                 case '_': AddChar('‑'); break;
                 case '-': break;
                 case '*':

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -21,6 +21,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Petal.Core\Petal.Core.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Media\Petal.Engines.Media.csproj" />
+  </ItemGroup>
+
+  <!-- The helper programs Petal ships, so tests exercise those builds rather than any on the PATH. -->
+  <ItemGroup Condition="Exists('..\..\tools\bin\ffmpeg\ffmpeg.exe')">
+    <None Include="..\..\tools\bin\ffmpeg\*" LinkBase="tools\ffmpeg" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
+    <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
 </Project>

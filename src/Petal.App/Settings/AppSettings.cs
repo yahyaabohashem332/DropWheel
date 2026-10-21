@@ -34,6 +34,18 @@ public sealed class AppSettings
     public bool OnboardingDone { get; set; }
     public bool KeepHistory { get; set; } = true;
 
+    /// <summary>The quick shortcut with nothing selected opens the wheel for the clipboard's contents.</summary>
+    public bool ClipboardShortcut { get; set; } = true;
+
+    /// <summary>Search by Meaning: Petal indexes the folders below while the PC is idle.</summary>
+    public bool SearchEnabled { get; set; }
+
+    /// <summary>The folders searched; empty means Pictures, Documents, Desktop, Downloads and Videos.</summary>
+    public List<string> SearchFolders { get; set; } = [];
+
+    /// <summary>Where Scan with Phone saves its PDFs; null is Documents\Scans.</summary>
+    public string? ScanFolder { get; set; }
+
     /// <summary>An update feed (update.json over https, or a file path). Empty: no updates are looked for.</summary>
     public string UpdateFeed { get; set; } = "";
     public bool CheckForUpdates { get; set; } = true;
@@ -44,6 +56,12 @@ public sealed class AppSettings
 
     /// <summary>Starred conversions shown first on the conversion wheel, in this order.</summary>
     public List<Favourite> Favourites { get; set; } = [];
+
+    /// <summary>Chains of steps, run as one petal on the tools wheel.</summary>
+    public List<Petal.Recipes.Recipe> Recipes { get; set; } = [];
+
+    /// <summary>Fingerprints of custom petals the user allowed to run without asking.</summary>
+    public HashSet<string> ApprovedPetals { get; set; } = [];
 
     /// <summary>Watched folders whose new files are converted automatically.</summary>
     public List<WatchRule> Automations { get; set; } = [];

@@ -37,14 +37,19 @@ public sealed class QrWindow : ToolWindow
     private readonly TextBlock _hint;
     private bool[,]? _modules;
 
-    public static void ShowSingle()
+    /// <param name="text">Text or a link to start from, e.g. a link copied to the clipboard.</param>
+    public static void ShowSingle(string? text = null)
     {
         if (_open is not null)
         {
+            if (text is not null)
+                _open._text.Text = text;
             _open.Activate();
             return;
         }
         _open = new QrWindow();
+        if (text is not null)
+            _open._text.Text = text;
         _open.Closed += (_, _) => _open = null;
         _open.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         _open.Show();

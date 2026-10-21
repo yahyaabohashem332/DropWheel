@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using Petal.App.Input;
 using Petal.App.Tools;
+using Petal.App.Tools.Parts;
 using Petal.App.Visuals;
 using Petal.Core.Formats;
 using Petal.Core.Tools;
@@ -60,7 +61,10 @@ public sealed class SettingsWindow : ToolWindow
         page.Children.Add(Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()));
         page.Children.Add(Card("Appearance", null, AppearanceSection()));
         page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
+        page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));
         page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
+        page.Children.Add(Card("Your Petals", "Tools of your own on the tools wheel: a small file says which files a petal takes and which program it runs. Petal shows the command before a petal's first run.", PetalsSection()));
+        page.Children.Add(Card("Search by Meaning", "Find files by what they're about: the words in documents and screenshots, and what photos and videos show. Petal reads the folders below while the PC is idle; the index stays on this PC.", SearchSection()));
         page.Children.Add(Card("Results", null, OutputSection()));
         page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
         page.Children.Add(Card("Helpers", "Petal uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
@@ -127,6 +131,7 @@ public sealed class SettingsWindow : ToolWindow
         ValidateKeys();
         panel.Children.Add(Row("Quick shortcut", ShortcutPicker(), 150, 16));
         panel.Children.Add(Text("With files selected in File Explorer, it opens the wheel for them. Otherwise it opens Petal.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Switch("Use the clipboard", "With nothing selected, the shortcut opens the wheel for what you copied: files, a screenshot or text. A copied link becomes a QR code.", _s.ClipboardShortcut, v => _s.ClipboardShortcut = v));
         _shortcutWarning.Style = (Style)FindResource("Petal.Caption");
         _shortcutWarning.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
         _shortcutWarning.Margin = new Thickness(150, 6, 0, 0);
@@ -491,6 +496,85 @@ public sealed class SettingsWindow : ToolWindow
         }
     }
 
+    private readonly StackPanel _recipes = new();
+
+    private UIElement RecipesSection()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(_recipes);
+        var add = new Button { Content = L.T("New Recipe…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
+        add.Click += (_, _) => Edit(null);
+        panel.Children.Add(add);
+        Fill();
+        return panel;
+
+        void Edit(Petal.Recipes.Recipe? existing)
+        {
+            var window = new RecipeWindow(existing, saved =>
+            {
+                int i = _s.Recipes.FindIndex(r => r.Id == saved.Id);
+                if (i >= 0)
+                    _s.Recipes[i] = saved;
+                else
+                    _s.Recipes.Add(saved);
+                Save();
+                Fill();
+            }, removed =>
+            {
+                _s.Recipes.RemoveAll(r => r.Id == removed.Id);
+                Save();
+                Fill();
+            })
+            { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            window.ShowDialog();
+        }
+
+        void Fill()
+        {
+            _recipes.Children.Clear();
+            if (_s.Recipes.Count == 0)
+            {
+                _recipes.Children.Add(Text("None yet.", "Petal.Caption"));
+                return;
+            }
+            foreach (var recipe in _s.Recipes.ToList())
+            {
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var icon = ThemedIcon("workflow", 16, "Petal.Accent");
+                icon.VerticalAlignment = VerticalAlignment.Center;
+                icon.Margin = new Thickness(0, 0, 10, 0);
+                row.Children.Add(icon);
+                var words = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                var name = Text(recipe.Name, "Petal.Body");
+                name.FontWeight = FontWeights.SemiBold;
+                words.Children.Add(name);
+                var steps = Text(Jobs.RecipeText.Describe(recipe), "Petal.Caption");
+                steps.TextTrimming = TextTrimming.CharacterEllipsis;
+                words.Children.Add(steps);
+                Grid.SetColumn(words, 1);
+                row.Children.Add(words);
+                var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                var edit = IconButton("pencil", "Change", 15);
+                edit.Click += (_, _) => Edit(recipe);
+                var remove = IconButton("trash", "Remove", 15);
+                remove.Click += (_, _) =>
+                {
+                    _s.Recipes.Remove(recipe);
+                    Save();
+                    Fill();
+                };
+                buttons.Children.Add(edit);
+                buttons.Children.Add(remove);
+                Grid.SetColumn(buttons, 2);
+                row.Children.Add(buttons);
+                _recipes.Children.Add(row);
+            }
+        }
+    }
+
     private readonly StackPanel _automations = new();
 
     private UIElement AutomationsSection()
@@ -554,7 +638,8 @@ public sealed class SettingsWindow : ToolWindow
                 var where = Text(Directory.Exists(rule.Folder) ? rule.Folder : L.F("{0} — folder not found", rule.Folder), "Petal.Caption");
                 where.TextTrimming = TextTrimming.CharacterEllipsis;
                 where.FlowDirection = FlowDirection.LeftToRight;
-                where.HorizontalAlignment = L.IsArabic ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                // Left is the start of the line, mirrored in Arabic.
+                where.HorizontalAlignment = HorizontalAlignment.Left;
                 if (!Directory.Exists(rule.Folder))
                     where.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
                 words.Children.Add(where);
@@ -584,6 +669,187 @@ public sealed class SettingsWindow : ToolWindow
     }
 
     private const int MaxAutomations = 8;
+
+    private UIElement PetalsSection()
+    {
+        var panel = new StackPanel();
+        var list = new StackPanel();
+        panel.Children.Add(list);
+        var buttons = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+        var add = new Button { Content = L.T("Add from a File…"), Margin = new Thickness(0, 0, 8, 6) };
+        var example = new Button { Content = L.T("Start from an Example"), Margin = new Thickness(0, 0, 8, 6) };
+        var folder = new Button { Content = L.T("Open the Petals Folder"), Margin = new Thickness(0, 0, 8, 6) };
+        buttons.Children.Add(add);
+        buttons.Children.Add(example);
+        buttons.Children.Add(folder);
+        panel.Children.Add(buttons);
+        add.Click += (_, _) =>
+        {
+            var dialog = new OpenFileDialog { Title = L.T("A petal's file"), Filter = "Petal (*.json)|*.json" };
+            if (dialog.ShowDialog(this) != true)
+                return;
+            Directory.CreateDirectory(Petal.Recipes.CustomPetal.Folder);
+            var target = Petal.Core.Jobs.OutputNaming.Unique(Petal.Recipes.CustomPetal.Folder, Path.GetFileNameWithoutExtension(dialog.FileName), "json");
+            File.Copy(dialog.FileName, target);
+            Fill();
+        };
+        example.Click += (_, _) =>
+        {
+            var path = Petal.Recipes.CustomPetal.WriteExample();
+            Process.Start(new ProcessStartInfo("notepad.exe") { ArgumentList = { path }, UseShellExecute = false });
+            Fill();
+        };
+        folder.Click += (_, _) =>
+        {
+            Directory.CreateDirectory(Petal.Recipes.CustomPetal.Folder);
+            Process.Start(new ProcessStartInfo(Petal.Recipes.CustomPetal.Folder) { UseShellExecute = true });
+        };
+        // The list follows edits made in Notepad.
+        IsVisibleChanged += (_, _) => Fill();
+        Activated += (_, _) => Fill();
+        Fill();
+        return panel;
+
+        void Fill()
+        {
+            list.Children.Clear();
+            var petals = Petal.Recipes.CustomPetal.LoadAll();
+            if (petals.Count == 0)
+            {
+                list.Children.Add(Text("None yet.", "Petal.Caption"));
+                return;
+            }
+            foreach (var petal in petals)
+            {
+                var row = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
+                var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                var edit = IconButton("pencil", "Change", 15);
+                edit.Click += (_, _) => Process.Start(new ProcessStartInfo("notepad.exe") { ArgumentList = { petal.File }, UseShellExecute = false });
+                var remove = IconButton("trash", "Remove", 15);
+                remove.Click += (_, _) =>
+                {
+                    try
+                    {
+                        Util.RecycleBin.Send(petal.File);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or OperationCanceledException)
+                    {
+                        Log.Error(ex, $"Removing {petal.File}");
+                    }
+                    Fill();
+                };
+                actions.Children.Add(edit);
+                actions.Children.Add(remove);
+                DockPanel.SetDock(actions, Dock.Right);
+                row.Children.Add(actions);
+                var words = new StackPanel();
+                var name = Text(petal.DisplayName(L.IsArabic), "Petal.Body");
+                name.FontWeight = FontWeights.SemiBold;
+                words.Children.Add(name);
+                var takes = string.Join(", ", petal.Accepts) + " · " + Path.GetFileName(petal.ResolveProgram() ?? petal.Program);
+                var problem = petal.ProblemFormat is null ? null : petal.ProblemDetail is null ? L.T(petal.ProblemFormat) : L.T(petal.ProblemFormat).Replace("{0}", petal.ProblemDetail);
+                var detail = Text(problem ?? takes, "Petal.Caption");
+                detail.TextTrimming = TextTrimming.CharacterEllipsis;
+                if (petal.Problem is not null)
+                    detail.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
+                words.Children.Add(detail);
+                row.Children.Add(words);
+                list.Children.Add(row);
+            }
+        }
+    }
+
+    private UIElement SearchSection()
+    {
+        var panel = new StackPanel();
+        var on = new CheckBox { Content = L.T("Index my files for search"), IsChecked = _s.SearchEnabled };
+        panel.Children.Add(on);
+        var folders = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+        panel.Children.Add(folders);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
+        var add = new Button { Content = L.T("Add a Folder…") };
+        var open = new Button { Content = L.T("Open Search"), Margin = new Thickness(8, 0, 0, 0) };
+        var again = new Button { Content = L.T("Read Everything Again"), Margin = new Thickness(8, 0, 0, 0) };
+        buttons.Children.Add(add);
+        buttons.Children.Add(open);
+        buttons.Children.Add(again);
+        panel.Children.Add(buttons);
+        var status = Text("", "Petal.Caption");
+        status.Margin = new Thickness(0, 8, 0, 0);
+        panel.Children.Add(status);
+        var models = new ModelPanel(Petal.Engines.Imaging.Meaning.Models);
+        models.Ready += Search.SearchService.ReadPicturesAgain;
+        panel.Children.Add(models);
+
+        on.Click += (_, _) =>
+        {
+            _s.SearchEnabled = on.IsChecked == true;
+            Save();
+            if (_s.SearchEnabled && App.Current?.Controller?.Jobs.Converters is { } converters)
+                Search.SearchService.Start(converters);
+            else if (!_s.SearchEnabled)
+                Search.SearchService.Stop();
+            Fill();
+        };
+        add.Click += (_, _) =>
+        {
+            var dialog = new OpenFolderDialog { Title = L.T("Folder to search") };
+            if (dialog.ShowDialog(this) != true)
+                return;
+            if (_s.SearchFolders.Count == 0)
+                _s.SearchFolders.AddRange(Search.SearchService.DefaultFolders());
+            if (!_s.SearchFolders.Contains(dialog.FolderName, StringComparer.OrdinalIgnoreCase))
+                _s.SearchFolders.Add(dialog.FolderName);
+            Save();
+            Search.SearchService.Rescan();
+            Fill();
+        };
+        open.Click += (_, _) => Search.SearchWindow.ShowSingle();
+        again.Click += (_, _) =>
+        {
+            Search.SearchService.Rebuild();
+            Fill();
+        };
+        Fill();
+        return panel;
+
+        void Fill()
+        {
+            folders.Children.Clear();
+            folders.IsEnabled = add.IsEnabled = again.IsEnabled = _s.SearchEnabled;
+            models.Visibility = _s.SearchEnabled && !Petal.Engines.Imaging.Meaning.IsReady ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var folder in Search.SearchService.Folders)
+            {
+                var row = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
+                var remove = IconButton("x", "Remove", 14);
+                remove.Click += (_, _) =>
+                {
+                    if (_s.SearchFolders.Count == 0)
+                        _s.SearchFolders.AddRange(Search.SearchService.DefaultFolders());
+                    _s.SearchFolders.RemoveAll(f => f.Equals(folder, StringComparison.OrdinalIgnoreCase));
+                    // An emptied list would mean "the usual folders" again; keep one at least.
+                    if (_s.SearchFolders.Count == 0)
+                        _s.SearchFolders.Add(folder);
+                    Save();
+                    Search.SearchService.Rescan();
+                    Fill();
+                };
+                DockPanel.SetDock(remove, Dock.Right);
+                row.Children.Add(remove);
+                var path = Text(folder, "Petal.Body");
+                path.TextTrimming = TextTrimming.CharacterEllipsis;
+                path.FlowDirection = FlowDirection.LeftToRight;
+                // Left is the start of the line, mirrored in Arabic.
+                path.HorizontalAlignment = HorizontalAlignment.Left;
+                row.Children.Add(path);
+                folders.Children.Add(row);
+            }
+            var counts = Search.SearchService.Status();
+            status.Text = !_s.SearchEnabled
+                ? L.T("Off. Nothing is read or kept.")
+                : L.P(counts.Files, "{0} file in the index", "{0} files in the index") + (counts.Waiting > 0 ? " · " + L.P(counts.Waiting, "{0} waiting to be read", "{0} waiting to be read") : "");
+        }
+    }
 
     private UIElement UpdatesSection()
     {

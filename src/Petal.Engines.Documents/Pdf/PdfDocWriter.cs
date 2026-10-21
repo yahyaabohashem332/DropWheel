@@ -169,7 +169,7 @@ internal sealed class PdfDocWriter
                 {
                     if (i > 0) p.AddLineBreak();
                     // MigraDoc collapses runs of spaces; no-break spaces keep code indentation.
-                    var line = lines[i].Replace("\t", "    ").Replace(' ', ' ');
+                    var line = lines[i].Replace("\t", "    ").Replace(' ', '\u00A0');
                     if (line.Length > 0) p.AddText(line);
                 }
                 break;

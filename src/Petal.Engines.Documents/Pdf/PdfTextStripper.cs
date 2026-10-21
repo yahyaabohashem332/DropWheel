@@ -52,9 +52,7 @@ internal static class PdfTextStripper
                     // Unparseable content (inline images, odd operators): leave the page as it is.
                 }
             }
-            using var output = new MemoryStream();
-            document.Save(output, closeStream: false);
-            return (output.ToArray(), stripped);
+            return (PdfSharpIO.SaveToBytes(document), stripped);
         }
     }
 }

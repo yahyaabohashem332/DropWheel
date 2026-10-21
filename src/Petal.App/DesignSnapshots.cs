@@ -100,6 +100,18 @@ internal static class DesignSnapshots
             ("history", () => { SampleHistory(file); return Private<Tools.Windows.HistoryWindow>(); }),
             ("favourite", () => new Settings.FavouriteWindow(new Favourite { Format = "webp", LongestSide = 1600, Quality = 80 }, _ => { }, _ => { })),
             ("automation", () => new Settings.AutomationWindow(new WatchRule { Folder = Path.GetDirectoryName(file("landscape.jpg"))!, Kind = WatchedKind.Pictures, Target = "jpg" }, _ => { }, _ => { })),
+            ("automationsort", () => new Settings.AutomationWindow(new WatchRule { Folder = Path.GetDirectoryName(file("landscape.jpg"))!, Kind = WatchedKind.Any, Action = WatchAction.Organize }, _ => { }, _ => { })),
+            ("recipe", () => new Settings.RecipeWindow(SampleRecipe(), _ => { }, _ => { })),
+            ("scan", () => Actions.ScanWindow.ForSnapshot()),
+            ("denoise", () => new Tools.Windows.RemoveNoiseWindow(T(Petal.Core.Tools.ToolId.RemoveNoise), audio, jobs, at)),
+            ("separate", () => new Tools.Windows.SeparateVocalsWindow(T(Petal.Core.Tools.ToolId.SeparateVocals), audio, jobs, at)),
+            ("erase", () => new Tools.Windows.EraseObjectWindow(T(Petal.Core.Tools.ToolId.EraseObject), file("landscape.jpg"), jobs, at)),
+            ("translate", () => new Tools.Windows.TranslateSubtitlesWindow(T(Petal.Core.Tools.ToolId.TranslateSubtitles), [file("weekend.srt")], jobs, at)),
+            ("readaloud", () => new Tools.Windows.ReadAloudWindow(T(Petal.Core.Tools.ToolId.ReadAloud), file("album.pdf"), jobs, at)),
+            ("petalconfirm", () => Actions.CustomPetalRunner.ConfirmForSnapshot(file("album.pdf"))),
+            ("search", () => Search.SearchWindow.ForSnapshot([file("landscape.jpg"), file("figures.png")], [file("album.pdf")])),
+            ("ask", () => Tools.Windows.AskWindow.ForSnapshot([file("landscape.jpg"), file("figures.png")], jobs)),
+            ("duplicates", () => Tools.Windows.DuplicatesWindow.ForSnapshot([file("landscape.jpg"), file("figures.png"), file("landscape.jpg"), file("figures.png")])),
             ("phone", () => Actions.PhoneWindow.ForSnapshot([file("landscape.jpg"), file("weekend.mov"), file("album.pdf")])),
             ("update", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
                 .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "Petal-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
@@ -136,7 +148,19 @@ internal static class DesignSnapshots
             new Favourite { Format = "mp4", LongestSide = 1280, Quality = 24 },
         ];
         s.Automations = [new WatchRule { Folder = folder, Kind = WatchedKind.Pictures, Target = "jpg" }];
+        s.Recipes = [SampleRecipe()];
     }
+
+    private static Petal.Recipes.Recipe SampleRecipe() => new()
+    {
+        Name = Localization.L.T("Shop"),
+        Steps =
+        [
+            new() { Kind = Petal.Recipes.RecipeStepKind.RemoveBackground, Background = "#FFFFFF" },
+            new() { Kind = Petal.Recipes.RecipeStepKind.Resize, LongestSide = 1080 },
+            new() { Kind = Petal.Recipes.RecipeStepKind.Convert, Format = "webp", Quality = 80 },
+        ],
+    };
 
     public static void Run(string[] args)
     {

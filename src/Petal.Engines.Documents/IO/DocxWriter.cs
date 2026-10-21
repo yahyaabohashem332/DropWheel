@@ -272,9 +272,9 @@ internal sealed class DocxWriter
     /// <summary>XML 1.0 cannot carry most control characters.</summary>
     internal static string Sanitize(string text)
     {
-        if (!text.Any(c => c < 0x20 && c is not '\t' and not '\n' and not '\r' || c is '￾' or '￿'))
+        if (!text.Any(c => c < 0x20 && c is not '\t' and not '\n' and not '\r' || c is '\uFFFE' or '\uFFFF'))
             return text;
-        return new string(text.Where(c => !(c < 0x20 && c is not '\t' and not '\n' and not '\r') && c is not '￾' and not '￿').ToArray());
+        return new string(text.Where(c => !(c < 0x20 && c is not '\t' and not '\n' and not '\r') && c is not '\uFFFE' and not '\uFFFF').ToArray());
     }
 
     private Run? ImageRun(ImageData image, double maxWidthPt)
@@ -449,13 +449,13 @@ internal sealed class DocxWriter
         for (var i = 0; i < headings.Length; i++)
         {
             var (size, color, italic) = headings[i];
+            // Children in schema order (rFonts, b, bCs, i, color, sz, szCs): Word repairs files that differ.
             var rPr = new StyleRunProperties(
                 new RunFonts { Ascii = "Calibri", HighAnsi = "Calibri", ComplexScript = "Arial" },
-                new Bold(), new BoldComplexScript(),
-                new Color { Val = color },
-                new FontSize { Val = size }, new FontSizeComplexScript { Val = size });
+                new Bold(), new BoldComplexScript());
             if (italic)
                 rPr.Append(new Italic());
+            rPr.Append(new Color { Val = color }, new FontSize { Val = size }, new FontSizeComplexScript { Val = size });
             styles.Append(new Style(
                 new StyleName { Val = $"heading {i + 1}" },
                 new BasedOn { Val = "Normal" },
@@ -492,8 +492,8 @@ internal sealed class DocxWriter
             new StyleName { Val = "Source Code" },
             new BasedOn { Val = "Normal" },
             new StyleParagraphProperties(
-                new SpacingBetweenLines { After = "0", Line = "240", LineRule = LineSpacingRuleValues.Auto },
-                new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "F5F5F5" }),
+                new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "F5F5F5" },
+                new SpacingBetweenLines { After = "0", Line = "240", LineRule = LineSpacingRuleValues.Auto }),
             new StyleRunProperties(
                 new RunFonts { Ascii = "Consolas", HighAnsi = "Consolas", ComplexScript = "Consolas" },
                 new FontSize { Val = "20" }))
@@ -508,6 +508,7 @@ internal sealed class DocxWriter
         styles.Append(new Style(
             new StyleName { Val = "Table Grid" },
             new UIPriority { Val = 39 },
+            new StyleParagraphProperties(new SpacingBetweenLines { After = "0" }),
             new StyleTableProperties(
                 new TableBorders(
                     new TopBorder { Val = BorderValues.Single, Size = 4, Color = "BFBFBF" },
@@ -520,8 +521,7 @@ internal sealed class DocxWriter
                     new TopMargin { Width = "40", Type = TableWidthUnitValues.Dxa },
                     new TableCellLeftMargin { Width = 100, Type = TableWidthValues.Dxa },
                     new BottomMargin { Width = "40", Type = TableWidthUnitValues.Dxa },
-                    new TableCellRightMargin { Width = 100, Type = TableWidthValues.Dxa })),
-            new StyleParagraphProperties(new SpacingBetweenLines { After = "0" }))
+                    new TableCellRightMargin { Width = 100, Type = TableWidthValues.Dxa })))
         { Type = StyleValues.Table, StyleId = "TableGrid" });
 
         part.Styles = styles;

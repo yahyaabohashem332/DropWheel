@@ -226,7 +226,7 @@ public static class PdfMetadataEditor
         try
         {
             var bytes = stream.Stream!.UnfilteredValue;
-            var text = Encoding.UTF8.GetString(bytes).TrimStart('﻿');
+            var text = Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF');
             var start = text.IndexOf("<x:xmpmeta", StringComparison.Ordinal);
             if (start < 0) start = text.IndexOf("<rdf:RDF", StringComparison.Ordinal);
             if (start < 0) return null;
@@ -306,7 +306,7 @@ public static class PdfMetadataEditor
             if (description.GetPrefixOfNamespace(ns) is null && rdf.GetPrefixOfNamespace(ns) is null)
                 description.Add(new XAttribute(XNamespace.Xmlns + prefix, ns));
 
-        var packet = "<?xpacket begin=\"﻿\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>\n" +
+        var packet = "<?xpacket begin=\"\uFEFF\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>\n" +
                      xmp.Root!.ToString(SaveOptions.DisableFormatting) +
                      "\n<?xpacket end=\"w\"?>";
         return Encoding.UTF8.GetBytes(packet);

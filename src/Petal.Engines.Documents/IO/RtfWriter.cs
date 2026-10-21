@@ -351,7 +351,7 @@ internal sealed class RtfWriter
                 case '\t': sb.Append(@"\tab "); break;
                 case '\n': sb.Append(@"\line "); break;
                 case '\r': break;
-                case ' ': sb.Append(@"\~"); break;
+                case '\u00A0': sb.Append(@"\~"); break;
                 default:
                     if (c < 0x20)
                         break;

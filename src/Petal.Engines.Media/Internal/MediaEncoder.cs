@@ -40,6 +40,12 @@ internal sealed record EncodePlan
 
     public string? AudioFilter { get; init; }
 
+    /// <summary>
+    /// Audio taken from this file (a second input) instead of the source's own tracks, such as a
+    /// cleaned-up voice; the source still gives the video, cover art and metadata.
+    /// </summary>
+    public string? ReplacementAudio { get; init; }
+
     public VideoQuality Quality { get; init; } = new(20);
 
     public int AudioKbps { get; init; } = 256;
@@ -113,6 +119,8 @@ internal static class MediaEncoder
         var src = plan.Source;
         var target = plan.Target;
         var args = new List<string>(plan.InputOptions) { "-i", plan.InputPath };
+        if (plan.ReplacementAudio is { } replacement)
+            args.AddRange(["-i", replacement]);
         args.AddRange(plan.OutputOptions);
         var analysisPass = pass == 1;
 
@@ -149,7 +157,15 @@ internal static class MediaEncoder
 
         // Audio.
         var audioMapped = false;
-        if (plan.Audio != StreamMode.Drop && src.HasAudio && !analysisPass)
+        if (plan.ReplacementAudio is not null && plan.Audio != StreamMode.Drop && !analysisPass)
+        {
+            args.AddRange(["-map", "1:a:0"]);
+            audioMapped = true;
+            if (!string.IsNullOrEmpty(plan.AudioFilter))
+                args.AddRange(["-af", plan.AudioFilter]);
+            args.AddRange(Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, plan.AudioBitDepth ?? Containers.BitDepthOf(src.Audio), plan.MaxFlacCompression));
+        }
+        else if (plan.Audio != StreamMode.Drop && src.HasAudio && !analysisPass)
         {
             var tracks = target.MultipleAudio && plan.AllAudioTracks ? src.AudioStreams.ToList() : [src.Audio!];
             foreach (var track in tracks)

@@ -43,6 +43,13 @@ public static class ToolRegistry
         new(ExtractImages, "IMAGES", "Extract Images", "images", false, ToolSelection.SingleOrBatch, "Images", ToolOutputKind.Folder),
         new(RemoveBackground, "REMOVE BG", "Remove Background", "eraser", true, ToolSelection.SingleOrBatch, "No Background"),
         new(Transcribe, "SUBTITLES", "Transcribe", "captions", true, ToolSelection.SingleOrBatch, "Subtitled"),
+        // PDFs each get a text layer; pictures become the pages of one searchable PDF.
+        new(MakeSearchable, "OCR", "Make Searchable", "scanSearch", false, ToolSelection.SingleOrBatch, "Searchable", ToolOutputKind.FixedFormat, "pdf"),
+        new(ReadAloud, "LISTEN", "Read Aloud", "bookAudio", true, ToolSelection.Single, "Audio", ToolOutputKind.FixedFormat, "mp3"),
+        new(RemoveNoise, "DENOISE", "Remove Noise", "micVocal", true, ToolSelection.SingleOrBatch, "Clean"),
+        new(SeparateVocals, "VOCALS", "Separate Vocals", "music", true, ToolSelection.SingleOrBatch, "Stems", ToolOutputKind.Folder),
+        new(EraseObject, "ERASE", "Erase Object", "brush", true, ToolSelection.Single, "Erased"),
+        new(TranslateSubtitles, "ARABIC", "Translate to Arabic", "languages", true, ToolSelection.SingleOrBatch, "Arabic"),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -50,16 +57,18 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText];
-    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, CreateCollage];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText];
+    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
-    private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, Transcribe, RemoveAudio, TrimVideo, CropVideo, ChangeSpeed, VideoSnapshots, SplitVideo, RedactVideo, Watermark];
-    private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, RemoveAudio, JoinVideos, Watermark];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, SeparateVocals];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, Transcribe, RemoveNoise, RemoveAudio, TrimVideo, CropVideo, ChangeSpeed, VideoSnapshots, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, RemoveNoise, RemoveAudio, JoinVideos, Watermark];
+    private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
-    private static readonly ToolId[] PdfSingle = [Compress, Metadata, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, ExtractImages];
-    private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, ExtractImages];
+    private static readonly ToolId[] PdfSingle = [Compress, Metadata, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
+    private static readonly ToolId[] DocumentTools = [ReadAloud];
+    private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
     private static readonly ToolId[] ArchiveTools = [ExtractArchive];
 
     /// <summary>The tools offered on the tools wheel for a selection of files.</summary>
@@ -87,6 +96,8 @@ public static class ToolRegistry
             FormatFamily.Video => multi ? VideoMulti : VideoSingle,
             FormatFamily.Pdf => multi ? PdfMulti : PdfSingle,
             FormatFamily.Archive => ArchiveTools,
+            FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => multi ? [] : DocumentTools,
+            FormatFamily.Subtitle => SubtitleTools,
             _ => [],
         };
         return ids.Select(Get).ToList();

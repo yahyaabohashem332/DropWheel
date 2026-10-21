@@ -39,7 +39,7 @@ public sealed partial class SubtitleConverter : IConverter
     public static List<SubtitleCue> Parse(string text)
     {
         var cues = new List<SubtitleCue>();
-        var blocks = BlankLines().Split(text.Replace("\r\n", "\n").Replace('\r', '\n').Trim('﻿', '\n', ' '));
+        var blocks = BlankLines().Split(text.Replace("\r\n", "\n").Replace('\r', '\n').Trim('\uFEFF', '\n', ' '));
         foreach (var raw in blocks)
         {
             var lines = raw.Split('\n').ToList();

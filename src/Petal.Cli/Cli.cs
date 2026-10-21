@@ -58,9 +58,19 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 "zip" => await ZipAsync(Arguments.Parse(rest), ct),
                 "qr" => await QrAsync(Arguments.Parse(rest)),
                 "text" => await TextAsync(Arguments.Parse(rest), ct),
+                "searchable" => await SearchableAsync(Arguments.Parse(rest), ct),
+                "speak" => await SpeakAsync(Arguments.Parse(rest), ct),
+                "denoise" => await DenoiseAsync(Arguments.Parse(rest), ct),
+                "separate" => await SeparateAsync(Arguments.Parse(rest, "four"), ct),
+                "translate" => await TranslateAsync(Arguments.Parse(rest), ct),
+                "ask" => await AskAsync(Arguments.Parse(rest, "run"), ct),
+                "search" => Search(Arguments.Parse(rest)),
+                "voices" => Voices(),
                 "codes" => await CodesAsync(Arguments.Parse(rest), ct),
                 "info" => await InfoAsync(Arguments.Parse(rest), ct),
                 "formats" => Formats(Arguments.Parse(rest)),
+                "recipes" => ListRecipes(),
+                "run" => await RunRecipeAsync(Arguments.Parse(rest), ct),
                 "version" or "--version" or "-v" => Print($"Petal {Version}"),
                 _ => throw new UsageException($"Unknown command \"{args[0]}\". Try \"petal help\"."),
             };
@@ -91,13 +101,32 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
           petal convert <files> --to <format> [--max <px>] [--quality <n>] [--out <folder>]
           petal resize <images> (--max <px> | --width <px> | --height <px> | --percent <n>)
                        [--to <format>] [--enlarge] [--ai] [--out <folder>]
-          petal compress <files> [--strong] [--out <folder>]
+          petal compress <files> [--strong | --for whatsapp|email|discord|upload|instagram] [--out <folder>]
           petal zip <files or folders> [-o <archive.zip>] [--password <text>]
           petal qr <text> [-o <code.png | code.svg>]
           petal text <image>        Print the text in a picture
+          petal speak <document> [--voice <name>] [--speed <0.5-2>] [--out <folder>]
+                                    Reads a document aloud into an MP3
+          petal voices              The voices installed, and the natural ones Petal can use
+          petal denoise <files> [--strength gentle|strong|full] [--out <folder>]
+                                    Takes noise out of speech in recordings and videos
+          petal separate <files> [--four] [--out <folder>]
+                                    Splits songs into vocals and music (or four parts)
+          petal translate <subtitles> [--out <folder>]
+                                    English subtitles (SRT, VTT) into Arabic
+          (These three use AI models Petal downloads once, from its windows.)
+          petal searchable <pdfs or pictures> [--out <folder>]
+                                    Scans get a text layer so they can be searched and copied
+                                    (pictures of pages become one PDF)
           petal codes <image>       Print the QR codes and barcodes in a picture
           petal info <file>         Format, size, dimensions or duration
           petal formats [<file>]    What each format (or this file) converts to
+          petal ask "<request>" <files> [--run] [--out <folder>]
+                                    Says what Petal would do for a request in plain words
+                                    (English or Arabic); --run does it
+          petal search <words>      Files found by Search by Meaning (turn it on in Petal's Settings)
+          petal recipes             The recipes made in Petal's Settings
+          petal run <recipe> <files> [--out <folder>]   Runs a recipe on the files
           petal version
 
         Notes:
@@ -204,33 +233,45 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
 
     private async Task<int> CompressAsync(Arguments a, CancellationToken ct)
     {
-        a.Only("strong", "out");
+        a.Only("strong", "out", "for");
         bool strong = a.Has("strong");
+        ShareTarget? app = a.Get("for") is { } forName
+            ? ShareTargets.Find(forName) ?? throw new UsageException($"Unknown app \"{forName}\". Choose one of: {string.Join(", ", ShareTargets.All.Select(t => t.Id))}.")
+            : null;
         var tool = ToolRegistry.Get(ToolId.Compress);
         var outDir = a.OutputFolder();
+        var files = a.Files();
+        long allBytes = files.Sum(f => new FileInfo(f).Length);
         int failures = 0;
-        foreach (var file in a.Files())
+        foreach (var file in files)
         {
             var format = F.FromPath(file);
+            long? targetBytes = app?.TargetFor(new FileInfo(file).Length, allBytes);
             Func<IProgress<double>, Task<(string Path, long Before, long After)>>? work = format?.Family switch
             {
                 FormatFamily.Image or FormatFamily.Vector => async progress =>
                 {
                     var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
-                    var r = await ImageCompressor.CompressAsync(file, path, new ImageCompressOptions { Preset = strong ? CompressionPreset.Strong : CompressionPreset.Balanced }, progress, ct);
+                    var r = await ImageCompressor.CompressAsync(file, path, new ImageCompressOptions
+                    {
+                        Preset = strong ? CompressionPreset.Strong : CompressionPreset.Balanced,
+                        TargetBytes = targetBytes,
+                        Resize = app is not null ? ImageResize.LongEdge(app.ImageLongEdge) : ImageResize.Original,
+                    }, progress, ct);
                     return (r.OutputPath, r.OriginalBytes, r.OutputBytes);
                 },
                 FormatFamily.Audio or FormatFamily.Video => async progress =>
                 {
                     var ext = MediaCompressor.CompressedExtension(file);
                     var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir, extensionOverride: ext == OutputNaming.ExtensionOf(file) ? null : ext);
-                    var r = await MediaCompressor.CompressAsync(file, path, new CompressOptions(strong ? CompressPreset.Strong : CompressPreset.Balanced) { Settings = UserDefaults() }, progress, ct);
+                    var r = await MediaCompressor.CompressAsync(file, path, new CompressOptions(strong ? CompressPreset.Strong : CompressPreset.Balanced, targetBytes,
+                        MaxResolution: app is not null && format.Family == FormatFamily.Video ? app.VideoShortSide : null) { Settings = UserDefaults() }, progress, ct);
                     return (r.OutputPath, r.OriginalBytes, r.OutputBytes);
                 },
                 FormatFamily.Pdf => async progress =>
                 {
                     var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
-                    var r = await PdfCompressor.CompressAsync(file, path, new PdfCompressOptions { Preset = strong ? PdfCompressionPreset.Strong : PdfCompressionPreset.Balanced }, progress, ct);
+                    var r = await PdfCompressor.CompressAsync(file, path, new PdfCompressOptions { Preset = strong ? PdfCompressionPreset.Strong : PdfCompressionPreset.Balanced, TargetBytes = targetBytes }, progress, ct);
                     return (r.Written ? path : file, r.OriginalBytes, r.Written ? r.OutputBytes : r.OriginalBytes);
                 },
                 _ => null,
@@ -340,6 +381,291 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         }
         output.WriteLine(text.TrimEnd());
         return Ok;
+    }
+
+    private async Task<int> AskAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("run", "out");
+        if (a.Values.Count < 2)
+            throw new UsageException("Say what to do, then name the files: petal ask \"make them webp\" *.jpg");
+        var request = a.Values[0];
+        a.Values.RemoveAt(0);
+        var files = a.Files();
+        var formats = files.Select(F.FromPath).OfType<FileFormat>().ToList();
+        var answer = await Petal.Recipes.AskPetal.AskAsync(request, formats, ct);
+        if (answer.Recipe is not { } recipe)
+        {
+            error.WriteLine(Petal.Recipes.AskPetal.ModelReady
+                ? "Petal didn't find something it can do in that request."
+                : "Petal didn't understand that. Try simpler words, or download the AI model in Petal's Ask Petal window.");
+            return Failed;
+        }
+        int n = 1;
+        foreach (var step in recipe.Steps)
+            output.WriteLine($"{n++}. {Describe(step)}");
+        if (!recipe.AppliesTo(formats, Converters))
+        {
+            error.WriteLine("These steps don't fit the files named.");
+            return Failed;
+        }
+        if (!a.Has("run"))
+            return Ok;
+        var runner = new Petal.Recipes.RecipeRunner(Converters, UserDefaults());
+        var saved = await runner.RunAsync(recipe, files, a.OutputFolder(), new Progress<double>(f => ShowProgress(recipe.Name, f)), ct);
+        ClearProgress();
+        foreach (var path in saved)
+            output.WriteLine(path);
+        return Ok;
+    }
+
+    private static string Describe(Petal.Recipes.RecipeStep step) => step.Kind switch
+    {
+        Petal.Recipes.RecipeStepKind.Convert => $"Convert to {F.FromId(step.Format ?? "")?.Label ?? step.Format}",
+        Petal.Recipes.RecipeStepKind.Resize => $"Resize to {step.LongestSide} px",
+        Petal.Recipes.RecipeStepKind.Rotate => $"Rotate {step.Turns}°",
+        Petal.Recipes.RecipeStepKind.Compress => step.App is { } app ? $"Compress for {app}" : step.Strong ? "Compress (strong)" : "Compress",
+        Petal.Recipes.RecipeStepKind.RemoveBackground => step.Background is { } colour ? $"Remove the background, on {colour}" : "Remove the background",
+        Petal.Recipes.RecipeStepKind.Watermark => $"Watermark \"{step.Text}\"",
+        Petal.Recipes.RecipeStepKind.Clean => "Clean for sharing",
+        Petal.Recipes.RecipeStepKind.Rename => $"Rename to \"{step.Pattern}\"",
+        Petal.Recipes.RecipeStepKind.Zip => "Put them in a ZIP",
+        Petal.Recipes.RecipeStepKind.CombinePdf => "Combine into one PDF",
+        Petal.Recipes.RecipeStepKind.Searchable => "Make searchable (OCR)",
+        _ => step.Kind.ToString(),
+    };
+
+    private int Search(Arguments a)
+    {
+        a.Only();
+        if (a.Values.Count == 0)
+            throw new UsageException("Say what to look for: petal search \"beach sunset\"");
+        if (!File.Exists(Petal.Recipes.Search.SearchIndex.DefaultPath))
+        {
+            error.WriteLine("There's no search index yet. Turn on Search by Meaning in Petal's Settings, and let it read your files.");
+            return Failed;
+        }
+        var query = string.Join(' ', a.Values);
+        var meaning = Petal.Engines.Imaging.Meaning.IsReady ? Petal.Engines.Imaging.Meaning.EmbedText(query) : null;
+        using var index = new Petal.Recipes.Search.SearchIndex();
+        var results = index.Search(query, meaning);
+        foreach (var hit in results.ByMeaning.Concat(results.ByWords).DistinctBy(h => h.Path, StringComparer.OrdinalIgnoreCase))
+            output.WriteLine(hit.Path);
+        if (results.ByMeaning.Count + results.ByWords.Count == 0)
+        {
+            error.WriteLine("Nothing found.");
+            return Failed;
+        }
+        return Ok;
+    }
+
+    private string? MissingModel(IReadOnlyList<Petal.Core.Models.ModelInfo> models, string tool)
+    {
+        if (models.All(Petal.Core.Models.ModelStore.IsAvailable))
+            return null;
+        error.WriteLine($"{tool} needs its AI model. Open {tool} in Petal once to download it.");
+        return tool;
+    }
+
+    private async Task<int> DenoiseAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("strength", "out");
+        var files = a.Files();
+        if (MissingModel(VoiceCleaner.Models, "Remove Noise") is not null)
+            return Failed;
+        double db = a.Get("strength")?.ToLowerInvariant() switch
+        {
+            null or "full" => 100,
+            "strong" => 24,
+            "gentle" => 12,
+            var other => throw new UsageException($"--strength is gentle, strong or full, not \"{other}\"."),
+        };
+        var outDir = a.OutputFolder();
+        var tool = ToolRegistry.Get(ToolId.RemoveNoise);
+        int failed = 0;
+        foreach (var file in files)
+        {
+            var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+            try
+            {
+                await VoiceCleaner.CleanAsync(file, path, new CleanVoiceOptions(db) { Settings = UserDefaults() }, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+                ClearProgress();
+                output.WriteLine(path);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                ClearProgress();
+                error.WriteLine($"{Path.GetFileName(file)}: {ex.Message}");
+                failed++;
+            }
+        }
+        return failed == 0 ? Ok : Failed;
+    }
+
+    private async Task<int> SeparateAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("four", "out");
+        var files = a.Files();
+        if (MissingModel(StemSplitter.Models, "Separate Vocals") is not null)
+            return Failed;
+        var options = new SplitStemsOptions(a.Has("four") ? StemSet.FourStems : StemSet.VocalsAndMusic) { Settings = UserDefaults() };
+        var outDir = a.OutputFolder();
+        var tool = ToolRegistry.Get(ToolId.SeparateVocals);
+        int failed = 0;
+        foreach (var file in files)
+        {
+            var folder = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+            var extension = F.FromPath(file)?.Family == FormatFamily.Audio ? OutputNaming.ExtensionOf(file) : "m4a";
+            try
+            {
+                var stems = await StemSplitter.SplitAsync(file, folder, extension, options, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+                ClearProgress();
+                foreach (var stem in stems)
+                    output.WriteLine(stem);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                ClearProgress();
+                error.WriteLine($"{Path.GetFileName(file)}: {ex.Message}");
+                failed++;
+            }
+        }
+        return failed == 0 ? Ok : Failed;
+    }
+
+    private async Task<int> TranslateAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("out");
+        var files = a.Files();
+        if (files.Any(f => F.FromPath(f)?.Family != FormatFamily.Subtitle))
+            throw new UsageException("Name subtitle files (SRT or VTT).");
+        if (MissingModel(Petal.Recipes.Translation.Translator.Models, "Translate to Arabic") is not null)
+            return Failed;
+        var outDir = a.OutputFolder();
+        foreach (var file in files)
+        {
+            var text = await File.ReadAllTextAsync(file, ct);
+            var vtt = OutputNaming.ExtensionOf(file).Equals("vtt", StringComparison.OrdinalIgnoreCase);
+            var arabic = Petal.Recipes.Translation.Translator.TranslateSubtitles(text, vtt, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+            ClearProgress();
+            var path = OutputNaming.Unique(outDir ?? Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + ".ar", OutputNaming.ExtensionOf(file));
+            await File.WriteAllTextAsync(path, arabic, new System.Text.UTF8Encoding(true), ct);
+            output.WriteLine(path);
+        }
+        return Ok;
+    }
+
+    private int Voices()
+    {
+        foreach (var voice in Speech.AllVoices())
+        {
+            var state = voice.Kind == VoiceKind.Natural
+                ? voice.IsReady ? "natural" : "natural, download it in Petal's Read Aloud first"
+                : "Windows";
+            output.WriteLine($"{voice.Name} ({voice.Language}, {state})");
+        }
+        return Ok;
+    }
+
+    private async Task<int> SpeakAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("voice", "speed", "out");
+        var file = Single(a);
+        var format = F.FromPath(file);
+        if (format is null || !Petal.Recipes.DocumentText.CanRead(format, Converters))
+            throw new UsageException("Name a document: PDF, Word, text, Markdown, web page or e-book.");
+        double speed = 1;
+        if (a.Get("speed") is { } text && (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out speed) || speed is < 0.5 or > 2))
+            throw new UsageException("--speed must be a number from 0.5 to 2, for example 1.25.");
+        var content = await Petal.Recipes.DocumentText.ReadAsync(file, Converters, UserDefaults(), null, ct);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            error.WriteLine($"{Path.GetFileName(file)}: there's no text to read.");
+            return Failed;
+        }
+        var voices = Speech.AllVoices();
+        SpeechVoice? voice;
+        if (a.Get("voice") is { } name)
+        {
+            voice = voices.FirstOrDefault(v => v.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || v.Name.Replace("Microsoft ", "").Equals(name, StringComparison.OrdinalIgnoreCase))
+                ?? throw new UsageException($"No voice called \"{name}\". See \"petal voices\".");
+        }
+        else
+        {
+            var language = Speech.GuessLanguage(content);
+            voice = Speech.Choose(language, voices.Where(v => v.IsReady).ToList());
+            if (voice is null)
+            {
+                error.WriteLine($"No voice for this document's language ({language}) is ready. Add one in Windows Settings › Time & language › Speech, or download a natural voice in Petal's Read Aloud.");
+                return Failed;
+            }
+        }
+        if (!voice.IsReady)
+        {
+            error.WriteLine($"{voice.Name} isn't downloaded yet. Open Read Aloud in Petal once to get it.");
+            return Failed;
+        }
+        var path = OutputNaming.ForTool(file, ToolRegistry.Get(ToolId.ReadAloud), outputDirectory: a.OutputFolder());
+        await Speech.SpeakToFileAsync(content, voice, speed, path, Path.GetFileNameWithoutExtension(file), new Progress<double>(f => ShowProgress(voice.Name, f)), ct);
+        ClearProgress();
+        output.WriteLine(path);
+        return Ok;
+    }
+
+    private async Task<int> SearchableAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("out");
+        var files = a.Files();
+        var pdfs = files.Where(f => F.FromPath(f) == F.Pdf).ToList();
+        var pictures = files.Where(f => F.FromPath(f) is { Family: FormatFamily.Image, CanRead: true }).ToList();
+        if (pdfs.Count + pictures.Count != files.Count)
+            throw new UsageException("Name PDFs, or pictures of pages.");
+        if (!SearchablePdf.IsAvailable)
+        {
+            error.WriteLine("Windows text recognition isn't available. Add a language with OCR in Windows Settings › Time & language.");
+            return Failed;
+        }
+        var outDir = a.OutputFolder();
+        var tool = ToolRegistry.Get(ToolId.MakeSearchable);
+        int failed = 0;
+
+        async Task MakeAsync(string input, string label, string path)
+        {
+            try
+            {
+                var result = await SearchablePdf.MakeAsync(input, path, null, new Progress<double>(f => ShowProgress(label, f)), ct);
+                ClearProgress();
+                if (!result.Written)
+                {
+                    error.WriteLine($"{label}: every page already has text.");
+                    return;
+                }
+                output.WriteLine(path);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                ClearProgress();
+                error.WriteLine($"{label}: {ex.Message}");
+                failed++;
+            }
+        }
+
+        foreach (var pdf in pdfs)
+            await MakeAsync(pdf, Path.GetFileName(pdf), OutputNaming.ForTool(pdf, tool, outputDirectory: outDir));
+        if (pictures.Count > 0)
+        {
+            var pages = Path.Combine(Path.GetTempPath(), "Petal", $"pages-{Guid.NewGuid():N}.pdf");
+            Directory.CreateDirectory(Path.GetDirectoryName(pages)!);
+            try
+            {
+                await PdfCreator.CreateAsync(pictures, pages, new PdfCreateOptions(), null, ct);
+                await MakeAsync(pages, Path.GetFileName(pictures[0]), OutputNaming.ForTool(pictures[0], tool, outputDirectory: outDir));
+            }
+            finally
+            {
+                try { File.Delete(pages); } catch (IOException) { }
+            }
+        }
+        return failed == 0 ? Ok : Failed;
     }
 
     private async Task<int> CodesAsync(Arguments a, CancellationToken ct)
@@ -530,5 +856,75 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
     private sealed class SavedSettings
     {
         public ConversionSettings? Conversion { get; set; }
+
+        public List<Petal.Recipes.Recipe>? Recipes { get; set; }
     }
+
+    /// <summary>The recipes saved in Petal's Settings.</summary>
+    internal static IReadOnlyList<Petal.Recipes.Recipe> UserRecipes(string? settingsFile = null)
+    {
+        settingsFile ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal", "settings.json");
+        try
+        {
+            if (File.Exists(settingsFile))
+            {
+                var options = new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
+                return JsonSerializer.Deserialize<SavedSettings>(File.ReadAllText(settingsFile), options)?.Recipes ?? [];
+            }
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+        }
+        return [];
+    }
+
+    private int ListRecipes()
+    {
+        var recipes = UserRecipes();
+        if (recipes.Count == 0)
+        {
+            output.WriteLine("No recipes yet. Make one in Petal's Settings › Recipes.");
+            return Ok;
+        }
+        foreach (var recipe in recipes)
+            output.WriteLine($"{recipe.Name}: {string.Join(" → ", recipe.Steps.Select(s => s.Kind))}");
+        return Ok;
+    }
+
+    /// <summary>Recipes are looked up by name (or a unique start of it), ignoring case.</summary>
+    private async Task<int> RunRecipeAsync(Arguments a, CancellationToken ct, IReadOnlyList<Petal.Recipes.Recipe>? recipes = null)
+    {
+        a.Only("out");
+        if (a.Values.Count < 2)
+            throw new UsageException("Name a recipe and at least one file: petal run \"Shop\" *.jpg");
+        recipes ??= UserRecipes();
+        var name = a.Values[0];
+        var matches = recipes.Where(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (matches.Count == 0)
+            matches = recipes.Where(r => r.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (matches.Count != 1)
+            throw new UsageException(matches.Count == 0 ? $"No recipe called \"{name}\". See \"petal recipes\"." : $"\"{name}\" matches several recipes; type more of the name.");
+        a.Values.RemoveAt(0);
+        var files = a.Files();
+        var runner = new Petal.Recipes.RecipeRunner(Converters, UserDefaults());
+        var progress = new Progress<double>(f => ShowProgress(matches[0].Name, f));
+        try
+        {
+            var saved = await runner.RunAsync(matches[0], files, a.OutputFolder(), progress, ct);
+            ClearProgress();
+            foreach (var path in saved)
+                output.WriteLine(path);
+            return Ok;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException and not UsageException)
+        {
+            ClearProgress();
+            error.WriteLine($"{matches[0].Name}: {ex.Message}");
+            return Failed;
+        }
+    }
+
+    /// <summary>For tests: runs a recipe given directly rather than from Settings.</summary>
+    internal Task<int> RunRecipeAsync(Petal.Recipes.Recipe recipe, IReadOnlyList<string> args, CancellationToken ct) =>
+        RunRecipeAsync(Arguments.Parse([recipe.Name, .. args]), ct, [recipe]);
 }

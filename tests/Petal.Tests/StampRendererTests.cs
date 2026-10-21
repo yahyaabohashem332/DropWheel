@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Petal.App.Tools.Parts;
 using Petal.Engines.Imaging;
+using Petal.Recipes;
 
 namespace Petal.Tests;
 

@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Petal.App.Input;
+using Petal.App.Jobs;
 using Petal.App.Localization;
 using Petal.App.Settings;
 using Petal.App.Shell;
@@ -12,6 +13,7 @@ using Petal.App.Tools;
 using Petal.App.Util;
 using Petal.Engines.Files.Sharing;
 using Petal.Engines.Imaging;
+using Petal.Recipes;
 
 namespace Petal.App.Actions;
 
@@ -30,10 +32,13 @@ public sealed class PhoneWindow : ToolWindow
     private readonly List<string> _received = [];
     private int _downloads;
 
-    public static void ShowFor(IReadOnlyList<string> paths, ScreenPoint at)
+    public static void ShowFor(IReadOnlyList<string> paths, ScreenPoint at) => Show(paths, at, null);
+
+    /// <param name="temporary">A folder of cleaned copies, deleted when sharing stops.</param>
+    private static void Show(IReadOnlyList<string> paths, ScreenPoint at, string? temporary)
     {
         _open?.Close();
-        _open = new PhoneWindow(paths);
+        _open = new PhoneWindow(paths, null, temporary);
         _open.Closed += (_, _) => _open = null;
         _open.ShowNear(at);
     }
@@ -41,8 +46,11 @@ public sealed class PhoneWindow : ToolWindow
     /// <summary>A window sharing on this PC's loopback address, for design snapshots (no firewall prompt).</summary>
     internal static PhoneWindow ForSnapshot(IReadOnlyList<string> paths) => new(paths, System.Net.IPAddress.Loopback);
 
-    private PhoneWindow(IReadOnlyList<string> paths, System.Net.IPAddress? address = null) : base("Send to Phone", 380)
+    private PhoneWindow(IReadOnlyList<string> paths, System.Net.IPAddress? address = null, string? temporary = null) : base("Send to Phone", 380)
     {
+        _paths = paths;
+        if (temporary is not null)
+            Closed += (_, _) => { try { Directory.Delete(temporary, recursive: true); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { } };
         PrimaryButton.Content = L.T("Stop Sharing");
         PrimaryButton.Click += (_, _) => Close();
         _status = Text("", "Petal.Caption");
@@ -110,6 +118,19 @@ public sealed class PhoneWindow : ToolWindow
         Body.Children.Add(upload);
         Body.Children.Add(Text(L.F("They're saved in {0}. Reload the page on the phone after turning this on.", Path.GetFileName(downloads)), "Petal.Caption").WithMargin(24, 2, 0, 0));
 
+        // Photos and videos that record where they were taken: offer clean copies instead.
+        _locationPanel.Visibility = Visibility.Collapsed;
+        _locationPanel.Margin = new Thickness(0, 12, 0, 0);
+        _locationPanel.CornerRadius = new CornerRadius(8);
+        _locationPanel.Padding = new Thickness(10, 8, 10, 8);
+        _locationPanel.SetResourceReference(Border.BackgroundProperty, "Petal.AccentSoft");
+        var withoutLocation = new Button { Content = L.T("Share Without Location"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };
+        withoutLocation.Click += async (_, _) => await ShareCleanAsync(withoutLocation);
+        _location.TextWrapping = TextWrapping.Wrap;
+        _locationPanel.Child = new StackPanel { Children = { _location, withoutLocation } };
+        Body.Children.Add(_locationPanel);
+        _ = WarnAboutLocationAsync();
+
         _status.Margin = new Thickness(0, 12, 0, 0);
         Body.Children.Add(_status);
         Body.Children.Add(Text("If Windows asks, allow Petal on private networks. On a network set to Public, the phone can't reach this PC.", "Petal.Caption").WithMargin(0, 10, 0, 0));
@@ -125,6 +146,67 @@ public sealed class PhoneWindow : ToolWindow
     }
 
     private void SetStatus(string text) => _status.Text = text;
+
+    private readonly IReadOnlyList<string> _paths;
+    private readonly Border _locationPanel = new();
+    private readonly TextBlock _location = new();
+
+    private async Task WarnAboutLocationAsync()
+    {
+        int located = 0;
+        foreach (var path in _paths.Where(File.Exists))
+        {
+            if (await SharingCleaner.HasLocationAsync(path))
+                located++;
+        }
+        if (located == 0 || !IsLoaded && !IsVisible)
+            return;
+        _location.Text = L.P(located, "{0} photo or video shows where it was taken.", "{0} photos or videos show where they were taken.");
+        _locationPanel.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>Shares cleaned copies (no location, device or author) in place of the originals.</summary>
+    private async Task ShareCleanAsync(Button button)
+    {
+        button.IsEnabled = false;
+        button.Content = L.T("Cleaning…");
+        var folder = Path.Combine(Path.GetTempPath(), "Petal", "clean-share", Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(folder);
+        var shared = new List<string>();
+        try
+        {
+            foreach (var path in _paths)
+            {
+                if (File.Exists(path) && SharingCleaner.CanClean(path))
+                {
+                    var copy = Path.Combine(folder, Path.GetFileName(path));
+                    await SharingCleaner.CleanAsync(path, copy, null, CancellationToken.None);
+                    shared.Add(copy);
+                }
+                else
+                {
+                    shared.Add(path);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Log.Error(ex, "Cleaning files to share");
+            button.Content = L.T("Couldn't clean them");
+            return;
+        }
+        var at = new ScreenPoint((int)((Left + ActualWidth / 2) * Dpi.X), (int)((Top + ActualHeight / 2) * Dpi.Y));
+        Show(shared, at, folder);
+    }
+
+    private (double X, double Y) Dpi
+    {
+        get
+        {
+            var dpi = VisualTreeHelper.GetDpi(this);
+            return (dpi.DpiScaleX, dpi.DpiScaleY);
+        }
+    }
 
     private void OnActivity(ShareActivity activity)
     {

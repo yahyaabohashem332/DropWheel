@@ -426,7 +426,7 @@ internal sealed partial class HtmlReader
 
     private static string Clean(string s) => Whitespace().Replace(s, " ").Trim();
 
-    [GeneratedRegex(@"[\s-[ ]]+")]
+    [GeneratedRegex(@"[\s-[\u00A0]]+")]
     private static partial Regex Whitespace();
 
     [GeneratedRegex(@"font-weight\s*:\s*(bold|bolder|[6-9]00)")]

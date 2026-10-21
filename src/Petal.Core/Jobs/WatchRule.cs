@@ -19,6 +19,10 @@ public enum WatchAction
     Convert,
     /// <summary>Run the favourite whose id <see cref="WatchRule.Target"/> holds.</summary>
     Favourite,
+    /// <summary>Run the recipe whose id <see cref="WatchRule.Target"/> holds.</summary>
+    Recipe,
+    /// <summary>Move each file into a folder for its kind (screenshots, invoices, pictures…).</summary>
+    Organize,
 }
 
 /// <summary>
@@ -43,6 +47,18 @@ public sealed class WatchRule
 
     /// <summary>A format id for <see cref="WatchAction.Convert"/>, a favourite's id for <see cref="WatchAction.Favourite"/>.</summary>
     public string Target { get; set; } = Formats.Formats.Jpg.Id;
+
+    /// <summary>Organize: pictures, videos, music, documents, archives and installers to folders of their own.</summary>
+    public bool SortByKind { get; set; } = true;
+
+    /// <summary>Organize: screen captures to a folder of their own.</summary>
+    public bool SortScreenshots { get; set; } = true;
+
+    /// <summary>Organize: invoices and receipts, recognised by their words, to a folder of their own.</summary>
+    public bool SortInvoices { get; set; } = true;
+
+    /// <summary>Organize: photos renamed after the moment they were taken.</summary>
+    public bool RenameByDate { get; set; }
 
     [JsonIgnore]
     public string OutputFolder => Path.Combine(Folder, OutputFolderName);
@@ -71,7 +87,8 @@ public sealed class WatchRule
         var dir = Path.GetDirectoryName(full);
         if (dir is null || !IsInside(dir, root))
             return false;
-        if (!IncludeSubfolders && !string.Equals(Path.TrimEndingDirectorySeparator(dir), root, StringComparison.OrdinalIgnoreCase))
+        // Sorting looks only at what lands in the folder itself, never at the folders it sorts into.
+        if ((!IncludeSubfolders || Action == WatchAction.Organize) && !string.Equals(Path.TrimEndingDirectorySeparator(dir), root, StringComparison.OrdinalIgnoreCase))
             return false;
         if (IsInside(dir, Path.Combine(root, OutputFolderName)))
             return false;

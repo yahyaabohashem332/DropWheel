@@ -28,7 +28,11 @@ public partial class LocalizationTests
         // Font names, a template part, a unit and a file-name suffix (file names stay in English).
         "Segoe UI", "Segoe Script", "Segoe Print", "Ink Free", "Cell", "pt", "PNG · SVG", "Unlocked",
         // Date and time patterns, and a sample installer name in the design snapshots.
-        "HH:mm", "yyyy-MM-dd", "Petal-Setup-1.1.0.exe",
+        "HH:mm", "yyyy-MM-dd", "Petal-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
+        // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
+        "Consolas", "$I*", "image/jpeg", "Petal search index", "Microsoft",
+        // Sample requests and search results in the design snapshots, already in both languages.
+        "make them 1080 px WEBP and zip them", "صغّرها إلى 1080 بكسل وحوّلها إلى WEBP ثم ضعها في ملف مضغوط", "…our trip to the «beach» in July…",
     };
 
     private static readonly Regex Literal = MakeLiteral();

@@ -304,6 +304,27 @@ public class ConverterTests
         Assert.Equal("Petal Artist", audio.Tags["artist"]);
     }
 
+    /// <summary>
+    /// FLAC with odd block sizes (FFmpeg 9 copies the source's frame size: 47, 576, 1152…) is valid
+    /// but Windows can't play it; Petal always writes 4608-sample blocks.
+    /// </summary>
+    [Theory]
+    [InlineData("mp3")]
+    [InlineData("opus")]
+    [InlineData("wma")]
+    [InlineData("m4a")]
+    public async Task Flac_uses_the_standard_block_size_whatever_the_source(string sourceId)
+    {
+        var from = MediaAssert.Format(sourceId);
+        var input = await Fixtures.ForFormatAsync(from);
+        var output = Path.Combine(Fixtures.NewDir(), "out.flac");
+        await Converter.ConvertAsync(new ConversionJob(input, from, F.Flac, output, new ConversionSettings()), null, CancellationToken.None);
+        var header = File.ReadAllBytes(output)[..18];
+        Assert.Equal("fLaC", System.Text.Encoding.ASCII.GetString(header, 0, 4));
+        int min = (header[8] << 8) | header[9], max = (header[10] << 8) | header[11];
+        Assert.Equal((4608, 4608), (min, max));
+    }
+
     [Fact]
     public async Task Probe_rejects_files_that_are_not_media()
     {

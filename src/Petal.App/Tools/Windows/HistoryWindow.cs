@@ -92,11 +92,13 @@ public sealed class HistoryWindow : ToolWindow
         }
         else
         {
+            bool recycled = entry.Recycled is { Count: > 0 };
             var show = IconButton("folderOpen", "Show in File Explorer", 15);
             show.IsEnabled = existing.Count > 0;
             show.Click += (_, _) => ExplorerSelection.Reveal(existing);
-            var undo = IconButton("undo", entry.Renames is { Count: > 0 } ? "Put the old names back" : "Undo: move the results to the Recycle Bin", 15);
-            undo.IsEnabled = existing.Count > 0;
+            var undo = IconButton("undo", recycled ? "Put the files back from the Recycle Bin"
+                : entry.Renames is { Count: > 0 } ? "Put the old names back" : "Undo: move the results to the Recycle Bin", 15);
+            undo.IsEnabled = recycled ? History.Restorable(entry).Count > 0 : existing.Count > 0;
             undo.Click += (_, _) =>
             {
                 int n = History.Undo(entry.Id);
@@ -125,7 +127,7 @@ public sealed class HistoryWindow : ToolWindow
         var when = entry.Time.Date == DateTime.Today ? L.T("Today") + " " + time
             : entry.Time.Date == DateTime.Today.AddDays(-1) ? L.T("Yesterday") + " " + time
             : entry.Time.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + time;
-        var results = entry.Renames is { Count: > 0 } r ? r.Select(x => x.To).ToList() : entry.Outputs.ToList();
+        var results = entry.Renames is { Count: > 0 } r ? r.Select(x => x.To).ToList() : entry.Recycled is { Count: > 0 } bin ? bin.ToList() : entry.Outputs.ToList();
         var first = results.Count > 0 ? Path.GetFileName(results[0].TrimEnd('\\')) : "";
         var more = results.Count > 1 ? " " + L.F("and {0} more", results.Count - 1) : "";
         return $"{when} · {first}{more}";

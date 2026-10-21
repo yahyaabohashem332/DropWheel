@@ -92,7 +92,7 @@ internal sealed class PdfLayoutOptions
 /// </summary>
 internal static partial class PdfLayout
 {
-    private const string BulletChars = "•·▪◦●○■□►▸‣⁃–—-*✓✔➢➤→⁃∙";
+    private const string BulletChars = "•·▪◦●○■□►▸‣⁃–—-*✓✔➢➤→\uF0B7\uF0A7\uF076\uF0D8\uF0FC\uF0A8\uF06E\uF0E0⁃∙";
 
     // ───────────────────────────── rows and segments ─────────────────────────────
 

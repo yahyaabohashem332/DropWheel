@@ -8,6 +8,7 @@ namespace Petal.Engines.Media.Tests;
 /// Speech to text against the real Whisper model (downloaded once into %LOCALAPPDATA%\Petal\models)
 /// and subtitles written into videos.
 /// </summary>
+[Collection("Models")]
 public class TranscribeTests(ITestOutputHelper output)
 {
     /// <summary>A WAV of English speech from Windows' built-in voice.</summary>

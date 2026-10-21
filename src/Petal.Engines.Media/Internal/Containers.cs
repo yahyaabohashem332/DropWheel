@@ -179,7 +179,9 @@ internal static class Containers
         AudioCodecKind.Vorbis => ["-c:a", "libvorbis", "-q:a", Inv.I(VorbisQuality(kbps))],
         AudioCodecKind.PcmLe => ["-c:a", bitDepth >= 24 ? "pcm_s24le" : "pcm_s16le"],
         AudioCodecKind.PcmBe => ["-c:a", bitDepth >= 24 ? "pcm_s24be" : "pcm_s16be"],
-        AudioCodecKind.Flac => ["-c:a", "flac", "-compression_level", maxFlacCompression ? "8" : "5", "-sample_fmt", bitDepth >= 24 ? "s32" : "s16"],
+        // A fixed 4608-sample block: FFmpeg 9 otherwise copies the source's frame size (47, 576,
+        // 1152… samples), and Windows can't play FLAC with such blocks.
+        AudioCodecKind.Flac => ["-c:a", "flac", "-compression_level", maxFlacCompression ? "8" : "5", "-sample_fmt", bitDepth >= 24 ? "s32" : "s16", "-frame_size", "4608"],
         AudioCodecKind.Wma => ["-c:a", "wmav2", "-b:a", $"{Math.Clamp(kbps, 32, 192)}k"],
         _ => throw new NotSupportedException($"No encoder for {kind}"),
     };

@@ -75,7 +75,7 @@ public static class PdfStamper
                     }
                     progress?.Report(0.9 * (i + 1) / document.PageCount);
                 }
-                SafeOutput.Write(output, temp => document.Save(temp));
+                SafeOutput.Write(output, temp => PdfSharpIO.Save(document, temp));
             }
             finally
             {
@@ -129,7 +129,7 @@ public static class PdfStamper
                 gfx.DrawString(text, font, brush, new XRect(margin, top, size.Width, size.Height), format);
                 progress?.Report(0.9 * (i + 1) / document.PageCount);
             }
-            SafeOutput.Write(output, temp => document.Save(temp));
+            SafeOutput.Write(output, temp => PdfSharpIO.Save(document, temp));
             progress?.Report(1);
         }, cancellationToken);
 
@@ -202,9 +202,9 @@ public static class PdfStamper
             return written;
         }, cancellationToken);
 
-    private static PdfRectangle Visible(PdfPage page) => page.CropBox.IsZero ? page.MediaBox : page.CropBox;
+    private static PdfRectangle Visible(PdfPage page) => PdfSharpIO.VisibleBox(page);
 
-    private static (double Width, double Height) DisplayedSize(PdfPage page)
+    internal static (double Width, double Height) DisplayedSize(PdfPage page)
     {
         var box = Visible(page);
         return Normal(page.Rotate) is 90 or 270 ? (box.Height, box.Width) : (box.Width, box.Height);
@@ -216,10 +216,10 @@ public static class PdfStamper
     /// Graphics whose origin is the top-left of the page as displayed, with x to the right and y
     /// down, whatever the page's /Rotate and crop box.
     /// </summary>
-    private static XGraphics Upright(PdfPage page)
+    internal static XGraphics Upright(PdfPage page)
     {
         var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append);
-        var media = page.MediaBox;
+        var media = PdfSharpIO.MediaBox(page);
         var box = Visible(page);
         // XGraphics starts at the media box's top-left, y down; move to the visible area.
         gfx.TranslateTransform(box.X1 - media.X1, media.Y2 - box.Y2);

@@ -48,7 +48,7 @@ public static class PdfPageTools
                     CopyInfo(source, single);
                     single.AddPage(source.Pages[i]);
                     var name = Petal.Core.Jobs.OutputNaming.Unique(target, $"{stem} {i + 1}", "pdf");
-                    SafeOutput.Write(name, temp => single.Save(temp));
+                    SafeOutput.Write(name, temp => PdfSharpIO.Save(single, temp));
                     names.Add(Path.GetFileName(name));
                     progress?.Report((i + 1.0) / count);
                 }
@@ -87,9 +87,12 @@ public static class PdfPageTools
 
                 if (source.PageCount > 0)
                 {
-                    var parent = merged.Outlines;
+                    Func<PdfOutlineCollection> parent = () => merged.Outlines;
                     if (options.BookmarkEachFile)
-                        parent = merged.Outlines.Add(Petal.Core.Formats.Formats.BaseName(inputs[f]), map[source.Pages[0]], true).Outlines;
+                    {
+                        var fileBookmark = merged.Outlines.Add(Petal.Core.Formats.Formats.BaseName(inputs[f]), map[source.Pages[0]], true);
+                        parent = () => fileBookmark.Outlines;
+                    }
                     if (options.KeepBookmarks)
                         CopyOutlines(source.Outlines, parent, map);
                 }
@@ -97,11 +100,16 @@ public static class PdfPageTools
             }
             // PDFsharp locks a document once saved, so count first.
             var count = merged.PageCount;
-            SafeOutput.Write(output, temp => merged.Save(temp));
+            SafeOutput.Write(output, temp => PdfSharpIO.Save(merged, temp));
             return count;
         }, cancellationToken);
 
-    private static void CopyOutlines(PdfOutlineCollection from, PdfOutlineCollection to, Dictionary<PdfPage, PdfPage> map)
+    /// <summary>
+    /// Copies the bookmarks whose page is in the new document. <paramref name="to"/> is only called
+    /// when a bookmark is added: PDFsharp writes a reference to an empty outline tree but not the
+    /// tree itself, a dangling object that strict readers (qpdf, Acrobat's repair) report as damage.
+    /// </summary>
+    private static void CopyOutlines(PdfOutlineCollection from, Func<PdfOutlineCollection> to, Dictionary<PdfPage, PdfPage> map)
     {
         foreach (var outline in from)
         {
@@ -115,9 +123,9 @@ public static class PdfPageTools
                         CopyOutlines(outline.Outlines, to, map);
                     continue;
                 }
-                var copy = to.Add(outline.Title, page, outline.Opened);
+                var copy = to().Add(outline.Title, page, outline.Opened);
                 if (outline.HasChildren)
-                    CopyOutlines(outline.Outlines, copy.Outlines, map);
+                    CopyOutlines(outline.Outlines, () => copy.Outlines, map);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
@@ -159,8 +167,8 @@ public static class PdfPageTools
             }
             if (options.UniformWidth)
                 MakeUniformWidth(result);
-            CopyOutlines(source.Outlines, result.Outlines, map);
-            SafeOutput.Write(output, temp => result.Save(temp));
+            CopyOutlines(source.Outlines, () => result.Outlines, map);
+            SafeOutput.Write(output, temp => PdfSharpIO.Save(result, temp));
             progress?.Report(1);
         }, cancellationToken);
 
@@ -169,7 +177,7 @@ public static class PdfPageTools
     {
         static double DisplayedWidth(PdfPage p)
         {
-            var box = p.CropBox.IsZero ? p.MediaBox : p.CropBox;
+            var box = PdfSharpIO.VisibleBox(p);
             return p.Rotate is 90 or 270 ? box.Height : box.Width;
         }
         var target = document.Pages.Cast<PdfPage>().Min(DisplayedWidth);
@@ -195,6 +203,9 @@ public static class PdfPageTools
             if (page.Elements.GetRectangle(key) is { IsZero: false } box && page.Elements.ContainsKey(key))
                 page.Elements.SetRectangle(key, Scale(box, s));
         }
+        // Only pages that have annotations: reading page.Annotations would add an empty array object.
+        if (!page.Elements.ContainsKey("/Annots"))
+            return;
         foreach (var annotation in page.Annotations.OfType<PdfAnnotation>())
         {
             if (annotation.Elements.ContainsKey("/Rect"))

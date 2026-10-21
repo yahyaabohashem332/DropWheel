@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Collections.Concurrent;
 using Petal.Core.Formats;
 using Petal.Core.Util;
@@ -20,10 +21,14 @@ internal static class Fixtures
     {
         var root = Path.Combine(Path.GetTempPath(), "PetalMediaTests", Guid.NewGuid().ToString("N")[..10]);
         Directory.CreateDirectory(root);
-        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        // PETAL_KEEP_TEST_OUTPUT=1 keeps the outputs, for checking them with other programs.
+        if (Environment.GetEnvironmentVariable("PETAL_KEEP_TEST_OUTPUT") != "1")
         {
-            try { Directory.Delete(root, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
-        };
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try { Directory.Delete(root, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            };
+        }
         return root;
     }
 
@@ -120,6 +125,17 @@ internal static class Fixtures
         var result = await ProcessRunner.RunAsync(Ffmpeg, ["-hide_banner", "-nostdin", "-loglevel", "error", "-y", .. args, path]);
         if (!result.Succeeded || !File.Exists(path))
             throw new InvalidOperationException($"Could not create fixture {name}: {result.StandardError}");
+        return path;
+    }
+
+    /// <summary>A WAV of English speech from Windows' built-in voice, at 44.1 kHz.</summary>
+    public static string Speech(string text)
+    {
+        var path = Path.Combine(Fixtures.NewDir(), "voice.wav");
+        var script = "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; " +
+                     $"$s.SetOutputToWaveFile('{path.Replace("'", "''")}'); $s.Speak('{text.Replace("'", "''")}'); $s.Dispose()";
+        using var process = Process.Start(new ProcessStartInfo("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", script]) { CreateNoWindow = true })!;
+        process.WaitForExit(60_000);
         return path;
     }
 

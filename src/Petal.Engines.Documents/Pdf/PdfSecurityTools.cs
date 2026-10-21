@@ -90,7 +90,7 @@ public static class PdfSecurityTools
             settings.PermitPrint = settings.PermitFullQualityPrint = options.AllowPrinting;
             settings.PermitExtractContent = options.AllowCopying;
             settings.PermitModifyDocument = settings.PermitAnnotations = settings.PermitFormsFill = settings.PermitAssembleDocument = options.AllowEditing;
-            SafeOutput.Write(output, temp => document.Save(temp));
+            SafeOutput.Write(output, temp => PdfSharpIO.Save(document, temp));
             progress?.Report(1);
         }, cancellationToken);
 

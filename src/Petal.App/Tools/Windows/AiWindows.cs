@@ -124,7 +124,8 @@ public sealed class TranscribeWindow : ToolWindow
     private readonly Segmented<int> _accuracy;
     private readonly ModelPanel _model;
     private readonly ComboBox _language;
-    private readonly CheckBox _translate = new() { Content = L.T("Translate into English"), Margin = new Thickness(0, 12, 0, 0) };
+    private readonly Segmented<string> _into;
+    private readonly ModelPanel _translator = new(Petal.Recipes.Translation.Translator.Models);
     private readonly Segmented<string> _saveAs;
     private readonly Segmented<SubtitlesInVideo>? _inVideo;
 
@@ -151,8 +152,11 @@ public sealed class TranscribeWindow : ToolWindow
         languages.AddRange(Transcriber.Languages.Select(code => (code, NativeName(code))));
         _language = Choice(languages, "auto");
         Body.Children.Add(Row("Language", _language, 110, 12));
-        _translate.Margin = new Thickness(110, 8, 0, 0);
-        Body.Children.Add(_translate);
+        _into = Segments([("spoken", "As spoken"), ("en", "English"), ("ar", "Arabic")], "spoken");
+        _into.Changed += _ => Sync();
+        Body.Children.Add(Row("Subtitles in", _into, 110, 10));
+        Body.Children.Add(_translator);
+        _translator.Ready += Sync;
 
         _saveAs = Segments([("srt", "Subtitles"), ("txt", "Text"), ("both", "Both")], "srt");
         Body.Children.Add(Row("Save as", _saveAs, 110, 14));
@@ -185,7 +189,9 @@ public sealed class TranscribeWindow : ToolWindow
 
     private void Sync()
     {
-        PrimaryButton.IsEnabled = _model.IsReady;
+        bool arabic = _into.Value == "ar";
+        _translator.Visibility = arabic && !_translator.IsReady ? Visibility.Visible : Visibility.Collapsed;
+        PrimaryButton.IsEnabled = _model.IsReady && (!arabic || _translator.IsReady);
         FooterNote = _files.Count == 1 ? Path.GetFileNameWithoutExtension(_files[0]) + (_saveAs.Value == "txt" ? ".txt" : ".srt") : L.P(_files.Count, "{0} file", "{0} files");
     }
 
@@ -194,7 +200,9 @@ public sealed class TranscribeWindow : ToolWindow
         var modelPath = ModelStore.Find(_model.Model);
         if (modelPath is null)
             return;
-        var options = new TranscribeOptions(modelPath, ValueOf<string>(_language), _translate.IsChecked == true);
+        // Arabic subtitles: Whisper writes English (from any language), then Opus-MT turns it into Arabic.
+        string into = _into.Value;
+        var options = new TranscribeOptions(modelPath, ValueOf<string>(_language), into is "en" or "ar");
         string saveAs = _saveAs.Value;
         var inVideo = _inVideo?.Value ?? SubtitlesInVideo.None;
         var settings = SettingsStore.Current.Conversion;
@@ -203,9 +211,14 @@ public sealed class TranscribeWindow : ToolWindow
         var work = _files.Select(file => new WorkItem(file, Path.GetFileName(file), async (p, ct) =>
         {
             var scaled = inVideo == SubtitlesInVideo.None ? p : new ScaledProgress(p, 0, 0.8);
-            var transcript = await Transcriber.TranscribeAsync(file, options, scaled, ct);
+            var transcript = await Transcriber.TranscribeAsync(file, options, into == "ar" ? new ScaledProgress(scaled, 0, 0.7) : scaled, ct);
             if (transcript.IsEmpty)
                 throw new InvalidOperationException(L.T("No speech was found in this file."));
+            if (into == "ar")
+            {
+                var arabic = await Task.Run(() => Petal.Recipes.Translation.Translator.ToArabic(transcript.Segments.Select(s => s.Text).ToList(), new ScaledProgress(scaled, 0.7, 1), ct), ct);
+                transcript = new Transcript(transcript.Segments.Select((s, i) => s with { Text = arabic[i] }).ToList(), "ar");
+            }
             var directory = Path.GetDirectoryName(file)!;
             var stem = Path.GetFileNameWithoutExtension(file);
             var outputs = new List<string>();

@@ -39,14 +39,14 @@ internal static class Bidi
     }
 
     private static bool IsTransparent(char c) =>
-        c is >= 'ً' and <= 'ٟ' or 'ٰ' or >= 'ۖ' and <= 'ۭ';
+        c is >= '\u064B' and <= '\u065F' or '\u0670' or >= '\u06D6' and <= '\u06ED';
 
     public static bool IsRtlChar(char c) =>
-        c is >= '֐' and <= 'ࣿ' && !IsArabicDigit(c) ||
-        c is >= 'יִ' and <= '﷿' ||
-        c is >= 'ﹰ' and <= '﻿';
+        c is >= '\u0590' and <= '\u08FF' && !IsArabicDigit(c) ||
+        c is >= '\uFB1D' and <= '\uFDFF' ||
+        c is >= '\uFE70' and <= '\uFEFF';
 
-    private static bool IsArabicDigit(char c) => c is >= '٠' and <= '٩' or >= '۰' and <= '۹';
+    private static bool IsArabicDigit(char c) => c is >= '\u0660' and <= '\u0669' or >= '\u06F0' and <= '\u06F9';
 
     private static bool IsDigit(char c) => c is >= '0' and <= '9' || IsArabicDigit(c);
 
@@ -76,7 +76,7 @@ internal static class Bidi
         {
             if (IsRtlChar(c)) return true;
             // Devanagari through Malayalam, Sinhala, Thai, Lao, Tibetan, Myanmar, Khmer.
-            if (c is >= 'ऀ' and <= '෿' or >= '฀' and <= '࿿' or >= 'က' and <= '႟' or >= 'ក' and <= '៿')
+            if (c is >= '\u0900' and <= '\u0DFF' or >= '\u0E00' and <= '\u0FFF' or >= '\u1000' and <= '\u109F' or >= '\u1780' and <= '\u17FF')
                 return true;
         }
         return false;
@@ -151,11 +151,18 @@ internal static class Bidi
     /// Shapes and reorders one line for left-to-right glyph placement.
     /// <paramref name="rtlParagraph"/> defaults to the direction of the first strong character.
     /// </summary>
-    public static string ToVisual(string line, bool? rtlParagraph = null)
+    public static string ToVisual(string line, bool? rtlParagraph = null) =>
+        ContainsRtl(line) ? FixMarks(VisualOrder(Shape(line), rtlParagraph)) : line;
+
+    /// <summary>
+    /// Visual order without shaping: what a PDF viewer reads back as the original text after its
+    /// own right-to-left handling. Used for invisible text, where letter forms don't matter.
+    /// </summary>
+    public static string Reorder(string line, bool? rtlParagraph = null) =>
+        ContainsRtl(line) ? VisualOrder(line, rtlParagraph) : line;
+
+    private static string VisualOrder(string shaped, bool? rtlParagraph)
     {
-        if (!ContainsRtl(line))
-            return line;
-        var shaped = Shape(line);
         var rtl = rtlParagraph ?? IsRtlParagraph(shaped);
         var n = shaped.Length;
         var cls = new Cls[n];
@@ -226,14 +233,14 @@ internal static class Bidi
         }
 
         var sb = new StringBuilder(n);
-        // Combining marks were placed before their base by the reversal; put them back after it.
         for (var i = 0; i < n; i++)
             sb.Append(chars[order[i]]);
-        return FixMarks(sb.ToString());
+        return sb.ToString();
     }
 
     private static Cls Strength(Cls c) => c == Cls.D ? Cls.R : c;
 
+    /// <summary>Combining marks were placed before their base by the reversal; puts them back after it.</summary>
     private static string FixMarks(string visual)
     {
         if (!visual.Any(IsTransparent))
@@ -271,7 +278,7 @@ internal static class Bidi
     /// </summary>
     public static string NormalizeExtracted(string word)
     {
-        if (!word.Any(c => c is >= 'ﭐ' and <= '﻿'))
+        if (!word.Any(c => c is >= '\uFB50' and <= '\uFEFF'))
             return word;
         return word.Normalize(NormalizationForm.FormKC);
     }

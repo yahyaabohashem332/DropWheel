@@ -23,4 +23,12 @@
     <ProjectReference Include="..\..\src\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
   </ItemGroup>
 
+  <!-- The helper programs Petal ships, so tests exercise those builds rather than any on the PATH. -->
+  <ItemGroup Condition="Exists('..\..\tools\bin\ffmpeg\ffmpeg.exe')">
+    <None Include="..\..\tools\bin\ffmpeg\*" LinkBase="tools\ffmpeg" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\..\tools\bin\exiftool\exiftool.exe')">
+    <None Include="..\..\tools\bin\exiftool\**\*" LinkBase="tools\exiftool" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
 </Project>

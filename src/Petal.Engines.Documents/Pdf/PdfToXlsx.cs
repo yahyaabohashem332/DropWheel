@@ -110,7 +110,7 @@ internal static partial class PdfToXlsx
 
     internal static ParsedNumber? ParseNumber(string text)
     {
-        var t = text.Trim().Replace(" ", "").Replace(" ", "");
+        var t = text.Trim().Replace("\u00A0", "").Replace(" ", "");
         if (t.Length == 0 || t.Length > 24)
             return null;
         var negative = false;

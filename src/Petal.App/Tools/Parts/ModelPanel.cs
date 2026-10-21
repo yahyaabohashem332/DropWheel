@@ -8,7 +8,8 @@ namespace Petal.App.Tools.Parts;
 
 /// <summary>
 /// Shown in an AI tool's window while its model isn't on this PC yet: what it is, its size and
-/// licence, and a Download button with progress. Hidden once the model is here.
+/// licence, and a Download button with progress. Hidden once the model is here. A tool that needs
+/// several files (a program and a voice, say) gets them all with one download.
 /// </summary>
 public sealed class ModelPanel : Border
 {
@@ -18,14 +19,18 @@ public sealed class ModelPanel : Border
     private readonly Border _track = new() { Height = 4, CornerRadius = new CornerRadius(2), Margin = new Thickness(0, 10, 0, 0), Visibility = Visibility.Collapsed };
     private readonly Border _fill = new() { Height = 4, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
     private CancellationTokenSource? _cts;
-    private ModelInfo _model;
+    private IReadOnlyList<ModelInfo> _models;
 
     /// <summary>Raised when the model has arrived (or was already here when switching to it).</summary>
     public event Action? Ready;
 
-    public ModelPanel(ModelInfo model)
+    public ModelPanel(ModelInfo model) : this([model])
     {
-        _model = model;
+    }
+
+    public ModelPanel(IReadOnlyList<ModelInfo> models)
+    {
+        _models = models;
         CornerRadius = new CornerRadius(10);
         Padding = new Thickness(14, 12, 14, 12);
         Margin = new Thickness(0, 12, 0, 0);
@@ -42,32 +47,47 @@ public sealed class ModelPanel : Border
         Show();
     }
 
-    public bool IsReady => ModelStore.IsAvailable(_model);
+    public bool IsReady => _models.All(ModelStore.IsAvailable);
 
     /// <summary>Points the panel at another model (e.g. a different accuracy).</summary>
     public ModelInfo Model
     {
-        get => _model;
+        get => _models[0];
+        set => Models = [value];
+    }
+
+    /// <summary>Points the panel at another set of models (e.g. a different voice).</summary>
+    public IReadOnlyList<ModelInfo> Models
+    {
+        get => _models;
         set
         {
-            if (_cts is not null || value == _model)
+            if (_cts is not null || value.SequenceEqual(_models))
                 return;
-            _model = value;
+            _models = value;
             Show();
             if (IsReady)
                 Ready?.Invoke();
         }
     }
 
+    private List<ModelInfo> Missing => _models.Where(m => !ModelStore.IsAvailable(m)).ToList();
+
     private void Show()
     {
         Visibility = IsReady ? Visibility.Collapsed : Visibility.Visible;
+        var missing = Missing;
+        // The biggest file names the download; its companions (settings, a runtime) ride along.
+        var main = missing.Count > 0 ? missing.MaxBy(m => m.Size)! : _models[0];
+        var licences = string.Join(", ", missing.Select(m => m.License).Distinct());
         _text.Text = L.F("This tool uses {0} ({1} licence). It's a one-time {2} download, kept on this PC; your files never leave it.",
-            _model.Name, _model.License, Sizes.Format(_model.Size));
+            L.T(main.Name), licences.Length > 0 ? licences : main.License, Sizes.Format(missing.Sum(m => m.Size)));
         _download.Content = L.T("Download");
         _download.IsEnabled = true;
         _track.Visibility = Visibility.Collapsed;
         _status.Text = "";
+        // An empty line would leave a gap above the button.
+        _status.Visibility = Visibility.Collapsed;
     }
 
     private async Task DownloadAsync()
@@ -80,14 +100,25 @@ public sealed class ModelPanel : Border
         _cts = new CancellationTokenSource();
         _download.Content = L.T("Cancel");
         _track.Visibility = Visibility.Visible;
-        var progress = new Progress<double>(f =>
-        {
-            _fill.Width = Math.Max(0, (_track.ActualWidth - 0) * f);
-            _status.Text = L.F("{0} of {1}", Sizes.Format((long)(_model.Size * f)), Sizes.Format(_model.Size));
-        });
+        var missing = Missing;
+        long total = Math.Max(1, missing.Sum(m => m.Size)), before = 0;
+        var current = missing.Count > 0 ? missing[0] : _models[0];
         try
         {
-            await ModelStore.DownloadAsync(_model, progress, _cts.Token);
+            foreach (var model in missing)
+            {
+                current = model;
+                long start = before;
+                var progress = new Progress<double>(f =>
+                {
+                    double done = start + model.Size * f;
+                    _fill.Width = Math.Max(0, _track.ActualWidth * done / total);
+                    _status.Visibility = Visibility.Visible;
+                    _status.Text = L.F("{0} of {1}", Sizes.Format((long)done), Sizes.Format(total));
+                });
+                await ModelStore.DownloadAsync(model, progress, _cts.Token);
+                before += model.Size;
+            }
             Visibility = Visibility.Collapsed;
             Ready?.Invoke();
         }
@@ -97,8 +128,9 @@ public sealed class ModelPanel : Border
         }
         catch (Exception ex)
         {
-            Log.Error(ex, $"Downloading {_model.Name}");
+            Log.Error(ex, $"Downloading {current.Name}");
             Show();
+            _status.Visibility = Visibility.Visible;
             _status.Text = ex is System.Net.Http.HttpRequestException
                 ? L.T("The download didn't work. Check the internet connection and try again.")
                 : L.T(ex.Message);

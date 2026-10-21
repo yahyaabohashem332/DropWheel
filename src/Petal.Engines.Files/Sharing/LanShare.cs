@@ -34,6 +34,54 @@ public sealed record SharePageText
 
 public sealed record ShareActivity(ShareActivityKind Kind, string Name);
 
+/// <summary>A request to the extra endpoints under "api/", such as the phone scanner's.</summary>
+public sealed class LanApiRequest
+{
+    private readonly Func<Memory<byte>, CancellationToken, ValueTask<int>> _read;
+
+    internal LanApiRequest(string method, string path, IReadOnlyDictionary<string, string> query, long length, Func<Memory<byte>, CancellationToken, ValueTask<int>> read)
+    {
+        Method = method;
+        Path = path;
+        Query = query;
+        Length = length;
+        _read = read;
+    }
+
+    public string Method { get; }
+
+    /// <summary>What follows "api/", e.g. "photo".</summary>
+    public string Path { get; }
+
+    public IReadOnlyDictionary<string, string> Query { get; }
+
+    /// <summary>Body size in bytes (0 without one).</summary>
+    public long Length { get; }
+
+    internal long Consumed { get; private set; }
+
+    /// <summary>Copies the whole body into <paramref name="destination"/>.</summary>
+    public async Task CopyBodyToAsync(Stream destination, CancellationToken cancellationToken)
+    {
+        var buffer = new byte[1 << 16];
+        while (Consumed < Length)
+        {
+            int read = await _read(buffer.AsMemory(0, (int)Math.Min(buffer.Length, Length - Consumed)), cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+                throw new IOException("The phone stopped sending.");
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+            Consumed += read;
+        }
+    }
+}
+
+public sealed record LanApiResponse(int Status, string ContentType, byte[] Body)
+{
+    public static LanApiResponse Json(string json, int status = 200) => new(status, "application/json; charset=utf-8", Encoding.UTF8.GetBytes(json));
+
+    public static LanApiResponse NotFound { get; } = Json("{\"ok\":false}", 404);
+}
+
 public enum ShareActivityKind
 {
     /// <summary>A phone opened the page.</summary>
@@ -98,6 +146,15 @@ public sealed class LanShare : IAsyncDisposable
 
     /// <summary>When the phone may send files to this PC, and where they are saved.</summary>
     public string? UploadFolder { get; set; }
+
+    /// <summary>Answers requests under "api/"; null turns them away.</summary>
+    public Func<LanApiRequest, CancellationToken, Task<LanApiResponse>>? Api { get; set; }
+
+    /// <summary>The largest body an "api/" request may carry.</summary>
+    public long MaxApiBytes { get; set; } = 64L * 1024 * 1024;
+
+    /// <summary>Shown on the phone instead of the list of files, e.g. the scanner.</summary>
+    public Func<string>? CustomPage { get; set; }
 
     public DateTime LastActivity => new(Interlocked.Read(ref _lastActivityTicks), DateTimeKind.Utc);
 
@@ -234,7 +291,7 @@ public sealed class LanShare : IAsyncDisposable
         if (rest == "/" && request.Method is "GET" or "HEAD")
         {
             Activity?.Invoke(new ShareActivity(ShareActivityKind.Opened, ""));
-            return await SendTextAsync(stream, 200, "OK", "text/html; charset=utf-8", Page(), ct, head);
+            return await SendTextAsync(stream, 200, "OK", "text/html; charset=utf-8", CustomPage?.Invoke() ?? Page(), ct, head);
         }
 
         if (rest.StartsWith("/files/", StringComparison.Ordinal) && request.Method is "GET" or "HEAD"
@@ -253,7 +310,39 @@ public sealed class LanShare : IAsyncDisposable
         if (rest.StartsWith("/upload", StringComparison.Ordinal) && request.Method == "POST")
             return await ReceiveAsync(request, reader, stream, ct);
 
+        if (rest.StartsWith("/api/", StringComparison.Ordinal) && request.Method is "GET" or "POST" && Api is { } api)
+            return await ApiAsync(api, request, reader, stream, rest["/api/".Length..], ct);
+
         return await SendTextAsync(stream, 404, "Not Found", "text/plain", "", ct);
+    }
+
+    private async Task<bool> ApiAsync(Func<LanApiRequest, CancellationToken, Task<LanApiResponse>> api, Request request, HeadReader reader, NetworkStream stream, string path, CancellationToken ct)
+    {
+        long length = 0;
+        if (request.Headers.TryGetValue("content-length", out var header) && !long.TryParse(header, NumberStyles.None, CultureInfo.InvariantCulture, out length))
+            return await SendTextAsync(stream, 400, "Bad Request", "application/json", "{\"ok\":false}", ct, keepAlive: false);
+        if (length > MaxApiBytes)
+            return await SendTextAsync(stream, 413, "Content Too Large", "application/json", "{\"ok\":false}", ct, keepAlive: false);
+        var call = new LanApiRequest(request.Method, path, request.Query, length, async (into, token) =>
+        {
+            int read = await reader.ReadBodyAsync(into, token).ConfigureAwait(false);
+            Touch();
+            return read;
+        });
+        LanApiResponse response;
+        try
+        {
+            response = await api(call, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
+        {
+            response = LanApiResponse.Json($"{{\"ok\":false,\"error\":\"{JsonEscape(ex.Message)}\"}}", 500);
+        }
+        Touch();
+        // A body left unread would be taken for the next request: close the connection instead.
+        bool keepAlive = call.Consumed == call.Length;
+        return await SendAsync(stream, response.Status, response.Status switch { 200 => "OK", 404 => "Not Found", 400 => "Bad Request", _ => "Error" },
+            [("Content-Type", response.ContentType)], response.Body, ct, keepAlive: keepAlive);
     }
 
     private string ZipName()

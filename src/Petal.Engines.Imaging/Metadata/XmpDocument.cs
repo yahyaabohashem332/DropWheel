@@ -40,7 +40,7 @@ internal sealed class XmpDocument
     {
         try
         {
-            var text = Encoding.UTF8.GetString(bytes).Trim('\0', ' ', '\r', '\n', '﻿');
+            var text = Encoding.UTF8.GetString(bytes).Trim('\0', ' ', '\r', '\n', '\uFEFF');
             var doc = XDocument.Parse(text, System.Xml.Linq.LoadOptions.PreserveWhitespace);
             return doc.Descendants(Rdf + "RDF").Any() ? new XmpDocument(doc) : null;
         }
@@ -60,7 +60,7 @@ internal sealed class XmpDocument
         var hasPacket = Document.Nodes().OfType<XProcessingInstruction>().Any(p => p.Target == "xpacket");
         var body = Document.ToString(SaveOptions.DisableFormatting);
         if (!hasPacket)
-            body = "<?xpacket begin=\"﻿\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>" + body + "<?xpacket end=\"w\"?>";
+            body = "<?xpacket begin=\"\uFEFF\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>" + body + "<?xpacket end=\"w\"?>";
         return new UTF8Encoding(false).GetBytes(body);
     }
 

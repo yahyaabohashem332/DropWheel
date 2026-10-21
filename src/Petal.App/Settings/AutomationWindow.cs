@@ -20,6 +20,7 @@ public sealed class AutomationWindow : ToolWindow
     private readonly ContentControl _actionHost = new() { Focusable = false };
     private readonly TextBlock _summary;
     private ComboBox? _action;
+    private readonly StackPanel _organize = new() { Visibility = Visibility.Collapsed };
 
     public static readonly (WatchedKind Value, string Label)[] Kinds =
         [(WatchedKind.Pictures, "Pictures"), (WatchedKind.Videos, "Videos"), (WatchedKind.Audio, "Audio"), (WatchedKind.Documents, "Documents"), (WatchedKind.Any, "Any file")];
@@ -65,6 +66,21 @@ public sealed class AutomationWindow : ToolWindow
         };
         Body.Children.Add(Row("New files", _kind, 110, 12));
         Body.Children.Add(Row("Then", _actionHost, 110));
+        _organize.Margin = new Thickness(110, 8, 0, 0);
+        foreach (var (label, get, set) in new (string, Func<bool>, Action<bool>)[]
+        {
+            ("Screenshots to their own folder", () => _rule.SortScreenshots, v => _rule.SortScreenshots = v),
+            ("Invoices and receipts to their own folder", () => _rule.SortInvoices, v => _rule.SortInvoices = v),
+            ("Everything else by kind: pictures, videos, documents…", () => _rule.SortByKind, v => _rule.SortByKind = v),
+            ("Rename photos after the day they were taken", () => _rule.RenameByDate, v => _rule.RenameByDate = v),
+        })
+        {
+            // Long labels wrap rather than run past the window edge.
+            var box = new CheckBox { Content = new TextBlock { Text = L.T(label), TextWrapping = TextWrapping.Wrap }, IsChecked = get(), Margin = new Thickness(0, 0, 0, 6) };
+            box.Click += (_, _) => { set(box.IsChecked == true); Sync(); };
+            _organize.Children.Add(box);
+        }
+        Body.Children.Add(_organize);
 
         _summary = Text("", "Petal.Caption");
         _summary.TextWrapping = TextWrapping.Wrap;
@@ -114,25 +130,46 @@ public sealed class AutomationWindow : ToolWindow
     {
         if (key is not null)
         {
-            _rule.Action = key.StartsWith('*') ? WatchAction.Favourite : WatchAction.Convert;
-            _rule.Target = key.TrimStart('*');
+            _rule.Action = key == OrganizeKey ? WatchAction.Organize : key.StartsWith('*') ? WatchAction.Favourite : key.StartsWith('#') ? WatchAction.Recipe : WatchAction.Convert;
+            if (_rule.Action != WatchAction.Organize)
+                _rule.Target = key.TrimStart('*', '#');
         }
+        _organize.Visibility = _rule.Action == WatchAction.Organize ? Visibility.Visible : Visibility.Collapsed;
+        _subfolders.IsEnabled = _rule.Action != WatchAction.Organize;
         Sync();
     }
 
-    private static string Key(WatchAction action, string target) => action == WatchAction.Favourite ? "*" + target : target;
+    private const string OrganizeKey = "~organize";
+
+    private static string Key(WatchAction action, string target) => action switch
+    {
+        WatchAction.Organize => OrganizeKey,
+        WatchAction.Favourite => "*" + target,
+        WatchAction.Recipe => "#" + target,
+        _ => target,
+    };
 
     public static List<(string Value, string Label)> Options(WatchedKind kind)
     {
         var sources = Formats.All.Where(f => f.CanRead && WatchRule.Accepts(kind, f)).ToList();
-        var options = FavouriteText.Targets
+        var options = new List<(string Value, string Label)>();
+        if (kind == WatchedKind.Any)
+            options.Add((OrganizeKey, L.T("Sort into folders")));
+        options.AddRange(FavouriteText.Targets
             .Where(t => sources.Any(s => ConversionMatrix.CanConvert(s, t)))
-            .Select(t => (t.Id, L.F("Convert to {0}", t.Label)))
-            .ToList();
+            .Select(t => (t.Id, L.F("Convert to {0}", t.Label))));
         foreach (var favourite in SettingsStore.Current.Favourites)
         {
             if (favourite.Target is { } t && sources.Any(s => s == t ? favourite.ChangesMoreThanFormat : ConversionMatrix.CanConvert(s, t)))
                 options.Add(("*" + favourite.Id, "★ " + FavouriteText.Label(favourite)));
+        }
+        if (App.Current?.Controller?.Jobs.Converters is { } converters)
+        {
+            foreach (var recipe in SettingsStore.Current.Recipes)
+            {
+                if (sources.Any(s => recipe.AppliesTo([s], converters)))
+                    options.Add(("#" + recipe.Id, L.F("Recipe: {0}", recipe.Name)));
+            }
         }
         return options;
     }
@@ -151,11 +188,18 @@ public sealed class AutomationWindow : ToolWindow
             WatchedKind.Documents => L.T("New documents"),
             _ => L.T("New files"),
         };
-        var into = rule.Action == WatchAction.Favourite
-            ? Guid.TryParse(rule.Target, out var id) && SettingsStore.Current.Favourites.FirstOrDefault(f => f.Id == id) is { } fav
+        Guid.TryParse(rule.Target, out var id);
+        var into = rule.Action switch
+        {
+            WatchAction.Favourite => SettingsStore.Current.Favourites.FirstOrDefault(f => f.Id == id) is { } fav
                 ? "★ " + FavouriteText.Label(fav)
-                : L.T("a favourite that was removed")
-            : Formats.FromId(rule.Target)?.Label ?? rule.Target.ToUpperInvariant();
+                : L.T("a favourite that was removed"),
+            WatchAction.Recipe => SettingsStore.Current.Recipes.FirstOrDefault(r => r.Id == id) is { } recipe
+                ? recipe.Name
+                : L.T("a recipe that was removed"),
+            WatchAction.Organize => L.T("sorted into folders"),
+            _ => Formats.FromId(rule.Target)?.Label ?? rule.Target.ToUpperInvariant(),
+        };
         return L.F("{0} in {1} → {2}", what, folder, into);
     }
 
@@ -170,7 +214,9 @@ public sealed class AutomationWindow : ToolWindow
             ? L.T("Choose a folder that exists.")
             : !hasAction
                 ? L.T("Nothing Petal can convert these files to.")
-                : Describe(_rule) + ". " + L.F("Results are saved in {0}.", _rule.OutputFolder);
+                : _rule.Action == WatchAction.Organize
+                    ? Describe(_rule) + ". " + L.T("Each new file moves into a folder for its kind inside this one. History can put them back.")
+                    : Describe(_rule) + ". " + L.F("Results are saved in {0}.", _rule.OutputFolder);
         FooterNote = "";
     }
 }

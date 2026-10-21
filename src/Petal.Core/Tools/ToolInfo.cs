@@ -37,6 +37,12 @@ public enum ToolId
     ExtractImages,
     RemoveBackground,
     Transcribe,
+    MakeSearchable,
+    ReadAloud,
+    RemoveNoise,
+    SeparateVocals,
+    EraseObject,
+    TranslateSubtitles,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

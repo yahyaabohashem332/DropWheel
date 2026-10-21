@@ -10,6 +10,9 @@ namespace Petal.Engines.Documents.Pdf;
 public sealed class PdfOpenException(string message, Exception? inner = null) : IOException(message, inner)
 {
     public bool NeedsPassword { get; init; }
+
+    /// <summary>It opens without a password, but its author has locked it against changes (an owner password).</summary>
+    public bool LockedForChanges { get; init; }
 }
 
 /// <summary>Opening and saving with PDFsharp, plus a precise rewrite of the document information dictionary.</summary>
@@ -24,6 +27,10 @@ internal static partial class PdfSharpIO
             var stream = new MemoryStream(bytes, writable: false);
             return password is null ? PdfReader.Open(stream, mode) : PdfReader.Open(stream, password, mode);
         }
+        catch (PdfReaderException ex) when (ex.Message.Contains("owner password", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new PdfOpenException($"{name ?? "The PDF"} is locked against changes by its author.", ex) { LockedForChanges = true };
+        }
         catch (PdfReaderException ex) when (ex.Message.Contains("password", StringComparison.OrdinalIgnoreCase))
         {
             throw new PdfOpenException($"{name ?? "The PDF"} is protected by a password.", ex) { NeedsPassword = true };
@@ -34,11 +41,57 @@ internal static partial class PdfSharpIO
         }
     }
 
+    /// <summary>Saves after <see cref="RepairPageBoxes"/>, so no page goes out with an empty box.</summary>
+    public static void Save(PdfDocument document, string path)
+    {
+        RepairPageBoxes(document);
+        document.Save(path);
+    }
+
     public static byte[] SaveToBytes(PdfDocument document)
     {
+        RepairPageBoxes(document);
         using var ms = new MemoryStream();
         document.Save(ms, closeStream: false);
         return ms.ToArray();
+    }
+
+    // ─────────────── Page boxes ───────────────
+
+    private static readonly string[] OptionalBoxes = ["/CropBox", "/BleedBox", "/TrimBox", "/ArtBox"];
+
+    /// <summary>
+    /// The area of a page that readers show (its crop box, else its media box), read without side
+    /// effects. PDFsharp's <c>PdfPage.CropBox</c> property adds an empty [0 0 0 0] box to a page that
+    /// has none, and Acrobat then shows that page as damaged; so boxes are only read when present.
+    /// </summary>
+    public static PdfRectangle VisibleBox(PdfPage page) => Box(page, "/CropBox") ?? MediaBox(page);
+
+    /// <summary>The media box, or A4 for a (malformed) page that has none.</summary>
+    public static PdfRectangle MediaBox(PdfPage page) => Box(page, "/MediaBox") ?? new PdfRectangle(new PdfSharp.Drawing.XRect(0, 0, 595.276, 841.89));
+
+    private static PdfRectangle? Box(PdfPage page, string key) =>
+        page.Elements.ContainsKey(key) && page.Elements.GetRectangle(key) is { } box && box.Width >= 1 && box.Height >= 1 ? box : null;
+
+    /// <summary>
+    /// Removes empty crop, bleed, trim and art boxes, such as the ones earlier versions of Petal left
+    /// on numbered or watermarked pages. Readers then show the whole page again. Returns how many.
+    /// </summary>
+    public static int RepairPageBoxes(PdfDocument document)
+    {
+        int removed = 0;
+        foreach (var page in document.Pages)
+        {
+            foreach (var key in OptionalBoxes)
+            {
+                if (page.Elements.ContainsKey(key) && Box(page, key) is null)
+                {
+                    page.Elements.Remove(key);
+                    removed++;
+                }
+            }
+        }
+        return removed;
     }
 
     // ─────────────── Post-save patching of Info and XMP ───────────────

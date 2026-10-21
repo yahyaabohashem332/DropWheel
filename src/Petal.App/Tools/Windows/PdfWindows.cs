@@ -140,6 +140,12 @@ public static class PdfToolSetup
                 await PdfPageTools.MergeAsync(inputs, output, new PdfMergeOptions(), p, ct);
                 return output;
             }));
+        ToolLauncher.RegisterWindow(ToolId.ReadAloud, (t, f, j, a) => new ReadAloudWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.RemoveNoise, (t, f, j, a) => new RemoveNoiseWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.SeparateVocals, (t, f, j, a) => new SeparateVocalsWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.EraseObject, (t, f, j, a) => new EraseObjectWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.TranslateSubtitles, (t, f, j, a) => new TranslateSubtitlesWindow(t, f, j, a));
+        ToolLauncher.RegisterDirect(ToolId.MakeSearchable, (tool, files, jobs, at) => jobs.RunAsync("Reading text", "Searchable PDF saved", SearchableWork(tool, files), at));
         ToolLauncher.RegisterDirect(ToolId.SplitPdf, (tool, files, jobs, at) => jobs.RunAsync("Splitting PDF", "PDF split",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>
             {
@@ -147,6 +153,48 @@ public static class PdfToolSetup
                 await PdfPageTools.SplitAsync(f, folder, p, ct);
                 return (IReadOnlyList<string>)[folder];
             })).ToList(), at));
+    }
+
+    /// <summary>PDFs each get their own text layer; pictures become the pages of one searchable PDF.</summary>
+    private static List<WorkItem> SearchableWork(ToolInfo tool, IReadOnlyList<string> files)
+    {
+        if (files.All(f => Formats.FromPath(f) == Formats.Pdf))
+        {
+            return files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>
+            {
+                var output = OutputNaming.ForTool(f, tool);
+                await MakeSearchableAsync(f, output, p, ct);
+                return (IReadOnlyList<string>)[output];
+            })).ToList();
+        }
+        var combined = OutputNaming.ForTool(files[0], tool);
+        return [new WorkItem(files[0], L.P(files.Count, "{0} image", "{0} images"), async (p, ct) =>
+        {
+            var pages = Path.Combine(Path.GetTempPath(), "Petal", $"pages-{Guid.NewGuid():N}.pdf");
+            Directory.CreateDirectory(Path.GetDirectoryName(pages)!);
+            try
+            {
+                await Petal.Engines.Imaging.PdfCreator.CreateAsync(files, pages, new Petal.Engines.Imaging.PdfCreateOptions(), new Progress<double>(f => p.Report(f * 0.15)), ct);
+                await MakeSearchableAsync(pages, combined, new Progress<double>(f => p.Report(0.15 + f * 0.85)), ct);
+                return (IReadOnlyList<string>)[combined];
+            }
+            finally
+            {
+                try { File.Delete(pages); } catch (IOException) { }
+            }
+        })];
+    }
+
+    private static async Task MakeSearchableAsync(string input, string output, IProgress<double> progress, CancellationToken ct)
+    {
+        var result = await SearchablePdf.MakeAsync(input, output, null, progress, ct);
+        if (!result.Written)
+            throw new InvalidOperationException("Every page already has text, so this PDF is searchable already.");
+        if (result.Words == 0)
+        {
+            File.Delete(output);
+            throw new InvalidOperationException("No text was found. Try a sharper scan, or add its language under Windows Settings › Time & language.");
+        }
     }
 
     private static async Task<string> CompressPdf(string input, CompressRequest request, IProgress<double> progress, CancellationToken ct)

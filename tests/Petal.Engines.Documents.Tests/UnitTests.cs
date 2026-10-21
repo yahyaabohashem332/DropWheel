@@ -33,7 +33,7 @@ public sealed class UnitTests
         using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
         var letters = pdf.GetPage(1).Letters;
         // Contextual forms, not the isolated base letters.
-        Assert.Contains(letters, l => l.Value.Length == 1 && l.Value[0] is >= 'ﹰ' and <= '﻿');
+        Assert.Contains(letters, l => l.Value.Length == 1 && l.Value[0] is >= '\uFE70' and <= '\uFEFF');
         // Right-aligned: Arabic lines end at the right margin.
         var arabicLines = letters.Where(l => Bidi.IsRtlChar(l.Value[0])).GroupBy(l => Math.Round(l.StartBaseLine.Y)).ToList();
         Assert.True(arabicLines.Count >= 3);

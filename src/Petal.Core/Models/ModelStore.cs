@@ -42,7 +42,111 @@ public static class ModelCatalog
         "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
         "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2", 574_041_195, "MIT");
 
-    public static IReadOnlyList<ModelInfo> All { get; } = [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate];
+    /// <summary>Piper 2023.11.14-2 (MIT): the program that speaks with the natural voices, Arabic diacritics model included.</summary>
+    public static readonly ModelInfo Piper = new(
+        "piper", "Piper", "piper_windows_amd64.zip",
+        "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
+        "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea", 22_477_236, "MIT");
+
+    /// <summary>Piper's Kareem (piper-voices, MIT): a natural Arabic voice.</summary>
+    public static readonly ModelInfo VoiceKareem = new(
+        "piper-ar-kareem", "Kareem (Arabic voice)", "ar_JO-kareem-medium.onnx",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx",
+        "9e95cab07b679da603bba17c4dec7ab3111320571964ee95c0379603c086491e", 63_201_294, "MIT");
+
+    public static readonly ModelInfo VoiceKareemSettings = new(
+        "piper-ar-kareem-config", "Kareem settings", "ar_JO-kareem-medium.onnx.json",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx.json",
+        "ea6d9b9d9076dbdb6bf5c98c6a141ef154959d2359709b37855727964e7d6c4d", 5_024, "MIT");
+
+    /// <summary>Piper's Joe (piper-voices, MIT; recordings CC0): a natural English voice.</summary>
+    public static readonly ModelInfo VoiceJoe = new(
+        "piper-en-joe", "Joe (English voice)", "en_US-joe-medium.onnx",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/joe/medium/en_US-joe-medium.onnx",
+        "58afce0321b8d9c46d7cdf9c16500cc55a793b4220212dba6b70fb788b3baf06", 63_201_294, "MIT");
+
+    public static readonly ModelInfo VoiceJoeSettings = new(
+        "piper-en-joe-config", "Joe settings", "en_US-joe-medium.onnx.json",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/joe/medium/en_US-joe-medium.onnx.json",
+        "3d6d5410b3795cb1950595247ef8f06190719e6fdbfa3a2356d8ec368e1aad33", 4_794, "MIT");
+
+    /// <summary>llama.cpp b11763, CPU build (MIT): runs the language model below on any PC.</summary>
+    public static readonly ModelInfo LlamaCpp = new(
+        "llama-cpp", "llama.cpp", "llama-b11763-bin-win-cpu-x64.zip",
+        "https://github.com/ggml-org/llama.cpp/releases/download/b11763/llama-b11763-bin-win-cpu-x64.zip",
+        "a24504506cd03a352f4990c5f3cbff347eff3a2cf7ec15038835aa690b73d0ad", 23_958_528, "MIT");
+
+    /// <summary>Qwen2.5 1.5B Instruct, 4-bit (Apache-2.0): understands requests in English and Arabic for Ask Petal.</summary>
+    public static readonly ModelInfo Qwen = new(
+        "qwen2.5-1.5b", "Qwen2.5 1.5B", "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e", 1_117_320_736, "Apache-2.0");
+
+    /// <summary>CLIP ViT-B/32 image encoder, 8-bit (MIT): what pictures show, for Search by Meaning.</summary>
+    public static readonly ModelInfo ClipVision = new(
+        "clip-vision", "CLIP ViT-B/32", "clip-vit-b32-vision-quantized.onnx",
+        "https://huggingface.co/Xenova/clip-vit-base-patch32/resolve/main/onnx/vision_model_quantized.onnx",
+        "583fd1110a514667812fee7d684952aaf82a99b959760c8d7dca7e0ab9839299", 89_117_001, "MIT");
+
+    /// <summary>Multilingual CLIP text encoder, 8-bit (Apache-2.0): searches in about 50 languages, Arabic included.</summary>
+    public static readonly ModelInfo ClipText = new(
+        "clip-text-multilingual", "Multilingual CLIP text model", "clip-vit-b32-multilingual-text-quantized.onnx",
+        "https://huggingface.co/sentence-transformers/clip-ViT-B-32-multilingual-v1/resolve/main/onnx/model_quint8_avx2.onnx",
+        "fbc8fbeaa5237d96bd1bf430057c70d34de8334a463e933a5faa305f6caeed9c", 135_377_779, "Apache-2.0");
+
+    public static readonly ModelInfo ClipTextProjection = new(
+        "clip-text-multilingual-dense", "Multilingual CLIP projection", "clip-vit-b32-multilingual-dense.safetensors",
+        "https://huggingface.co/sentence-transformers/clip-ViT-B-32-multilingual-v1/resolve/main/2_Dense/model.safetensors",
+        "d12568dc7300970a4d3dbb49068ad16cd89b99840b74b026f8e48071e9414f74", 1_572_984, "Apache-2.0");
+
+    public static readonly ModelInfo ClipTextVocabulary = new(
+        "clip-text-multilingual-vocab", "Multilingual CLIP vocabulary", "clip-vit-b32-multilingual-vocab.txt",
+        "https://huggingface.co/sentence-transformers/clip-ViT-B-32-multilingual-v1/resolve/main/vocab.txt",
+        "fe0fda7c425b48c516fc8f160d594c8022a0808447475c1a7c6d6479763f310c", 995_526, "Apache-2.0");
+
+    /// <summary>DeepFilterNet 3, version 0.5.6 (MIT/Apache-2.0): takes noise out of speech; the model is inside the program.</summary>
+    public static readonly ModelInfo DeepFilter = new(
+        "deepfilternet", "DeepFilterNet 3", "deep-filter-0.5.6-x86_64-pc-windows-msvc.exe",
+        "https://github.com/Rikorose/DeepFilterNet/releases/download/v0.5.6/deep-filter-0.5.6-x86_64-pc-windows-msvc.exe",
+        "75e11fa16445f560cb6b021521ddb89e89270d13b83089705d98776f58fd7915", 26_912_256, "MIT");
+
+    /// <summary>Hybrid Transformer Demucs (Meta, MIT) as one ONNX file: splits songs into vocals, drums, bass and the rest.</summary>
+    public static readonly ModelInfo Demucs = new(
+        "htdemucs", "HT Demucs", "htdemucs_embedded.onnx",
+        "https://huggingface.co/timcsy/demucs-web-onnx/resolve/main/htdemucs_embedded.onnx",
+        "e5e425c17683f163a472462eb5f5a4ffcd11c31858d57fbd0833b012d8b88077", 180_534_758, "MIT");
+
+    /// <summary>LaMa (big-lama, Apache-2.0), Carve's ONNX export: fills in what Erase Object removes.</summary>
+    public static readonly ModelInfo Lama = new(
+        "lama", "LaMa", "lama_fp32.onnx",
+        "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx",
+        "1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6", 208_044_816, "Apache-2.0");
+
+    /// <summary>Opus-MT English → Arabic (Helsinki-NLP, Apache-2.0), 8-bit ONNX: translates subtitles into Arabic.</summary>
+    public static readonly ModelInfo OpusEnArEncoder = new(
+        "opus-mt-en-ar-encoder", "Opus-MT English → Arabic encoder", "opus-mt-en-ar-encoder-quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/encoder_model_quantized.onnx",
+        "53c354d87ced44b39085fe8a46a25f09ea4578d442dbce9663f3977228f8a04e", 51_773_854, "Apache-2.0");
+
+    public static readonly ModelInfo OpusEnArDecoder = new(
+        "opus-mt-en-ar-decoder", "Opus-MT English → Arabic", "opus-mt-en-ar-decoder-quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/decoder_model_quantized.onnx",
+        "94e6bdf90866151787d014b7b77be0adb0f036418ee04d235ec01238aa8426b9", 58_707_418, "Apache-2.0");
+
+    public static readonly ModelInfo OpusEnArSource = new(
+        "opus-mt-en-ar-source", "Opus-MT English pieces", "opus-mt-en-ar-source.spm",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/source.spm",
+        "81ac8f4d4ee271f4109eac67560a31f9c2d555463ba5eb95c32c6deee8ae819d", 801_074, "Apache-2.0");
+
+    public static readonly ModelInfo OpusEnArVocabulary = new(
+        "opus-mt-en-ar-vocab", "Opus-MT vocabulary", "opus-mt-en-ar-vocab.json",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/vocab.json",
+        "8b74af9e4c1ec122b8d06362db6c38795e10ca2b0156b2110cf08d4716744b76", 2_243_581, "Apache-2.0");
+
+    public static IReadOnlyList<ModelInfo> All { get; } =
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen,
+         ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Lama,
+         OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary];
 }
 
 /// <summary>Where models live, and the verified download of the ones that don't ship with Petal.</summary>
