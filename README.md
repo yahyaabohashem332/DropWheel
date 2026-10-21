@@ -10,7 +10,9 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal, Find Duplicates |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
-another key to switch wheels in place. Drop on the centre (or press Esc) to cancel.
+another key to switch wheels in place. Drop on the centre (or press Esc) to cancel. The centre names
+the petal under the cursor in full: a long name goes onto up to three lines, set in a disc that fits
+the hub, instead of being cut short.
 
 Everything runs locally. Nothing is uploaded.
 
@@ -151,7 +153,7 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.3.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.3.1.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

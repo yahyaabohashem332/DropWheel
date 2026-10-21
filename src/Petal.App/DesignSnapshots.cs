@@ -173,12 +173,31 @@ internal static class DesignSnapshots
         var output = args[1];
         var background = Load(args[2]);
         var files = args.Skip(3).ToList();
+        bool everyPetal = files.Remove("--every-petal");
         Directory.CreateDirectory(output);
 
         var converters = EngineSetup.CreateConverters();
         SampleSettings(Path.GetDirectoryName(Path.GetFullPath(files.FirstOrDefault() ?? args[2]))!);
         var controller = new PetalController(converters, Application.Current.Dispatcher);
         var wheel = controller.CreateWheelForSnapshots();
+
+        // The dark wheel once per petal, so every centre name and every label can be measured.
+        if (everyPetal)
+        {
+            Theme.Configure(ThemePreference.Dark, false);
+            Application.Current.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+            foreach (var mode in Enum.GetValues<WheelMode>())
+            {
+                var name = mode.ToString().ToLowerInvariant();
+                Save(wheel.Snapshot(files, mode, null, background), Path.Combine(output, $"{name}.png"));
+                File.WriteAllLines(Path.Combine(output, $"{name}.txt"), wheel.PetalLabels);
+                File.WriteAllLines(Path.Combine(output, $"{name}.layout"), wheel.PetalLayouts.Select(l =>
+                    FormattableString.Invariant($"{l.Size:0.00} {l.Lines.Length} r={Math.Sqrt(l.Centre.X * l.Centre.X + l.Centre.Y * l.Centre.Y):0.0} clear={l.Clearance:0.0} ") + string.Join(" / ", l.Lines)));
+                for (int i = 0; i < wheel.PetalLabels.Count; i++)
+                    Save(wheel.Snapshot(files, mode, i, background), Path.Combine(output, $"{name}-{i:00}.png"));
+            }
+            return;
+        }
 
         foreach (var dark in new[] { false, true })
         {

@@ -23,6 +23,15 @@ public static partial class Icons
         });
     }
 
+    /// <summary>The ink of an icon made by <see cref="Create"/>, its strokes included, inside its <paramref name="size"/>-square box.</summary>
+    public static Geometry InkGeometry(string key, double size, double strokeWidth = 2)
+    {
+        var pen = new Pen(Brushes.Black, strokeWidth) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
+        var ink = Geometry(key).GetWidenedPathGeometry(pen);
+        ink.Transform = new ScaleTransform(size / 24.0, size / 24.0);
+        return ink;
+    }
+
     /// <summary>A ready-to-place icon. The 24-unit design box is scaled to <paramref name="size"/>.</summary>
     public static Path Create(string key, double size, Brush stroke, double strokeWidth = 2)
     {

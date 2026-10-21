@@ -31,6 +31,8 @@ public partial class LocalizationTests
         "HH:mm", "yyyy-MM-dd", "Petal-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
         // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Microsoft",
+        // The culture the wheel measures its text in, as WPF text blocks do by default.
+        "en-US",
         // Sample requests and search results in the design snapshots, already in both languages.
         // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
         "f/", "ISO", "mm", "FNumber", "Software",

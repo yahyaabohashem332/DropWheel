@@ -43,9 +43,10 @@ public sealed class WheelWindow : Window
     private readonly Ellipse _rim = new();
     private readonly Ellipse _groove = new();
     private readonly Ellipse _shadow = new();
-    private readonly Border _hubPill = new();
-    private readonly TextBlock _hubText = new();
-    private readonly TextBlock _hubSubtext = new();
+    private readonly Path _hubShape = new();
+    private readonly RectangleGeometry _hubOutline = new();
+    private readonly Canvas _hubText = new();
+    private readonly List<(InkText Line, bool IsTitle)> _hubLines = [];
     private readonly Border _hint = new();
     private readonly Border _emptyCard = new();
     private readonly TextBlock _emptyText = new();
@@ -53,7 +54,11 @@ public sealed class WheelWindow : Window
     private readonly DispatcherTimer _releaseTimer = new() { Interval = TimeSpan.FromMilliseconds(450) };
     private readonly DragDropHelper _dragHelper = new();
     private readonly List<Path> _petalPaths = [];
-    private readonly List<(TextBlock Text, Path? Icon)> _petalLabels = [];
+    private readonly List<(List<InkText> Lines, Path? Icon)> _petalLabels = [];
+    private readonly List<PetalLabel> _petalLayouts = [];
+    private InkFont? _labelFont;
+    private InkFont? _hubTitleFont;
+    private InkFont? _hubSubtitleFont;
 
     private IntPtr _hwnd;
     private bool _open;
@@ -583,9 +588,10 @@ public sealed class WheelWindow : Window
             bool on = i == index;
             _petalPaths[i].Fill = on ? AccentFill(p) : PetalFill(p);
             _petalPaths[i].Stroke = on ? Palette.Brush(Color.FromArgb(0x50, p.Accent.R, p.Accent.G, p.Accent.B)) : Palette.Brush(p.PetalStroke);
-            var (text, icon) = _petalLabels[i];
+            var (lines, icon) = _petalLabels[i];
             var fg = on ? Palette.Brush(p.TextOnAccent) : Palette.Brush(p.Text);
-            text.Foreground = fg;
+            foreach (var line in lines)
+                line.Foreground = fg;
             if (icon is not null)
                 icon.Stroke = fg;
         }
@@ -594,7 +600,7 @@ public sealed class WheelWindow : Window
         {
             var item = _content.Items[i2];
             _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe ? item.Label : L.T(item.Name);
-            SetHub(_lastHubLabel, Subtitle(item));
+            SetHub(_lastHubLabel, Subtitle(item), animate: IsVisible);
             Sound.Tick();
             if (data is not null)
                 DragDropHelper.SetDescription(data, Description(item), null);
@@ -620,6 +626,12 @@ public sealed class WheelWindow : Window
         Petal.Core.Formats.FileFormat f => L.F("Convert to {0}", f.Label),
         _ => L.T(item.Name),
     };
+
+    /// <summary>The labels of the petals last rendered, for design snapshots.</summary>
+    internal IReadOnlyList<string> PetalLabels => _content?.Items.Select(i => L.T(i.Label)).ToList() ?? [];
+
+    /// <summary>How each of those labels was laid out, for design snapshots.</summary>
+    internal IReadOnlyList<PetalLabel> PetalLayouts => _petalLayouts;
 
     /// <summary>
     /// Renders the wheel over a background image without a screen, for design reviews and tests.
@@ -670,6 +682,8 @@ public sealed class WheelWindow : Window
         _labels.Children.Clear();
         _petalPaths.Clear();
         _petalLabels.Clear();
+        _petalLayouts.Clear();
+        CreateFonts();
         UpdateHint();
 
         // The safe zone around the ring swallows near-miss drops instead of moving files.
@@ -712,7 +726,7 @@ public sealed class WheelWindow : Window
             }
         }
 
-        SetHub(HubTextProvider?.Invoke(_files) ?? "", _files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items"));
+        SetHub(HubTextProvider?.Invoke(_files) ?? "", _files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items"), animate: false);
         ApplyPaletteToChrome(p);
 
         if (animate)
@@ -736,92 +750,104 @@ public sealed class WheelWindow : Window
         }
     }
 
-    private void AddLabel(WheelItem item, int index, int count, bool withIcon, Palette p)
+    /// <summary>
+    /// Fonts measured at this window's DPI and in the language's direction. They keep what they measured
+    /// while neither changes, so each name is measured once.
+    /// </summary>
+    private void CreateFonts()
     {
-        var pos = WheelGeometry.LabelPosition(index, count);
-        double chord = 2 * WheelGeometry.LabelRadius * Math.Sin(Math.PI / Math.Max(count, 2)) - 10;
-        double maxWidth = Math.Clamp(chord, 34, 78);
-
-        var text = new TextBlock
-        {
-            Text = L.T(item.Label),
-            FontFamily = UiFonts.Display,
-            FontWeight = FontWeights.SemiBold,
-            FontSize = withIcon ? (L.IsArabic ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5),
-            Foreground = Palette.Brush(p.Text),
-            TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.Wrap,
-            MaxWidth = maxWidth,
-            LineHeight = withIcon ? (L.IsArabic ? 13 : 9.5) : double.NaN,
-            FlowDirection = L.Direction,
-            LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
-            IsHitTestVisible = false,
-        };
-        if (!withIcon)
-            text.LineStackingStrategy = LineStackingStrategy.MaxHeight;
-        FitWords(text, maxWidth, withIcon);
-
-        FrameworkElement element;
-        Path? icon = null;
-        if (withIcon && item.Icon is not null)
-        {
-            icon = Icons.Create(item.Icon, count > 8 ? 16 : 18, Palette.Brush(p.Text), 2);
-            var stack = new StackPanel { Orientation = Orientation.Vertical, IsHitTestVisible = false };
-            icon.HorizontalAlignment = HorizontalAlignment.Center;
-            icon.Margin = new Thickness(0, 0, 0, 3);
-            stack.Children.Add(icon);
-            stack.Children.Add(text);
-            element = stack;
-        }
-        else
-        {
-            element = text;
-        }
-
-        element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        var size = element.DesiredSize;
-        Canvas.SetLeft(element, pos.X - size.Width / 2);
-        Canvas.SetTop(element, pos.Y - size.Height / 2);
-        _labels.Children.Add(element);
-        _petalLabels.Add((text, icon));
+        double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        if (_labelFont is { } font && font.PixelsPerDip == dip && font.Direction == L.Direction)
+            return;
+        _labelFont = new InkFont(UiFonts.Display, FontWeights.SemiBold, L.Direction, dip);
+        _hubTitleFont = new InkFont(UiFonts.Display, FontWeights.SemiBold, L.Direction, dip);
+        _hubSubtitleFont = new InkFont(UiFonts.Text, FontWeights.Normal, L.Direction, dip);
     }
 
     /// <summary>
-    /// Shrinks a petal label until its widest word fits the petal, so a crowded wheel never breaks
-    /// "COMPRESS" into "COMPRES / S". Several words may still wrap onto two lines.
+    /// A petal's label, laid out by hand: <see cref="PetalLayout"/> picks its lines and size and keeps it
+    /// inside the petal, then the ink of the icon and of every line is centred on one point, so what the
+    /// eye sees is centred rather than text boxes and trailing spaces.
     /// </summary>
-    private void FitWords(TextBlock text, double maxWidth, bool withIcon)
+    private void AddLabel(WheelItem item, int index, int count, bool withIcon, Palette p)
     {
-        double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-        var typeface = new Typeface(text.FontFamily, text.FontStyle, text.FontWeight, text.FontStretch);
-        var words = text.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        double Widest(double size) => words.Max(w =>
-            new FormattedText(w, System.Globalization.CultureInfo.CurrentUICulture, text.FlowDirection, typeface, size, Brushes.Black, dip).WidthIncludingTrailingWhitespace);
-        if (words.Length == 0)
-            return;
-        // A single word may reach slightly past the label box: the petal is wider than the chord there.
-        double room = maxWidth + 4, fontSize = text.FontSize, smallest = withIcon ? 6 : 9;
-        while (fontSize > smallest && Widest(fontSize) > room)
-            fontSize -= 0.25;
-        text.MaxWidth = Math.Max(text.MaxWidth, Math.Min(room, Widest(fontSize) + 1));
-        if (fontSize == text.FontSize)
-            return;
-        // The line height was chosen for the original size; keep the same proportion.
-        if (withIcon)
-            text.LineHeight = text.LineHeight / text.FontSize * fontSize;
-        text.FontSize = fontSize;
+        double size = withIcon ? (L.IsArabic ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5);
+        // Baseline to baseline; under an icon the lines sit close, as a caption.
+        double step = withIcon ? (L.IsArabic ? 13 : 9.5) : size * 1.3;
+        double iconSize = count > 8 ? 16 : 18;
+        var brush = Palette.Brush(p.Text);
+        Path? icon = null;
+        IconInk? iconInk = null;
+        if (withIcon && item.Icon is not null)
+        {
+            icon = Icons.Create(item.Icon, iconSize, brush, 2);
+            var outline = Icons.InkGeometry(item.Icon, iconSize, 2);
+            iconInk = new IconInk(outline.Bounds, InkShape.Strips(outline, 3));
+        }
+
+        var font = _labelFont!;
+        var label = PetalLayout.Fit(L.T(item.Label), font, size, size - 1.5, step, iconInk, iconSize, index, count);
+        var lines = label.Lines.Select(t => font.Create(t, label.Size, brush)).ToList();
+        if (icon is not null && iconInk is not null)
+        {
+            Canvas.SetLeft(icon, label.Centre.X - iconInk.Box.X - iconInk.Box.Width / 2);
+            Canvas.SetTop(icon, label.Centre.Y + label.IconTop);
+            _labels.Children.Add(icon);
+        }
+        for (int i = 0; i < lines.Count; i++)
+        {
+            lines[i].Place(label.Centre.X, label.Centre.Y + label.Baselines[i]);
+            _labels.Children.Add(lines[i]);
+        }
+        _petalLabels.Add((lines, icon));
+        _petalLayouts.Add(label);
     }
 
-    private void SetHub(string title, string subtitle)
+    /// <summary>
+    /// Sets the centre's name and what it is. The lines and their outline come from <see cref="HubLayout"/>;
+    /// while the wheel is on screen the outline glides between a pill and a disc as names change.
+    /// </summary>
+    private void SetHub(string title, string subtitle, bool animate)
     {
-        _hubText.Text = title;
-        _hubSubtext.Text = subtitle;
-        _hubText.FlowDirection = _hubSubtext.FlowDirection = L.Direction;
-        _hubSubtext.Visibility = string.IsNullOrEmpty(subtitle) ? Visibility.Collapsed : Visibility.Visible;
-        _hubPill.Visibility = string.IsNullOrEmpty(title) ? Visibility.Hidden : Visibility.Visible;
-        _hubPill.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        Canvas.SetLeft(_hubPill, -_hubPill.DesiredSize.Width / 2);
-        Canvas.SetTop(_hubPill, -_hubPill.DesiredSize.Height / 2);
+        _hubText.Children.Clear();
+        _hubLines.Clear();
+        _hubShape.Visibility = string.IsNullOrEmpty(title) ? Visibility.Hidden : Visibility.Visible;
+        if (string.IsNullOrEmpty(title))
+            return;
+        if (_hubTitleFont is null)
+            CreateFonts();
+
+        var p = _palette;
+        var fit = HubLayout.Fit(title, subtitle, _hubTitleFont!, _hubSubtitleFont!, L.IsArabic);
+        foreach (var row in fit.Rows)
+        {
+            var font = row.IsTitle ? _hubTitleFont! : _hubSubtitleFont!;
+            var line = font.Create(row.Text, row.Size, Palette.Brush(row.IsTitle ? p.Text : p.TextSecondary));
+            line.Place(0, row.Baseline);
+            _hubText.Children.Add(line);
+            _hubLines.Add((line, row.IsTitle));
+        }
+
+        var outline = new Rect(-fit.HalfWidth, -fit.HalfHeight, 2 * fit.HalfWidth, 2 * fit.HalfHeight);
+        double radius = Math.Min(fit.HalfWidth, fit.HalfHeight);
+        if (animate)
+        {
+            var duration = TimeSpan.FromMilliseconds(140);
+            _hubOutline.BeginAnimation(RectangleGeometry.RectProperty, new RectAnimation(outline, duration) { EasingFunction = Motion.Standard });
+            _hubOutline.BeginAnimation(RectangleGeometry.RadiusXProperty, Motion.To(radius, 140));
+            _hubOutline.BeginAnimation(RectangleGeometry.RadiusYProperty, Motion.To(radius, 140));
+            _hubText.BeginAnimation(OpacityProperty, Motion.To(1, 120, from: 0.35));
+        }
+        else
+        {
+            _hubOutline.BeginAnimation(RectangleGeometry.RectProperty, null);
+            _hubOutline.BeginAnimation(RectangleGeometry.RadiusXProperty, null);
+            _hubOutline.BeginAnimation(RectangleGeometry.RadiusYProperty, null);
+            _hubText.BeginAnimation(OpacityProperty, null);
+            _hubOutline.Rect = outline;
+            _hubOutline.RadiusX = _hubOutline.RadiusY = radius;
+            _hubText.Opacity = 1;
+        }
     }
 
     private void UpdateHint()
@@ -901,10 +927,10 @@ public sealed class WheelWindow : Window
             new GradientStop(p.Shadow, 0.78),
             new GradientStop(Color.FromArgb(0, p.Shadow.R, p.Shadow.G, p.Shadow.B), 1),
         ]);
-        _hubPill.Background = Palette.Brush(p.PillFill);
-        _hubPill.BorderBrush = Palette.Brush(p.GlassEdge);
-        _hubText.Foreground = Palette.Brush(p.Text);
-        _hubSubtext.Foreground = Palette.Brush(p.TextSecondary);
+        _hubShape.Fill = Palette.Brush(p.PillFill);
+        _hubShape.Stroke = Palette.Brush(p.GlassEdge);
+        foreach (var (line, isTitle) in _hubLines)
+            line.Foreground = Palette.Brush(isTitle ? p.Text : p.TextSecondary);
         _emptyCard.BorderBrush = Palette.Brush(p.GlassEdge);
     }
 
@@ -1000,25 +1026,13 @@ public sealed class WheelWindow : Window
         _ring.Children.Add(_petals);
         _ring.Children.Add(_labels);
 
-        _hubText.FontFamily = UiFonts.Display;
-        _hubText.FontWeight = FontWeights.SemiBold;
-        _hubText.FontSize = 11.5;
-        _hubText.TextAlignment = TextAlignment.Center;
-        _hubText.TextTrimming = TextTrimming.CharacterEllipsis;
-        _hubText.MaxWidth = 64;
-        _hubSubtext.FontFamily = UiFonts.Text;
-        _hubSubtext.FontSize = 8.5;
-        _hubSubtext.TextAlignment = TextAlignment.Center;
-        var hubStack = new StackPanel();
-        hubStack.Children.Add(_hubText);
-        hubStack.Children.Add(_hubSubtext);
-        _hubPill.Child = hubStack;
-        _hubPill.CornerRadius = new CornerRadius(13);
-        _hubPill.Padding = new Thickness(9, 4, 9, 5);
-        _hubPill.BorderThickness = new Thickness(0.75);
-        _hubPill.MinWidth = 52;
-        _hubPill.IsHitTestVisible = false;
-        _ring.Children.Add(_hubPill);
+        // The centre's outline is a rounded rectangle so it can glide between a pill and a disc.
+        _hubShape.Data = _hubOutline;
+        _hubShape.StrokeThickness = 0.75;
+        _hubShape.IsHitTestVisible = false;
+        _hubText.IsHitTestVisible = false;
+        _ring.Children.Add(_hubShape);
+        _ring.Children.Add(_hubText);
 
         _hint.CornerRadius = new CornerRadius(12);
         _hint.Padding = new Thickness(8, 5, 10, 5);
