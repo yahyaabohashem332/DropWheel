@@ -7,8 +7,10 @@ public static class Log
 {
     private static readonly Lock Gate = new();
 
-    public static string FilePath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Petal", "petal.log");
+    /// <summary>Beside the settings when PETAL_SETTINGS_DIR moves them (tests and design snapshots), so those runs stay out of the real log.</summary>
+    public static string FilePath { get; set; } = Environment.GetEnvironmentVariable("PETAL_SETTINGS_DIR") is { Length: > 0 } own
+        ? Path.Combine(own, "petal.log")
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Petal", "petal.log");
 
     public static void Info(string message) => Write("INFO", message);
 

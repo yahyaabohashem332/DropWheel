@@ -256,7 +256,7 @@ quality: all 342 conversion paths have an engine, and the 9 from EPS run when Gh
 
 ## Tests
 
-965 tests: core, app and command line (308, including a check that every interface string has
+966 tests: core, app and command line (309, including a check that every interface string has
 Arabic, folders, the wheels without files and the Store package), media engine (216, transcription, voices, noise removal and vocal separation
 included), image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and
 PDF (186).
