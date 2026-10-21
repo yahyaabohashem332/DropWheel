@@ -50,6 +50,11 @@ public enum ToolId
     SavePreview,
     Palette,
     ExtractColours,
+    OrganizeFolder,
+    FolderPdf,
+    ContactSheet,
+    FolderReport,
+    GatherFiles,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>
@@ -87,4 +92,6 @@ public enum ToolSelection
     SingleOrBatch,
     /// <summary>Two or more files combined into one result.</summary>
     MultipleOnly,
+    /// <summary>A dropped folder, taken as a whole.</summary>
+    Folder,
 }

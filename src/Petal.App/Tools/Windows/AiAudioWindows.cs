@@ -147,7 +147,7 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
 
     /// <summary>"talk.srt" becomes "talk.ar.srt".</summary>
     internal static string OutputFor(string file) =>
-        OutputNaming.Unique(Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + ".ar", OutputNaming.ExtensionOf(file));
+        OutputNaming.Unique(OutputNaming.DirectoryFor(file), Path.GetFileNameWithoutExtension(file) + ".ar", OutputNaming.ExtensionOf(file));
 
     private void Sync()
     {

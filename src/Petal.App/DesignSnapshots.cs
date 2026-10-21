@@ -67,8 +67,15 @@ internal static class DesignSnapshots
         Petal.Core.Tools.ToolInfo T(Petal.Core.Tools.ToolId id) => Petal.Core.Tools.ToolRegistry.Get(id);
         var video = new[] { file("weekend.mov") };
         var audio = new[] { file("mixtape.mp3") };
+        // The sample folder itself, dropped as a folder.
+        var folder = Petal.Core.Jobs.FolderContents.Read([Path.GetDirectoryName(file("landscape.jpg"))!]);
         return
         [
+            ("organizefolder", () => new Tools.Windows.OrganizeFolderWindow(T(Petal.Core.Tools.ToolId.OrganizeFolder), folder, jobs, at)),
+            ("folderpdf", () => new Tools.Windows.FolderPdfWindow(T(Petal.Core.Tools.ToolId.FolderPdf), folder, jobs, at)),
+            ("contactsheet", () => new Tools.Windows.ContactSheetWindow(T(Petal.Core.Tools.ToolId.ContactSheet), folder, jobs, at)),
+            ("folderreport", () => new Tools.Windows.FolderReportWindow(T(Petal.Core.Tools.ToolId.FolderReport), folder, jobs, at)),
+            ("gather", () => new Tools.Windows.GatherFilesWindow(T(Petal.Core.Tools.ToolId.GatherFiles), folder, jobs, at)),
             ("compress", () => new Tools.Windows.CompressWindow(T(Petal.Core.Tools.ToolId.Compress), video, jobs, at)),
             ("trimvideo", () => new Tools.Windows.TrimVideoWindow(T(Petal.Core.Tools.ToolId.TrimVideo), video, jobs, at)),
             ("cropvideo", () => new Tools.Windows.CropVideoWindow(T(Petal.Core.Tools.ToolId.CropVideo), video, jobs, at)),
@@ -241,6 +248,23 @@ internal static class DesignSnapshots
         var quit = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(seconds) };
         quit.Tick += (_, _) => Application.Current.Shutdown();
         quit.Start();
+        // "folder:OrganizeFolder" runs that tool on the folder given last the way a drop on the tools wheel
+        // does, and "folder:webp" converts it like the conversion wheel; both with a history of their own.
+        if (args[1].StartsWith("folder:", StringComparison.Ordinal) && args.Length > 4)
+        {
+            Jobs.History.FilePath = Path.Combine(Path.GetTempPath(), "petal-dev-history.json");
+            Jobs.History.Reload();
+            var jobs = new Jobs.JobRunner(EngineSetup.CreateConverters());
+            Jobs.FolderLease.Install();
+            var contents = Petal.Core.Jobs.FolderContents.Read([args[4]]);
+            var name = args[1]["folder:".Length..];
+            var at = new Input.ScreenPoint(900, 500);
+            if (Enum.TryParse<Petal.Core.Tools.ToolId>(name, out var id))
+                _ = Jobs.FolderDrop.RunToolAsync(new Tools.ToolLauncher(jobs), Petal.Core.Tools.ToolRegistry.Get(id), contents, at);
+            else
+                _ = Jobs.FolderDrop.ConvertAsync(jobs, contents, Petal.Core.Formats.Formats.FromId(name) ?? throw new ArgumentException(name), at);
+            return;
+        }
         var dialog = new Settings.FavouriteWindow(null, _ => { });
         if (args[1] == "near")
         {

@@ -219,7 +219,8 @@ public sealed class TranscribeWindow : ToolWindow
                 var arabic = await Task.Run(() => Petal.Recipes.Translation.Translator.ToArabic(transcript.Segments.Select(s => s.Text).ToList(), new ScaledProgress(scaled, 0.7, 1), ct), ct);
                 transcript = new Transcript(transcript.Segments.Select((s, i) => s with { Text = arabic[i] }).ToList(), "ar");
             }
-            var directory = Path.GetDirectoryName(file)!;
+            // Beside the file, or in the copy of a dropped folder's tree.
+            var directory = OutputNaming.DirectoryFor(file);
             var stem = Path.GetFileNameWithoutExtension(file);
             var outputs = new List<string>();
             // Named like the video, so players load the subtitles by themselves.

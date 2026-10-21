@@ -117,6 +117,9 @@ public sealed class WheelWindow : Window
     /// <summary>Text for the centre of the wheel, e.g. "2.4 MB" or "3 files · 8 MB".</summary>
     public Func<IReadOnlyList<string>, string>? HubTextProvider { get; set; }
 
+    /// <summary>The centre's second line, when how many items were dropped won't do (what a folder holds).</summary>
+    public Func<IReadOnlyList<string>, string?>? HubSubtitleProvider { get; set; }
+
     /// <summary>Key caption for a mode, e.g. "Shift".</summary>
     public Func<WheelMode, string> KeyLabel { get; set; } = m => m switch
     {
@@ -726,7 +729,7 @@ public sealed class WheelWindow : Window
             }
         }
 
-        SetHub(HubTextProvider?.Invoke(_files) ?? "", _files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items"), animate: false);
+        SetHub(HubTextProvider?.Invoke(_files) ?? "", HubSubtitleProvider?.Invoke(_files) ?? (_files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items")), animate: false);
         ApplyPaletteToChrome(p);
 
         if (animate)

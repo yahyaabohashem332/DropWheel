@@ -6,7 +6,7 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
 | **Shift** | Convert | Your starred favourites first, then every format the file can become (342 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes… (48 tools), your recipes and your own petals |
+| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes, and for folders organize, one PDF, contact sheet, report and gather… (53 tools), your recipes and your own petals |
 | **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal, Find Duplicates |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
@@ -28,6 +28,29 @@ Windows first and says so when another program already owns a combination. (Ctrl
 Narrator's, which is why the default is different.) With nothing selected, the shortcut can open the
 wheel for what is on the clipboard instead: copied files, a screenshot, or text (a copied link
 becomes a QR code).
+
+**Folders work too.** Drop a folder (or several, mixed with files) and Petal works on the files
+inside, subfolders included, skipping hidden, system and temporary files. The centre shows the total
+size and how many files there are. Results go to a copy of the folder beside it, with the same
+subfolders — converting "Trip" to WEBP gives "Trip (WEBP)\Day 1\…" — and the original folder is
+never touched. The conversion wheel offers the formats of the folder's main kind of file (pictures,
+videos, music or documents) plus your favourites; files that cannot take the chosen format are left
+as they are, and the card says how many. The tools wheel shows the batch tools that suit the
+contents (resize, compress, watermark, metadata…, and Extract when there are archives), plus:
+
+* **Organize Folder** — by kind (Pictures, Videos, Music, Documents, Archives…, with screenshots and
+  invoices in their own folders) or by month taken (2026\2026-10), optionally renaming photos after
+  the day they were taken. A live summary shows what will move; History can put everything back.
+* **Folder to PDF** — every picture and PDF in the folder, in name order, as one PDF at the
+  pictures' own size, A4 or Letter; optionally searchable.
+* **Contact Sheet** — thumbnails of every picture with their names, 3 to 6 across, as a PDF.
+* **Folder Report** — an Excel (or CSV) list of every file with its type, size, dates, picture size,
+  duration and pages, plus sheets for the space each kind of file, each folder and the largest files
+  take.
+* **Gather Files** — copies every file (or only pictures, videos, music or PDFs) out of the subfolders
+  into one flat folder, renaming clashes.
+
+**Clean for Sharing** on the Actions wheel also takes folders, into a "(Clean)" copy.
 
 **Everyday file chores, also on the wheels:**
 
@@ -155,7 +178,7 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.3.2.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.4.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
@@ -166,9 +189,10 @@ quality: all 342 conversion paths have an engine, and the 9 from EPS run when Gh
 
 ## Tests
 
-896 tests: core, app and command line (242, including a check that every interface string has
-Arabic), media engine (216, transcription, voices, noise removal and vocal separation included),
-image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and PDF (183).
+928 tests: core, app and command line (271, including a check that every interface string has
+Arabic, and folders), media engine (216, transcription, voices, noise removal and vocal separation
+included), image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and
+PDF (186).
 Tests that need a downloaded model look for it in a folder named by an environment variable
 (`PETAL_LLM`, `PETAL_VOICES`, `PETAL_SEARCH_MODELS`, `PETAL_DEEPFILTER`, `PETAL_DEMUCS`, `PETAL_LAMA`,
 `PETAL_OPUS`) and say they were skipped otherwise; `PETAL_ADOBE_SAMPLES` adds structure checks on

@@ -110,6 +110,7 @@ public partial class App : Application
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
         var converters = EngineSetup.CreateConverters();
+        Jobs.FolderLease.Install();
 
         _controller = new PetalController(converters, Dispatcher);
         _controller.Start();

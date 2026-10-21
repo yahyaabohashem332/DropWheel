@@ -28,20 +28,33 @@ public static class OutputNaming
         public void Dispose() => close();
     }
 
+    /// <summary>
+    /// Where the results of a file from a dropped folder go instead of beside it: the same place in a
+    /// copy of the folder's tree ("Trip (WEBP)\Day 1"), or null for any other file. Results placed there
+    /// keep the file's own name; the copy's name already says what was done.
+    /// </summary>
+    public static Func<string, string?>? PlacedIn { get; set; }
+
+    /// <summary>The folder results of <paramref name="inputPath"/> go to when nothing else is asked for.</summary>
+    public static string DirectoryFor(string inputPath) => PlacedIn?.Invoke(inputPath) ?? DirectoryOf(inputPath);
+
     public static string ForConversion(string inputPath, FileFormat target, string? outputDirectory = null) =>
-        Unique(outputDirectory ?? DirectoryOf(inputPath), Formats.Formats.BaseName(inputPath), target.WriteExtension);
+        Unique(PlacedIn?.Invoke(inputPath) ?? outputDirectory ?? DirectoryOf(inputPath), Formats.Formats.BaseName(inputPath), target.WriteExtension);
 
     /// <summary>A file saved again with something changed, e.g. "photo 1600.jpg" beside "photo.jpg".</summary>
     public static string WithSuffix(string inputPath, string suffix, string extension, string? outputDirectory = null) =>
-        Unique(outputDirectory ?? DirectoryOf(inputPath), $"{Formats.Formats.BaseName(inputPath)} {suffix}", extension);
+        PlacedIn?.Invoke(inputPath) is { } placed
+            ? Unique(placed, Formats.Formats.BaseName(inputPath), extension)
+            : Unique(outputDirectory ?? DirectoryOf(inputPath), $"{Formats.Formats.BaseName(inputPath)} {suffix}", extension);
 
     /// <param name="extensionOverride">Writes a different format than usual, e.g. "flac" when compressing WAV.</param>
     public static string ForTool(string inputPath, ToolInfo tool, string? suffixOverride = null, string? outputDirectory = null, string? extensionOverride = null)
     {
         var baseName = Formats.Formats.BaseName(inputPath);
-        var suffix = suffixOverride ?? tool.OutputSuffix;
+        var placed = PlacedIn?.Invoke(inputPath);
+        var suffix = placed is not null ? "" : suffixOverride ?? tool.OutputSuffix;
         var stem = suffix.Length == 0 ? baseName : $"{baseName} {suffix}";
-        var dir = outputDirectory ?? DirectoryOf(inputPath);
+        var dir = placed ?? outputDirectory ?? DirectoryOf(inputPath);
 
         if (extensionOverride is not null)
             return Unique(dir, stem, extensionOverride);

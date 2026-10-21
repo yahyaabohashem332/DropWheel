@@ -14,7 +14,8 @@ public static class ArchiveExtractor
         Task.Run(() =>
         {
             var format = Formats.FromPath(archivePath) ?? throw new NotSupportedException("Not an archive.");
-            var parent = Path.GetDirectoryName(Path.GetFullPath(archivePath))!;
+            // Beside the archive, or in the copy of a dropped folder's tree.
+            var parent = OutputNaming.DirectoryFor(archivePath);
 
             // First pass over the names decides the layout (cheap for every format we read).
             var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

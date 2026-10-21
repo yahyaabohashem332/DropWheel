@@ -33,6 +33,8 @@ public partial class LocalizationTests
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Petal warm-up", "Microsoft",
         // The culture the wheel measures its text in, as WPF text blocks do by default.
         "en-US",
+        // The development switch that runs a wheel choice on a folder ("folder:OrganizeFolder").
+        "folder:",
         // Sample requests and search results in the design snapshots, already in both languages.
         // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
         "f/", "ISO", "mm", "FNumber", "Software",

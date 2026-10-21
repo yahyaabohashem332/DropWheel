@@ -14,7 +14,13 @@ public sealed class ToolLauncher(JobRunner jobs)
     public JobRunner Jobs { get; } = jobs;
 
     /// <summary>Tools whose backend is available on this machine.</summary>
-    public bool IsAvailable(ToolInfo tool) => Factories.ContainsKey(tool.Id) || Direct.ContainsKey(tool.Id);
+    public bool IsAvailable(ToolInfo tool) => Factories.ContainsKey(tool.Id) || Direct.ContainsKey(tool.Id) || FolderFactories.ContainsKey(tool.Id);
+
+    /// <summary>Tools for a dropped folder as a whole: they get what is inside it.</summary>
+    private static readonly Dictionary<ToolId, Func<ToolInfo, Petal.Core.Jobs.FolderContents, JobRunner, ScreenPoint, ToolWindow>> FolderFactories = [];
+
+    internal static void RegisterFolder(ToolId id, Func<ToolInfo, Petal.Core.Jobs.FolderContents, JobRunner, ScreenPoint, ToolWindow> factory) =>
+        FolderFactories[id] = factory;
 
     private delegate ToolWindow WindowFactory(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at);
 
@@ -60,18 +66,49 @@ public sealed class ToolLauncher(JobRunner jobs)
     internal static void RegisterDirect(ToolId id, Func<ToolInfo, IReadOnlyList<string>, JobRunner, ScreenPoint, Task> run) =>
         Direct[id] = (t, f, j, a) => run(t, f, j, a);
 
-    public Task LaunchAsync(ToolInfo tool, IReadOnlyList<string> files, ScreenPoint at)
+    /// <param name="lease">For files from a dropped folder: held until the window closes and its jobs end.</param>
+    public async Task LaunchAsync(ToolInfo tool, IReadOnlyList<string> files, ScreenPoint at, FolderLease? lease = null)
     {
         if (Direct.TryGetValue(tool.Id, out var direct))
-            return direct(tool, files, Jobs, at);
+        {
+            try
+            {
+                await direct(tool, files, Jobs, at);
+            }
+            finally
+            {
+                lease?.Release();
+            }
+            return;
+        }
         if (Factories.TryGetValue(tool.Id, out var factory))
         {
             var window = factory(tool, files, Jobs, at);
+            if (lease is not null)
+            {
+                // A window starts its job as it closes, sometimes after a moment's work: the job takes
+                // its own hold well within the few seconds this one lasts.
+                window.Closed += (_, _) => _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => lease.Release(), TaskScheduler.Default);
+            }
             window.ShowNear(at);
-            return Task.CompletedTask;
+            return;
         }
+        lease?.Release();
+        Unavailable(tool, at);
+    }
+
+    public Task LaunchFolderAsync(ToolInfo tool, Petal.Core.Jobs.FolderContents contents, ScreenPoint at)
+    {
+        if (FolderFactories.TryGetValue(tool.Id, out var factory))
+            factory(tool, contents, Jobs, at).ShowNear(at);
+        else
+            Unavailable(tool, at);
+        return Task.CompletedTask;
+    }
+
+    private static void Unavailable(ToolInfo tool, ScreenPoint at)
+    {
         var card = HudCard.ShowAt(at, tool.Name, "");
         card.Fail(tool.Name, "This tool isn't available on this PC.");
-        return Task.CompletedTask;
     }
 }

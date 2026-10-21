@@ -63,6 +63,7 @@ public static class EngineSetup
         Tools.Windows.ImageToolSetup.Register();
         Tools.Windows.PdfToolSetup.Register();
         Tools.Windows.AdobeToolSetup.Register();
+        Tools.Windows.FolderToolSetup.Register();
         var converters = new ConverterRegistry();
         converters.Register(new ImageConverter());
         converters.Register(new PaletteConverter());

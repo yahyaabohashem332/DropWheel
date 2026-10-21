@@ -28,9 +28,10 @@ public sealed class VoiceCleanerTests(ITestOutputHelper output)
             var voice = Fixtures.Speech("Petal takes the noise out of speech. The hiss goes, and the voice stays clear.");
             var dir = Fixtures.NewDir();
             // The voice, then two and a half seconds of hiss on its own; once as a recording, once in a video.
+            // The same hiss every run: how far it drops varies by several dB from one random hiss to the next.
             var noisy = Path.Combine(dir, "noisy.wav");
             var video = Path.Combine(dir, "noisy.mp4");
-            await RunFfmpegAsync(["-i", voice, "-f", "lavfi", "-i", "anoisesrc=color=pink:a=0.3:d=60",
+            await RunFfmpegAsync(["-i", voice, "-f", "lavfi", "-i", "anoisesrc=color=pink:a=0.3:d=60:seed=1",
                 "-filter_complex", "[0:a]aresample=48000,apad=pad_dur=2.5[v];[1:a]aresample=48000[n];[v][n]amix=inputs=2:duration=first:normalize=0",
                 "-c:a", "pcm_s16le", noisy]);
             var length = (await MediaProbe.ProbeAsync(noisy)).DurationSeconds;

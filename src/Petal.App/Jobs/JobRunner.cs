@@ -53,10 +53,13 @@ public sealed class JobRunner(ConverterRegistry converters)
         f.Family is FormatFamily.Image or FormatFamily.Vector or FormatFamily.Audio or FormatFamily.Palette;
 
     /// <param name="outputDirectory">Where results go instead of the usual place (watched folders).</param>
-    public Task ConvertAsync(IReadOnlyList<string> files, FileFormat target, ScreenPoint at, string? outputDirectory = null)
+    /// <param name="describe">More for the finished card, e.g. how many files of a folder were skipped.</param>
+    public Task ConvertAsync(IReadOnlyList<string> files, FileFormat target, ScreenPoint at, string? outputDirectory = null,
+        Func<IReadOnlyList<string>, string?>? describe = null)
     {
         var settings = SettingsStore.Current;
         var work = new List<WorkItem>();
+        var names = new List<Lazy<string>>();
         foreach (var file in files)
         {
             var from = Formats.FromPath(file);
@@ -65,44 +68,64 @@ public sealed class JobRunner(ConverterRegistry converters)
             var converter = Converters.Find(from, target);
             if (converter is null)
                 continue;
+            var index = names.Count;
+            names.Add(new(() => OutputNaming.ForConversion(file, target, outputDirectory ?? settings.OutputDirectoryFor(file))));
             work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
             {
-                var output = OutputNaming.ForConversion(file, target, outputDirectory ?? settings.OutputDirectoryFor(file));
+                var output = InOrder(names, index);
                 var job = new ConversionJob(file, from, target, output, settings.Conversion);
                 var result = await converter.ConvertAsync(job, progress, ct);
                 return result.OutputPaths;
             }));
         }
-        return RunAsync(L.F("Converting to {0}", target.Label), L.F("Converted to {0}", target.Label), work, at, width: BatchWidth(files, target));
+        return RunAsync(L.F("Converting to {0}", target.Label), L.F("Converted to {0}", target.Label), work, at, describe, BatchWidth(files, target));
     }
 
     /// <summary>A starred conversion: the favourite's format, size and quality.</summary>
-    public Task ConvertAsync(IReadOnlyList<string> files, Favourite favourite, ScreenPoint at, string? outputDirectory = null)
+    public Task ConvertAsync(IReadOnlyList<string> files, Favourite favourite, ScreenPoint at, string? outputDirectory = null,
+        Func<IReadOnlyList<string>, string?>? describe = null)
     {
         if (favourite.Target is not { } target)
             return Task.CompletedTask;
         var settings = SettingsStore.Current;
         var conversion = favourite.Apply(settings.Conversion);
         var work = new List<WorkItem>();
+        var names = new List<Lazy<string>>();
         foreach (var file in files)
         {
             var from = Formats.FromPath(file);
             if (from is null || favourite.ConverterFor(from, Converters) is not { } converter)
                 continue;
-            work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
+            var index = names.Count;
+            names.Add(new(() =>
             {
                 var dir = outputDirectory ?? settings.OutputDirectoryFor(file);
                 // Saved again in its own format: keep the original and say what changed in the name.
-                var output = from == target
+                return from == target
                     ? OutputNaming.WithSuffix(file, FavouriteText.Suffix(favourite), target.WriteExtension, dir)
                     : OutputNaming.ForConversion(file, target, dir);
+            }));
+            work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
+            {
+                var output = InOrder(names, index);
                 var job = new ConversionJob(file, from, target, output, conversion);
                 var result = await converter.ConvertAsync(job, progress, ct);
                 return result.OutputPaths;
             }));
         }
         var label = FavouriteText.Label(favourite);
-        return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at, width: BatchWidth(files, target));
+        return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at, describe, BatchWidth(files, target));
+    }
+
+    /// <summary>
+    /// Item <paramref name="index"/>'s output name, worked out once every earlier item has its own: files
+    /// converted side by side still get their names in the drop's order ("a.jpg" "a.webp", "a.png" "a 2.webp").
+    /// </summary>
+    private static string InOrder(List<Lazy<string>> names, int index)
+    {
+        for (int i = 0; i < index; i++)
+            _ = names[i].Value;
+        return names[index].Value;
     }
 
     /// <summary>A recipe over the files, as one job: its steps can combine them (a ZIP, one PDF).</summary>
@@ -126,6 +149,8 @@ public sealed class JobRunner(ConverterRegistry converters)
     {
         if (work.Count == 0)
             return;
+        // Files from a dropped folder keep their results' place in its copy until this run ends.
+        using var held = FolderLease.HoldFor(work.Select(w => w.InputPath));
 
         var card = HudCard.ShowAt(at, runningTitle, $"{work[0].Label} · 0%");
         using var cts = new CancellationTokenSource();

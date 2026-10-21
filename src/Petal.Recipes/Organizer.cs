@@ -192,6 +192,31 @@ public static partial class Organizer
     /// <summary>The folder names the organizer may make, so a watcher can leave them alone.</summary>
     public static IEnumerable<string> AllNames() => Enum.GetValues<FileCategory>().SelectMany(Names);
 
+    /// <summary>"2024\2024-07": the month a photo was taken in, or for anything else the month it last changed.</summary>
+    public static async Task<string> MonthFolderAsync(string path, CancellationToken cancellationToken = default)
+    {
+        var when = File.GetLastWriteTime(path);
+        if (await DateNameAsync(path, cancellationToken) is { } taken &&
+            DateTime.TryParseExact(taken, "yyyy-MM-dd HH.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            when = date;
+        return Path.Combine(when.ToString("yyyy", CultureInfo.InvariantCulture), when.ToString("yyyy-MM", CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>Moves a file into its month's folder under <paramref name="root"/>; null when it is there already.</summary>
+    public static async Task<string?> OrganizeByMonthAsync(string path, string root, bool renameByDate, CancellationToken cancellationToken = default)
+    {
+        var folder = Path.Combine(root, await MonthFolderAsync(path, cancellationToken));
+        string? stem = renameByDate ? await DateNameAsync(path, cancellationToken) : null;
+        var current = Path.GetFileNameWithoutExtension(path);
+        bool sameFolder = string.Equals(Path.GetFullPath(folder), Path.GetFullPath(Path.GetDirectoryName(path)!), StringComparison.OrdinalIgnoreCase);
+        if (sameFolder && (stem is null || current == stem || Regex.IsMatch(current, "^" + Regex.Escape(stem) + @" \d+$")))
+            return null;
+        Directory.CreateDirectory(folder);
+        var target = OutputNaming.Unique(folder, stem ?? current, OutputNaming.ExtensionOf(path));
+        File.Move(path, target);
+        return target;
+    }
+
     /// <summary>
     /// Moves the file into its folder (renamed by date when asked), never over another file.
     /// Returns the new path, or null when it stays where it is.

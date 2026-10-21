@@ -25,6 +25,7 @@ public sealed class PetalController : IDisposable
     private readonly FileActionRunner _actions;
     private readonly FolderWatcher _folders;
     private string _automations = "";
+    private (IReadOnlyList<string> Files, FolderContents Contents, DateTime At)? _look;
 
     public PetalController(ConverterRegistry converters, Dispatcher ui)
     {
@@ -32,7 +33,8 @@ public sealed class PetalController : IDisposable
         _wheel = new WheelWindow(Sound)
         {
             ContentProvider = BuildContent,
-            HubTextProvider = Sizes.Describe,
+            HubTextProvider = files => Look(files) is { } look ? FolderDrop.Hub(look).Title : Sizes.Describe(files),
+            HubSubtitleProvider = files => Look(files) is { } look ? FolderDrop.Hub(look).Subtitle : null,
             KeyLabel = KeyLabel,
             ModeForKey = ModeForKey,
         };
@@ -143,10 +145,31 @@ public sealed class PetalController : IDisposable
         };
     }
 
+    /// <summary>
+    /// A quick look inside the folders of a selection, kept for the moments the same selection is on the
+    /// wheel (switching wheels asks again); null when it has no folders.
+    /// </summary>
+    private FolderContents? Look(IReadOnlyList<string> files)
+    {
+        if (_look is { } look && DateTime.UtcNow - look.At < TimeSpan.FromSeconds(15) && look.Files.SequenceEqual(files, StringComparer.OrdinalIgnoreCase))
+            return look.Contents;
+        if (!FolderContents.HasFolders(files))
+            return null;
+        var contents = FolderContents.Read(files, FolderDrop.QuickLook);
+        _look = (files.ToList(), contents, DateTime.UtcNow);
+        return contents;
+    }
+
     private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files)
     {
         var convert = KeyLabel(WheelMode.Conversions);
         var actionsKey = KeyLabel(WheelMode.Actions);
+        if (mode != WheelMode.Actions && Look(files) is { } folder)
+        {
+            return mode == WheelMode.Conversions
+                ? FolderDrop.Conversions(folder, _jobs.Converters, SettingsStore.Current.Favourites, actionsKey)
+                : FolderDrop.Tools(folder, _tools.IsAvailable, convert, actionsKey);
+        }
         switch (mode)
         {
             case WheelMode.Actions:
@@ -198,6 +221,24 @@ public sealed class PetalController : IDisposable
     {
         try
         {
+            // A folder stands for the files inside it: read them all now, away from the interface.
+            if (item.Payload is not FileActionInfo && FolderContents.HasFolders(files))
+            {
+                var contents = await Task.Run(() => FolderContents.Read(files));
+                switch (item.Payload)
+                {
+                    case FileFormat folderTarget:
+                        await FolderDrop.ConvertAsync(_jobs, contents, folderTarget, at);
+                        break;
+                    case Favourite folderFavourite:
+                        await FolderDrop.ConvertAsync(_jobs, contents, folderFavourite, at);
+                        break;
+                    case ToolInfo folderTool:
+                        await FolderDrop.RunToolAsync(_tools, folderTool, contents, at);
+                        break;
+                }
+                return;
+            }
             switch (item.Payload)
             {
                 case FileFormat target:

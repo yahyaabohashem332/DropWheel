@@ -57,6 +57,12 @@ public static class ToolRegistry
         new(SavePreview, "PREVIEW", "Save Preview", "fileImage", false, ToolSelection.SingleOrBatch, "Preview", ToolOutputKind.FixedFormat, "png"),
         new(Palette, "PALETTE", "Colour Palette", "palette", true, ToolSelection.Single, ""),
         new(ExtractColours, "COLOURS", "Extract Colours", "dropper", true, ToolSelection.Single, "Colours", ToolOutputKind.FixedFormat, "ase"),
+        // A dropped folder as a whole.
+        new(OrganizeFolder, "ORGANIZE", "Organize Folder", "folderTree", true, ToolSelection.Folder, ""),
+        new(FolderPdf, "ONE PDF", "Folder to PDF", "fileStack", true, ToolSelection.Folder, "", ToolOutputKind.FixedFormat, "pdf"),
+        new(ContactSheet, "CONTACT SHEET", "Contact Sheet", "galleryThumbnails", true, ToolSelection.Folder, "Contact Sheet", ToolOutputKind.FixedFormat, "pdf"),
+        new(FolderReport, "REPORT", "Folder Report", "fileSpreadsheet", true, ToolSelection.Folder, "Report", ToolOutputKind.FixedFormat, "xlsx"),
+        new(GatherFiles, "GATHER", "Gather Files", "folders", true, ToolSelection.Folder, "Gathered", ToolOutputKind.Folder),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -113,6 +119,44 @@ public static class ToolRegistry
             return [SavePreview, FileDetails];
         return [CollectFiles];
     }
+
+    /// <summary>
+    /// The tools offered for a dropped folder: what works on the folder as a whole, then the batch tools
+    /// for its main kind of file (<paramref name="mainFormats"/>), each run over every such file inside.
+    /// Tools that join a selection into one file give way to Folder to PDF and Contact Sheet; archives
+    /// anywhere inside can be extracted.
+    /// </summary>
+    public static IReadOnlyList<ToolInfo> ForFolder(IReadOnlyCollection<FileFormat> mainFormats, bool pictures, bool pdfs, bool archives)
+    {
+        var ids = new List<ToolId> { OrganizeFolder };
+        if (pictures || pdfs)
+            ids.Add(FolderPdf);
+        if (pictures)
+            ids.Add(ContactSheet);
+        ids.Add(FolderReport);
+        ids.Add(GatherFiles);
+        if (mainFormats.Count > 0)
+        {
+            // Always as a batch, even when every file has the same format.
+            IReadOnlyCollection<FileFormat> batch = mainFormats.Count == 1 ? [mainFormats.First(), mainFormats.First()] : mainFormats;
+            foreach (var tool in ToolsFor(batch))
+            {
+                if (tool.Selection != ToolSelection.SingleOrBatch || ids.Contains(tool.Id))
+                    continue;
+                // A folder of pictures becomes one searchable PDF through Folder to PDF.
+                if (tool.Id == MakeSearchable && pictures && mainFormats.All(f => f.Family is FormatFamily.Image or FormatFamily.Vector))
+                    continue;
+                ids.Add(tool.Id);
+            }
+        }
+        if (archives && !ids.Contains(ExtractArchive))
+            ids.Add(ExtractArchive);
+        return ids.Select(Get).ToList();
+    }
+
+    /// <summary>Whether a batch tool offered for a folder works on a file of this format.</summary>
+    public static bool Takes(ToolInfo tool, FileFormat format) =>
+        ToolsFor([format, format]).Contains(tool) || ToolsFor([format]).Contains(tool);
 
     /// <summary>The tools offered on the tools wheel for a selection of files.</summary>
     public static IReadOnlyList<ToolInfo> ToolsFor(IReadOnlyCollection<FileFormat> formats)

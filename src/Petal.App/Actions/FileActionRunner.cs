@@ -65,22 +65,34 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
         return Task.CompletedTask;
     }
 
-    /// <summary>Clean copies ("photo Clean.jpg") beside each file; folders and unsupported files are skipped.</summary>
-    private Task CleanAsync(IReadOnlyList<string> paths, ScreenPoint at)
+    /// <summary>
+    /// Clean copies ("photo Clean.jpg") beside each file; a folder's files go to a clean copy of its
+    /// tree ("Trip (Clean)"). Files that can't be cleaned are left out.
+    /// </summary>
+    private async Task CleanAsync(IReadOnlyList<string> paths, ScreenPoint at)
     {
-        var files = paths.Where(File.Exists).ToList();
-        var work = files.Where(Petal.Recipes.SharingCleaner.CanClean).Select(file => new Jobs.WorkItem(file, Path.GetFileName(file), async (p, ct) =>
+        var contents = await Task.Run(() => Petal.Core.Jobs.FolderContents.Read(paths));
+        var lease = Jobs.FolderLease.Place(contents, f => Petal.Recipes.SharingCleaner.CanClean(f.Path), "Clean", Settings.SettingsStore.Current.OutputDirectoryFor);
+        try
         {
-            var output = Petal.Core.Jobs.OutputNaming.WithSuffix(file, "Clean", Petal.Core.Jobs.OutputNaming.ExtensionOf(file));
-            await Petal.Recipes.SharingCleaner.CleanAsync(file, output, p, ct);
-            return (IReadOnlyList<string>)[output];
-        })).ToList();
-        if (work.Count == 0)
-        {
-            Toast(at, L.T("Nothing to clean"), L.T("Photos, videos, audio, PDFs and Office files can be cleaned."));
-            return Task.CompletedTask;
+            var work = lease.Files.Select(file => new Jobs.WorkItem(file, Path.GetFileName(file), async (p, ct) =>
+            {
+                var output = Petal.Core.Jobs.OutputNaming.WithSuffix(file, "Clean", Petal.Core.Jobs.OutputNaming.ExtensionOf(file));
+                await Petal.Recipes.SharingCleaner.CleanAsync(file, output, p, ct);
+                return (IReadOnlyList<string>)[output];
+            })).ToList();
+            if (work.Count == 0)
+            {
+                Toast(at, L.T("Nothing to clean"), L.T("Photos, videos, audio, PDFs and Office files can be cleaned."));
+                return;
+            }
+            await jobs.RunAsync("Cleaning for sharing", "Cleaned for sharing", work, at,
+                Jobs.FolderDrop.LeftOut(contents.Files.Count - work.Count), Jobs.JobRunner.BatchWidth(lease.Files));
         }
-        return jobs.RunAsync("Cleaning for sharing", "Cleaned for sharing", work, at);
+        finally
+        {
+            lease.Release();
+        }
     }
 
     private static void Toast(ScreenPoint at, string title, string subtitle)
