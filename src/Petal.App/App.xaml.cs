@@ -20,6 +20,7 @@ public partial class App : Application
     private PetalController? _controller;
     private TrayIcon? _tray;
     private GlobalHotkey? _hotkey;
+    private Shell.WheelHotkeys? _wheelKeys;
 
     public static new App Current => (App)Application.Current;
 
@@ -97,6 +98,9 @@ public partial class App : Application
         };
 
         var settings = SettingsStore.Load();
+        // Ready-made wheels the settings don't have yet (all of them on first run).
+        if (Wheels.WheelTemplates.Upgrade(settings))
+            SettingsStore.Save();
         if (langArg < 0)
             L.Initialize(settings.Language);
         Jobs.History.Enabled = () => SettingsStore.Current.KeepHistory;
@@ -105,7 +109,7 @@ public partial class App : Application
             BuildTrayMenu();
             ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
         };
-        Theme.Configure(settings.Theme, settings.UseWindowsAccent);
+        Theme.Configure(settings.Theme, settings.AccentColour);
         ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
@@ -117,10 +121,22 @@ public partial class App : Application
         Search.SearchService.Start(converters);
 
         CreateTray();
+        Shell.UpdateService.Found += _ => Dispatcher.BeginInvoke(() =>
+        {
+            _tray?.SetBadge(true, Theme.Current.Accent);
+            BuildTrayMenu();
+        });
+        SettingsStore.Watch(Dispatcher);
+        SettingsStore.Reloaded += ApplyReloaded;
+        SettingsStore.Saved += _ => Dispatcher.BeginInvoke(BuildTrayMenu);
         _hotkey = new GlobalHotkey();
         _hotkey.Pressed += OnShortcut;
         if (Input.Shortcut.Parse(settings.QuickShortcut) is { } shortcut && !_hotkey.Register(shortcut))
             Log.Info($"{shortcut} is already used by another program");
+        _wheelKeys = new Shell.WheelHotkeys();
+        _wheelKeys.Pressed += OnWheelShortcut;
+        _wheelKeys.Apply(settings.Wheels);
+        SettingsStore.Saved += s => Dispatcher.BeginInvoke(() => _wheelKeys?.Apply(s.Wheels));
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
         ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
         if (command is not null)
@@ -154,6 +170,25 @@ public partial class App : Application
                 ShowSettings();
                 break;
         }
+    }
+
+    /// <summary>Settings read again from the file (an import, or an edit by hand) take effect everywhere at once.</summary>
+    private void ApplyReloaded(AppSettings s)
+    {
+        if (Wheels.WheelTemplates.Upgrade(s))
+            SettingsStore.Save();
+        L.Configure(s.Language);
+        Theme.Configure(s.Theme, s.AccentColour);
+        if (_hotkey is not null)
+        {
+            var wanted = Input.Shortcut.Parse(s.QuickShortcut);
+            if (wanted?.ToString() != _hotkey.Current?.ToString() && !_hotkey.Register(wanted))
+                Log.Info($"{wanted} is already used by another program");
+        }
+        LaunchAtLogin.Apply(s.LaunchAtStartup);
+        ContextMenuRegistration.Apply(s.ExplorerContextMenu);
+        Jobs.History.Reload();
+        BuildTrayMenu();
     }
 
     private void CreateTray()
@@ -194,6 +229,25 @@ public partial class App : Application
         historyItem.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
         var howItem = new MenuItem { Header = L.T("How it works") };
         howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
+        var practiceItem = new MenuItem { Header = L.T("Practice…") };
+        practiceItem.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
+        var statsItem = new MenuItem { Header = L.T("Your Statistics…") };
+        statsItem.Click += (_, _) => Stats.StatsWindow.ShowSingle();
+        var snipItem = new MenuItem { Header = L.T("Take a Screenshot") };
+        snipItem.Click += (_, _) =>
+        {
+            if (_controller is null) return;
+            var controller = _controller;
+            Wheels.Screenshots.ChooseArea((picture, middle) => controller.OpenWheelNow([Wheels.Screenshots.Save(picture)], middle));
+        };
+        var updatesItem = new MenuItem { Header = Shell.UpdateService.Waiting is { } waiting ? L.F("Install Petal {0}…", waiting.Version) : L.T("Check for Updates") };
+        updatesItem.Click += async (_, _) =>
+        {
+            if (Shell.UpdateService.Waiting is { } update)
+                Shell.UpdateWindow.ShowFor(update);
+            else
+                await Shell.UpdateService.CheckFromTrayAsync();
+        };
         var quit = new MenuItem { Header = L.T("Quit Petal") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
@@ -203,7 +257,12 @@ public partial class App : Application
         menu.Items.Add(duplicatesItem);
         menu.Items.Add(qrItem);
         menu.Items.Add(historyItem);
+        menu.Items.Add(snipItem);
+        menu.Items.Add(statsItem);
+        menu.Items.Add(new Separator());
         menu.Items.Add(howItem);
+        menu.Items.Add(practiceItem);
+        menu.Items.Add(updatesItem);
         menu.Items.Add(pause);
         menu.Items.Add(new Separator());
         menu.Items.Add(quit);
@@ -232,20 +291,35 @@ public partial class App : Application
             _controller.OpenWheelNow(files, WheelPointFor(front));
             return;
         }
-        // Nothing selected: the clipboard's files, picture or text, else Petal itself.
-        switch (SettingsStore.Current.ClipboardShortcut ? ClipboardSource.Take() : null)
+        // Nothing selected: the wheels without files, the clipboard's wheel, or Petal itself.
+        Interop.NativeMethods.GetCursorPos(out var cursor);
+        var at = new Input.ScreenPoint(cursor.X, cursor.Y);
+        switch (SettingsStore.Current.NothingSelected)
         {
-            case ClipboardContent.Files clip:
-                Interop.NativeMethods.GetCursorPos(out var cursor);
-                _controller.OpenWheelNow(clip.Paths, new Input.ScreenPoint(cursor.X, cursor.Y));
+            case Wheels.NothingSelected.Wheels:
+                await _controller.OpenRingsAsync(front, WheelPointFor(front));
                 break;
-            case ClipboardContent.Link link:
-                Tools.Windows.QrWindow.ShowSingle(link.Url);
+            case Wheels.NothingSelected.Clipboard when ClipboardSource.HasSomething():
+                _controller.OpenClipboard(at);
                 break;
             default:
                 ShowSettings();
                 break;
         }
+    }
+
+    /// <summary>A wheel's own shortcut: that wheel, over the window in front; pressed again, it closes.</summary>
+    private async void OnWheelShortcut(string wheel)
+    {
+        if (_controller is null || _controller.IsDragging)
+            return;
+        if (_controller.IsWheelOpen)
+        {
+            _controller.CloseWheel();
+            return;
+        }
+        var front = Interop.NativeMethods.GetForegroundWindow();
+        await _controller.OpenRingsAsync(front, WheelPointFor(front), wheel);
     }
 
     /// <summary>At the mouse when it is over that window, else in the middle of the window.</summary>
@@ -262,6 +336,7 @@ public partial class App : Application
     {
         _commands.Dispose();
         _hotkey?.Dispose();
+        _wheelKeys?.Dispose();
         _tray?.Dispose();
         _controller?.Dispose();
         Search.SearchService.Stop();

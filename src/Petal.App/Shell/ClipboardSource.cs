@@ -50,6 +50,19 @@ public static class ClipboardSource
         return null;
     }
 
+    /// <summary>Whether the clipboard holds anything the wheel could take, without reading it.</summary>
+    public static bool HasSomething()
+    {
+        try
+        {
+            return Clipboard.ContainsFileDropList() || Clipboard.ContainsImage() || Clipboard.ContainsText();
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+            return false;
+        }
+    }
+
     public static bool IsLink(string text) =>
         !text.Contains('\n') && !text.Contains(' ')
         && Uri.TryCreate(text, UriKind.Absolute, out var uri)

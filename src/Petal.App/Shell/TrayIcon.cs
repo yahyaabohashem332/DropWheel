@@ -87,6 +87,83 @@ public sealed class TrayIcon : IDisposable
         Shell_NotifyIcon(NIM_SETVERSION, ref _data);
     }
 
+    private IntPtr _badged;
+
+    /// <summary>
+    /// A small dot in the accent colour on the icon, for an update waiting to be installed; off puts the
+    /// plain icon back.
+    /// </summary>
+    public void SetBadge(bool on, System.Windows.Media.Color colour)
+    {
+        if (_badged != IntPtr.Zero)
+        {
+            DestroyIcon(_badged);
+            _badged = IntPtr.Zero;
+        }
+        if (on)
+            _badged = Badged(_icon, GetSystemMetrics(49), colour);
+        _data.hIcon = _badged != IntPtr.Zero ? _badged : _icon;
+        _data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
+        Shell_NotifyIcon(NIM_MODIFY, ref _data);
+    }
+
+    /// <summary>The icon with a dot at its top corner, drawn with WPF and made into an icon handle.</summary>
+    private static IntPtr Badged(IntPtr icon, int size, System.Windows.Media.Color colour)
+    {
+        var plain = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(icon, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromWidthAndHeight(size, size));
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawImage(plain, new Rect(0, 0, size, size));
+            double r = size * 0.23;
+            var centre = new Point(size - r - 0.5, r + 0.5);
+            dc.DrawEllipse(Brushes.White, null, centre, r + 1, r + 1);
+            dc.DrawEllipse(new SolidColorBrush(colour), null, centre, r, r);
+        }
+        var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        var pixels = new byte[size * size * 4];
+        bitmap.CopyPixels(pixels, size * 4, 0);
+        // Icons take straight alpha, not WPF's premultiplied colours.
+        for (int i = 0; i < pixels.Length; i += 4)
+        {
+            int a = pixels[i + 3];
+            if (a is > 0 and < 255)
+                for (int c = 0; c < 3; c++)
+                    pixels[i + c] = (byte)Math.Min(255, pixels[i + c] * 255 / a);
+        }
+        var header = new Interop.NativeMethods.BITMAPINFOHEADER
+        {
+            biSize = (uint)Marshal.SizeOf<Interop.NativeMethods.BITMAPINFOHEADER>(),
+            biWidth = size,
+            biHeight = -size,
+            biPlanes = 1,
+            biBitCount = 32,
+        };
+        var colours = Interop.NativeMethods.CreateDIBSection(IntPtr.Zero, ref header, 0, out var bits, IntPtr.Zero, 0);
+        Marshal.Copy(pixels, 0, bits, pixels.Length);
+        var mask = CreateBitmap(size, size, 1, 1, new byte[(size + 15) / 16 * 2 * size]);
+        var info = new ICONINFO { fIcon = true, hbmMask = mask, hbmColor = colours };
+        var result = CreateIconIndirect(ref info);
+        Interop.NativeMethods.DeleteObject(colours);
+        Interop.NativeMethods.DeleteObject(mask);
+        return result;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ICONINFO
+    {
+        [MarshalAs(UnmanagedType.Bool)] public bool fIcon;
+        public int xHotspot, yHotspot;
+        public IntPtr hbmMask, hbmColor;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr CreateIconIndirect(ref ICONINFO info);
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateBitmap(int width, int height, uint planes, uint bitsPerPixel, byte[] bits);
+
     public void SetTooltip(string text)
     {
         _data.szTip = text.Length > 127 ? text[..127] : text;
@@ -129,6 +206,8 @@ public sealed class TrayIcon : IDisposable
     public void Dispose()
     {
         Shell_NotifyIcon(NIM_DELETE, ref _data);
+        if (_badged != IntPtr.Zero)
+            DestroyIcon(_badged);
         if (_icon != IntPtr.Zero)
             DestroyIcon(_icon);
         _window.Dispose();

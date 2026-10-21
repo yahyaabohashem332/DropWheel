@@ -4,6 +4,14 @@ using NAudio.Wave.SampleProviders;
 
 namespace Petal.App.Overlay;
 
+/// <summary>The wheel's sounds: a soft tick (the usual), a crisper click, or a low wooden knock.</summary>
+public enum SoundStyle
+{
+    Soft,
+    Crisp,
+    Wood,
+}
+
 /// <summary>
 /// Soft "tick" when a petal is highlighted and a deeper "pop" on drop. Sounds are synthesised at
 /// start-up and mixed into a low-latency output that only runs while the wheel is open.
@@ -13,14 +21,44 @@ public sealed class FeedbackSound : IDisposable
     private const int SampleRate = 48000;
     private static readonly WaveFormat Format = WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, 2);
 
-    private readonly float[] _tick = Synthesize(frequency: 2900, durationMs: 26, decay: 230, gain: 0.16f, noise: 0.35f);
-    private readonly float[] _drop = Synthesize(frequency: 880, durationMs: 70, decay: 60, gain: 0.22f, noise: 0.1f, sweep: -0.35f);
+    private float[] _tick = [];
+    private float[] _drop = [];
+    private SoundStyle? _style;
     private readonly Lock _gate = new();
     private MixingSampleProvider? _mixer;
     private IWavePlayer? _output;
     private Timer? _idleTimer;
 
     public bool Enabled { get; set; } = true;
+
+    public FeedbackSound() => Style = SoundStyle.Soft;
+
+    /// <summary>Which sounds play; they are made once for each change.</summary>
+    public SoundStyle Style
+    {
+        get => _style ?? SoundStyle.Soft;
+        set
+        {
+            if (_style == value) return;
+            _style = value;
+            (_tick, _drop) = value switch
+            {
+                SoundStyle.Crisp => (Synthesize(frequency: 4200, durationMs: 14, decay: 420, gain: 0.13f, noise: 0.2f),
+                    Synthesize(frequency: 1320, durationMs: 45, decay: 110, gain: 0.2f, noise: 0.05f, sweep: -0.2f)),
+                SoundStyle.Wood => (Synthesize(frequency: 1250, durationMs: 30, decay: 180, gain: 0.2f, noise: 0.55f),
+                    Synthesize(frequency: 420, durationMs: 90, decay: 45, gain: 0.26f, noise: 0.25f, sweep: -0.25f)),
+                _ => (Synthesize(frequency: 2900, durationMs: 26, decay: 230, gain: 0.16f, noise: 0.35f),
+                    Synthesize(frequency: 880, durationMs: 70, decay: 60, gain: 0.22f, noise: 0.1f, sweep: -0.35f)),
+            };
+        }
+    }
+
+    /// <summary>The drop's sound once, to hear a style when choosing it.</summary>
+    public void Preview()
+    {
+        Play(_drop);
+        Cool();
+    }
 
     /// <summary>Opens the audio device ahead of time so the first tick plays without delay.</summary>
     public void Warm()

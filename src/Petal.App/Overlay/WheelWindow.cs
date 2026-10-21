@@ -52,10 +52,14 @@ public sealed class WheelWindow : Window
     private readonly TextBlock _emptyText = new();
     private readonly DispatcherTimer _probeTimer = new() { Interval = TimeSpan.FromMilliseconds(140) };
     private readonly DispatcherTimer _releaseTimer = new() { Interval = TimeSpan.FromMilliseconds(450) };
+    private readonly DispatcherTimer _dwellTimer = new() { Interval = TimeSpan.FromMilliseconds(420) };
     private readonly DragDropHelper _dragHelper = new();
-    private readonly List<Path> _petalPaths = [];
-    private readonly List<(List<InkText> Lines, Path? Icon)> _petalLabels = [];
+    private readonly List<PetalVisual> _visuals = [];
     private readonly List<PetalLabel> _petalLayouts = [];
+    // Groups opened on the way here, innermost last: what to go back to.
+    private readonly Stack<(WheelContent Content, string Title)> _groups = new();
+    private readonly Ellipse _hubPicture = new();
+    private readonly RotateTransform _hubPictureTurn = new();
     private InkFont? _labelFont;
     private InkFont? _hubTitleFont;
     private InkFont? _hubSubtitleFont;
@@ -106,7 +110,8 @@ public sealed class WheelWindow : Window
         Drop += OnDrop;
         _probeTimer.Tick += OnProbeTick;
         _releaseTimer.Tick += (_, _) => CloseWheel();
-        Theme.Changed += () => Dispatcher.BeginInvoke(() => _palette = Theme.Current);
+        _dwellTimer.Tick += OnDwell;
+        Theme.Changed += () => Dispatcher.BeginInvoke(() => _palette = PaletteFor(_options));
     }
 
     public FeedbackSound Sound { get; }
@@ -137,6 +142,32 @@ public sealed class WheelWindow : Window
     public bool ShowHints { get; set; } = true;
 
     public WheelMode Mode => _mode;
+
+    /// <summary>How the wheel looks and behaves; read each time it opens.</summary>
+    public Func<WheelOptions> OptionsProvider { get; set; } = () => WheelOptions.Default;
+
+    private WheelOptions _options = WheelOptions.Default;
+
+    /// <summary>
+    /// The petal to light up first when the wheel opens for the keyboard (the one chosen last time), by
+    /// page ("files:Conversions", "ring:quick").
+    /// </summary>
+    public Func<string, WheelContent, int?>? Remembered { get; set; }
+
+    /// <summary>A petal was chosen on a page: for remembering it.</summary>
+    public event Action<string, WheelItem>? Chose;
+
+    /// <summary>
+    /// Raised when a petal of a wheel without files is chosen, after the wheel has gone; with the window
+    /// that was in front when it opened (where keystrokes go).
+    /// </summary>
+    public event Action<WheelItem, ScreenPoint, IntPtr>? EntryChosen;
+
+    /// <summary>A petal that can't run was chosen: say why at this point.</summary>
+    public event Action<WheelItem, ScreenPoint>? UnavailableChosen;
+
+    /// <summary>The page shown now, for memory and statistics.</summary>
+    public string PageKey => _pages is { } pages ? "ring:" + pages[_page].Key : "files:" + _mode;
 
     // ---------- lifetime ----------
 
@@ -228,8 +259,11 @@ public sealed class WheelWindow : Window
         _content = null;
         _highlight = null;
         _lastHubLabel = "";
+        _pages = null;
+        _groups.Clear();
+        _options = OptionsProvider();
         _releaseTimer.Stop();
-        _palette = Theme.Current;
+        _palette = PaletteFor(_options);
         Sound.Warm();
 
         var (left, top, px) = Place(cursor);
@@ -264,9 +298,12 @@ public sealed class WheelWindow : Window
 
         // Hint goes below the ring when there is no room above it.
         bool hintBelow = cy - work.Top < (WheelGeometry.OuterRadius + 64) * scale;
-        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + 12 : Centre - WheelGeometry.OuterRadius - 12 - 30);
+        // The keys 1 to 9 sit just outside the ring when the keyboard can use them; the hint keeps clear of them.
+        double gap = 12 + (_interactive && _options.ShowNumbers ? 10 : 0);
+        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + gap : Centre - WheelGeometry.OuterRadius - gap - 30);
 
-        ApplyGlass(GlassCapture.CaptureBlurred(left, top, px, px, scale));
+        // A solid wheel has nothing behind it to see through, so nothing is captured.
+        ApplyGlass(_options.Style == WheelStyle.Solid ? null : GlassCapture.CaptureBlurred(left, top, px, px, scale));
         return (left, top, px);
     }
 
@@ -275,6 +312,14 @@ public sealed class WheelWindow : Window
     private bool _interactive;
     // The window that had the keyboard before the keyboard-driven wheel took it.
     private IntPtr _returnFocusTo;
+    // Wheels without files, when that is what is open; null for a file's wheels.
+    private IReadOnlyList<RingPage>? _pages;
+    private int _page;
+
+    private double CancelRadius => WheelGeometry.CancelRadius(_options.CancelZone);
+
+    private int? HitTestAt(Point p) =>
+        _content is null ? null : WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _content.Items.Count, CancelRadius);
 
     /// <summary>Maps a modifier key to the wheel it opens (follows the user's key settings).</summary>
     public Func<Key, WheelMode?>? ModeForKey { get; set; }
@@ -286,17 +331,44 @@ public sealed class WheelWindow : Window
     public void OpenInteractive(IReadOnlyList<string> files, ScreenPoint cursor, WheelMode mode)
     {
         if (_open) CloseWheel();
+        _pages = null;
+        _files = files;
+        _mode = mode;
+        ShowInteractive(cursor);
+    }
+
+    /// <summary>
+    /// Opens wheels that need no files (quick actions, media, the app in front, the user's own) for the
+    /// keyboard and mouse, starting at <paramref name="start"/>; Tab and the mouse wheel go to the next one.
+    /// </summary>
+    public void OpenRings(IReadOnlyList<RingPage> pages, int start, ScreenPoint cursor)
+    {
+        if (pages.Count == 0) return;
+        if (_open) CloseWheel();
+        _pages = pages;
+        _page = Math.Clamp(start, 0, pages.Count - 1);
+        _files = [];
+        ShowInteractive(cursor);
+    }
+
+    private void ShowInteractive(ScreenPoint cursor)
+    {
         _open = true;
         _interactive = true;
-        _mode = mode;
-        _files = files;
         _highlight = null;
-        _palette = Theme.Current;
+        _groups.Clear();
+        _options = OptionsProvider();
+        _palette = PaletteFor(_options);
+        // Before the wheel takes the keyboard: where keystrokes go back to.
+        var front = GetForegroundWindow();
+        _returnFocusTo = front != _hwnd ? front : IntPtr.Zero;
         Sound.Warm();
         var (left, top, px) = Place(cursor);
         _root.Visibility = Visibility.Visible;
         _emptyCard.Visibility = Visibility.Collapsed;
         Render(animate: true);
+        if (_content is { IsEmpty: false } content && Remembered?.Invoke(PageKey, content) is { } remembered && remembered < content.Items.Count)
+            SetHighlight(remembered, null);
         _root.Background = HitBrush;
 
         // Allow activation so the keyboard reaches us.
@@ -304,8 +376,6 @@ public sealed class WheelWindow : Window
         SetWindowLongPtr(_hwnd, GWL_EXSTYLE, new IntPtr(exStyle & ~WS_EX_NOACTIVATE));
         SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_SHOWWINDOW);
         Focusable = true;
-        var front = GetForegroundWindow();
-        _returnFocusTo = front != _hwnd ? front : IntPtr.Zero;
         SetForegroundWindow(_hwnd);
         Activate();
         Focus();
@@ -316,9 +386,16 @@ public sealed class WheelWindow : Window
     {
         base.OnMouseMove(e);
         if (!_interactive || _content is null) return;
-        var p = e.GetPosition(_stage);
-        var index = WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _content.Items.Count);
-        if (index is not null) SetHighlight(index, null);
+        var index = HitTestAt(e.GetPosition(_stage));
+        if (index is not null && index != _highlight)
+        {
+            SetHighlight(index, null);
+            // Pointing at a group for a moment opens it, as clicking does.
+            _dwellTimer.Stop();
+            _dwellOnHub = false;
+            if (_content.Items[index.Value].IsGroup)
+                _dwellTimer.Start();
+        }
     }
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -327,10 +404,41 @@ public sealed class WheelWindow : Window
         if (!_interactive || _content is null) return;
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
-        if (WheelGeometry.HitTest(v, _content.Items.Count) is { } index)
+        if (HitTestAt(p) is { } index)
             Choose(index);
-        else if (!WheelGeometry.IsOverHub(v))
+        else if (v.Length < CancelRadius && _groups.Count > 0)
+            CloseGroup();
+        else if (!WheelGeometry.IsOverHub(v) && v.Length > CancelRadius)
             CloseWheel();
+    }
+
+    /// <summary>The mouse wheel goes to the next wheel, as Tab does (and back, turned the other way).</summary>
+    protected override void OnMouseWheel(MouseWheelEventArgs e)
+    {
+        base.OnMouseWheel(e);
+        if (!_interactive || !_options.ScrollSwitches) return;
+        Step(e.Delta < 0 ? 1 : -1);
+        e.Handled = true;
+    }
+
+    /// <summary>Next (1) or previous (-1) wheel: the file's three, or the wheels without files.</summary>
+    public void Step(int direction)
+    {
+        if (!_open) return;
+        if (_pages is { } pages)
+        {
+            if (pages.Count < 2) return;
+            _page = (_page + direction + pages.Count) % pages.Count;
+            _groups.Clear();
+            Render(animate: false);
+            if (_content is { IsEmpty: false } content && Remembered?.Invoke(PageKey, content) is { } remembered && remembered < content.Items.Count)
+                SetHighlight(remembered, null);
+            Sound.Tick();
+            return;
+        }
+        var modes = Enum.GetValues<WheelMode>();
+        SwitchMode(modes[(Array.IndexOf(modes, _mode) + direction + modes.Length) % modes.Length]);
+        Sound.Tick();
     }
 
     protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -339,8 +447,21 @@ public sealed class WheelWindow : Window
         if (!_interactive) return;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
         int count = _content?.Items.Count ?? 0;
+        // 1 to 9 choose a petal straight away, clockwise from the top.
+        int digit = key is >= Key.D1 and <= Key.D9 ? key - Key.D1 : key is >= Key.NumPad1 and <= Key.NumPad9 ? key - Key.NumPad1 : -1;
+        if (digit >= 0 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            if (digit < count && !e.IsRepeat)
+                Choose(digit);
+            e.Handled = true;
+            return;
+        }
         switch (key)
         {
+            case Key.Escape when _groups.Count > 0:
+            case Key.Back when _groups.Count > 0:
+                CloseGroup();
+                break;
             case Key.Escape:
                 CloseWheel();
                 break;
@@ -360,9 +481,9 @@ public sealed class WheelWindow : Window
                 Choose(i);
                 break;
             case Key.Tab:
-                SwitchMode(_mode switch { WheelMode.Conversions => WheelMode.Tools, WheelMode.Tools => WheelMode.Actions, _ => WheelMode.Conversions });
+                Step(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1);
                 break;
-            case Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt when !e.IsRepeat:
+            case Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt when !e.IsRepeat && _pages is null:
                 if (ModeForKey?.Invoke(key) is { } m) SwitchMode(m);
                 break;
             default:
@@ -382,16 +503,78 @@ public sealed class WheelWindow : Window
     {
         if (_content is null || _files is null || index >= _content.Items.Count) return;
         var item = _content.Items[index];
+        if (item.IsGroup)
+        {
+            OpenGroup(item);
+            return;
+        }
         var files = _files;
         var at = _anchor;
+        var page = PageKey;
+        if (item.Unavailable is not null && item.Blocked)
+        {
+            Sound.Tick();
+            CloseWheel();
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => UnavailableChosen?.Invoke(item, at));
+            return;
+        }
         Sound.Drop();
+        Chose?.Invoke(page, item);
+        if (_pages is not null)
+        {
+            var target = _returnFocusTo;
+            CloseWheel(returnFocus: true);
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => EntryChosen?.Invoke(item, at, target));
+            return;
+        }
         // A tool window, the share sheet or a folder picker takes the keyboard next; otherwise
         // (conversions, copying) it goes back to File Explorer.
         bool opensWindow = item.Payload is Petal.Core.Tools.ToolInfo { HasWindow: true }
-            || item.Payload is Petal.Core.Actions.FileActionInfo { Id: Petal.Core.Actions.FileActionId.Share or Petal.Core.Actions.FileActionId.Phone or Petal.Core.Actions.FileActionId.Float or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal };
+            || item.Payload is Petal.Core.Actions.FileActionInfo
+            {
+                Id: Petal.Core.Actions.FileActionId.Share or Petal.Core.Actions.FileActionId.Phone or Petal.Core.Actions.FileActionId.Float
+                    or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal or Petal.Core.Actions.FileActionId.OpenWith
+                    or Petal.Core.Actions.FileActionId.OpenInCode
+            };
         CloseWheel(returnFocus: !opensWindow);
         Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, at));
     }
+
+    /// <summary>Opens a group's petals in place of the wheel's; the centre (or Backspace) goes back.</summary>
+    private void OpenGroup(WheelItem group)
+    {
+        if (_content is null || group.Children is null) return;
+        _dwellTimer.Stop();
+        _groups.Push((_content, L.T(group.Name)));
+        _content = new WheelContent(group.Children, "");
+        Sound.Tick();
+        Draw(animate: true);
+    }
+
+    private void CloseGroup()
+    {
+        _dwellTimer.Stop();
+        if (!_groups.TryPop(out var outer)) return;
+        _content = outer.Content;
+        Sound.Tick();
+        Draw(animate: true);
+    }
+
+    /// <summary>
+    /// While dragging, holding over a group for a moment opens it, and holding over the centre goes back;
+    /// a drop can't open anything, so the wheel waits for the pointer instead.
+    /// </summary>
+    private void OnDwell(object? sender, EventArgs e)
+    {
+        _dwellTimer.Stop();
+        if (!_open || _content is null) return;
+        if (_dwellOnHub)
+            CloseGroup();
+        else if (_highlight is { } i && i < _content.Items.Count && _content.Items[i].IsGroup)
+            OpenGroup(_content.Items[i]);
+    }
+
+    private bool _dwellOnHub;
 
     private void OnProbeTick(object? sender, EventArgs e)
     {
@@ -412,9 +595,11 @@ public sealed class WheelWindow : Window
 
     public void SwitchMode(WheelMode mode)
     {
-        if (!_open || mode == _mode)
+        if (!_open || mode == _mode || _pages is not null)
             return;
         _mode = mode;
+        _groups.Clear();
+        _dwellTimer.Stop();
         if (_files is not null)
             Render(animate: false);
     }
@@ -432,6 +617,7 @@ public sealed class WheelWindow : Window
     {
         _probeTimer.Stop();
         _releaseTimer.Stop();
+        _dwellTimer.Stop();
         if (!_open)
             return;
         _open = false;
@@ -439,6 +625,9 @@ public sealed class WheelWindow : Window
         _files = null;
         _content = null;
         _highlight = null;
+        _groups.Clear();
+        _pages = null;
+        _hubPictureTurn.BeginAnimation(RotateTransform.AngleProperty, null);
         if (_interactive)
         {
             _interactive = false;
@@ -539,9 +728,9 @@ public sealed class WheelWindow : Window
         var point = CursorPoint(e);
         _dragHelper.Drop(e.Data, point, index is null ? DragDropEffects.None : DragDropEffects.Copy);
 
-        if (index is not { } i || content is null || files is null || i >= content.Items.Count)
+        if (index is not { } i || content is null || files is null || i >= content.Items.Count || content.Items[i].IsGroup)
         {
-            // Dropped on the hub, a gap or the margin: do nothing, never move the files.
+            // Dropped on the hub, a gap, the margin or a group that hadn't opened: do nothing, never move the files.
             e.Effects = DragDropEffects.None;
             CloseWheel();
             return;
@@ -550,7 +739,16 @@ public sealed class WheelWindow : Window
         // Copy (never Move) so Explorer leaves the originals alone.
         e.Effects = DragDropEffects.Copy;
         var item = content.Items[i];
+        var page = PageKey;
+        if (item.Unavailable is not null && item.Blocked)
+        {
+            var where = new ScreenPoint(point.X, point.Y);
+            CloseWheel();
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => UnavailableChosen?.Invoke(item, where));
+            return;
+        }
         Sound.Drop();
+        Chose?.Invoke(page, item);
 
         // Let the petal stay lit for a couple of frames, then vanish instantly. Only then run the
         // action: opening a tool window can keep the UI thread busy, and the wheel must not linger.
@@ -569,14 +767,24 @@ public sealed class WheelWindow : Window
     {
         if (_content is null || _content.IsEmpty)
             return null;
-        var p = e.GetPosition(_stage);
-        return WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _content.Items.Count);
+        return HitTestAt(e.GetPosition(_stage));
     }
 
     private void UpdatePointer(DragEventArgs e)
     {
         var index = HitTest(e);
-        e.Effects = index is null ? DragDropEffects.None : DragDropEffects.Copy;
+        bool group = index is { } g && _content is not null && g < _content.Items.Count && _content.Items[g].IsGroup;
+        e.Effects = index is null || group ? DragDropEffects.None : DragDropEffects.Copy;
+        // Holding over a group opens it; holding over the centre of an open group goes back.
+        var p = e.GetPosition(_stage);
+        bool onHub = index is null && _groups.Count > 0 && new Vector(p.X - Centre, p.Y - Centre).Length < CancelRadius;
+        if (index != _highlight || onHub != _dwellOnHub)
+        {
+            _dwellTimer.Stop();
+            _dwellOnHub = onHub;
+            if (group || onHub)
+                _dwellTimer.Start();
+        }
         SetHighlight(index, e.Data);
     }
 
@@ -584,20 +792,15 @@ public sealed class WheelWindow : Window
     {
         if (index == _highlight)
             return;
+        int? previous = _highlight;
         _highlight = index;
         var p = _palette;
-        for (int i = 0; i < _petalPaths.Count; i++)
-        {
-            bool on = i == index;
-            _petalPaths[i].Fill = on ? AccentFill(p) : PetalFill(p);
-            _petalPaths[i].Stroke = on ? Palette.Brush(Color.FromArgb(0x50, p.Accent.R, p.Accent.G, p.Accent.B)) : Palette.Brush(p.PetalStroke);
-            var (lines, icon) = _petalLabels[i];
-            var fg = on ? Palette.Brush(p.TextOnAccent) : Palette.Brush(p.Text);
-            foreach (var line in lines)
-                line.Foreground = fg;
-            if (icon is not null)
-                icon.Stroke = fg;
-        }
+        for (int i = 0; i < _visuals.Count; i++)
+            _visuals[i].Paint(p, i == index);
+        if (previous is { } was && was < _visuals.Count)
+            _visuals[was].Grow(false, _options);
+        if (index is { } now && now < _visuals.Count)
+            _visuals[now].Grow(true, _options);
 
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
@@ -606,23 +809,39 @@ public sealed class WheelWindow : Window
             SetHub(_lastHubLabel, Subtitle(item), animate: IsVisible);
             Sound.Tick();
             if (data is not null)
-                DragDropHelper.SetDescription(data, Description(item), null);
+                DragDropHelper.SetDescription(data, item.IsGroup || item.Unavailable is not null && item.Blocked ? null : Description(item), null);
         }
-        else if (data is not null)
+        else
         {
-            DragDropHelper.SetDescription(data, null);
+            if (data is not null)
+                DragDropHelper.SetDescription(data, null);
+            // Back in the middle: the centre says what the wheel is about again.
+            if (previous is not null && index is null && _content is not null)
+                ShowDefaultHub(animate: IsVisible);
         }
     }
 
-    private static string Subtitle(WheelItem item) => item.Payload switch
+    /// <summary>The centre's second line for a petal: why it can't run, its state, what it does, or what kind it is.</summary>
+    private string Subtitle(WheelItem item)
     {
-        Petal.Core.Formats.FileFormat => L.T("Convert"),
-        // A favourite's petal shows its name; the centre adds what it does ("WEBP · 1600 px").
-        Petal.Core.Jobs.Favourite => item.Name,
-        Petal.Recipes.Recipe => L.T("Recipe"),
-        Petal.Core.Tools.ToolInfo => L.T("Tool"),
-        _ => L.T("Action"),
-    };
+        if (item.Unavailable is { } why)
+            return L.T(why);
+        if (item.IsGroup)
+            return _interactive ? L.P(item.Children!.Count, "{0} more", "{0} more") : L.T("Hold here to open");
+        if (item.State is { } on)
+            return L.T(on ? "On" : "Off");
+        if (item.Note is { } note)
+            return L.T(note);
+        return item.Payload switch
+        {
+            Petal.Core.Formats.FileFormat => L.T("Convert"),
+            // A favourite's petal shows its name; the centre adds what it does ("WEBP · 1600 px").
+            Petal.Core.Jobs.Favourite => item.Name,
+            Petal.Recipes.Recipe => L.T("Recipe"),
+            Petal.Core.Tools.ToolInfo => L.T("Tool"),
+            _ => L.T("Action"),
+        };
+    }
 
     private static string Description(WheelItem item) => item.Payload switch
     {
@@ -641,9 +860,12 @@ public sealed class WheelWindow : Window
     /// </summary>
     internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false)
     {
-        _palette = Theme.Current;
+        _options = OptionsProvider();
+        _palette = PaletteFor(_options);
         _files = files;
         _mode = mode;
+        _pages = null;
+        _groups.Clear();
         _open = true;
         var crop = new CroppedBitmap(background, new Int32Rect(
             Math.Max(0, (background.PixelWidth - (int)Side) / 2),
@@ -676,15 +898,28 @@ public sealed class WheelWindow : Window
 
     private void Render(bool animate)
     {
-        if (_files is null || ContentProvider is null)
+        if (_files is null)
+            return;
+        if (_pages is { } pages)
+            _content = pages[_page].Content();
+        else if (ContentProvider is not null)
+            _content = ContentProvider(_mode, _files);
+        else
+            return;
+        _groups.Clear();
+        Draw(animate);
+    }
+
+    /// <summary>Draws <see cref="_content"/>: the petals, their labels, the centre and the hint above.</summary>
+    private void Draw(bool animate)
+    {
+        if (_content is null)
             return;
         var p = _palette;
-        _content = ContentProvider(_mode, _files);
         _highlight = null;
         _petals.Children.Clear();
         _labels.Children.Clear();
-        _petalPaths.Clear();
-        _petalLabels.Clear();
+        _visuals.Clear();
         _petalLayouts.Clear();
         CreateFonts();
         UpdateHint();
@@ -711,46 +946,95 @@ public sealed class WheelWindow : Window
             _ring.Visibility = Visibility.Visible;
             _emptyCard.Visibility = Visibility.Collapsed;
             int n = _content.Items.Count;
-            bool tools = _mode != WheelMode.Conversions;
+            bool tools = _mode != WheelMode.Conversions || _pages is not null || _groups.Count > 0;
             for (int i = 0; i < n; i++)
-            {
-                var item = _content.Items[i];
-                var path = new Path
-                {
-                    Data = WheelGeometry.Petal(i, n),
-                    Fill = PetalFill(p),
-                    Stroke = Palette.Brush(p.PetalStroke),
-                    StrokeThickness = 0.75,
-                    IsHitTestVisible = false,
-                };
-                _petals.Children.Add(path);
-                _petalPaths.Add(path);
-                AddLabel(item, i, n, tools || item.Payload is Petal.Core.Jobs.Favourite, p);
-            }
+                AddPetal(_content.Items[i], i, n, tools || _content.Items[i].Payload is not Petal.Core.Formats.FileFormat, p);
         }
 
-        SetHub(HubTextProvider?.Invoke(_files) ?? "", HubSubtitleProvider?.Invoke(_files) ?? (_files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items")), animate: false);
+        ShowDefaultHub(animate: false);
         ApplyPaletteToChrome(p);
 
-        if (animate)
-        {
-            _stage.Opacity = 0;
-            _stage.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0));
-            _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 190, Motion.Bloom, from: 0.38));
-            _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 190, Motion.Bloom, from: 0.38));
-            _labels.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0, delayMs: 55));
-            _hint.BeginAnimation(OpacityProperty, Motion.To(1, 160, Motion.Standard, from: 0, delayMs: 120));
-            _hint.Visibility = ShowHints ? Visibility.Visible : Visibility.Collapsed;
-        }
+        if (animate && _options.Motion != WheelMotion.None && SystemParameters.ClientAreaAnimation)
+            Animate(_options.Motion);
         else
+            Settle();
+    }
+
+    /// <summary>The wheel without animation: everything where it ends up.</summary>
+    private void Settle()
+    {
+        _stage.BeginAnimation(OpacityProperty, null);
+        _stage.Opacity = 1;
+        _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+        _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        _stageScale.ScaleX = _stageScale.ScaleY = 1;
+        _labels.BeginAnimation(OpacityProperty, null);
+        _labels.Opacity = 1;
+        _hint.BeginAnimation(OpacityProperty, null);
+        _hint.Opacity = 1;
+        _hint.Visibility = ShowHints ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// How the wheel arrives: blooming out of the pointer (the usual), popping with a little overshoot,
+    /// fading in where it is, or unfolding petal by petal clockwise.
+    /// </summary>
+    private void Animate(WheelMotion motion)
+    {
+        Settle();
+        switch (motion)
         {
-            _stage.BeginAnimation(OpacityProperty, null);
-            _stage.Opacity = 1;
-            _labels.BeginAnimation(OpacityProperty, null);
-            _labels.Opacity = 1;
-            _hint.BeginAnimation(OpacityProperty, null);
-            _hint.Opacity = 1;
+            case WheelMotion.Pop:
+                _stage.BeginAnimation(OpacityProperty, Motion.To(1, 80, Motion.Standard, from: 0));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 320, Motion.Pop, from: 0.6));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 320, Motion.Pop, from: 0.6));
+                _labels.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0, delayMs: 70));
+                break;
+            case WheelMotion.Fade:
+                _stage.BeginAnimation(OpacityProperty, Motion.To(1, 140, Motion.Standard, from: 0));
+                break;
+            case WheelMotion.Unfold:
+                _stage.BeginAnimation(OpacityProperty, Motion.To(1, 60, Motion.Standard, from: 0));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 200, Motion.Bloom, from: 0.85));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 200, Motion.Bloom, from: 0.85));
+                for (int i = 0; i < _visuals.Count; i++)
+                    _visuals[i].Unfold(i * Math.Min(22, 220.0 / _visuals.Count));
+                break;
+            default:
+                _stage.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 190, Motion.Bloom, from: 0.38));
+                _stageScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 190, Motion.Bloom, from: 0.38));
+                _labels.BeginAnimation(OpacityProperty, Motion.To(1, 90, Motion.Standard, from: 0, delayMs: 55));
+                break;
         }
+        _hint.BeginAnimation(OpacityProperty, Motion.To(1, 160, Motion.Standard, from: 0, delayMs: 120));
+    }
+
+    /// <summary>What the centre says with no petal under the pointer: the files, the open group, or the wheel's own news.</summary>
+    private void ShowDefaultHub(bool animate)
+    {
+        _hubPicture.Visibility = Visibility.Collapsed;
+        _hubPictureTurn.BeginAnimation(RotateTransform.AngleProperty, null);
+        if (_groups.Count > 0)
+        {
+            SetHub(_groups.Peek().Title, L.T(_interactive ? "Centre or Backspace: back" : "Hold in the centre to go back"), animate);
+            return;
+        }
+        if (_pages is { } pages)
+        {
+            var hub = pages[_page].Hub?.Invoke();
+            SetHub(hub?.Title ?? L.T(pages[_page].Title), hub?.Subtitle ?? "", animate);
+            if (hub?.Picture is { } picture)
+            {
+                _hubPicture.Fill = new ImageBrush(picture) { Stretch = Stretch.UniformToFill };
+                _hubPicture.Visibility = Visibility.Visible;
+                if (hub.Spin && SystemParameters.ClientAreaAnimation)
+                    _hubPictureTurn.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(0, 360, TimeSpan.FromSeconds(9)) { RepeatBehavior = RepeatBehavior.Forever });
+            }
+            return;
+        }
+        if (_files is null) return;
+        SetHub(HubTextProvider?.Invoke(_files) ?? "", HubSubtitleProvider?.Invoke(_files) ?? (_files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items")), animate);
     }
 
     /// <summary>
@@ -768,41 +1052,65 @@ public sealed class WheelWindow : Window
     }
 
     /// <summary>
-    /// A petal's label, laid out by hand: <see cref="PetalLayout"/> picks its lines and size and keeps it
-    /// inside the petal, then the ink of the icon and of every line is centred on one point, so what the
-    /// eye sees is centred rather than text boxes and trailing spaces.
+    /// One petal and its label. The label is laid out by hand: <see cref="PetalLayout"/> picks its lines and
+    /// size and keeps it inside the petal, then the ink of the icon and of every line is centred on one point,
+    /// so what the eye sees is centred rather than text boxes and trailing spaces. The petal and its label
+    /// share a transform, so the petal under the pointer can grow towards it with its label.
     /// </summary>
-    private void AddLabel(WheelItem item, int index, int count, bool withIcon, Palette p)
+    private void AddPetal(WheelItem item, int index, int count, bool withIcon, Palette p)
     {
+        var visual = new PetalVisual(item, index, count);
+        var path = new Path
+        {
+            Data = WheelGeometry.Petal(index, count),
+            StrokeThickness = 0.75,
+            IsHitTestVisible = false,
+        };
+        visual.Path = path;
+        visual.PetalLayer.Children.Add(path);
+        _petals.Children.Add(visual.PetalLayer);
+        _labels.Children.Add(visual.LabelLayer);
+
+        bool hasIcon = withIcon && (item.Icon is not null || item.Picture is not null);
+        // Icons only, when names are hidden: what has an icon shows it larger and alone.
+        bool iconOnly = hasIcon && !_options.ShowNames;
         double size = withIcon ? (L.IsArabic ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5);
         // Baseline to baseline; under an icon the lines sit close, as a caption.
         double step = withIcon ? (L.IsArabic ? 13 : 9.5) : size * 1.3;
-        double iconSize = count > 8 ? 16 : 18;
+        double iconSize = iconOnly ? (count > 8 ? 22 : 26) : count > 8 ? 16 : 18;
         var brush = Palette.Brush(p.Text);
-        Path? icon = null;
         IconInk? iconInk = null;
-        if (withIcon && item.Icon is not null)
+        if (hasIcon && item.Picture is { } picture)
         {
-            icon = Icons.Create(item.Icon, iconSize, brush, 2);
-            var outline = Icons.InkGeometry(item.Icon, iconSize, 2);
+            var image = new Image { Source = picture, Width = iconSize, Height = iconSize, IsHitTestVisible = false };
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+            visual.Icon = image;
+            iconInk = new IconInk(new Rect(0, 0, iconSize, iconSize), [new Rect(0, 0, iconSize, iconSize)]);
+        }
+        else if (hasIcon && item.Icon is { } iconKey)
+        {
+            visual.Icon = Icons.Create(iconKey, iconSize, brush, 2);
+            var outline = Icons.InkGeometry(iconKey, iconSize, 2);
             iconInk = new IconInk(outline.Bounds, InkShape.Strips(outline, 3));
         }
 
         var font = _labelFont!;
-        var label = PetalLayout.Fit(L.T(item.Label), font, size, size - 1.5, step, iconInk, iconSize, index, count);
-        var lines = label.Lines.Select(t => font.Create(t, label.Size, brush)).ToList();
-        if (icon is not null && iconInk is not null)
+        var label = PetalLayout.Fit(iconOnly ? "" : L.T(item.Label), font, size, size - 1.5, step, iconInk, iconSize, index, count);
+        visual.Lines = label.Lines.Where(t => t.Length > 0).Select(t => font.Create(t, label.Size, brush)).ToList();
+        if (visual.Icon is not null && iconInk is not null)
         {
-            Canvas.SetLeft(icon, label.Centre.X - iconInk.Box.X - iconInk.Box.Width / 2);
-            Canvas.SetTop(icon, label.Centre.Y + label.IconTop);
-            _labels.Children.Add(icon);
+            Canvas.SetLeft(visual.Icon, label.Centre.X - iconInk.Box.X - iconInk.Box.Width / 2);
+            Canvas.SetTop(visual.Icon, label.Centre.Y + (iconOnly ? -iconInk.Box.Y - iconInk.Box.Height / 2 : label.IconTop));
+            visual.LabelLayer.Children.Add(visual.Icon);
         }
-        for (int i = 0; i < lines.Count; i++)
+        for (int i = 0; i < visual.Lines.Count; i++)
         {
-            lines[i].Place(label.Centre.X, label.Centre.Y + label.Baselines[i]);
-            _labels.Children.Add(lines[i]);
+            visual.Lines[i].Place(label.Centre.X, label.Centre.Y + label.Baselines[i]);
+            visual.LabelLayer.Children.Add(visual.Lines[i]);
         }
-        _petalLabels.Add((lines, icon));
+        visual.AddMarks(_interactive && index < 9 && _options.ShowNumbers, _labelFont);
+        visual.Paint(p, false);
+        _visuals.Add(visual);
         _petalLayouts.Add(label);
     }
 
@@ -857,39 +1165,67 @@ public sealed class WheelWindow : Window
     {
         var p = _palette;
         var row = new StackPanel { Orientation = Orientation.Horizontal, FlowDirection = L.Direction };
-        foreach (var (mode, label) in new[] { (WheelMode.Conversions, "Convert"), (WheelMode.Tools, "Tools"), (WheelMode.Actions, "Actions") })
+        if (_pages is { } pages)
         {
-            bool active = mode == _mode;
-            var key = new Border
+            // Wheels without files: their names, the one shown lit; Tab and the mouse wheel move along.
+            int first = pages.Count <= 5 ? 0 : Math.Clamp(_page - 2, 0, pages.Count - 5);
+            for (int i = first; i < Math.Min(pages.Count, first + 5); i++)
             {
-                CornerRadius = new CornerRadius(5),
-                Padding = new Thickness(5, 1, 5, 2),
-                Margin = new Thickness(0, 0, 5, 0),
-                Background = active ? Palette.Brush(p.Accent) : Palette.Brush(p.IsDark ? Color.FromArgb(0x30, 255, 255, 255) : Color.FromArgb(0x14, 0, 0, 0)),
-                Child = new TextBlock
+                bool active = i == _page;
+                row.Children.Add(new Border
                 {
-                    Text = KeyLabel(mode),
-                    FontFamily = UiFonts.Text,
-                    FontSize = 10.5,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = active ? Palette.Brush(p.TextOnAccent) : Palette.Brush(p.TextSecondary),
-                },
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            var caption = new TextBlock
-            {
-                Text = L.T(label),
-                FontFamily = UiFonts.Text,
-                FontSize = 11.5,
-                FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal,
-                Foreground = active ? Palette.Brush(p.Text) : Palette.Brush(p.TextSecondary),
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 12, 0),
-            };
-            row.Children.Add(key);
-            row.Children.Add(caption);
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(7, 1, 7, 2),
+                    Margin = new Thickness(0, 0, 4, 0),
+                    Background = active ? Palette.Brush(p.Accent) : Brushes.Transparent,
+                    Child = new TextBlock
+                    {
+                        Text = L.T(pages[i].Title),
+                        FontFamily = UiFonts.Text,
+                        FontSize = 11,
+                        FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal,
+                        Foreground = active ? Palette.Brush(p.TextOnAccent) : Palette.Brush(p.TextSecondary),
+                    },
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
+            }
         }
-        if (row.Children[^1] is FrameworkElement last)
+        else
+        {
+            foreach (var (mode, label) in new[] { (WheelMode.Conversions, "Convert"), (WheelMode.Tools, "Tools"), (WheelMode.Actions, "Actions") })
+            {
+                bool active = mode == _mode;
+                var key = new Border
+                {
+                    CornerRadius = new CornerRadius(5),
+                    Padding = new Thickness(5, 1, 5, 2),
+                    Margin = new Thickness(0, 0, 5, 0),
+                    Background = active ? Palette.Brush(p.Accent) : Palette.Brush(p.IsDark ? Color.FromArgb(0x30, 255, 255, 255) : Color.FromArgb(0x14, 0, 0, 0)),
+                    Child = new TextBlock
+                    {
+                        Text = KeyLabel(mode),
+                        FontFamily = UiFonts.Text,
+                        FontSize = 10.5,
+                        FontWeight = FontWeights.SemiBold,
+                        Foreground = active ? Palette.Brush(p.TextOnAccent) : Palette.Brush(p.TextSecondary),
+                    },
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                var caption = new TextBlock
+                {
+                    Text = L.T(label),
+                    FontFamily = UiFonts.Text,
+                    FontSize = 11.5,
+                    FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal,
+                    Foreground = active ? Palette.Brush(p.Text) : Palette.Brush(p.TextSecondary),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 12, 0),
+                };
+                row.Children.Add(key);
+                row.Children.Add(caption);
+            }
+        }
+        if (row.Children.Count > 0 && row.Children[^1] is FrameworkElement last)
             last.Margin = new Thickness(0);
         _hint.Child = row;
         _hint.Background = Palette.Brush(p.PillFill);
@@ -952,7 +1288,9 @@ public sealed class WheelWindow : Window
         return b;
     }
 
-    private static Brush AccentFill(Palette p)
+    private static Brush AccentFill(Palette p) => AccentFill(p, p.Accent);
+
+    private static Brush AccentFill(Palette p, Color accent)
     {
         var b = new RadialGradientBrush
         {
@@ -961,7 +1299,7 @@ public sealed class WheelWindow : Window
             GradientOrigin = new Point(0, 0),
             RadiusX = WheelGeometry.PetalOuter,
             RadiusY = WheelGeometry.PetalOuter,
-            GradientStops = [new GradientStop(Mix(p.Accent, Colors.White, 0.14), 0.4), new GradientStop(Mix(p.Accent, Colors.Black, 0.1), 1)],
+            GradientStops = [new GradientStop(Mix(accent, Colors.White, 0.14), 0.4), new GradientStop(Mix(accent, Colors.Black, 0.1), 1)],
         };
         b.Freeze();
         return b;
@@ -1010,6 +1348,18 @@ public sealed class WheelWindow : Window
             _ring.Children.Add(e);
         }
 
+        // A picture for the centre, such as the album of the song playing; it turns while it plays.
+        double pictureR = hubR - 2;
+        _hubPicture.Width = _hubPicture.Height = pictureR * 2;
+        Canvas.SetLeft(_hubPicture, -pictureR);
+        Canvas.SetTop(_hubPicture, -pictureR);
+        _hubPicture.RenderTransformOrigin = new Point(0.5, 0.5);
+        _hubPicture.RenderTransform = _hubPictureTurn;
+        _hubPicture.Opacity = 0.85;
+        _hubPicture.IsHitTestVisible = false;
+        _hubPicture.Visibility = Visibility.Collapsed;
+        _ring.Children.Add(_hubPicture);
+
         double rimR = WheelGeometry.OuterRadius - 0.5;
         _rim.Width = _rim.Height = rimR * 2;
         Canvas.SetLeft(_rim, -rimR);
@@ -1055,6 +1405,159 @@ public sealed class WheelWindow : Window
         _emptyCard.Visibility = Visibility.Collapsed;
         _stage.Children.Add(_emptyCard);
     }
+
+    /// <summary>
+    /// A petal on screen: its shape on one layer and its label on another, both moved by one transform so
+    /// the petal under the pointer can grow out towards it, label and all.
+    /// </summary>
+    private sealed class PetalVisual
+    {
+        private readonly ScaleTransform _scale;
+        private readonly TranslateTransform _shift = new();
+        private readonly Vector _axis;
+        private readonly int _index;
+        private readonly int _count;
+        private Path? _edge;
+
+        public PetalVisual(WheelItem item, int index, int count)
+        {
+            Item = item;
+            _index = index;
+            _count = count;
+            var angle = WheelGeometry.Angle(index, count);
+            var mid = WheelGeometry.At((WheelGeometry.PetalInner + WheelGeometry.PetalOuter) / 2, angle);
+            _axis = count == 1 ? new Vector(0, 0) : new Vector(mid.X, mid.Y) / ((WheelGeometry.PetalInner + WheelGeometry.PetalOuter) / 2);
+            _scale = new ScaleTransform(1, 1, count == 1 ? 0 : mid.X, count == 1 ? 0 : mid.Y);
+            var transform = new TransformGroup { Children = { _scale, _shift } };
+            PetalLayer.RenderTransform = transform;
+            LabelLayer.RenderTransform = transform;
+        }
+
+        public WheelItem Item { get; }
+        public Canvas PetalLayer { get; } = new() { IsHitTestVisible = false };
+        public Canvas LabelLayer { get; } = new() { IsHitTestVisible = false };
+        public Path Path { get; set; } = null!;
+        public FrameworkElement? Icon { get; set; }
+        public List<InkText> Lines { get; set; } = [];
+        private InkText? _number;
+
+        /// <summary>
+        /// A switch that is on gets a lit inner edge; a petal that can't run is drawn dashed and dim. With
+        /// <paramref name="number"/>, its key (1 to 9) sits just outside the ring.
+        /// </summary>
+        public void AddMarks(bool number, InkFont? font = null)
+        {
+            if (Item.State is not null && _count > 1)
+            {
+                double half = Math.PI / _count;
+                double angle = WheelGeometry.Angle(_index, _count);
+                double r = WheelGeometry.PetalInner + 3.5;
+                double inset = Math.Min(half * 0.55, half - 0.12);
+                var g = new StreamGeometry();
+                using (var ctx = g.Open())
+                {
+                    ctx.BeginFigure(WheelGeometry.At(r, angle - inset), false, false);
+                    ctx.ArcTo(WheelGeometry.At(r, angle + inset), new Size(r, r), 0, false, SweepDirection.Counterclockwise, true, false);
+                }
+                g.Freeze();
+                _edge = new Path { Data = g, StrokeThickness = 2.5, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, IsHitTestVisible = false };
+                PetalLayer.Children.Add(_edge);
+            }
+            if (number && font is not null)
+            {
+                var at = WheelGeometry.At(WheelGeometry.OuterRadius + 9, WheelGeometry.Angle(_index, _count));
+                _number = font.Create(((char)('1' + _index)).ToString(), 8.5, Brushes.Gray);
+                _number.Place(at.X, at.Y + 3);
+                LabelLayer.Children.Add(_number);
+            }
+        }
+
+        public void Paint(Palette p, bool on)
+        {
+            var accent = Item.Tint ?? p.Accent;
+            bool dim = Item.Unavailable is not null;
+            Path.Fill = on ? AccentFill(p, accent) : Item.Tint is { } tint ? TintFill(p, tint) : PetalFill(p);
+            Path.Stroke = on ? Palette.Brush(Color.FromArgb(0x50, accent.R, accent.G, accent.B)) : Palette.Brush(p.PetalStroke);
+            Path.StrokeDashArray = dim && !on ? DashedStroke : null;
+            Path.StrokeThickness = dim && !on ? 1 : 0.75;
+            var fg = on ? Palette.Brush(Readable(accent, p)) : Palette.Brush(p.Text);
+            foreach (var line in Lines)
+                line.Foreground = fg;
+            if (Icon is Path icon)
+                icon.Stroke = on ? fg : Item.Tint is { } t ? Palette.Brush(Legible(t, p)) : fg;
+            LabelLayer.Opacity = dim && !on ? 0.45 : 1;
+            PetalLayer.Opacity = dim && !on ? 0.7 : 1;
+            if (_edge is not null)
+                _edge.Stroke = Item.State == true
+                    ? Palette.Brush(on ? Readable(accent, p) : accent)
+                    : Palette.Brush(Color.FromArgb(0x40, p.Text.R, p.Text.G, p.Text.B));
+            if (_number is not null)
+                _number.Foreground = Palette.Brush(on ? p.Text : p.TextSecondary);
+        }
+
+        /// <summary>The petal under the pointer swells a little and moves out from the centre; the others settle back.</summary>
+        public void Grow(bool on, WheelOptions options)
+        {
+            if (!options.Grow || _count == 1)
+                return;
+            double scale = on ? 1.045 : 1, push = on ? 4 : 0;
+            if (!SystemParameters.ClientAreaAnimation)
+            {
+                _scale.ScaleX = _scale.ScaleY = scale;
+                (_shift.X, _shift.Y) = (_axis.X * push, _axis.Y * push);
+                return;
+            }
+            var ease = on ? Motion.Pop : Motion.Standard;
+            double ms = on ? 260 : 140;
+            _scale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(scale, ms, ease));
+            _scale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(scale, ms, ease));
+            _shift.BeginAnimation(TranslateTransform.XProperty, Motion.To(_axis.X * push, ms, ease));
+            _shift.BeginAnimation(TranslateTransform.YProperty, Motion.To(_axis.Y * push, ms, ease));
+        }
+
+        /// <summary>For the unfolding entrance: the petal appears in its turn, from a little smaller.</summary>
+        public void Unfold(double delayMs)
+        {
+            PetalLayer.BeginAnimation(UIElement.OpacityProperty, Motion.To(PetalLayer.Opacity, 120, Motion.Standard, from: 0, delayMs: delayMs));
+            LabelLayer.BeginAnimation(UIElement.OpacityProperty, Motion.To(LabelLayer.Opacity, 120, Motion.Standard, from: 0, delayMs: delayMs + 30));
+            _scale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 220, Motion.Bloom, from: 0.7, delayMs: delayMs));
+            _scale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 220, Motion.Bloom, from: 0.7, delayMs: delayMs));
+        }
+
+        private static readonly DoubleCollection DashedStroke = Freeze(new DoubleCollection { 3, 2.5 });
+    }
+
+    /// <summary>White or near-black, whichever reads on the colour.</summary>
+    private static Color Readable(Color background, Palette p)
+    {
+        double luminance = 0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B;
+        return luminance > 165 ? Color.FromRgb(0x16, 0x16, 0x1A) : p.TextOnAccent;
+    }
+
+    /// <summary>A petal's colour on its icon: as it is, a little deeper in the light theme and lighter in the dark one.</summary>
+    private static Color Legible(Color tint, Palette p) => p.IsDark ? Mix(tint, Colors.White, 0.25) : Mix(tint, Colors.Black, 0.15);
+
+    private static Brush TintFill(Palette p, Color tint)
+    {
+        var b = new RadialGradientBrush
+        {
+            MappingMode = BrushMappingMode.Absolute,
+            Center = new Point(0, 0),
+            GradientOrigin = new Point(0, -WheelGeometry.PetalOuter * 0.6),
+            RadiusX = WheelGeometry.PetalOuter,
+            RadiusY = WheelGeometry.PetalOuter,
+            GradientStops =
+            [
+                new GradientStop(Color.FromArgb((byte)Math.Max(p.PetalTop.A, (byte)0x60), tint.R, tint.G, tint.B), 0.35),
+                new GradientStop(Color.FromArgb((byte)Math.Max(p.PetalBottom.A, (byte)0x30), tint.R, tint.G, tint.B), 1),
+            ],
+        };
+        b.Freeze();
+        return b;
+    }
+
+    /// <summary>The theme's colours, or their grey version for a monochrome wheel.</summary>
+    private static Palette PaletteFor(WheelOptions options) => options.Style == WheelStyle.Mono ? Theme.Mono(Theme.Current) : Theme.Current;
 
     private static T Freeze<T>(T f) where T : Freezable
     {

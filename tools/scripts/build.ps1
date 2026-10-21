@@ -89,6 +89,17 @@ if ($iscc) {
         size = (Get-Item $setup).Length
         notes = $Notes
     }
+    # Signed with the maker's key, kept outside the repository: installed copies only offer signed updates.
+    $keyFile = Join-Path $env:USERPROFILE '.petal\update-signing-key.pem'
+    if (-not (Test-Path $keyFile)) {
+        throw "The update signing key isn't at $keyFile. Restore it from your backup: a new key would make installed copies refuse every update."
+    }
+    $ecdsa = [System.Security.Cryptography.ECDsa]::Create()
+    $ecdsa.ImportFromPem((Get-Content $keyFile -Raw))
+    $signed = "petal-update`n$($manifest.version)`n$($manifest.url)`n$($manifest.sha256.ToUpperInvariant())`n$($manifest.size)"
+    $signature = $ecdsa.SignData([System.Text.Encoding]::UTF8.GetBytes($signed), [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+        [System.Security.Cryptography.DSASignatureFormat]::IeeeP1363FixedFieldConcatenation)
+    $manifest.signature = [Convert]::ToBase64String($signature)
     $manifest | ConvertTo-Json | Set-Content (Join-Path $dist 'update.json') -Encoding utf8
     Write-Host "Update feed: $(Join-Path $dist 'update.json')"
 } else {

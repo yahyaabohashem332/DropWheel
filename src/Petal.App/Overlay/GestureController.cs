@@ -38,6 +38,37 @@ public sealed class GestureController : IDisposable
         _hook.ModifierDown += OnModifierDown;
         _hook.ModifierUp += k => _held.Remove(k);
         _hook.EscapePressed += OnEscape;
+        _hook.SideButtonDown = OnSideButton;
+        _hook.SideButtonUp = button => Trigger(button);
+        _hook.WheelTurned = OnWheelTurned;
+    }
+
+    /// <summary>The side button chosen in Settings went down, at this point.</summary>
+    public Action<ScreenPoint>? MouseTriggerPressed { get; set; }
+
+    private static bool Trigger(int button) =>
+        !Settings.Paused && Settings.MouseButton switch
+        {
+            Wheels.MouseTrigger.Back => button == 1,
+            Wheels.MouseTrigger.Forward => button == 2,
+            _ => false,
+        };
+
+    private bool OnSideButton(int button, ScreenPoint at)
+    {
+        if (!Trigger(button) || _pressed)
+            return false;
+        _ui.BeginInvoke(DispatcherPriority.Send, () => MouseTriggerPressed?.Invoke(at));
+        return true;
+    }
+
+    /// <summary>While a dragged file's wheel is open, the mouse wheel goes to the next wheel instead of scrolling the window below.</summary>
+    private bool OnWheelTurned(int delta)
+    {
+        if (!_dragging || !_wheelRequested || !Settings.ScrollSwitchesWheels)
+            return false;
+        _ui.BeginInvoke(DispatcherPriority.Send, () => _wheel.Step(delta < 0 ? 1 : -1));
+        return true;
     }
 
     public void Start() => _hook.Start();

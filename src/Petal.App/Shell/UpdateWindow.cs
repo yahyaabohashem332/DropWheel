@@ -32,6 +32,51 @@ public static class UpdateService
     public static Task<UpdateManifest?> CheckAsync(CancellationToken cancellationToken = default) =>
         Updates.CheckAsync(SettingsStore.Current.UpdateFeed, Current, Http, cancellationToken);
 
+    /// <summary>A newer version found and not skipped, waiting to be installed; the tray icon shows a dot meanwhile.</summary>
+    public static UpdateManifest? Waiting { get; private set; }
+
+    public static event Action<UpdateManifest>? Found;
+
+    /// <summary>Notes a newer version (unless the user skipped it), for the tray's dot and menu.</summary>
+    public static void Offer(UpdateManifest update)
+    {
+        if (update.Version == SettingsStore.Current.SkippedVersion)
+            return;
+        Waiting = update;
+        Found?.Invoke(update);
+    }
+
+    /// <summary>"Check for Updates" in the tray: the update window when there is one, else a card saying how things are.</summary>
+    public static async Task CheckFromTrayAsync()
+    {
+        var s = SettingsStore.Current;
+        if (string.IsNullOrWhiteSpace(s.UpdateFeed))
+        {
+            var empty = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
+            empty.Fail(L.T("No update address is set"), L.T("Set one in Settings › Updates."));
+            return;
+        }
+        try
+        {
+            var update = await CheckAsync();
+            s.LastUpdateCheck = DateTime.UtcNow;
+            SettingsStore.Save();
+            if (update is null)
+            {
+                var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
+                card.Succeed(L.T("Petal is up to date."), L.F("This is Petal {0}.", CurrentText), null);
+                return;
+            }
+            Offer(update);
+            UpdateWindow.ShowFor(update);
+        }
+        catch (UpdateException ex)
+        {
+            var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
+            card.Fail(L.T("Couldn't check for updates"), L.T(ex.Message));
+        }
+    }
+
     /// <summary>Once a day, a while after start: a quiet card when there is something new.</summary>
     public static async Task CheckInBackgroundAsync()
     {
@@ -46,6 +91,7 @@ public static class UpdateService
             SettingsStore.Save();
             if (update is null || update.Version == s.SkippedVersion)
                 return;
+            Offer(update);
             var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
             card.Succeed(L.F("Petal {0} is available", update.Version), L.T("Click to see what's new"), () => UpdateWindow.ShowFor(update));
         }

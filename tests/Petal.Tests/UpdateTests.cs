@@ -10,26 +10,66 @@ public class UpdateTests : IDisposable
     private readonly string _dir = Directory.CreateTempSubdirectory("petal-update-").FullName;
     private readonly HttpClient _http = new();
     private readonly byte[] _installer = Enumerable.Range(0, 50_000).Select(i => (byte)(i % 251)).ToArray();
+    // Feeds here are signed with a key of the test's own, trusted only while it runs.
+    private readonly ECDsa _key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+    public UpdateTests() => Updates.TrustedKey = Convert.ToBase64String(_key.ExportSubjectPublicKeyInfo());
 
     public void Dispose()
     {
+        Updates.TrustedKey = Updates.PetalKey;
+        _key.Dispose();
         _http.Dispose();
         try { Directory.Delete(_dir, recursive: true); } catch (IOException) { }
     }
 
-    private string Feed(string version, string? sha = null, string url = "Petal-Setup.exe")
+    private string Feed(string version, string? sha = null, string url = "Petal-Setup.exe", ECDsa? signer = null, bool signed = true)
     {
         File.WriteAllBytes(Path.Combine(_dir, "Petal-Setup.exe"), _installer);
         var feed = Path.Combine(_dir, "update.json");
-        File.WriteAllText(feed, JsonSerializer.Serialize(new
+        var manifest = new UpdateManifest
         {
-            version,
-            url,
-            sha256 = sha ?? Convert.ToHexString(SHA256.HashData(_installer)),
-            size = _installer.Length,
-            notes = "Faster and friendlier.",
-        }));
+            Version = version,
+            Url = url,
+            Sha256 = sha ?? Convert.ToHexString(SHA256.HashData(_installer)),
+            Size = _installer.Length,
+            Notes = "Faster and friendlier.",
+        };
+        if (signed)
+            manifest = manifest with { Signature = Updates.Sign(manifest, signer ?? _key) };
+        File.WriteAllText(feed, JsonSerializer.Serialize(manifest));
         return feed;
+    }
+
+    [Fact]
+    public async Task Offers_only_an_update_signed_by_the_maker()
+    {
+        Assert.NotNull(await Updates.CheckAsync(Feed("1.2.0"), new Version(1, 0, 0), _http));
+        var unsigned = await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(Feed("1.2.0", signed: false), new Version(1, 0, 0), _http));
+        Assert.Contains("signed", unsigned.Message);
+        using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(Feed("1.2.0", signer: stranger), new Version(1, 0, 0), _http));
+        // A signed feed changed afterwards (another installer, same signature) is refused too.
+        var feed = Feed("1.2.0");
+        File.WriteAllText(feed, File.ReadAllText(feed).Replace("Petal-Setup.exe", "Other.exe"));
+        await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(feed, new Version(1, 0, 0), _http));
+        // Nothing newer: no signature needed to say so.
+        Assert.Null(await Updates.CheckAsync(Feed("1.0.0", signed: false), new Version(1, 0, 0), _http));
+    }
+
+    [Fact]
+    public void The_build_signs_what_the_app_checks()
+    {
+        // build.ps1 signs this exact text; the two must not drift apart.
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "tools", "scripts", "build.ps1")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        var script = File.ReadAllText(Path.Combine(root.FullName, "tools", "scripts", "build.ps1"));
+        Assert.Contains("\"petal-update`n$($manifest.version)`n$($manifest.url)`n$($manifest.sha256.ToUpperInvariant())`n$($manifest.size)\"", script);
+        var text = Updates.SignedText(new UpdateManifest { Version = "1.5.0", Url = "Petal-Setup-1.5.0.exe", Sha256 = "ab", Size = 12 });
+        Assert.Equal("petal-update\n1.5.0\nPetal-Setup-1.5.0.exe\nAB\n12", text);
+        Assert.False(string.IsNullOrWhiteSpace(Updates.PetalKey));
     }
 
     [Fact]

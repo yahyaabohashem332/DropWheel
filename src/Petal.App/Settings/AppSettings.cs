@@ -25,6 +25,53 @@ public sealed class AppSettings
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public Localization.UiLanguage Language { get; set; } = Localization.UiLanguage.System;
     public bool UseWindowsAccent { get; set; }
+
+    /// <summary>The accent colour; null for settings from before there was a choice (then <see cref="UseWindowsAccent"/> decides).</summary>
+    public AccentChoice? Accent { get; set; }
+
+    public AccentChoice AccentColour => Accent ?? (UseWindowsAccent ? AccentChoice.Windows : AccentChoice.Violet);
+
+    // ---------- the wheel ----------
+
+    public Overlay.WheelStyle WheelStyle { get; set; } = Overlay.WheelStyle.Glass;
+    public Overlay.WheelMotion WheelMotion { get; set; } = Overlay.WheelMotion.Bloom;
+    public Overlay.SoundStyle SoundStyle { get; set; } = Overlay.SoundStyle.Soft;
+    public bool ShowPetalNames { get; set; } = true;
+    public bool GrowPetal { get; set; } = true;
+    public bool ShowNumberKeys { get; set; } = true;
+    public bool ScrollSwitchesWheels { get; set; } = true;
+    public Overlay.CancelZone CancelZone { get; set; } = Overlay.CancelZone.Small;
+
+    /// <summary>Open on the wheel used last, with the petal chosen last lit up for the keyboard.</summary>
+    public bool RememberLastPetal { get; set; } = true;
+
+    /// <summary>Petals the user gave a colour, by their key ("tool:Compress", "format:webp"), as "#RRGGBB".</summary>
+    public Dictionary<string, string> PetalColours { get; set; } = [];
+
+    // ---------- wheels without files ----------
+
+    public Petal.App.Wheels.NothingSelected NothingSelected { get; set; } = Petal.App.Wheels.NothingSelected.Wheels;
+
+    /// <summary>Quick actions, media, app wheels and the user's own, in the order they come.</summary>
+    public List<Petal.App.Wheels.UserWheel> Wheels { get; set; } = [];
+
+    /// <summary>Which ready-made wheels have been added, so new ones arrive once and removed ones stay away.</summary>
+    public int WheelsVersion { get; set; }
+
+    public Petal.App.Wheels.MouseTrigger MouseButton { get; set; } = Petal.App.Wheels.MouseTrigger.None;
+
+    // ---------- the actions wheel ----------
+
+    /// <summary>The actions shown on the wheel itself, in order; the rest are under More. Null for the usual set.</summary>
+    public List<string>? ActionsOnWheel { get; set; }
+
+    /// <summary>Folders on the actions wheel that dropped files are copied or moved to.</summary>
+    public List<Petal.App.Wheels.FolderDestination> Destinations { get; set; } = [];
+
+    // ---------- statistics ----------
+
+    /// <summary>Count what Petal does, on this PC only, for the statistics page.</summary>
+    public bool KeepStatistics { get; set; } = true;
     public bool LaunchAtStartup { get; set; } = true;
     public bool Paused { get; set; }
     public bool SelectResultInExplorer { get; set; } = true;
@@ -34,7 +81,7 @@ public sealed class AppSettings
     public bool OnboardingDone { get; set; }
     public bool KeepHistory { get; set; } = true;
 
-    /// <summary>The quick shortcut with nothing selected opens the wheel for the clipboard's contents.</summary>
+    /// <summary>From before <see cref="NothingSelected"/>: the shortcut with nothing selected opened the clipboard's wheel. Kept so old files still read.</summary>
     public bool ClipboardShortcut { get; set; } = true;
 
     /// <summary>Search by Meaning: Petal indexes the folders below while the PC is idle.</summary>
@@ -87,11 +134,22 @@ public sealed class WatermarkSettings
 
 public static class SettingsStore
 {
-    private static readonly JsonSerializerOptions Options = new()
+    internal static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() },
     };
+
+    // What Petal wrote last, so its own writes aren't mistaken for changes made by hand.
+    private static string _written = "";
+    private static FileSystemWatcher? _watcher;
+    private static System.Threading.Timer? _settle;
+
+    /// <summary>
+    /// The file changed outside Petal (edited by hand, or replaced by an import) and was read again: apply
+    /// everything from it now. <see cref="Saved"/> is raised too.
+    /// </summary>
+    public static event Action<AppSettings>? Reloaded;
 
     public static string Directory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal");
 
@@ -121,13 +179,84 @@ public static class SettingsStore
         {
             System.IO.Directory.CreateDirectory(Directory);
             var temp = FilePath + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(Current, Options));
+            var json = JsonSerializer.Serialize(Current, Options);
+            _written = json;
+            File.WriteAllText(temp, json);
             File.Move(temp, FilePath, overwrite: true);
         }
         catch
         {
             // Settings are a convenience; never crash over them.
         }
+        Saved?.Invoke(Current);
+    }
+
+    /// <summary>
+    /// Watches settings.json: a change made by hand (in Notepad, or a synced copy) is read and applied a
+    /// moment later. A file that doesn't read is left alone, and Petal keeps what it had.
+    /// </summary>
+    public static void Watch(System.Windows.Threading.Dispatcher ui)
+    {
+        if (_watcher is not null)
+            return;
+        try
+        {
+            System.IO.Directory.CreateDirectory(Directory);
+            if (File.Exists(FilePath))
+                _written = File.ReadAllText(FilePath);
+            _watcher = new FileSystemWatcher(Directory, "settings.json") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size };
+            FileSystemEventHandler changed = (_, _) =>
+            {
+                _settle?.Dispose();
+                _settle = new System.Threading.Timer(_ => ui.BeginInvoke(ReadAgain), null, 400, System.Threading.Timeout.Infinite);
+            };
+            _watcher.Changed += changed;
+            _watcher.Created += changed;
+            _watcher.Renamed += (s, e) => changed(s, e);
+            _watcher.EnableRaisingEvents = true;
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
+        {
+            Log.Error(ex, "Watching the settings file");
+        }
+    }
+
+    /// <summary>Reads settings.json again when it differs from what Petal wrote; true when it did.</summary>
+    public static bool ReadAgain()
+    {
+        string json;
+        try
+        {
+            json = File.ReadAllText(FilePath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+        if (json == _written)
+            return false;
+        AppSettings? read;
+        try
+        {
+            read = JsonSerializer.Deserialize<AppSettings>(json, Options);
+        }
+        catch (JsonException ex)
+        {
+            Log.Error(ex, "settings.json was changed but doesn't read; keeping the settings as they were");
+            return false;
+        }
+        if (read is null)
+            return false;
+        _written = json;
+        Replace(read);
+        return true;
+    }
+
+    /// <summary>Puts other settings in place of these (an import, or a file edited by hand) and applies them.</summary>
+    public static void Replace(AppSettings settings)
+    {
+        Current = settings;
+        Reloaded?.Invoke(Current);
         Saved?.Invoke(Current);
     }
 }

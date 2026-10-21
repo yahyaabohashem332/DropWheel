@@ -18,7 +18,8 @@ public readonly record struct ScreenPoint(int X, int Y);
 /// <summary>
 /// Low-level mouse and keyboard hooks on their own thread, so a busy UI thread can never
 /// make Windows drop them. Events are raised on the hook thread and must return quickly.
-/// The hooks only observe: nothing is ever swallowed.
+/// The hooks only observe, with two exceptions the user turns on: the mouse side button chosen to open the
+/// wheel, and the mouse wheel while a dragged file's wheel is open (it switches wheels instead of scrolling).
 /// </summary>
 public sealed class GlobalInputHook : IDisposable
 {
@@ -35,6 +36,15 @@ public sealed class GlobalInputHook : IDisposable
     public event Action<ModifierKey>? ModifierUp;
     public event Action? EscapePressed;
     public event Action? OtherKeyPressed;
+
+    /// <summary>A side button went down (1 = Back, 2 = Forward); returns true to keep it from the app under the pointer.</summary>
+    public Func<int, ScreenPoint, bool>? SideButtonDown { get; set; }
+
+    /// <summary>Whether the side button's release is kept back too (it is when its press was).</summary>
+    public Func<int, bool>? SideButtonUp { get; set; }
+
+    /// <summary>The mouse wheel turned (up is positive); returns true to keep the turn from the app under the pointer.</summary>
+    public Func<int, bool>? WheelTurned { get; set; }
 
     public void Start()
     {
@@ -65,6 +75,8 @@ public sealed class GlobalInputHook : IDisposable
         UnhookWindowsHookEx(_keyboardHook);
     }
 
+    private const int WM_MOUSEWHEEL = 0x020A, WM_XBUTTONDOWN = 0x020B, WM_XBUTTONUP = 0x020C;
+
     private IntPtr MouseProc(int nCode, IntPtr wParam, IntPtr lParam)
     {
         if (nCode >= 0)
@@ -75,6 +87,12 @@ public sealed class GlobalInputHook : IDisposable
             {
                 switch ((int)wParam)
                 {
+                    case WM_XBUTTONDOWN when SideButtonDown?.Invoke((int)(data.mouseData >> 16), point) == true:
+                        return new IntPtr(1);
+                    case WM_XBUTTONUP when SideButtonUp?.Invoke((int)(data.mouseData >> 16)) == true:
+                        return new IntPtr(1);
+                    case WM_MOUSEWHEEL when WheelTurned?.Invoke((short)(data.mouseData >> 16)) == true:
+                        return new IntPtr(1);
                     case WM_MOUSEMOVE:
                         MouseMoved?.Invoke(point);
                         break;

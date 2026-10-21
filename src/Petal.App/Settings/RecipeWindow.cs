@@ -58,6 +58,26 @@ public sealed class RecipeWindow : ToolWindow
         var adder = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
         DockPanel.SetDock(add, Dock.Right);
         adder.Children.Add(add);
+        // A search narrows the list of steps: "zip", "water", "pdf".
+        var find = new TextBox { Width = 150, Margin = new Thickness(0, 0, 8, 0), VerticalContentAlignment = VerticalAlignment.Center };
+        System.Windows.Automation.AutomationProperties.SetName(find, L.T("Search steps"));
+        var hint = new TextBlock { Text = L.T("Search steps"), IsHitTestVisible = false, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+        hint.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        var search = new Grid { Children = { find, hint } };
+        find.TextChanged += (_, _) =>
+        {
+            hint.Visibility = find.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            var query = find.Text.Trim();
+            foreach (ComboBoxItem item in _kind.Items)
+                item.Visibility = query.Length == 0 || (item.Content as string ?? "").Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || item.Tag is RecipeStepKind k && k.ToString().Contains(query, StringComparison.OrdinalIgnoreCase)
+                    ? Visibility.Visible : Visibility.Collapsed;
+            if (_kind.SelectedItem is ComboBoxItem { Visibility: not Visibility.Visible })
+                _kind.SelectedItem = _kind.Items.OfType<ComboBoxItem>().FirstOrDefault(i => i.Visibility == Visibility.Visible);
+            add.IsEnabled = _kind.SelectedItem is not null;
+        };
+        DockPanel.SetDock(search, Dock.Left);
+        adder.Children.Add(search);
         adder.Children.Add(_kind);
         Body.Children.Add(adder);
 

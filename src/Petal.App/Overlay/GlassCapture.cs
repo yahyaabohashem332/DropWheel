@@ -60,7 +60,7 @@ public static class GlassCapture
         return bitmap;
     }
 
-    private static byte[]? CaptureScreen(int left, int top, int width, int height)
+    internal static byte[]? CaptureScreen(int left, int top, int width, int height)
     {
         IntPtr screen = GetDC(IntPtr.Zero);
         IntPtr memory = CreateCompatibleDC(screen);

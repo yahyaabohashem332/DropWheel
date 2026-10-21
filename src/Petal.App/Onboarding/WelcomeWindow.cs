@@ -69,8 +69,104 @@ public sealed class WelcomeWindow : ToolWindow
         Body.Children.Add(steps);
 
         Body.Children.Add(TryIt());
+        Body.Children.Add(Exercise());
+        // While this window is open the wheel only says what it would do: practice changes nothing.
+        Practice.Start();
+        Practice.Chosen += OnPracticeChoice;
         Loaded += (_, _) => _demo.Start();
-        Closed += (_, _) => _demo.Stop();
+        Closed += (_, _) =>
+        {
+            _demo.Stop();
+            Practice.Chosen -= OnPracticeChoice;
+            Practice.Stop();
+        };
+    }
+
+    // ---------- the exercise: three things to try, ticked off as they happen ----------
+
+    private readonly (TextBlock Mark, TextBlock Text)[] _goals = new (TextBlock, TextBlock)[3];
+    private readonly bool[] _done = new bool[3];
+    private readonly StackPanel _finish = new() { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 10, 0, 0) };
+    private readonly TextBlock _said = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0), FontSize = 12 };
+    private bool _keyboardTry;
+
+    private UIElement Exercise()
+    {
+        var panel = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
+        var heading = Text("Three things to try", "Petal.Section");
+        heading.FontSize = 13;
+        panel.Children.Add(heading);
+        string[] goals =
+        [
+            "Convert it: drag the photo, tap Shift, drop it on a format.",
+            "Find the tools: drag it again and tap Ctrl.",
+            "Use the keyboard: open the wheel with the button, then press 1.",
+        ];
+        for (int i = 0; i < goals.Length; i++)
+        {
+            var mark = new TextBlock { Text = "○", Width = 22, FontSize = 14, VerticalAlignment = VerticalAlignment.Top };
+            mark.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+            var text = Text(goals[i], "Petal.Body");
+            text.TextWrapping = TextWrapping.Wrap;
+            _goals[i] = (mark, text);
+            var row = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
+            DockPanel.SetDock(mark, Dock.Left);
+            row.Children.Add(mark);
+            row.Children.Add(text);
+            panel.Children.Add(row);
+        }
+        var open = new Button { Content = L.T("Open the Wheel for the Photo"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(22, 8, 0, 0) };
+        open.Click += (_, _) =>
+        {
+            _keyboardTry = true;
+            Interop.NativeMethods.GetCursorPos(out var cursor);
+            App.Current?.Controller?.OpenWheelNow([SampleFile.Ensure()], new Input.ScreenPoint(cursor.X, cursor.Y));
+        };
+        panel.Children.Add(open);
+        _said.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        _said.Text = L.T("Nothing is made while you practise: the wheel says what it would do.");
+        panel.Children.Add(_said);
+        var tour = new Button { Content = L.T("Take the Tour of Settings"), Margin = new Thickness(0, 0, 8, 0) };
+        tour.Click += (_, _) =>
+        {
+            SettingsStore.Current.OnboardingDone = true;
+            SettingsStore.Save();
+            Close();
+            SettingsWindow.ShowTour();
+        };
+        var well = Text("You've got it.", "Petal.Section");
+        well.FontSize = 14;
+        _finish.Children.Add(well);
+        _finish.Children.Add(Text("That is all Petal needs: drag, tap, drop. Settings has the rest, and the tour shows where.", "Petal.Caption"));
+        _finish.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0), Children = { tour } });
+        panel.Children.Add(_finish);
+        return panel;
+    }
+
+    private void OnPracticeChoice(Overlay.WheelItem item, IReadOnlyList<string> files, string page, string said) => Dispatcher.BeginInvoke(() =>
+    {
+        _said.Text = said;
+        if (item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite && page == "files:Conversions")
+            Tick(0);
+        if (page == "files:Tools")
+            Tick(1);
+        if (_keyboardTry)
+        {
+            Tick(2);
+            _keyboardTry = false;
+        }
+    });
+
+    private void Tick(int goal)
+    {
+        if (_done[goal]) return;
+        _done[goal] = true;
+        var (mark, text) = _goals[goal];
+        mark.Text = "✓";
+        mark.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Success");
+        text.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        if (_done.All(d => d))
+            _finish.Visibility = Visibility.Visible;
     }
 
     private static UIElement Step(string number, string title, string text)
@@ -117,7 +213,7 @@ public sealed class WelcomeWindow : ToolWindow
         var title = Text("Try it: drag this photo");
         title.FontWeight = FontWeights.SemiBold;
         text.Children.Add(title);
-        text.Children.Add(Text("Drag it anywhere, tap Shift, and drop it on a format. The copy lands in Petal's samples folder.", "Petal.Caption"));
+        text.Children.Add(Text("Drag it anywhere, tap Shift, and drop it on a format. While this window is open, nothing is made: you're practising.", "Petal.Caption"));
         row.Children.Add(text);
         tile.Child = row;
 

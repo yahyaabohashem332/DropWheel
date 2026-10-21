@@ -26,6 +26,16 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
                 CopyFiles(paths);
                 Toast(at, paths.Count == 1 ? L.T("Copied") : L.P(paths.Count, "Copied {0} item", "Copied {0} items"), L.T("Paste in File Explorer with Ctrl+V"));
                 break;
+            case FileActionId.CopyName:
+                Clipboard.SetText(string.Join(Environment.NewLine, paths.Select(p => Path.GetFileName(p.TrimEnd('\\')))));
+                Toast(at, paths.Count == 1 ? L.T("Name copied") : L.P(paths.Count, "{0} name copied", "{0} names copied"), paths.Count == 1 ? Path.GetFileName(paths[0].TrimEnd('\\')) : L.T("One name per line"));
+                break;
+            case FileActionId.OpenInCode:
+                OpenInCode(paths, at);
+                break;
+            case FileActionId.OpenWith:
+                OpenWithWindow.Show(paths, at);
+                break;
             case FileActionId.CopyPath:
                 Clipboard.SetText(string.Join(Environment.NewLine, paths));
                 Toast(at, paths.Count == 1 ? L.T("Path copied") : L.P(paths.Count, "{0} path copied", "{0} paths copied"), paths.Count == 1 ? paths[0] : L.T("One path per line"));
@@ -146,6 +156,83 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             var card = HudCard.ShowAt(at, "Moved", "");
             card.Succeed(moved.Count == 1 ? L.T("Moved") : L.P(moved.Count, "Moved {0} item", "Moved {0} items"), Path.GetFileName(destination), () => ExplorerSelection.Reveal(moved));
         }
+    }
+
+    /// <summary>Files or folders in Visual Studio Code, one window for all of them.</summary>
+    private static void OpenInCode(IReadOnlyList<string> paths, ScreenPoint at)
+    {
+        if (Overlay.CodeEditor.Path is not { } code)
+        {
+            HudCard.ShowAt(at, L.T("Open in VS Code"), "").Fail(L.T("Open in VS Code"), L.T("VS Code isn't installed"));
+            return;
+        }
+        var start = new ProcessStartInfo(code) { UseShellExecute = false };
+        foreach (var path in paths)
+            start.ArgumentList.Add(path);
+        Process.Start(start);
+    }
+
+    /// <summary>
+    /// Copies or moves files onto a folder petal with Windows' own copy engine (its progress and its questions
+    /// about names already there). History keeps it: copies go to the Recycle Bin on undo, moved files go back.
+    /// </summary>
+    public Task ToFolderAsync(IReadOnlyList<string> paths, Wheels.FolderDestination destination, ScreenPoint at)
+    {
+        var folder = destination.Folder;
+        var name = destination.Name ?? Path.GetFileName(folder.TrimEnd('\\'));
+        if (!Directory.Exists(folder))
+        {
+            HudCard.ShowAt(at, name, "").Fail(name, L.T("The folder isn't there any more"));
+            return Task.CompletedTask;
+        }
+        var done = new List<string>();
+        var renames = new List<Jobs.RenamedPath>();
+        foreach (var path in paths)
+        {
+            var target = Path.Combine(folder, Path.GetFileName(path.TrimEnd('\\')));
+            if (string.Equals(Path.GetFullPath(target), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
+                continue;
+            try
+            {
+                if (destination.Move)
+                {
+                    if (Directory.Exists(path))
+                        FileSystem.MoveDirectory(path, target, UIOption.AllDialogs, UICancelOption.DoNothing);
+                    else
+                        FileSystem.MoveFile(path, target, UIOption.AllDialogs, UICancelOption.DoNothing);
+                }
+                else if (Directory.Exists(path))
+                {
+                    FileSystem.CopyDirectory(path, target, UIOption.AllDialogs, UICancelOption.DoNothing);
+                }
+                else
+                {
+                    FileSystem.CopyFile(path, target, UIOption.AllDialogs, UICancelOption.DoNothing);
+                }
+                if (File.Exists(target) || Directory.Exists(target))
+                {
+                    done.Add(target);
+                    if (destination.Move && !File.Exists(path) && !Directory.Exists(path))
+                        renames.Add(new Jobs.RenamedPath(path, target));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"{(destination.Move ? "Moving" : "Copying")} {path} to {folder}");
+            }
+        }
+        if (done.Count == 0)
+            return Task.CompletedTask;
+        if (destination.Move)
+            Jobs.History.Add(L.F("Moved to {0}", name), paths, [], renames);
+        else
+            Jobs.History.Add(L.F("Copied to {0}", name), paths, done);
+        var card = HudCard.ShowAt(at, name, "");
+        var title = destination.Move
+            ? done.Count == 1 ? L.T("Moved") : L.P(done.Count, "Moved {0} item", "Moved {0} items")
+            : done.Count == 1 ? L.T("Copied") : L.P(done.Count, "Copied {0} item", "Copied {0} items");
+        card.Succeed(title, name, () => ExplorerSelection.Reveal(done));
+        return Task.CompletedTask;
     }
 
     private static void OpenTerminal(string path)

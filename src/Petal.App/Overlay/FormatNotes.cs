@@ -1,0 +1,69 @@
+using Petal.Core.Formats;
+
+namespace Petal.App.Overlay;
+
+/// <summary>
+/// A few plain words on what each format is good for, shown in the wheel's centre under its name
+/// ("AVIF · Smallest, same look"), so choosing a format needs no knowledge of formats.
+/// </summary>
+public static class FormatNotes
+{
+    private static readonly Dictionary<string, string> Notes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["jpg"] = "Opens anywhere",
+        ["png"] = "Lossless, sharp",
+        ["webp"] = "Small, for the web",
+        ["heic"] = "Very small photos",
+        ["tiff"] = "Lossless, for print",
+        ["avif"] = "Smallest, same look",
+        ["bmp"] = "Uncompressed",
+        ["ico"] = "A Windows icon",
+        ["svg"] = "Scales to any size",
+        ["psd"] = "Photoshop layers",
+        ["psb"] = "Large Photoshop",
+        ["pdf"] = "To print or send",
+        ["gif"] = "A loop for chats",
+        ["mp3"] = "Plays anywhere",
+        ["m4a"] = "Small, Apple audio",
+        ["wav"] = "Uncompressed audio",
+        ["flac"] = "Lossless audio",
+        ["ogg"] = "Open audio",
+        ["opus"] = "Tiny voice files",
+        ["aiff"] = "Uncompressed, Mac",
+        ["wma"] = "Windows audio",
+        ["mp4"] = "Plays anywhere",
+        ["mov"] = "Apple video",
+        ["mkv"] = "Many tracks",
+        ["webm"] = "Video for the web",
+        ["avi"] = "Older video",
+        ["wmv"] = "Windows video",
+        ["docx"] = "Word document",
+        ["odt"] = "Open text document",
+        ["rtf"] = "Simple formatting",
+        ["md"] = "Text with headings",
+        ["html"] = "A web page",
+        ["txt"] = "Just the words",
+        ["epub"] = "An e-book",
+        ["pptx"] = "PowerPoint slides",
+        ["ppt"] = "Older PowerPoint",
+        ["xlsx"] = "Excel workbook",
+        ["xls"] = "Older Excel",
+        ["ods"] = "Open spreadsheet",
+        ["csv"] = "Table as text",
+        ["tsv"] = "Tab-separated table",
+        ["srt"] = "Common subtitles",
+        ["vtt"] = "Web subtitles",
+        ["zip"] = "Opens anywhere",
+        ["tar"] = "Linux archive",
+        ["tgz"] = "Compressed tar",
+        ["7z"] = "Smallest archive",
+        ["ase"] = "Adobe swatches",
+        ["aco"] = "Photoshop swatches",
+    };
+
+    /// <summary>The note in English (translated where it is shown), or null for a format without one.</summary>
+    public static string? For(FileFormat format) => Notes.GetValueOrDefault(format.Id);
+
+    /// <summary>Every note, for the translation check.</summary>
+    public static IEnumerable<string> All => Notes.Values.Distinct();
+}

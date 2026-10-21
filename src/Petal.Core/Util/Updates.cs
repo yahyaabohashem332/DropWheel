@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -25,6 +26,10 @@ public sealed record UpdateManifest
     [JsonPropertyName("notes")]
     public string? Notes { get; init; }
 
+    /// <summary>ECDSA P-256 over <see cref="Updates.SignedText"/>, made with the maker's private key.</summary>
+    [JsonPropertyName("signature")]
+    public string? Signature { get; init; }
+
     /// <summary>Where the installer is, resolved against the feed.</summary>
     [JsonIgnore]
     public Uri? InstallerUri { get; init; }
@@ -34,11 +39,47 @@ public sealed class UpdateException(string message, Exception? inner = null) : E
 
 /// <summary>
 /// Checks a feed for a newer Petal and fetches its installer. Feeds and installers must come over
-/// HTTPS (or from a file path, for networks that share updates from a folder), and an installer is
-/// only kept when its SHA-256 matches the feed.
+/// HTTPS (or from a file path, for networks that share updates from a folder); a newer version is only
+/// offered when the feed is signed with the maker's key, and an installer is only kept when its SHA-256
+/// matches the signed feed. Someone who can change the feed can't offer an installer of their own.
 /// </summary>
 public static class Updates
 {
+    /// <summary>The public half of the key Petal's releases are signed with (SubjectPublicKeyInfo, base64).</summary>
+    public const string PetalKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgqBPwVYZDvJdiK9lUlPOg/a3EtHwXwMlWUpDnQMyyeTL9kn/UqL3FFfTuhMMdquIbxACsSqO6rp3alMJA361aQ==";
+
+    /// <summary>The key a feed must be signed with: Petal's, or a test's own.</summary>
+    public static string TrustedKey { get; set; } = PetalKey;
+
+    /// <summary>What a feed's signature covers: the version, where the installer is, its checksum and size.</summary>
+    public static string SignedText(UpdateManifest manifest) =>
+        $"petal-update\n{manifest.Version}\n{manifest.Url}\n{manifest.Sha256.ToUpperInvariant()}\n{manifest.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+
+    /// <summary>Signs a feed, as build.ps1 does (for tests and tools).</summary>
+    public static string Sign(UpdateManifest manifest, ECDsa key) =>
+        Convert.ToBase64String(key.SignData(Encoding.UTF8.GetBytes(SignedText(manifest)), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation));
+
+    /// <summary>True when the feed carries a good signature from <see cref="TrustedKey"/>.</summary>
+    public static bool IsSigned(UpdateManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.Signature))
+            return false;
+        try
+        {
+            using var key = ECDsa.Create();
+            key.ImportSubjectPublicKeyInfo(Convert.FromBase64String(TrustedKey), out _);
+            return key.VerifyData(Encoding.UTF8.GetBytes(SignedText(manifest)), Convert.FromBase64String(manifest.Signature), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+        catch (CryptographicException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>The newer release the feed offers, or null when this one is current.</summary>
     public static async Task<UpdateManifest?> CheckAsync(string feed, Version current, HttpClient http, CancellationToken cancellationToken = default)
     {
@@ -70,6 +111,8 @@ public static class Updates
 
         if (Normalize(offered) <= Normalize(current))
             return null;
+        if (!IsSigned(manifest))
+            throw new UpdateException("The update isn't signed by Petal's maker, so it isn't offered.");
         var installer = Uri.TryCreate(feedUri, manifest.Url, out var resolved) ? resolved : null;
         if (installer is null || !(installer.Scheme == Uri.UriSchemeHttps || installer.IsFile))
             throw new UpdateException("The update feed points to an address that isn't secure.");

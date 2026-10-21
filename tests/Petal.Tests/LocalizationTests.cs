@@ -35,6 +35,12 @@ public partial class LocalizationTests
         "en-US",
         // The development switch that runs a wheel choice on a folder ("folder:OrganizeFolder").
         "folder:",
+        // Keycap names, cultures and date patterns for the statistics, and the line a PowerShell petal starts with.
+        "Escape", "ar-EG", "en-GB", "d MMM", "d MMM yyyy", "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+        // Thread and message-window names.
+        "Petal app list", "Petal keep awake", "Petal wheel shortcuts",
+        // Apps the ready-made wheels are for, by their own names.
+        "VS Code", "Word", "Excel", "PowerPoint", "Teams", "Zoom", "Photoshop", "Slack", "Discord", "Bluetooth",
         // Sample requests and search results in the design snapshots, already in both languages.
         // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
         "f/", "ISO", "mm", "FNumber", "Software",
@@ -203,7 +209,12 @@ public partial class LocalizationTests
             && !Regex.IsMatch(s, @"^[A-Z0-9_]{1,6}$")                  // format codes such as PNG
             && !Regex.IsMatch(s, @"^[a-z0-9_\-]+(:[a-z0-9_\-=]+)?$")   // filter names
             && !Regex.IsMatch(s, @"^[0-9A-F]{8}-[0-9A-F]{4}-")         // COM ids
-            && !Regex.IsMatch(s, @"^M[\s\d]");                         // path data
+            && !Regex.IsMatch(s, @"^M[\s\d]")                          // path data
+            && !Regex.IsMatch(s, @"^(?:(?:Ctrl|Alt|Shift|Win)\+)+\S+(?: (?:(?:Ctrl|Alt|Shift|Win)\+)*\S+)*$") // key chords
+            && !Regex.IsMatch(s, @"^[A-Z0-9]+(?:_[A-Z0-9]+)+$")        // environment variables
+            && !Regex.IsMatch(s, @"^[a-z]+\.[a-z]+$")                      // action ids such as system.darkmode
+            && !Regex.IsMatch(s, @"^[a-z]+:(?:[A-Z][A-Za-z]*)?$")      // key prefixes such as tool: and files:Tools
+            && !Regex.IsMatch(s, @"^(?:ms-[a-z\-]+|shell):");                // Windows addresses
     }
 
     private static string RepoRoot()
@@ -217,7 +228,7 @@ public partial class LocalizationTests
     [GeneratedRegex(@"(?<prefix>\$@|@\$|\$|@)?""(?<body>(?:[^""\\\n]|\\.)*)""")]
     private static partial Regex MakeLiteral();
 
-    [GeneratedRegex(@"\bLog\.(Info|Error|Warn|Debug)|\[DllImport|\[LibraryImport|ArgumentList|Arguments\s*=|Registry|SetValue|GetValue|nameof\(|FindResource|SetResourceReference|Path\.Combine|EntryPoint|""-[a-z]|const string \w*(Key|Id|Name)\b")]
+    [GeneratedRegex(@"\bLog\.(Info|Error|Warn|Debug)|\[DllImport|\[LibraryImport|ArgumentList|Arguments\s*=|Registry|SetValue|GetValue|nameof\(|FindResource|SetResourceReference|Path\.Combine|EntryPoint|""-[a-z]|const string \w*(Key|Id|Name)\b|\bKey\.[A-Z]|InvokeMember\(|GetTypeFromProgID")]
     private static partial Regex MakeSkipLine();
 
     [GeneratedRegex(@"L\.P\([^,]+,\s*""((?:[^""\\]|\\.)*)""")]

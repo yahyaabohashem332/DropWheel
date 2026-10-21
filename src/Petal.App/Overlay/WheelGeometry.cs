@@ -3,6 +3,14 @@ using System.Windows.Media;
 
 namespace Petal.App.Overlay;
 
+/// <summary>How much of the middle of the wheel cancels when the drop or click lands there.</summary>
+public enum CancelZone
+{
+    Small,
+    Medium,
+    Large,
+}
+
 /// <summary>
 /// Shape of the wheel, in device-independent pixels around a centre at (0, 0).
 /// Petals are annular sectors separated by gaps of constant width, with rounded corners.
@@ -76,13 +84,24 @@ public static class WheelGeometry
 
     public static Point LabelPosition(int index, int count) => At(LabelRadius, Angle(index, count));
 
-    /// <summary>Index of the petal under a point relative to the centre, or null over the hub, a gap or outside.</summary>
-    public static int? HitTest(Vector offset, int count)
+    /// <summary>The cancelling zone in the middle: the hub alone, or a little or a lot of the petals' inner ends too.</summary>
+    public static double CancelRadius(CancelZone zone) => zone switch
+    {
+        CancelZone.Medium => 60,
+        CancelZone.Large => 72,
+        _ => PetalInner,
+    };
+
+    /// <summary>
+    /// Index of the petal under a point relative to the centre, or null over the hub, a gap or outside.
+    /// Nearer the centre than <paramref name="inner"/> counts as the hub: letting go there cancels.
+    /// </summary>
+    public static int? HitTest(Vector offset, int count, double inner = PetalInner)
     {
         if (count == 0)
             return null;
         double r = offset.Length;
-        if (r < PetalInner || r > PetalOuter + 2)
+        if (r < Math.Max(PetalInner, inner) || r > PetalOuter + 2)
             return null;
         if (count == 1)
             return 0;

@@ -3,10 +3,13 @@ using System.Windows.Threading;
 using Petal.App.Actions;
 using Petal.App.Input;
 using Petal.App.Jobs;
+using Petal.App.Onboarding;
 using Petal.App.Overlay;
 using Petal.App.Settings;
+using Petal.App.Stats;
 using Petal.App.Tools;
 using Petal.App.Util;
+using Petal.App.Wheels;
 using Petal.Core.Actions;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
@@ -15,8 +18,8 @@ using Petal.App.Localization;
 
 namespace Petal.App;
 
-/// <summary>Wires the wheel to conversions, tools and file actions.</summary>
-public sealed class PetalController : IDisposable
+/// <summary>Wires the wheel to conversions, tools, file actions and the wheels without files.</summary>
+public sealed class PetalController : IDisposable, IWheelHost
 {
     private readonly WheelWindow _wheel;
     private readonly GestureController _gestures;
@@ -29,7 +32,7 @@ public sealed class PetalController : IDisposable
 
     public PetalController(ConverterRegistry converters, Dispatcher ui)
     {
-        Sound = new FeedbackSound { Enabled = SettingsStore.Current.Sounds };
+        Sound = new FeedbackSound { Enabled = SettingsStore.Current.Sounds, Style = SettingsStore.Current.SoundStyle };
         _wheel = new WheelWindow(Sound)
         {
             ContentProvider = BuildContent,
@@ -37,18 +40,40 @@ public sealed class PetalController : IDisposable
             HubSubtitleProvider = files => Look(files) is { } look ? FolderDrop.Hub(look).Subtitle : null,
             KeyLabel = KeyLabel,
             ModeForKey = ModeForKey,
+            OptionsProvider = () => OptionsFrom(SettingsStore.Current),
+            Remembered = (page, content) => SettingsStore.Current.RememberLastPetal ? WheelMemory.IndexIn(page, content) : null,
         };
         _wheel.ItemDropped += OnItemDropped;
+        _wheel.EntryChosen += OnEntryChosen;
+        _wheel.UnavailableChosen += (item, at) => Card(at, L.T(item.Name), L.T(item.Unavailable ?? ""), false);
+        _wheel.Chose += (page, item) =>
+        {
+            if (SettingsStore.Current.RememberLastPetal)
+                WheelMemory.Remember(page, item);
+            if (!Practice.IsOn)
+                Statistics.RecordPetal(item.Key, 0, 0, 0, item.Name);
+        };
         _wheel.ShowHints = SettingsStore.Current.ShowKeyHints;
         SettingsStore.Saved += s => _wheel.ShowHints = s.ShowKeyHints;
         _jobs = new JobRunner(converters);
         _tools = new ToolLauncher(_jobs);
         _actions = new FileActionRunner(_jobs);
-        _gestures = new GestureController(_wheel, ui);
+        _gestures = new GestureController(_wheel, ui)
+        {
+            MouseTriggerPressed = OnMouseTrigger,
+        };
         _folders = new FolderWatcher(_jobs, ui);
-        SettingsStore.Saved += s => Sound.Enabled = s.Sounds;
+        SettingsStore.Saved += s =>
+        {
+            Sound.Enabled = s.Sounds;
+            Sound.Style = s.SoundStyle;
+        };
         SettingsStore.Saved += s => WatchFolders(s);
     }
+
+    /// <summary>The wheel's looks and behaviour from the settings.</summary>
+    public static WheelOptions OptionsFrom(AppSettings s) =>
+        new(s.CancelZone, s.GrowPetal, s.WheelMotion, s.ShowPetalNames, s.ShowNumberKeys, s.ScrollSwitchesWheels, s.WheelStyle);
 
     /// <summary>(Re)starts the watched folders when their rules changed.</summary>
     private void WatchFolders(AppSettings settings)
@@ -64,6 +89,8 @@ public sealed class PetalController : IDisposable
 
     public JobRunner Jobs => _jobs;
 
+    public ToolLauncher Tools => _tools;
+
     internal WheelWindow CreateWheelForSnapshots() => _wheel;
 
     public bool IsWheelOpen => _wheel.IsOpen;
@@ -73,8 +100,30 @@ public sealed class PetalController : IDisposable
     public void CloseWheel() => _wheel.Cancel();
 
     /// <summary>Opens the keyboard-driven wheel at once, for files chosen with the shortcut.</summary>
-    public void OpenWheelNow(IReadOnlyList<string> files, ScreenPoint at) =>
-        _wheel.OpenInteractive(files, at, files.Any(Directory.Exists) ? WheelMode.Actions : WheelMode.Conversions);
+    public void OpenWheelNow(IReadOnlyList<string> files, ScreenPoint at)
+    {
+        var mode = files.Any(Directory.Exists) ? WheelMode.Actions : WheelMode.Conversions;
+        // Back on the wheel used last for files, when it has something for these.
+        if (SettingsStore.Current.RememberLastPetal && WheelMemory.LastFileMode is { } last && !files.Any(Directory.Exists) && !BuildContent(last, files).IsEmpty)
+            mode = last;
+        _wheel.OpenInteractive(files, at, mode);
+    }
+
+    /// <summary>
+    /// The wheels without files over the window in front: its app's wheel first when there is one, then
+    /// quick actions, media and the user's own. With <paramref name="onlyWheel"/>, opens onto that one.
+    /// </summary>
+    public async Task OpenRingsAsync(IntPtr front, ScreenPoint at, string? onlyWheel = null)
+    {
+        await WheelActions.RefreshAsync();
+        var (pages, start) = Rings.For(SettingsStore.Current, front, onlyWheel);
+        if (pages.Count == 0)
+        {
+            Card(at, L.T("No wheels are on"), L.T("Turn one on in Settings › Wheels."), false);
+            return;
+        }
+        _wheel.OpenRings(pages, start, at);
+    }
 
     private readonly List<string> _pendingFiles = [];
     private DispatcherTimer? _pendingTimer;
@@ -96,11 +145,36 @@ public sealed class PetalController : IDisposable
             var batch = _pendingFiles.Where(p => File.Exists(p) || Directory.Exists(p)).ToList();
             _pendingFiles.Clear();
             if (batch.Count == 0) return;
-            bool anyFolder = batch.Any(Directory.Exists);
-            _wheel.OpenInteractive(batch, _pendingAt, anyFolder ? WheelMode.Actions : WheelMode.Conversions);
+            OpenWheelNow(batch, _pendingAt);
         }, Dispatcher.CurrentDispatcher);
         _pendingTimer.Stop();
         _pendingTimer.Start();
+    }
+
+    /// <summary>
+    /// A side button of the mouse: the wheel for what File Explorer has selected under the pointer, else
+    /// the wheels without files.
+    /// </summary>
+    private async void OnMouseTrigger(ScreenPoint at)
+    {
+        try
+        {
+            if (_wheel.IsOpen)
+            {
+                _wheel.Cancel();
+                return;
+            }
+            var front = Interop.NativeMethods.GetForegroundWindow();
+            var files = await Shell.ExplorerSelection.SelectionInAsync(front);
+            if (files.Count > 0)
+                OpenWheelNow(files, at);
+            else
+                await OpenRingsAsync(front, at);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Opening the wheel from the mouse");
+        }
     }
 
     private static WheelMode? ModeForKey(System.Windows.Input.Key key)
@@ -160,7 +234,9 @@ public sealed class PetalController : IDisposable
         return contents;
     }
 
-    private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files)
+    private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files) => Coloured(Content(mode, files));
+
+    private WheelContent Content(WheelMode mode, IReadOnlyList<string> files)
     {
         var convert = KeyLabel(WheelMode.Conversions);
         var actionsKey = KeyLabel(WheelMode.Actions);
@@ -173,7 +249,7 @@ public sealed class PetalController : IDisposable
         switch (mode)
         {
             case WheelMode.Actions:
-                return new WheelContent(FileActionRegistry.All.Select(WheelItem.From).ToList(), "");
+                return ActionsContent();
 
             case WheelMode.Conversions:
             {
@@ -182,7 +258,7 @@ public sealed class PetalController : IDisposable
                     return new WheelContent([], L.F("Folders can't be converted. Tap {0} for file actions.", actionsKey));
                 var targets = _jobs.Converters.AvailableTargets(formats);
                 var favourites = formats.Count == 0 ? [] : SettingsStore.Current.Favourites.Where(f => f.AppliesTo(formats, _jobs.Converters));
-                return new WheelContent(favourites.Select(WheelItem.From).Concat(targets.Select(WheelItem.From)).ToList(),
+                return new WheelContent(favourites.Select(WheelItem.From).Concat(targets.Select(WheelItem.From)).Concat(Availability.MissingConversions(formats, _jobs.Converters)).ToList(),
                     files.Count > 1
                         ? L.F("These files have no format in common. Tap {0} for file actions.", actionsKey)
                         : L.F("No conversions for this format. Tap {0} for file actions.", actionsKey));
@@ -196,9 +272,56 @@ public sealed class PetalController : IDisposable
                 var recipes = formats is null or { Count: 0 } ? [] : SettingsStore.Current.Recipes.Where(r => r.OnWheel && r.AppliesTo(formats, _jobs.Converters));
                 // The user's own petals, by extension, so they also work for files Petal doesn't know.
                 var petals = Petal.Recipes.CustomPetal.LoadAll().Where(p => p.Takes(files));
-                return new WheelContent(recipes.Select(WheelItem.From).Concat(petals.Select(WheelItem.From)).Concat(tools.Select(WheelItem.From)).ToList(),
+                return new WheelContent(recipes.Select(WheelItem.From).Concat(petals.Select(WheelItem.From)).Concat(tools.Select(t => Availability.Of(WheelItem.From(t)))).ToList(),
                     files.Count > 1 ? L.F("No tools for this selection. Tap {0} to convert or {1} for file actions.", convert, actionsKey) : L.F("No tools for this format. Tap {0} to convert or {1} for file actions.", convert, actionsKey));
             }
+        }
+    }
+
+    /// <summary>
+    /// The actions wheel: the actions chosen for it, the user's folders, and More with the rest.
+    /// </summary>
+    private static WheelContent ActionsContent()
+    {
+        var s = SettingsStore.Current;
+        var on = ActionWheel.Parse(s.ActionsOnWheel);
+        var items = on.Select(id => FileActionRegistry.All.First(a => a.Id == id)).Select(a => Availability.Of(WheelItem.From(a))).ToList();
+        foreach (var destination in s.Destinations.Take(MaxDestinations))
+            items.Add(Destination(destination));
+        var rest = FileActionRegistry.All.Where(a => !on.Contains(a.Id)).Select(a => Availability.Of(WheelItem.From(a))).ToList();
+        if (rest.Count > 0)
+            items.Add(WheelItem.Group("more-actions", "MORE", "More", "layers", rest));
+        return new WheelContent(items, "");
+    }
+
+    /// <summary>More folders than this crowd the actions wheel.</summary>
+    public const int MaxDestinations = 4;
+
+    private static WheelItem Destination(FolderDestination d)
+    {
+        var name = d.Name ?? Path.GetFileName(d.Folder.TrimEnd('\\'));
+        if (name.Length == 0) name = d.Folder;
+        return new WheelItem(name.ToUpperInvariant(), L.F(d.Move ? "Move to {0}" : "Copy to {0}", name), d.Move ? "folderInput" : "folders", d)
+        {
+            Note = d.Move ? "Moves the files here" : "Copies the files here",
+            Tint = Rings.Colour(d.Tint),
+            Unavailable = Directory.Exists(d.Folder) ? null : "The folder isn't there any more",
+            Blocked = true,
+        };
+    }
+
+    /// <summary>The colours the user gave petals, on every petal and inside groups.</summary>
+    private static WheelContent Coloured(WheelContent content)
+    {
+        var colours = SettingsStore.Current.PetalColours;
+        if (colours.Count == 0)
+            return content;
+        return content with { Items = content.Items.Select(Colour).ToList() };
+
+        WheelItem Colour(WheelItem item)
+        {
+            var tinted = colours.TryGetValue(item.Key, out var hex) && Rings.Colour(hex) is { } c ? item with { Tint = c } : item;
+            return tinted.Children is { } children ? tinted with { Children = children.Select(Colour).ToList() } : tinted;
         }
     }
 
@@ -221,8 +344,15 @@ public sealed class PetalController : IDisposable
     {
         try
         {
+            if (_wheel.PageKey.StartsWith("files:", StringComparison.Ordinal) && Enum.TryParse<WheelMode>(_wheel.PageKey["files:".Length..], out var mode))
+                WheelMemory.LastFileMode = mode;
+            if (Practice.IsOn)
+            {
+                Practice.Explain(item, files, at, _wheel.PageKey);
+                return;
+            }
             // A folder stands for the files inside it: read them all now, away from the interface.
-            if (item.Payload is not FileActionInfo && FolderContents.HasFolders(files))
+            if (item.Payload is not FileActionInfo and not FolderDestination && FolderContents.HasFolders(files))
             {
                 var contents = await Task.Run(() => FolderContents.Read(files));
                 switch (item.Payload)
@@ -259,6 +389,9 @@ public sealed class PetalController : IDisposable
                 case FileActionInfo action:
                     await _actions.RunAsync(action, files, at);
                     break;
+                case FolderDestination destination:
+                    await _actions.ToFolderAsync(files, destination, at);
+                    break;
             }
         }
         catch (Exception ex)
@@ -267,11 +400,89 @@ public sealed class PetalController : IDisposable
         }
     }
 
+    private async void OnEntryChosen(WheelItem item, ScreenPoint at, IntPtr target)
+    {
+        if (Practice.IsOn)
+        {
+            Practice.Explain(item, [], at, "ring");
+            return;
+        }
+        await EntryRunner.RunAsync(item, at, target, this);
+    }
+
+    // ---------- what petals of the wheels without files ask of Petal ----------
+
+    void IWheelHost.OpenFiles(IReadOnlyList<string> files, ScreenPoint at) => _wheel.OpenInteractive(files, at, WheelMode.Conversions);
+
+    void IWheelHost.Command(string id, ScreenPoint at) => Command(id, at);
+
+    /// <summary>Petal's own windows and switches, for the quick wheel and the tray.</summary>
+    public void Command(string id, ScreenPoint at)
+    {
+        switch (id)
+        {
+            case "settings":
+                App.Current.ShowSettings();
+                break;
+            case "history":
+                Petal.App.Tools.Windows.HistoryWindow.ShowSingle();
+                break;
+            case "search":
+                Search.SearchWindow.ShowSingle();
+                break;
+            case "scan":
+                Actions.ScanWindow.ShowSingle();
+                break;
+            case "qr":
+                Petal.App.Tools.Windows.QrWindow.ShowSingle();
+                break;
+            case "stats":
+                StatsWindow.ShowSingle();
+                break;
+            case "pause":
+                SettingsStore.Current.Paused = !SettingsStore.Current.Paused;
+                SettingsStore.Save();
+                Card(at, L.T(SettingsStore.Current.Paused ? "Petal is paused" : "Petal is on again"), "", true);
+                break;
+            case "clipboard":
+                OpenClipboard(at);
+                break;
+        }
+    }
+
+    /// <summary>The wheel for what is on the clipboard: its files, its picture or its text; a link becomes a QR code.</summary>
+    public void OpenClipboard(ScreenPoint at)
+    {
+        switch (Shell.ClipboardSource.Take())
+        {
+            case Shell.ClipboardContent.Files clip:
+                _wheel.OpenInteractive(clip.Paths, at, clip.Paths.Any(Directory.Exists) ? WheelMode.Actions : WheelMode.Conversions);
+                break;
+            case Shell.ClipboardContent.Link link:
+                Petal.App.Tools.Windows.QrWindow.ShowSingle(link.Url);
+                break;
+            default:
+                Card(at, L.T("The clipboard is empty"), L.T("Copy files, a picture or text first."), false);
+                break;
+        }
+    }
+
+    public void Card(ScreenPoint at, string title, string subtitle, bool ok)
+    {
+        var card = Hud.HudCard.ShowAt(at, title, subtitle);
+        if (ok)
+            card.Succeed(title, subtitle, null);
+        else
+            card.Fail(title, subtitle);
+    }
+
     public void Dispose()
     {
         _gestures.Dispose();
         _folders.Dispose();
         Sound.Dispose();
         _wheel.Close();
+        SystemToggles.SetKeepAwake(false);
+        Statistics.Save();
     }
 }

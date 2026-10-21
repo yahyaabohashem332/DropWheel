@@ -17,7 +17,7 @@ using Petal.App.Localization;
 namespace Petal.App.Settings;
 
 /// <summary>Petal's only "main" window. Every change is saved immediately.</summary>
-public sealed class SettingsWindow : ToolWindow
+public sealed partial class SettingsWindow : ToolWindow
 {
     private static SettingsWindow? _open;
     private readonly AppSettings _s = SettingsStore.Current;
@@ -59,7 +59,10 @@ public sealed class SettingsWindow : ToolWindow
 
         page.Children.Add(Hero());
         page.Children.Add(Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()));
+        page.Children.Add(Card("Wheels", "Wheels that need no files: quick actions, what's playing, shortcuts for the app in front, and your own. The quick shortcut opens them when nothing is selected; Tab or the mouse wheel goes to the next.", WheelsSection()));
         page.Children.Add(Card("Appearance", null, AppearanceSection()));
+        page.Children.Add(Card("The Wheel", "How the wheel behaves under the pointer.", BehaviourSection()));
+        page.Children.Add(Card("Actions Wheel", "The actions on the wheel itself (the rest are under More), and folders that dropped files are copied or moved to.", ActionsWheelSection()));
         page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
         page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));
         page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
@@ -68,8 +71,12 @@ public sealed class SettingsWindow : ToolWindow
         page.Children.Add(Card("Results", null, OutputSection()));
         page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
         page.Children.Add(Card("Helpers", "Petal uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
+        page.Children.Add(Card("Statistics", "What Petal has done for you, counted on this PC only.", StatisticsSection()));
         page.Children.Add(Card("General", null, GeneralSection()));
+        page.Children.Add(Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()));
         page.Children.Add(Card("Updates", null, UpdatesSection()));
+        _scroll = scroll;
+        WatchForChanges();
     }
 
     private static string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0";
@@ -101,7 +108,13 @@ public sealed class SettingsWindow : ToolWindow
         var history = new Button { Content = L.T("History"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
         history.SetResourceReference(ForegroundProperty, "Petal.Accent");
         history.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
-        text.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { how, qr, history } });
+        var practice = new Button { Content = L.T("Practice"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
+        practice.SetResourceReference(ForegroundProperty, "Petal.Accent");
+        practice.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
+        var tour = new Button { Content = L.T("Take the Tour"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
+        tour.SetResourceReference(ForegroundProperty, "Petal.Accent");
+        tour.Click += (_, _) => StartTour();
+        text.Children.Add(new WrapPanel { Orientation = Orientation.Horizontal, Children = { how, practice, tour, qr, history } });
         grid.Children.Add(text);
         return grid;
     }
@@ -130,8 +143,23 @@ public sealed class SettingsWindow : ToolWindow
         panel.Children.Add(_keyWarning);
         ValidateKeys();
         panel.Children.Add(Row("Quick shortcut", ShortcutPicker(), 150, 16));
-        panel.Children.Add(Text("With files selected in File Explorer, it opens the wheel for them. Otherwise it opens Petal.", "Petal.Caption").WithMargin(150, 4, 0, 0));
-        panel.Children.Add(Switch("Use the clipboard", "With nothing selected, the shortcut opens the wheel for what you copied: files, a screenshot or text. A copied link becomes a QR code.", _s.ClipboardShortcut, v => _s.ClipboardShortcut = v));
+        panel.Children.Add(Text("With files selected in File Explorer, it opens the wheel for them.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        var nothing = Choice([(Wheels.NothingSelected.Wheels, "The wheels without files"), (Wheels.NothingSelected.Clipboard, "The clipboard's wheel"), (Wheels.NothingSelected.Petal, "Petal's settings")], _s.NothingSelected);
+        nothing.SelectionChanged += (_, _) =>
+        {
+            _s.NothingSelected = ValueOf<Wheels.NothingSelected>(nothing);
+            Save();
+        };
+        panel.Children.Add(Row("Nothing selected", nothing, 150, 10));
+        panel.Children.Add(Text("The clipboard's wheel is also a petal on the quick wheel: files, a screenshot or text you copied. A copied link becomes a QR code.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        var mouse = Choice([(Wheels.MouseTrigger.None, "None"), (Wheels.MouseTrigger.Back, "Back side button"), (Wheels.MouseTrigger.Forward, "Forward side button")], _s.MouseButton);
+        mouse.SelectionChanged += (_, _) =>
+        {
+            _s.MouseButton = ValueOf<Wheels.MouseTrigger>(mouse);
+            Save();
+        };
+        panel.Children.Add(Row("Mouse button", mouse, 150, 12));
+        panel.Children.Add(Text("Opens the wheel where the pointer is, like the shortcut. The button no longer goes back or forward in other apps.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         _shortcutWarning.Style = (Style)FindResource("Petal.Caption");
         _shortcutWarning.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
         _shortcutWarning.Margin = new Thickness(150, 6, 0, 0);
@@ -266,15 +294,30 @@ public sealed class SettingsWindow : ToolWindow
             Save();
         };
         panel.Children.Add(Row("Theme", theme, 150, 12));
-        var accent = Segments([(false, "Petal violet"), (true, "Windows accent")], _s.UseWindowsAccent);
-        accent.Changed += v =>
-        {
-            _s.UseWindowsAccent = v;
-            Theme.Configure(_s.Theme, v);
-            Save();
-        };
-        panel.Children.Add(Row("Accent colour", accent, 150, 10));
+        panel.Children.Add(Row("Accent colour", AccentPicker(), 150, 10));
+        var style = Segments([(Overlay.WheelStyle.Glass, "Glass"), (Overlay.WheelStyle.Solid, "Solid"), (Overlay.WheelStyle.Mono, "Mono")], _s.WheelStyle);
+        style.Changed += v => { _s.WheelStyle = v; Save(); };
+        panel.Children.Add(Row("Wheel", style, 150, 10));
+        panel.Children.Add(Text("Glass shows what is behind the wheel, frosted. Mono leaves out the accent colour.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        var motion = Choice([(Overlay.WheelMotion.Bloom, "Bloom"), (Overlay.WheelMotion.Pop, "Pop"), (Overlay.WheelMotion.Fade, "Fade"), (Overlay.WheelMotion.Unfold, "Unfold"), (Overlay.WheelMotion.None, "None")], _s.WheelMotion);
+        motion.SelectionChanged += (_, _) => { _s.WheelMotion = ValueOf<Overlay.WheelMotion>(motion); Save(); };
+        panel.Children.Add(Row("Opening", motion, 150, 10));
+        var names = Segments([(true, "Names"), (false, "Icons only")], _s.ShowPetalNames);
+        names.Changed += v => { _s.ShowPetalNames = v; Save(); };
+        panel.Children.Add(Row("Petals show", names, 150, 10));
+        panel.Children.Add(Text("Formats always show their names.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        var colours = new Button { Content = L.T("Petal Colours…"), HorizontalAlignment = HorizontalAlignment.Left };
+        colours.Click += (_, _) => new PetalColoursWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
+        panel.Children.Add(Row("Colours", colours, 150, 10));
         panel.Children.Add(Switch("Sounds", "A soft tick as you move across the wheel.", _s.Sounds, v => _s.Sounds = v));
+        var sound = Segments([(Overlay.SoundStyle.Soft, "Soft"), (Overlay.SoundStyle.Crisp, "Crisp"), (Overlay.SoundStyle.Wood, "Wood")], _s.SoundStyle);
+        sound.Changed += v =>
+        {
+            _s.SoundStyle = v;
+            Save();
+            App.Current?.Controller?.Sound.Preview();
+        };
+        panel.Children.Add(Row("Sound", sound, 150, 8));
         panel.Children.Add(Switch("Key hints", "Show Shift · Ctrl · Alt above the wheel.", _s.ShowKeyHints, v => _s.ShowKeyHints = v));
         return panel;
     }
@@ -865,7 +908,7 @@ public sealed class SettingsWindow : ToolWindow
             Save();
         };
         panel.Children.Add(Row("Update address", feed, 150, 12));
-        panel.Children.Add(Text("Where Petal looks for new versions: an update.json over https, or in a shared folder. Leave it empty and Petal never looks.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Text("Where Petal looks for new versions: an update.json over https, or in a shared folder. Leave it empty and Petal never looks. Only updates signed by Petal's maker are offered, and each installer is checked before it runs.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         panel.Children.Add(Switch("Check once a day", "Show a small card when a new version is out. Nothing is installed without asking.", _s.CheckForUpdates, v => _s.CheckForUpdates = v));
         var status = Text("", "Petal.Caption");
         status.TextWrapping = TextWrapping.Wrap;
@@ -894,6 +937,7 @@ public sealed class SettingsWindow : ToolWindow
                 else
                 {
                     status.Text = L.F("Petal {0} is available", update.Version);
+                    Shell.UpdateService.Offer(update);
                     Shell.UpdateWindow.ShowFor(update);
                 }
             }
@@ -979,6 +1023,9 @@ public sealed class SettingsWindow : ToolWindow
         };
         card.SetResourceReference(Border.BackgroundProperty, "Petal.Surface");
         card.SetResourceReference(Border.BorderBrushProperty, "Petal.ControlBorder");
+        // For the tour, which points at each card by its title.
+        _cards[title] = card;
+        System.Windows.Automation.AutomationProperties.SetName(card, L.T(title));
         return card;
     }
 }

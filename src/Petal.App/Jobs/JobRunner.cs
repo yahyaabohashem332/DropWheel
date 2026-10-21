@@ -152,6 +152,7 @@ public sealed class JobRunner(ConverterRegistry converters)
         // Files from a dropped folder keep their results' place in its copy until this run ends.
         using var held = FolderLease.HoldFor(work.Select(w => w.InputPath));
 
+        long startedAt = Environment.TickCount64;
         var card = HudCard.ShowAt(at, runningTitle, $"{work[0].Label} · 0%");
         using var cts = new CancellationTokenSource();
         card.CancelRequested += cts.Cancel;
@@ -238,7 +239,29 @@ public sealed class JobRunner(ConverterRegistry converters)
             History.Add(doneTitle, work.Select(w => w.InputPath).Distinct(StringComparer.OrdinalIgnoreCase).ToList(), results);
             if (SettingsStore.Current.SelectResultInExplorer)
                 ExplorerSelection.SelectIfVisible(results);
+            var done = work.Where((_, i) => produced[i] is not null).Select(w => w.InputPath).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            Stats.Statistics.RecordWork(done.Count, SizeOf(done), SizeOf(results), (Environment.TickCount64 - startedAt) / 1000.0);
         }
+    }
+
+    /// <summary>The bytes in the files (and folders) that exist, for the statistics.</summary>
+    private static long SizeOf(IEnumerable<string> paths)
+    {
+        long total = 0;
+        foreach (var path in paths)
+        {
+            try
+            {
+                if (File.Exists(path))
+                    total += new FileInfo(path).Length;
+                else if (Directory.Exists(path))
+                    total += new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+        return total;
     }
 
     private static string Friendly(Exception ex) => ex switch

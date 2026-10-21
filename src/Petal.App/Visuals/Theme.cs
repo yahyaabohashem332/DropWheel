@@ -10,8 +10,20 @@ public enum ThemePreference
     Dark,
 }
 
+/// <summary>The accent colour: Petal's violet, the one Windows uses, or one of a few others.</summary>
+public enum AccentChoice
+{
+    Violet,
+    Windows,
+    Ocean,
+    Mint,
+    Rose,
+    Amber,
+    Graphite,
+}
+
 /// <summary>Colours for the current light/dark appearance. Brushes are frozen and shared.</summary>
-public sealed class Palette
+public sealed record Palette
 {
     public required bool IsDark { get; init; }
     public required Color Accent { get; init; }
@@ -55,15 +67,44 @@ public static class Theme
     public static event Action? Changed;
 
     public static ThemePreference Preference { get; private set; } = ThemePreference.System;
-    public static bool UseWindowsAccent { get; private set; }
+    public static AccentChoice Accent { get; private set; } = AccentChoice.Violet;
+    public static bool UseWindowsAccent => Accent == AccentChoice.Windows;
 
     public static Palette Current { get; private set; } = Build(IsSystemDark(), BrandAccent);
 
-    public static void Configure(ThemePreference preference, bool useWindowsAccent)
+    public static void Configure(ThemePreference preference, bool useWindowsAccent) =>
+        Configure(preference, useWindowsAccent ? AccentChoice.Windows : AccentChoice.Violet);
+
+    public static void Configure(ThemePreference preference, AccentChoice accent)
     {
         Preference = preference;
-        UseWindowsAccent = useWindowsAccent;
+        Accent = accent;
         Refresh();
+    }
+
+    /// <summary>The colour an accent choice stands for (Windows' own accent read now).</summary>
+    public static Color ColourOf(AccentChoice accent) => accent switch
+    {
+        AccentChoice.Windows => WindowsAccent() ?? BrandAccent,
+        AccentChoice.Ocean => Color.FromRgb(0x2F, 0x7B, 0xEB),
+        AccentChoice.Mint => Color.FromRgb(0x1C, 0xA0, 0x7A),
+        AccentChoice.Rose => Color.FromRgb(0xE0, 0x45, 0x7B),
+        AccentChoice.Amber => Color.FromRgb(0xE0, 0x88, 0x24),
+        AccentChoice.Graphite => Color.FromRgb(0x5A, 0x62, 0x70),
+        _ => BrandAccent,
+    };
+
+    /// <summary>The same colours with greys in place of the accent: the monochrome wheel.</summary>
+    public static Palette Mono(Palette p)
+    {
+        var grey = p.IsDark ? Color.FromRgb(0xE4, 0xE4, 0xE8) : Color.FromRgb(0x2E, 0x2F, 0x35);
+        return p with
+        {
+            Accent = grey,
+            AccentStrong = grey,
+            AccentSoft = Color.FromArgb(0x40, grey.R, grey.G, grey.B),
+            TextOnAccent = p.IsDark ? Color.FromRgb(0x16, 0x16, 0x1A) : Colors.White,
+        };
     }
 
     public static void Refresh()
@@ -74,7 +115,7 @@ public static class Theme
             ThemePreference.Dark => true,
             _ => IsSystemDark(),
         };
-        var accent = UseWindowsAccent ? WindowsAccent() ?? BrandAccent : BrandAccent;
+        var accent = ColourOf(Accent);
         Current = Build(dark, accent);
         Changed?.Invoke();
     }

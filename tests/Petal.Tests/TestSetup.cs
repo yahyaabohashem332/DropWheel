@@ -11,4 +11,22 @@ internal static class TestSetup
     /// </summary>
     [ModuleInitializer]
     internal static void UseEnglish() => L.Configure(UiLanguage.English);
+
+    /// <summary>
+    /// What Petal keeps between runs goes to a folder of the test run's own, never into the user's: the
+    /// history, the statistics and what the wheel remembers. Tests that check these set their own files too.
+    /// </summary>
+    [ModuleInitializer]
+    internal static void KeepOutOfTheUsersFiles()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "petal-tests-" + Environment.ProcessId);
+        Directory.CreateDirectory(folder);
+        Petal.App.Jobs.History.FilePath = Path.Combine(folder, "history.json");
+        Petal.App.Stats.Statistics.FilePath = Path.Combine(folder, "statistics.json");
+        Petal.App.Overlay.WheelMemory.FilePath = Path.Combine(folder, "wheel-memory.json");
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            try { Directory.Delete(folder, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        };
+    }
 }
