@@ -77,7 +77,7 @@ public sealed class PdfPasswordWindow : ToolWindow
         }
         else
         {
-            _form.Children.Add(Row("Repeat", _repeat, 110, 8));
+            _form.Children.Add(Row("Confirm", _repeat, 110, 8));
             _form.Children.Add(_print);
             _form.Children.Add(_copy);
             _form.Children.Add(_edit);

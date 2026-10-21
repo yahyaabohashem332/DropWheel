@@ -45,11 +45,14 @@ public partial class LocalizationTests
         // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
         "f/", "ISO", "mm", "FNumber", "Software",
         "make them 1080 px WEBP and zip them", "صغّرها إلى 1080 بكسل وحوّلها إلى WEBP ثم ضعها في ملف مضغوط", "…our trip to the «beach» in July…",
+        // The rename pattern a recipe step starts with, and singular forms chosen inside L.P (looked up through their plural).
+        "{name} {n}", "{0} file has no password and is skipped.", "{0} file already has a password and is skipped.",
         // A sample script, and a name the statistics window shows in the language Petal speaks.
         "$text = $env:PETAL_INPUT.ToUpper()\nSet-Clipboard $text\nWrite-Output $text", "Convert to WEBP",
     };
 
     private static readonly Regex Literal = MakeLiteral();
+    private static readonly Regex Translated = MakeTranslated();
     private static readonly Regex SkipLine = MakeSkipLine();
     private static readonly Regex PluralOne = MakePluralOne();
     private static readonly Regex Placeholder = MakePlaceholder();
@@ -70,14 +73,17 @@ public partial class LocalizationTests
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i].Trim();
-                if (line.StartsWith("//") || line.StartsWith("using ") || SkipLine.IsMatch(line))
+                if (line.StartsWith("//") || line.StartsWith("using "))
                     continue;
-                foreach (Match m in Literal.Matches(line))
+                // A line the scan otherwise skips (resources, paths, logging) still has its L.T and L.F texts checked.
+                bool skipped = SkipLine.IsMatch(line);
+                foreach (Match m in skipped ? Translated.Matches(line) : Literal.Matches(line))
                 {
                     if (m.Groups["prefix"].Value.Contains('$'))
                         continue;
                     var text = m.Groups["body"].Value.Replace("\\\"", "\"").Replace("\\n", "\n");
-                    if (!LooksLikeInterfaceText(text) || singulars.Contains(text) || NotTranslated.Contains(text.Trim()))
+                    bool looks = skipped || m.Groups["call"].Success ? text.Any(char.IsAsciiLetter) : LooksLikeInterfaceText(text);
+                    if (!looks || singulars.Contains(text) || NotTranslated.Contains(text.Trim()))
                         continue;
                     checkedStrings++;
                     if (!L.HasTranslation(text))
@@ -200,7 +206,7 @@ public partial class LocalizationTests
     {
         if (!s.Any(char.IsAsciiLetter))
             return false;
-        if (s.StartsWith("Petal.") || s.StartsWith("http") || s.StartsWith('.') || s.StartsWith('-') || s.StartsWith('/') || s.StartsWith('#') || s.StartsWith('{') || s.StartsWith("pack:"))
+        if (s.StartsWith("Petal.") || s.StartsWith("http") || s.StartsWith('.') || s.StartsWith('-') || s.StartsWith('/') || s.StartsWith('#') || (s.StartsWith('{') && !s.Contains(' ')) || s.StartsWith("pack:"))
             return false;
         if (s.Contains('\\') || s.Contains("*.") || s.Contains("%1"))
             return false;
@@ -227,8 +233,12 @@ public partial class LocalizationTests
         return dir?.FullName ?? throw new DirectoryNotFoundException("Petal's sources were not found above the test folder.");
     }
 
-    [GeneratedRegex(@"(?<prefix>\$@|@\$|\$|@)?""(?<body>(?:[^""\\\n]|\\.)*)""")]
+    [GeneratedRegex(@"(?<call>L\.[TF]\()?(?<prefix>\$@|@\$|\$|@)?""(?<body>(?:[^""\\\n]|\\.)*)""")]
     private static partial Regex MakeLiteral();
+
+    /// <summary>Texts handed straight to L.T or L.F.</summary>
+    [GeneratedRegex(@"L\.[TF]\((?<prefix>)""(?<body>(?:[^""\\\n]|\\.)*)""")]
+    private static partial Regex MakeTranslated();
 
     [GeneratedRegex(@"\bLog\.(Info|Error|Warn|Debug)|\[DllImport|\[LibraryImport|ArgumentList|Arguments\s*=|Registry|SetValue|GetValue|nameof\(|FindResource|SetResourceReference|Path\.Combine|EntryPoint|""-[a-z]|const string \w*(Key|Id|Name)\b|\bKey\.[A-Z]|InvokeMember\(|GetTypeFromProgID")]
     private static partial Regex MakeSkipLine();

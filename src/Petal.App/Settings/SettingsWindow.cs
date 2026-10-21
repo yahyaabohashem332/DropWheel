@@ -272,8 +272,8 @@ public sealed partial class SettingsWindow : ToolWindow
     {
         var keys = new[] { _s.ConvertKey, _s.ToolsKey, _s.ActionsKey };
         _keyWarning.Text = keys.Distinct().Count() < 3
-            ? "Each wheel needs its own key."
-            : keys.Contains(ModifierKey.Windows) ? "Tip: tapping Windows alone may also open Start." : "";
+            ? L.T("Each wheel needs its own key.")
+            : keys.Contains(ModifierKey.Windows) ? L.T("Tip: tapping Windows alone may also open Start.") : "";
         _keyWarning.Visibility = _keyWarning.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 

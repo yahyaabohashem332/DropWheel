@@ -623,7 +623,8 @@ internal static class Arabic
         ["Checking…"] = "جارٍ الفحص…",
         ["Protect with a password"] = "حماية بكلمة مرور",
         ["Remove the password"] = "إزالة كلمة المرور",
-        ["Repeat"] = "التأكيد",
+        ["Confirm"] = "التأكيد",
+        ["Repeat"] = "التكرار",
         ["Allow printing"] = "السماح بالطباعة",
         ["Allow copying text and pictures"] = "السماح بنسخ النصوص والصور",
         ["Allow changes and comments"] = "السماح بالتعديل والتعليقات",
@@ -2020,5 +2021,12 @@ internal static class Arabic
 
         // ---------- the Microsoft Store and the review ----------
         ["Projects"] = "المشاريع",
+
+        // ---------- found by the stricter localisation test ----------
+        ["{0} would run on {1}."] = "سيعمل {0} على {1}.",
+        ["Take the Tour"] = "جولة تعريفية",
+        ["{0} on"] = "{0} مفعّلة",
+        ["{0} · {1} saved · {2}"] = "{0} · وُفّر {1} · {2}",
+        ["{name} is the original name, {n} a running number, {date} the date a photo was taken."] = "{name} هو الاسم الأصلي، و{n} رقم متسلسل، و{date} تاريخ التقاط الصورة.",
     };
 }

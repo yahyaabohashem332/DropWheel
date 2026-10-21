@@ -449,7 +449,7 @@ public sealed class WheelWindow : Window
         int count = _content?.Items.Count ?? 0;
         // 1 to 9 choose a petal straight away, clockwise from the top.
         int digit = key is >= Key.D1 and <= Key.D9 ? key - Key.D1 : key is >= Key.NumPad1 and <= Key.NumPad9 ? key - Key.NumPad1 : -1;
-        if (digit >= 0 && Keyboard.Modifiers == ModifierKeys.None)
+        if (digit >= 0 && _options.ShowNumbers && Keyboard.Modifiers == ModifierKeys.None)
         {
             if (digit < count && !e.IsRepeat)
                 Choose(digit);

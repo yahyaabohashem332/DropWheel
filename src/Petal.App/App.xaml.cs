@@ -314,7 +314,7 @@ public partial class App : Application
             case Wheels.NothingSelected.Wheels:
                 await _controller.OpenRingsAsync(front, WheelPointFor(front));
                 break;
-            case Wheels.NothingSelected.Clipboard when ClipboardSource.HasSomething():
+            case Wheels.NothingSelected.Clipboard:
                 _controller.OpenClipboard(at);
                 break;
             default:
