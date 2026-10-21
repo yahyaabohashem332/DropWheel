@@ -2,7 +2,11 @@ using Petal.App.Jobs;
 
 namespace Petal.Tests;
 
-/// <summary>History is static, so everything that touches it lives in this one (sequential) class.</summary>
+/// <summary>History is static: every test class that touches it joins this collection and runs alone.</summary>
+[CollectionDefinition("History", DisableParallelization = true)]
+public class HistoryCollection;
+
+[Collection("History")]
 public class HistoryTests : IDisposable
 {
     private readonly string _dir = Directory.CreateTempSubdirectory("petal-history-").FullName;

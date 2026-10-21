@@ -9,12 +9,26 @@ using F = Petal.Core.Formats.Formats;
 namespace Petal.Tests;
 
 /// <summary>A drop of several files: which go side by side, and what comes out.</summary>
-public class JobRunnerTests(ITestOutputHelper output) : IDisposable
+[Collection("History")]
+public class JobRunnerTests : IDisposable
 {
+    private readonly ITestOutputHelper _output;
     private readonly string _dir = Directory.CreateTempSubdirectory("petal-jobs-").FullName;
+    private readonly string _previousHistory = History.FilePath;
+
+    public JobRunnerTests(ITestOutputHelper output)
+    {
+        _output = output;
+        // Finished drops are recorded in the history: a file of this test's own, never the user's.
+        History.FilePath = Path.Combine(_dir, "history.json");
+        History.Enabled = () => true;
+        History.Reload();
+    }
 
     public void Dispose()
     {
+        History.FilePath = _previousHistory;
+        History.Reload();
         try { Directory.Delete(_dir, true); } catch (IOException) { }
     }
 
@@ -89,7 +103,7 @@ public class JobRunnerTests(ITestOutputHelper output) : IDisposable
             var clock = Stopwatch.StartNew();
             await await dispatcher.InvokeAsync(() =>
                 new JobRunner(Petal.App.EngineSetup.CreateConverters()).ConvertAsync(files, F.Webp, new ScreenPoint(300, 300)));
-            output.WriteLine($"{files.Count} pictures in {clock.ElapsedMilliseconds} ms, {JobRunner.BatchWidth(files, F.Webp)} at a time");
+            _output.WriteLine($"{files.Count} pictures in {clock.ElapsedMilliseconds} ms, {JobRunner.BatchWidth(files, F.Webp)} at a time");
         }
         finally
         {
@@ -104,5 +118,10 @@ public class JobRunnerTests(ITestOutputHelper output) : IDisposable
             Assert.Equal((1000u, 750u), (image.Width, image.Height));
         }
         Assert.Empty(Directory.GetFiles(_dir, "*.tmp*"));
+        // One drop, one line in the history, with every file in the order it came.
+        var entry = Assert.Single(History.Entries);
+        Assert.Equal(files, entry.Inputs);
+        Assert.Equal(8, entry.Outputs.Count);
+        Assert.Equal("a.webp", Path.GetFileName(entry.Outputs[0]));
     }
 }
