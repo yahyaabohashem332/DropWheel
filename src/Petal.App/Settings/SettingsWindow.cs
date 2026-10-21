@@ -111,6 +111,18 @@ public sealed partial class SettingsWindow : ToolWindow
         var practice = new Button { Content = L.T("Practice"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
         practice.SetResourceReference(ForegroundProperty, "Petal.Accent");
         practice.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
+        if (Shell.Packaged.Current is { Trial: true } trial)
+        {
+            var buy = new Button { Content = L.T("Buy Petal"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(-8, 4, 0, 0) };
+            buy.SetResourceReference(ForegroundProperty, "Petal.Accent");
+            buy.Click += async (_, _) => await Shell.Packaged.BuyAsync(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            var days = (int)Math.Ceiling(trial.TrialLeft.TotalDays);
+            text.Children.Add(new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { Text(L.P(days, "Trial: {0} day left", "Trial: {0} days left"), "Petal.Caption").WithMargin(0, 6, 12, 0), buy },
+            });
+        }
         var tour = new Button { Content = L.T("Take the Tour"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
         tour.SetResourceReference(ForegroundProperty, "Petal.Accent");
         tour.Click += (_, _) => StartTour();
@@ -898,6 +910,11 @@ public sealed partial class SettingsWindow : ToolWindow
     {
         var panel = new StackPanel();
         panel.Children.Add(Text(L.F("This is Petal {0}.", Shell.UpdateService.CurrentText), "Petal.Body"));
+        if (Shell.Packaged.IsPackaged)
+        {
+            panel.Children.Add(Text("The Microsoft Store keeps Petal up to date.", "Petal.Caption").WithMargin(0, 4, 0, 0));
+            return panel;
+        }
         var feed = new TextBox { Text = _s.UpdateFeed, FlowDirection = FlowDirection.LeftToRight };
         feed.LostFocus += (_, _) =>
         {
@@ -972,11 +989,12 @@ public sealed partial class SettingsWindow : ToolWindow
             _s.LaunchAtStartup = v;
             LaunchAtLogin.Apply(v);
         }, top: 0));
-        panel.Children.Add(Switch("Right-click menu", "Add “Convert with Petal” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
-        {
-            _s.ExplorerContextMenu = v;
-            Shell.ContextMenuRegistration.Apply(v);
-        }));
+        if (!Shell.Packaged.IsPackaged)
+            panel.Children.Add(Switch("Right-click menu", "Add “Convert with Petal” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
+            {
+                _s.ExplorerContextMenu = v;
+                Shell.ContextMenuRegistration.Apply(v);
+            }));
         panel.Children.Add(Switch("Pause Petal", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
         panel.Children.Add(Switch("Keep a history", "Remember what Petal made, so you can find a result again or undo it.", _s.KeepHistory, v => _s.KeepHistory = v));
         var log =new Button { Content = L.T("Open activity log"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };

@@ -63,7 +63,9 @@ public sealed class CustomPetal
     /// <summary>The program's name or the reading error that goes into <see cref="ProblemFormat"/>.</summary>
     [JsonIgnore] public string? ProblemDetail { get; private set; }
 
-    public static string Folder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal", "petals");
+    /// <summary>%APPDATA%\Petal\petals, or beside the settings of a test or development run (PETAL_SETTINGS_DIR).</summary>
+    public static string Folder { get; set; } = Path.Combine(
+        Environment.GetEnvironmentVariable("PETAL_SETTINGS_DIR") is { Length: > 0 } own ? own : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal"), "petals");
 
     private static readonly JsonSerializerOptions Json = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
 

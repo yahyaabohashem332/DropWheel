@@ -81,6 +81,9 @@ public static class UpdateService
     public static async Task CheckInBackgroundAsync()
     {
         var s = SettingsStore.Current;
+        // The Store updates its own copy.
+        if (Packaged.IsPackaged)
+            return;
         if (!s.CheckForUpdates || string.IsNullOrWhiteSpace(s.UpdateFeed) || s.LastUpdateCheck is { } last && DateTime.UtcNow - last < TimeSpan.FromDays(1))
             return;
         await Task.Delay(TimeSpan.FromSeconds(45));

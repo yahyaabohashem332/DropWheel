@@ -40,7 +40,20 @@ public static class Statistics
     private static Timer? _save;
 
     /// <summary>Where it is kept; tests point it elsewhere.</summary>
-    public static string FilePath { get; set; } = Path.Combine(Settings.SettingsStore.Directory, "statistics.json");
+    public static string FilePath
+    {
+        get => _path ?? Path.Combine(Settings.SettingsStore.Directory, "statistics.json");
+        set
+        {
+            lock (Gate)
+            {
+                _path = value;
+                _data = null;
+            }
+        }
+    }
+
+    private static string? _path;
 
     /// <summary>Whether counting is on; Settings turns it off.</summary>
     public static Func<bool> Enabled { get; set; } = () => Settings.SettingsStore.Current.KeepStatistics;
@@ -168,8 +181,9 @@ public static class Statistics
         var reached = new List<string>();
         foreach (var n in new[] { 10, 100, 1000, 10000 })
             if (data.Files >= n) reached.Add($"files:{n}");
-        foreach (var mb in new long[] { 100, 1024, 10240 })
-            if (data.Saved >= mb * 1024 * 1024) reached.Add($"saved:{mb}");
+        // Sizes read in thousands, as Petal shows them everywhere: 100 MB, 1 GB, 10 GB.
+        foreach (var mb in new long[] { 100, 1000, 10000 })
+            if (data.Saved >= mb * 1000 * 1000) reached.Add($"saved:{mb}");
         foreach (var days in new[] { 7, 30, 100 })
             if (LongestStreak(data) >= days) reached.Add($"streak:{days}");
         return reached;

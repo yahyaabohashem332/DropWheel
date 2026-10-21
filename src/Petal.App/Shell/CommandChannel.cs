@@ -84,6 +84,9 @@ public static class ContextMenuRegistration
 
     public static void Apply(bool enabled)
     {
+        // The Store's package brings its own entry for the files Petal knows, and leaves the registry alone.
+        if (Packaged.IsPackaged)
+            return;
         try
         {
             var exe = Environment.ProcessPath;

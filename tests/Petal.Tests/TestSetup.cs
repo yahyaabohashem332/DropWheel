@@ -21,9 +21,11 @@ internal static class TestSetup
     {
         var folder = Path.Combine(Path.GetTempPath(), "petal-tests-" + Environment.ProcessId);
         Directory.CreateDirectory(folder);
+        Petal.App.Settings.SettingsStore.Directory = folder;
         Petal.App.Jobs.History.FilePath = Path.Combine(folder, "history.json");
         Petal.App.Stats.Statistics.FilePath = Path.Combine(folder, "statistics.json");
         Petal.App.Overlay.WheelMemory.FilePath = Path.Combine(folder, "wheel-memory.json");
+        Petal.Recipes.CustomPetal.Folder = Path.Combine(folder, "petals");
         AppDomain.CurrentDomain.ProcessExit += (_, _) =>
         {
             try { Directory.Delete(folder, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }

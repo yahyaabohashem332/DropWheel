@@ -195,7 +195,7 @@ public static partial class KeySender
     private const int SW_RESTORE = 9;
     private const uint GA_ROOTOWNER = 3;
 
-    [LibraryImport("user32.dll")]
+    [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
     private static partial uint MapVirtualKey(uint code, uint mapType);
 
     [LibraryImport("user32.dll")]

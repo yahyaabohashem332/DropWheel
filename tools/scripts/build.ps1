@@ -67,6 +67,9 @@ Copy-Item (Join-Path $root 'tools\bin\exiftool\README.txt') (Join-Path $licences
 $directml = Get-ChildItem (Join-Path $env:USERPROFILE '.nuget\packages\microsoft.ai.directml') -Directory -ErrorAction SilentlyContinue |
     Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
 if ($directml) { Copy-Item (Join-Path $directml.FullName 'LICENSE.txt') (Join-Path $licences 'DirectML.txt') }
+# Which FFmpeg build ships, for anyone who wants its source; and the list of everything Petal is built on.
+& (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -version | Select-Object -First 2 | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
+Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.md')
 
 $zip = Join-Path $dist "Petal-$Version-win-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip }

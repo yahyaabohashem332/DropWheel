@@ -79,7 +79,7 @@ public sealed class StatsWindow : ToolWindow
             _page.Children.Add(Text("Nothing yet. Drag a file and tap Shift to begin.", "Petal.Caption"));
         int most = top.Count > 0 ? top[0].Value : 1;
         foreach (var (key, count) in top)
-            _page.Children.Add(Bar(L.T(data.Names.GetValueOrDefault(key) ?? key), count, most));
+            _page.Children.Add(Bar(NameOf(key, data.Names.GetValueOrDefault(key)), count, most));
 
         var milestones = Statistics.Milestones(data);
         if (milestones.Count > 0)
@@ -105,13 +105,48 @@ public sealed class StatsWindow : ToolWindow
         _page.Children.Add(counting);
     }
 
+    /// <summary>
+    /// A petal's name in today's language, from its key ("format:webp", "tool:Compress"); the name kept when it
+    /// was used stands in for petals that are gone.
+    /// </summary>
+    internal static string NameOf(string key, string? kept)
+    {
+        var (kind, id) = key.IndexOf(':') is int at and > 0 ? (key[..at], key[(at + 1)..]) : ("", key);
+        switch (kind)
+        {
+            case "format" when Petal.Core.Formats.Formats.FromId(id) is { } format:
+                return L.F("Convert to {0}", format.Label);
+            case "tool" when Enum.TryParse<Petal.Core.Tools.ToolId>(id, out var tool):
+                return L.T(Petal.Core.Tools.ToolRegistry.Get(tool).Name);
+            case "action" when Enum.TryParse<Petal.Core.Actions.FileActionId>(id, out var action):
+                return L.T(Petal.Core.Actions.FileActionRegistry.All.First(a => a.Id == action).Name);
+            case "favourite" when SettingsStore.Current.Favourites.FirstOrDefault(f => f.Id.ToString() == id) is { } favourite:
+                return Jobs.FavouriteText.Label(favourite);
+            case "recipe" when SettingsStore.Current.Recipes.FirstOrDefault(r => r.Id.ToString() == id) is { } recipe:
+                return recipe.Name;
+            case "entry" when Find(SettingsStore.Current.Wheels.SelectMany(w => w.Items), id) is { } entry:
+                return L.T(Wheels.Rings.Item(entry).Name);
+        }
+        return L.T(kept ?? key);
+
+        static Wheels.WheelEntry? Find(IEnumerable<Wheels.WheelEntry> entries, string id)
+        {
+            foreach (var e in entries)
+            {
+                if (e.Id == id) return e;
+                if (e.Children is { } children && Find(children, id) is { } inner) return inner;
+            }
+            return null;
+        }
+    }
+
     private static string Milestone(string key)
     {
         var (kind, value) = (key.Split(':')[0], int.Parse(key.Split(':')[1], System.Globalization.CultureInfo.InvariantCulture));
         return kind switch
         {
             "files" => L.P(value, "{0} file", "{0} files"),
-            "saved" => L.F("{0} saved", Util.Sizes.Format((long)value * 1024 * 1024)),
+            "saved" => L.F("{0} saved", Util.Sizes.Format((long)value * 1000 * 1000)),
             _ => L.P(value, "{0} days in a row", "{0} days in a row"),
         };
     }

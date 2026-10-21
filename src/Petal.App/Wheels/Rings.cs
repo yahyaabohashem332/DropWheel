@@ -21,9 +21,12 @@ public static class Rings
     /// quick, media and the user's own wheels in their order. Starts on the app's wheel, else on the one
     /// used last.
     /// </summary>
-    public static (List<RingPage> Pages, int Start) For(AppSettings settings, IntPtr front, string? onlyWheel = null)
+    public static (List<RingPage> Pages, int Start) For(AppSettings settings, IntPtr front, string? onlyWheel = null) =>
+        ForProgram(settings, RunningApps.ProgramOf(front), onlyWheel);
+
+    /// <summary>As <see cref="For"/>, for the program in front by name ("chrome"), or none.</summary>
+    public static (List<RingPage> Pages, int Start) ForProgram(AppSettings settings, string? program, string? onlyWheel = null)
     {
-        var program = RunningApps.ProgramOf(front);
         var pages = new List<RingPage>();
         var app = program is null ? null : settings.Wheels.FirstOrDefault(w =>
             w.Enabled && w.Kind == WheelKind.App && w.Apps.Any(a => a.Equals(program, StringComparison.OrdinalIgnoreCase)));

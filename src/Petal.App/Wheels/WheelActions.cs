@@ -96,7 +96,7 @@ public static class WheelActions
             State = () => SystemToggles.ShowsHiddenFiles,
             Run = Do(() => SystemToggles.SetShowHiddenFiles(!SystemToggles.ShowsHiddenFiles)),
         },
-        new("system.extensions", "EXTENSIONS", "File Extensions", "fileType", "Show or hide file name extensions such as .jpg in File Explorer.", "Windows")
+        new("system.extensions", "FILE TYPES", "File Extensions", "fileType", "Show or hide file name extensions such as .jpg in File Explorer.", "Windows")
         {
             State = () => SystemToggles.ShowsExtensions,
             Run = Do(() => SystemToggles.SetShowExtensions(!SystemToggles.ShowsExtensions)),

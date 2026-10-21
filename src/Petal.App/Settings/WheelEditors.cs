@@ -113,7 +113,9 @@ internal sealed class EntryList : StackPanel
             icon.VerticalAlignment = VerticalAlignment.Center;
             row.Children.Add(icon);
             var words = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            words.Children.Add(new TextBlock { Text = L.T(item.Name), FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
+            var title = new TextBlock { Text = L.T(item.Name), FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis };
+            title.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
+            words.Children.Add(title);
             var detail = new TextBlock { Text = Describe(entry, item), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis };
             detail.SetResourceReference(TextBlock.ForegroundProperty, item.Unavailable is null ? "Petal.TextSecondary" : "Petal.Danger");
             words.Children.Add(detail);
@@ -205,7 +207,9 @@ internal sealed class WheelEditorWindow : ToolWindow
 
     public WheelEditorWindow(UserWheel wheel) : base("Wheel", 540)
     {
-        var name = new TextBox { Text = wheel.Name };
+        // A ready-made wheel's name shows in the language Petal speaks, and stays the original until it is changed.
+        var shown = L.T(wheel.Name);
+        var name = new TextBox { Text = shown };
         Body.Children.Add(Row("Name", name, 110, 0));
         TextBox? apps = null;
         if (wheel.Kind == WheelKind.App)
@@ -223,7 +227,9 @@ internal sealed class WheelEditorWindow : ToolWindow
         PrimaryButton.Content = L.T("Save");
         PrimaryButton.Click += (_, _) =>
         {
-            wheel.Name = name.Text.Trim().Length > 0 ? name.Text.Trim() : wheel.Name;
+            var typed = name.Text.Trim();
+            if (typed.Length > 0 && typed != shown)
+                wheel.Name = typed;
             if (apps is not null)
                 wheel.Apps = apps.Text.Split([',', ' ', ';'], StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim().Replace(".exe", "", StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             wheel.Shortcut = shortcut.Value;
@@ -297,13 +303,16 @@ internal sealed class ShortcutBox : DockPanel
 /// <summary>One petal: its name and label, icon and colour, and what it does.</summary>
 internal sealed class EntryEditorWindow : ToolWindow
 {
-    public EntryEditorWindow(WheelEntry entry) : base("Petal", 500)
+    public EntryEditorWindow(WheelEntry entry) : base("Petal Details", 500)
     {
         var item = Rings.Item(entry);
-        var name = new TextBox { Text = entry.Name ?? "" };
+        // A ready-made petal's name and label show in the language Petal speaks, and stay the originals until changed.
+        var shownName = entry.Name is null ? "" : L.T(entry.Name);
+        var shownLabel = entry.Label is null ? "" : L.T(entry.Label);
+        var name = new TextBox { Text = shownName };
         Body.Children.Add(Row("Name", name, 110, 0));
         Body.Children.Add(Text(L.F("Leave empty for “{0}”.", L.T(item.Name)), "Petal.Caption").WithMargin(110, 4, 0, 0));
-        var label = new TextBox { Text = entry.Label ?? "" };
+        var label = new TextBox { Text = shownLabel };
         Body.Children.Add(Row("On the petal", label, 110, 8));
         string? icon = entry.Icon;
         var iconButton = new Button { HorizontalAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 4, 8, 4) };
@@ -440,8 +449,10 @@ internal sealed class EntryEditorWindow : ToolWindow
         PrimaryButton.Content = L.T("Save");
         PrimaryButton.Click += (_, _) =>
         {
-            entry.Name = string.IsNullOrWhiteSpace(name.Text) ? null : name.Text.Trim();
-            entry.Label = string.IsNullOrWhiteSpace(label.Text) ? null : label.Text.Trim().ToUpper(System.Globalization.CultureInfo.CurrentCulture);
+            if (name.Text.Trim() != shownName)
+                entry.Name = string.IsNullOrWhiteSpace(name.Text) ? null : name.Text.Trim();
+            if (label.Text.Trim() != shownLabel)
+                entry.Label = string.IsNullOrWhiteSpace(label.Text) ? null : label.Text.Trim().ToUpper(System.Globalization.CultureInfo.CurrentCulture);
             entry.Icon = icon;
             entry.Tint = tint;
             if (apply is not null && !apply())
@@ -542,11 +553,19 @@ internal sealed class PetalPickerWindow : ToolWindow
     private IReadOnlyList<(string Name, string Path)> _apps = [];
     private WheelEntry? _chosen;
 
+    /// <summary>The faint word in an empty search box, in the box's own size and centred like its text.</summary>
+    internal static TextBlock SearchHint(TextBox box, string text)
+    {
+        var hint = new TextBlock { Text = L.T(text), IsHitTestVisible = false, Margin = new Thickness(9, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+        hint.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        hint.SetBinding(TextBlock.FontSizeProperty, new System.Windows.Data.Binding(nameof(TextBox.FontSize)) { Source = box });
+        return hint;
+    }
+
     private PetalPickerWindow() : base("Add a Petal", 520)
     {
         System.Windows.Automation.AutomationProperties.SetName(_search, L.T("Search actions, apps and more"));
-        var hint = new TextBlock { Text = L.T("Search actions, apps and more"), IsHitTestVisible = false, Margin = new Thickness(8, 5, 0, 0) };
-        hint.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        var hint = SearchHint(_search, "Search actions, apps and more");
         _search.TextChanged += (_, _) =>
         {
             hint.Visibility = _search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -624,7 +643,9 @@ internal sealed class PetalPickerWindow : ToolWindow
         image.Margin = new Thickness(0, 0, 10, 0);
         image.VerticalAlignment = VerticalAlignment.Center;
         var words = new StackPanel();
-        words.Children.Add(new TextBlock { Text = L.T(name), FontWeight = FontWeights.SemiBold });
+        var title = new TextBlock { Text = L.T(name), FontWeight = FontWeights.SemiBold };
+        title.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
+        words.Children.Add(title);
         if (description.Length > 0)
         {
             var detail = new TextBlock { Text = L.T(description), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -718,8 +739,7 @@ internal sealed class PetalColoursWindow : ToolWindow
 
     public PetalColoursWindow() : base("Petal Colours", 560)
     {
-        var hint = new TextBlock { Text = L.T("Search petals"), IsHitTestVisible = false, Margin = new Thickness(8, 5, 0, 0) };
-        hint.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        var hint = PetalPickerWindow.SearchHint(_search, "Search petals");
         System.Windows.Automation.AutomationProperties.SetName(_search, L.T("Search petals"));
         _search.TextChanged += (_, _) =>
         {
@@ -770,6 +790,7 @@ internal sealed class PetalColoursWindow : ToolWindow
                 DockPanel.SetDock(picker, Dock.Right);
                 row.Children.Add(picker);
                 var name = new TextBlock { Text = L.T(item.Name), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+                name.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
                 row.Children.Add(name);
                 _list.Children.Add(row);
             }

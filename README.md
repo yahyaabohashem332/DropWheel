@@ -7,27 +7,59 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 |---|---|---|
 | **Shift** | Convert | Your starred favourites first, then every format the file can become (342 conversion paths) |
 | **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes, and for folders organize, one PDF, contact sheet, report and gather… (53 tools), your recipes and your own petals |
-| **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal, Find Duplicates |
+| **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Open With, Find Duplicates, your folders, and under More: Copy Path, Copy Name, Open in VS Code, Terminal |
+| **Ctrl + Win + Z**, nothing selected | Wheels without files | The app in front's shortcuts, quick actions for Windows, what's playing, and wheels of your own |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
-another key to switch wheels in place. Drop on the centre (or press Esc) to cancel. The centre names
-the petal under the cursor in full: a long name goes onto up to three lines, set in a disc that fits
-the hub, instead of being cut short.
+another key, or turn the mouse wheel, to switch wheels in place. Drop on the centre (or press Esc) to
+cancel; how much of the middle cancels can be set (Settings › The Wheel). The centre names the petal
+under the cursor in full: a long name goes onto up to three lines, set in a disc that fits the hub,
+instead of being cut short. A format's petal adds a few words on what it is good for ("AVIF ·
+Smallest, same look"). A petal that can't do its job yet stays on the wheel, dim and dashed, and the
+centre says why: an AI tool whose model isn't downloaded (choosing it opens its window, where the
+download is), Open in VS Code without VS Code, a conversion that needs Ghostscript or Office.
 
 Everything runs locally. Nothing is uploaded. Pictures and sounds dropped together are converted side
 by side, one per processor core (up to four); a PDF's pages are drawn from one reading of the file and
 saved together.
 
 No drag needed: right-click files in File Explorer → **Convert with Petal** opens the same wheel at
-the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt switch wheels).
+the mouse; click a petal, use the arrow keys and Enter, or press 1 to 9 (their numbers show around
+the wheel). Shift, Ctrl and Alt, Tab or the mouse wheel switch wheels. The wheel opens on the one you
+used last, with the petal you chose last lit up, so Enter repeats it. A mouse side button can open
+the wheel too (Settings › Keys): it then no longer goes back or forward in other apps.
 
 **Keyboard shortcut — Ctrl + Win + Z.** With files selected in the File Explorer window in front (or
-on the desktop), it opens the wheel for them; with nothing selected, it opens Petal. Press it again
-to close the wheel. Change it in Settings › Keys: click the button and press the new keys. Petal asks
-Windows first and says so when another program already owns a combination. (Ctrl + Win + Enter is
-Narrator's, which is why the default is different.) With nothing selected, the shortcut can open the
-wheel for what is on the clipboard instead: copied files, a screenshot, or text (a copied link
-becomes a QR code).
+on the desktop), it opens the wheel for them; with nothing selected, it opens the wheels without files.
+Press it again to close the wheel. Change it in Settings › Keys: click the button and press the new
+keys. Petal asks Windows first and says so when another program already owns a combination. (Ctrl +
+Win + Enter is Narrator's, which is why the default is different.) Settings › Keys can make it open
+the clipboard's wheel (copied files, a screenshot, or text; a copied link becomes a QR code) or
+Petal's settings instead.
+
+**Wheels without files.** Petal's wheel also works when there is nothing to drag:
+
+* **The app in front** — ready-made wheels for browsers (Chrome, Edge, Firefox, Brave, Opera,
+  Vivaldi), File Explorer, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal,
+  Slack and Discord come first while their app is in front. Each petal presses that app's own
+  shortcut (New Tab, Reopen Closed Tab, Command Palette, Mute, Raise Hand…); the centre shows the keys.
+  Keys go only to the window that was in front when the wheel opened, and only once it is back in
+  front.
+* **Quick** — Windows switches that show whether they are on: dark mode, mute, the microphone, keep
+  awake, hidden files, file extensions, desktop icons, Bluetooth; and Lock, Sleep, Empty Recycle Bin
+  (Windows asks first), Eject Drives, Empty Clipboard, Show Desktop, Task View, Notifications, a
+  screenshot of an area or the whole screen (straight onto the conversion wheel), and the clipboard's
+  wheel. Some wait under **More**, a group that opens in place: point at it, click it, or hold over it
+  while dragging; the centre goes back.
+* **Media** — play or pause, next, previous, shuffle, repeat and volume for whatever plays in Spotify,
+  a browser or any app in Windows' media controls; the centre shows the song and its cover, turning
+  while it plays.
+* **Your own** — Settings › Wheels: make wheels, change any ready-made one (or put it back as it was),
+  give one its own shortcut, and add petals from a search over every action, every app on the PC, and
+  kinds of your own: keys to press, a program to open (or switch to when it is open), a PowerShell or
+  Command Prompt script (given the clipboard, the selected text or the selected files), a folder, a
+  link, a group of up to eight petals, or the open windows to switch to. A script that came in with
+  imported settings is shown once before it runs.
 
 **Folders work too.** Drop a folder (or several, mixed with files) and Petal works on the files
 inside, subfolders included, skipping hidden, system and temporary files. The centre shows the total
@@ -51,6 +83,29 @@ contents (resize, compress, watermark, metadata…, and Extract when there are a
   into one flat folder, renaming clashes.
 
 **Clean for Sharing** on the Actions wheel also takes folders, into a "(Clean)" copy.
+
+**The actions wheel** is yours to arrange (Settings › Actions Wheel): up to eleven actions on it, the
+rest under More, and up to four folders that dropped files are copied or moved to (History can undo
+both). New actions: **Copy Name** (names without their folders), **Open With** (the programs Windows
+suggests for the files, each opening all of them at once, or any other; nothing becomes a default) and
+**Open in VS Code**.
+
+**Make the wheel look yours** (Settings › Appearance): seven accent colours (Petal violet, the Windows
+accent, Ocean, Mint, Rose, Amber, Graphite), a glass, solid or monochrome wheel, how it opens (bloom,
+pop, fade, unfold or at once), soft, crisp or wooden sounds, names or icons only, a colour for any
+petal (Petal Colours), and the petal under the pointer growing towards it.
+
+**Practice and a tour.** Practice (tray menu or Settings) lets you try every wheel on a sample photo
+while nothing runs: each choice says what it would have done. The welcome window has three things to
+try and ticks them off, then offers a tour of Settings that points at each part in turn.
+
+**Statistics** (tray menu or Settings) — files handled, space saved, petals used most, days in a row,
+the last twelve weeks and milestones, counted on this PC only and never sent anywhere; pause or wipe
+them at any time.
+
+**Backup** (Settings) — everything (settings, wheels, favourites, recipes, automations and your own
+petals) in one `.petal` file to keep or carry to another PC. Which of your petals and scripts may run
+is not exported. Changes made to `settings.json` by hand are picked up at once.
 
 **Everyday file chores, also on the wheels:**
 
@@ -167,8 +222,12 @@ a pinned SHA-256.
   `petal colours`, `petal palette`. Installed as
   `Petal.com` beside `Petal.exe` (setup can add it to PATH); `petal help` lists the options.
 * **Updates** — set an update address (an `update.json` over https, or a shared folder) in
-  Settings › Updates and Petal checks once a day; the installer is verified against the feed's
-  SHA-256 and installs quietly. No address is set by default, so a plain install never phones home.
+  Settings › Updates and Petal checks once a day. Only a feed signed with the maker's key (ECDSA
+  P-256) is offered, and the installer is verified against the signed SHA-256 before it installs
+  quietly. A waiting update puts a dot on the tray icon; the tray menu can also check now. No address
+  is set by default, so a plain install never phones home. `build.ps1` signs `update.json` with the
+  key in `%USERPROFILE%\.petal\update-signing-key.pem`, kept out of the repository: back it up, since
+  a new key would make installed copies refuse updates.
 
 **English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
 Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
@@ -178,10 +237,18 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.4.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.5.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
+
+**Microsoft Store.** `tools\scripts\build-store.ps1` packs the same release as an MSIX for the Store
+(`dist\store\Petal-<version>.msix`), with File Explorer's "Convert with Petal" for every file type Petal
+reads, the `petal` command, a startup task, the Store's trial and purchase, and Piper, llama.cpp and
+DeepFilterNet inside, so the Store's copy downloads model data only. From the package, Petal leaves updates
+to the Store. `store\` holds the listing in English and Arabic, screenshots, listing art, the privacy policy,
+licence terms, third-party notices and `SUBMISSION.md`, the step-by-step guide (in Arabic) to publishing
+and selling it.
 
 Microsoft Office or LibreOffice, when installed, is used for slides and exact-layout Word/Excel output;
 everything else is built in. EPS (and Illustrator files from before version 9) need Ghostscript for full
@@ -189,8 +256,8 @@ quality: all 342 conversion paths have an engine, and the 9 from EPS run when Gh
 
 ## Tests
 
-928 tests: core, app and command line (271, including a check that every interface string has
-Arabic, and folders), media engine (216, transcription, voices, noise removal and vocal separation
+965 tests: core, app and command line (308, including a check that every interface string has
+Arabic, folders, the wheels without files and the Store package), media engine (216, transcription, voices, noise removal and vocal separation
 included), image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and
 PDF (186).
 Tests that need a downloaded model look for it in a folder named by an environment variable
@@ -228,7 +295,9 @@ src/Petal.App               WPF app: tray, gesture hooks, wheel, HUD, tool windo
 src/Petal.Cli               the command line, published as Petal.com
 tests/Petal.Tests           unit and integration tests
 tests/Petal.DragHarness     drives a real shell drag (SHDoDragDrop) + key taps for end-to-end tests
-tools/scripts               icon generation, helper-program download, packaging
+tools/scripts               icon generation, helper-program download, packaging (setup, ZIP, Store)
+tools/store                 the Store package's manifest, tiles and words, and the screenshot maker
+store                       the Store listing, screenshots, privacy policy, notices and submission guide
 ```
 
 ## Building
@@ -243,6 +312,10 @@ src\Petal.App\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Petal.exe
 ```
 
 During development Petal also finds FFmpeg on the PATH or in winget's package folder.
+
+Releases: `pwsh tools\scripts\build.ps1 -Version x.y.z -Notes "…"` (setup, ZIP and signed update feed), then
+`pwsh tools\scripts\build-store.ps1 -Version x.y.z -IdentityName … -Publisher … -PublisherDisplayName …`
+for the Store, with the identity values from Partner Center.
 
 Design snapshots without a screen:
 

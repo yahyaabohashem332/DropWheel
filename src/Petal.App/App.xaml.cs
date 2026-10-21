@@ -144,19 +144,34 @@ public partial class App : Application
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
             Onboarding.WelcomeWindow.ShowSingle();
         _ = UpdateService.CheckInBackgroundAsync();
+        if (Shell.Packaged.IsPackaged)
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () =>
+            {
+                // The Store's trial: once it is over, Petal asks to be bought before it does anything.
+                if (await Shell.Packaged.CheckAsync() is { Active: false })
+                    Shell.TrialEndedWindow.ShowSingle();
+            });
         Log.Info($"Petal started, {converters.Converters.Count} converters");
     }
 
     private readonly CommandChannel _commands = new();
 
-    /// <summary>"--wheel &lt;path&gt;" comes from Explorer's context menu.</summary>
+    /// <summary>
+    /// "--wheel &lt;path&gt;" comes from Explorer's context menu; bare paths from "Open with" or files
+    /// dropped on Petal.exe open the wheel too.
+    /// </summary>
     private static PetalCommand? ParseCommand(string[] args)
     {
         int i = Array.IndexOf(args, "--wheel");
-        if (i < 0 || i + 1 >= args.Length)
+        string[] files;
+        if (i >= 0 && i + 1 < args.Length)
+            files = args[(i + 1)..];
+        else if (args.Length > 0 && args.All(a => !a.StartsWith('-') && (File.Exists(a) || Directory.Exists(a))))
+            files = args;
+        else
             return null;
         Interop.NativeMethods.GetCursorPos(out var pt);
-        return new PetalCommand("wheel", args[(i + 1)..], pt.X, pt.Y);
+        return new PetalCommand("wheel", files, pt.X, pt.Y);
     }
 
     private void Handle(PetalCommand command)
@@ -358,6 +373,12 @@ public static class LaunchAtLogin
 
     public static void Apply(bool enabled)
     {
+        // The Store's package starts Petal through its own startup task, which Windows lets the user see.
+        if (Shell.Packaged.IsPackaged)
+        {
+            _ = Shell.Packaged.SetStartupAsync(enabled);
+            return;
+        }
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true);

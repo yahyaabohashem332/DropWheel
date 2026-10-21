@@ -18,6 +18,11 @@ internal static class Program
             e.Cancel = true;
             cancel.Cancel();
         };
+        if (!await StoreLicence.AllowsAsync())
+        {
+            Console.Error.WriteLine("Petal's trial is over. Buy Petal in the Microsoft Store to keep using it, the command line included.");
+            return 1;
+        }
         var cli = new Cli(Console.Out, Console.Error, showProgress: !Console.IsErrorRedirected);
         return await cli.RunAsync(args, cancel.Token);
     }

@@ -178,7 +178,11 @@ public static class ModelStore
             return null;
         }
         var path = Path.Combine(Folder, model.FileName);
-        return File.Exists(path) && new FileInfo(path).Length == model.Size ? path : null;
+        if (File.Exists(path) && new FileInfo(path).Length == model.Size)
+            return path;
+        // The Store's package brings the programs among the downloads (Piper, llama.cpp) with it.
+        var shipped = Path.Combine(BundledFolder, model.FileName);
+        return File.Exists(shipped) && new FileInfo(shipped).Length == model.Size ? shipped : null;
     }
 
     public static bool IsAvailable(ModelInfo model) => Find(model) is not null;
@@ -241,7 +245,8 @@ public static class ModelStore
     /// <summary>Removes a downloaded model to free space (bundled models stay).</summary>
     public static void Delete(ModelInfo model)
     {
-        if (!model.Bundled && Find(model) is { } path)
+        // Only what was downloaded: a copy that ships with the app stays.
+        if (!model.Bundled && Find(model) is { } path && !path.StartsWith(BundledFolder, StringComparison.OrdinalIgnoreCase))
             File.Delete(path);
     }
 

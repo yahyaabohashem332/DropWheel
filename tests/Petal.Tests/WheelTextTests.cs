@@ -26,11 +26,60 @@ public class WheelTextTests(ITestOutputHelper output)
     /// <summary>Letters and digits only, so a separator dropped at a line break doesn't count as lost text.</summary>
     private static string Letters(string text) => new(text.Where(char.IsLetterOrDigit).ToArray());
 
+    /// <summary>Every petal of the ready-made wheels without files, groups' petals included.</summary>
+    private static IEnumerable<Petal.App.Wheels.WheelEntry> Entries()
+    {
+        var settings = new Petal.App.Settings.AppSettings();
+        Petal.App.Wheels.WheelTemplates.Upgrade(settings);
+        return Flatten(settings.Wheels.SelectMany(w => w.Items));
+
+        static IEnumerable<Petal.App.Wheels.WheelEntry> Flatten(IEnumerable<Petal.App.Wheels.WheelEntry> entries) =>
+            entries.SelectMany(e => e.Children is { } children ? Flatten(children).Prepend(e) : [e]);
+    }
+
     private static IEnumerable<string> Names(bool arabic) =>
-        ToolRegistry.All.Select(t => t.Name).Concat(FileActionRegistry.All.Select(a => a.Name)).Select(n => arabic ? Arabic(n) : n);
+        ToolRegistry.All.Select(t => t.Name)
+            .Concat(FileActionRegistry.All.Select(a => a.Name))
+            .Concat(Petal.App.Wheels.WheelActions.All.Select(a => a.Name))
+            .Concat(Entries().Select(e => e.Name).OfType<string>())
+            .Select(n => arabic ? Arabic(n) : n);
 
     private static IEnumerable<string> WheelTitles(bool arabic) =>
-        ToolRegistry.All.Select(t => t.WheelTitle).Concat(FileActionRegistry.All.Select(a => a.WheelTitle)).Select(n => arabic ? Arabic(n) : n);
+        ToolRegistry.All.Select(t => t.WheelTitle)
+            .Concat(FileActionRegistry.All.Select(a => a.WheelTitle))
+            .Concat(Petal.App.Wheels.WheelActions.All.Select(a => a.Label))
+            .Concat(["PAUSE", "MORE"])
+            .Concat(Entries().Select(e => e.Label).OfType<string>())
+            .Select(n => arabic ? Arabic(n) : n);
+
+    [Fact]
+    public void Every_petal_of_the_ready_made_wheels_has_Arabic()
+    {
+        var missing = WheelTitles(arabic: false).Concat(Names(arabic: false)).Distinct()
+            .Where(t => !Petal.App.Localization.Arabic.Table.ContainsKey(t) && !t.Any(c => c is >= '\u0600' and <= '\u06FF'))
+            .Where(t => t is not ("VS Code" or "QR" or "Word" or "Excel" or "PowerPoint" or "Teams" or "Zoom" or "Photoshop" or "Slack" or "Discord" or "Bluetooth"))
+            .ToList();
+        Assert.True(missing.Count == 0, "No Arabic for: " + string.Join(", ", missing));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Every_format_and_its_note_fit_the_centre_whole(bool arabic)
+    {
+        var titleFont = Font(arabic);
+        var subtitleFont = Font(arabic, title: false);
+        foreach (var format in Petal.Core.Formats.Formats.All.Where(f => FormatNotes.For(f) is not null))
+        {
+            var note = FormatNotes.For(format)!;
+            var subtitle = arabic ? Arabic(note) : note;
+            var fit = HubLayout.Fit(format.Label, subtitle, titleFont, subtitleFont, arabic);
+            Assert.Equal(Letters(format.Label), Letters(string.Concat(fit.Rows.Where(r => r.IsTitle).Select(r => r.Text))));
+            Assert.Equal(Letters(subtitle), Letters(string.Concat(fit.Rows.Where(r => !r.IsTitle).Select(r => r.Text))));
+            Assert.DoesNotContain(fit.Rows, r => r.Text.Contains('…'));
+            AssertInsideOutline(fit, format.Label);
+        }
+    }
 
     [Theory]
     [InlineData(false)]

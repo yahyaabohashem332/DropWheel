@@ -22,7 +22,20 @@ public static class WheelMemory
     private static Timer? _save;
 
     /// <summary>Where it is kept; tests point it elsewhere.</summary>
-    public static string FilePath { get; set; } = Path.Combine(Settings.SettingsStore.Directory, "wheel-memory.json");
+    public static string FilePath
+    {
+        get => _path ?? Path.Combine(Settings.SettingsStore.Directory, "wheel-memory.json");
+        set
+        {
+            lock (Gate)
+            {
+                _path = value;
+                _state = null;
+            }
+        }
+    }
+
+    private static string? _path;
 
     private static State Current
     {

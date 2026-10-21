@@ -75,8 +75,18 @@ public static class Practice
     /// <summary>Says what a petal would have done, on a card and to whoever listens.</summary>
     public static void Explain(WheelItem item, IReadOnlyList<string> files, ScreenPoint at, string page = "")
     {
+        var text = Describe(item, files);
+        var card = Hud.HudCard.ShowAt(at, L.T("Practice: nothing was changed"), text);
+        card.Succeed(L.T("Practice: nothing was changed"), text, null);
+        Explained?.Invoke(text);
+        Chosen?.Invoke(item, files, page, text);
+    }
+
+    /// <summary>What choosing the petal for these files would have done, in a sentence.</summary>
+    public static string Describe(WheelItem item, IReadOnlyList<string> files)
+    {
         var name = files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
-        string text = item.Payload switch
+        return item.Payload switch
         {
             FileFormat f when files.Count > 0 => L.F("Petal would save {0} as {1} beside the original.", name, f.Label),
             Favourite when files.Count > 0 => L.F("Petal would make {0} with your favourite “{1}”.", name, L.T(item.Label)),
@@ -86,10 +96,6 @@ public static class Practice
             _ when files.Count > 0 => L.F("{0} would run on {1}.", L.T(item.Name), name),
             _ => L.F("“{0}” would run.", L.T(item.Name)),
         };
-        var card = Hud.HudCard.ShowAt(at, L.T("Practice: nothing was changed"), text);
-        card.Succeed(L.T("Practice: nothing was changed"), text, null);
-        Explained?.Invoke(text);
-        Chosen?.Invoke(item, files, page, text);
     }
 }
 

@@ -151,7 +151,12 @@ public static class SettingsStore
     /// </summary>
     public static event Action<AppSettings>? Reloaded;
 
-    public static string Directory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal");
+    /// <summary>
+    /// Where settings and what Petal keeps beside them live: %APPDATA%\Petal. Tests and development runs point
+    /// it at a folder of their own (PETAL_SETTINGS_DIR), so they never change the user's.
+    /// </summary>
+    public static string Directory { get; set; } =
+        Environment.GetEnvironmentVariable("PETAL_SETTINGS_DIR") is { Length: > 0 } own ? own : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal");
 
     public static string FilePath => Path.Combine(Directory, "settings.json");
 

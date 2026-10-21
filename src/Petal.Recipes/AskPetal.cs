@@ -381,7 +381,8 @@ public static partial class AskPetal
     internal static string RuntimeFolder()
     {
         var zip = ModelStore.Find(ModelCatalog.LlamaCpp) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
-        var folder = Path.Combine(Path.GetDirectoryName(zip)!, "llama-runtime");
+        // Unpacked among the downloads, which can be written to even when the zip ships with the app.
+        var folder = Path.Combine(ModelStore.Folder, "llama-runtime");
         if (File.Exists(Path.Combine(folder, "llama-completion.exe")))
             return folder;
         var staging = folder + ".part";

@@ -128,7 +128,50 @@ internal static class DesignSnapshots
             ("phone", () => Actions.PhoneWindow.ForSnapshot([file("landscape.jpg"), file("weekend.mov"), file("album.pdf")])),
             ("update", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
                 .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "Petal-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
+            ("practice", Private<Onboarding.PracticeWindow>),
+            ("stats", () => { SampleStats(); return Private<Stats.StatsWindow>(); }),
+            ("wheeleditor", () => new Settings.WheelEditorWindow(Settings.SettingsWindow.Clone(Wheels.WheelTemplates.Apps()[0]))),
+            ("wheeleditorquick", () => new Settings.WheelEditorWindow(Wheels.WheelTemplates.Quick())),
+            ("entrykeys", () => new Settings.EntryEditorWindow(new Wheels.WheelEntry { Kind = Wheels.EntryKind.Keystroke, Label = "NEW TAB", Name = "New Tab", Icon = "plus", Keys = "Ctrl+T", Tint = "#0090FF" })),
+            ("entryscript", () => new Settings.EntryEditorWindow(SampleScript())),
+            ("entryfolder", () => new Settings.EntryEditorWindow(new Wheels.WheelEntry { Kind = Wheels.EntryKind.Folder, Path = Path.GetDirectoryName(file("landscape.jpg")) })),
+            ("entrygroup", () => new Settings.EntryEditorWindow(Wheels.WheelTemplates.Quick().Items[^1])),
+            ("petalpicker", Private<Settings.PetalPickerWindow>),
+            ("petalcolours", () => new Settings.PetalColoursWindow()),
+            ("openwith", () => (Window)typeof(Actions.OpenWithWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(IReadOnlyList<string>)])!
+                .Invoke([new[] { file("weekend.srt") }])),
+            ("confirmscript", () => (Window)typeof(Wheels.ConfirmScriptWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Wheels.WheelEntry), typeof(TaskCompletionSource<bool>)])!
+                .Invoke([SampleScript(), new TaskCompletionSource<bool>()])),
+            ("trialended", () => (Window)typeof(Shell.TrialEndedWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!
+                .Invoke([])),
         ];
+    }
+
+    private static Wheels.WheelEntry SampleScript() => new()
+    {
+        Kind = Wheels.EntryKind.Script,
+        Name = Localization.L.T("Capitals"),
+        Input = Wheels.ScriptInput.SelectedText,
+        Script = "$text = $env:PETAL_INPUT.ToUpper()\nSet-Clipboard $text\nWrite-Output $text",
+    };
+
+    /// <summary>Made-up counts in a scratch file, so the statistics snapshot never shows the user's own.</summary>
+    private static void SampleStats()
+    {
+        Stats.Statistics.FilePath = Path.Combine(Path.GetTempPath(), "petal-snapshot-statistics.json");
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var data = new Stats.StatsData { Since = today.AddDays(-80), Uses = 412, Files = 1240, BytesIn = 9_400_000_000, BytesOut = 6_100_000_000, Saved = 3_300_000_000 };
+        var random = new Random(4);
+        for (int back = 0; back < 84; back++)
+            if (back < 9 || random.NextDouble() < 0.55)
+                data.Days[Stats.Statistics.Key(today.AddDays(-back))] = new Stats.DayCount { Uses = random.Next(1, 14), Files = random.Next(0, 40) };
+        foreach (var (key, name, count) in new[] { ("format:webp", "Convert to WEBP", 96), ("tool:Compress", "Compress", 71), ("tool:RemoveBackground", "Remove Background", 38), ("action:Share", "Share", 22), ("entry:x", "Dark Mode", 17) })
+        {
+            data.Petals[key] = count;
+            data.Names[key] = name;
+        }
+        File.WriteAllText(Stats.Statistics.FilePath, System.Text.Json.JsonSerializer.Serialize(data));
+        Stats.Statistics.Reload();
     }
 
     private static T Private<T>() where T : Window =>
@@ -162,6 +205,11 @@ internal static class DesignSnapshots
         ];
         s.Automations = [new WatchRule { Folder = folder, Kind = WatchedKind.Pictures, Target = "jpg" }];
         s.Recipes = [SampleRecipe()];
+        s.Wheels = [];
+        s.WheelsVersion = 0;
+        Wheels.WheelTemplates.Upgrade(s);
+        s.Destinations = [new Wheels.FolderDestination { Folder = folder, Name = Localization.L.T("Projects") }];
+        s.PetalColours = new() { ["tool:Compress"] = "#30A46C", ["tool:Watermark"] = "#0090FF", ["action:Share"] = "#D6409F" };
     }
 
     private static Petal.Recipes.Recipe SampleRecipe() => new()
@@ -221,7 +269,7 @@ internal static class DesignSnapshots
             }
             // The whole Settings page, every card, for reviewing the lower sections.
             var full = CreateSettings();
-            Save(RenderWindow(full, 3600), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
+            Save(RenderWindow(full, 6400), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
             full.Close();
             foreach (var mode in Enum.GetValues<WheelMode>())
             {
@@ -232,6 +280,45 @@ internal static class DesignSnapshots
                     Save(image, Path.Combine(output, name));
                 }
             }
+            RingSnapshots(wheel, files, background, output, dark ? "dark" : "light");
+        }
+    }
+
+    /// <summary>
+    /// The wheels without files (quick actions with their numbers, a switch under the pointer, More opened,
+    /// media, an app's wheel) and the file wheels in each look: solid, monochrome, icons only, a larger zone.
+    /// </summary>
+    private static void RingSnapshots(WheelWindow wheel, IReadOnlyList<string> files, BitmapSource background, string output, string theme)
+    {
+        var s = Settings.SettingsStore.Current;
+        var quick = Wheels.Rings.Page(s.Wheels.First(w => w.Kind == Wheels.WheelKind.Quick));
+        var media = Wheels.Rings.Page(s.Wheels.First(w => w.Kind == Wheels.WheelKind.Media));
+        var browser = Wheels.Rings.Page(s.Wheels.First(w => w.Template == "browser"));
+        var explorer = Wheels.Rings.Page(s.Wheels.First(w => w.Template == "explorer"));
+        RingPage[] pages = [browser, quick, media];
+        void Shot(string name, Func<BitmapSource> take) => Save(take(), Path.Combine(output, $"{theme}-{name}.png"));
+        Shot("ring-quick", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true));
+        Shot("ring-quick-hover", () => wheel.Snapshot([], WheelMode.Conversions, 0, background, pages: pages, page: 1, keyboard: true));
+        Shot("ring-quick-more", () => wheel.Snapshot([], WheelMode.Conversions, 2, background, pages: pages, page: 1, openGroup: quick.Content().Items.Count - 1));
+        Shot("ring-media", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 2));
+        Shot("ring-browser", () => wheel.Snapshot([], WheelMode.Conversions, 4, background, pages: pages, page: 0, keyboard: true));
+        Shot("ring-explorer", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: [explorer, quick, media], page: 0));
+        Shot("actions-more", () => wheel.Snapshot(files, WheelMode.Actions, 2, background, openGroup: Petal.Core.Actions.ActionWheel.Default.Count + s.Destinations.Count));
+        var saved = (s.WheelStyle, s.ShowPetalNames, s.CancelZone, s.WheelMotion);
+        try
+        {
+            s.WheelStyle = Overlay.WheelStyle.Solid;
+            Shot("style-solid", () => wheel.Snapshot(files, WheelMode.Conversions, 2, background));
+            s.WheelStyle = Overlay.WheelStyle.Mono;
+            Shot("style-mono", () => wheel.Snapshot(files, WheelMode.Tools, 2, background));
+            s.WheelStyle = Overlay.WheelStyle.Glass;
+            s.ShowPetalNames = false;
+            Shot("icons-only", () => wheel.Snapshot(files, WheelMode.Tools, 1, background));
+            Shot("icons-only-quick", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1));
+        }
+        finally
+        {
+            (s.WheelStyle, s.ShowPetalNames, s.CancelZone, s.WheelMotion) = saved;
         }
     }
 

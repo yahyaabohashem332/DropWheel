@@ -858,13 +858,16 @@ public sealed class WheelWindow : Window
     /// <summary>
     /// Renders the wheel over a background image without a screen, for design reviews and tests.
     /// </summary>
-    internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false)
+    internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false,
+        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null)
     {
         _options = OptionsProvider();
         _palette = PaletteFor(_options);
         _files = files;
         _mode = mode;
-        _pages = null;
+        _pages = pages;
+        _page = page;
+        _interactive = keyboard;
         _groups.Clear();
         _open = true;
         var crop = new CroppedBitmap(background, new Int32Rect(
@@ -872,11 +875,15 @@ public sealed class WheelWindow : Window
             Math.Max(0, (background.PixelHeight - (int)Side) / 2),
             Math.Min((int)Side, background.PixelWidth),
             Math.Min((int)Side, background.PixelHeight)));
-        ApplyGlass(GlassCapture.Blur(crop));
-        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + 12 : Centre - WheelGeometry.OuterRadius - 12 - 30);
+        ApplyGlass(_options.Style == WheelStyle.Solid ? null : GlassCapture.Blur(crop));
+        double gap = 12 + (keyboard && _options.ShowNumbers ? 10 : 0);
+        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + gap : Centre - WheelGeometry.OuterRadius - gap - 30);
         _root.Visibility = Visibility.Visible;
         Render(animate: false);
+        if (openGroup is { } g && _content is not null && g < _content.Items.Count && _content.Items[g].IsGroup)
+            OpenGroup(_content.Items[g]);
         SetHighlight(highlight, null);
+        _interactive = false;
 
         var frame = new Grid { Width = Side, Height = Side };
         frame.Children.Add(new Image { Source = crop, Stretch = Stretch.UniformToFill });
@@ -891,6 +898,8 @@ public sealed class WheelWindow : Window
         frame.Children.Remove(_root);
         Content = _root;
         _open = false;
+        _pages = null;
+        _groups.Clear();
         return bitmap;
     }
 

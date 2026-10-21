@@ -45,6 +45,8 @@ public partial class LocalizationTests
         // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
         "f/", "ISO", "mm", "FNumber", "Software",
         "make them 1080 px WEBP and zip them", "صغّرها إلى 1080 بكسل وحوّلها إلى WEBP ثم ضعها في ملف مضغوط", "…our trip to the «beach» in July…",
+        // A sample script, and a name the statistics window shows in the language Petal speaks.
+        "$text = $env:PETAL_INPUT.ToUpper()\nSet-Clipboard $text\nWrite-Output $text", "Convert to WEBP",
     };
 
     private static readonly Regex Literal = MakeLiteral();

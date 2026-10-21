@@ -32,7 +32,7 @@ public static class History
     private static List<HistoryEntry>? _entries;
 
     /// <summary>Where the history lives (overridable for tests).</summary>
-    public static string FilePath { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal", "history.json");
+    public static string FilePath { get; set; } = Path.Combine(Settings.SettingsStore.Directory, "history.json");
 
     /// <summary>False when the user turned the history off in Settings.</summary>
     public static Func<bool> Enabled { get; set; } = () => true;

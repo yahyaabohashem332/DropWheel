@@ -57,8 +57,9 @@ public static class ClipboardSource
         {
             return Clipboard.ContainsFileDropList() || Clipboard.ContainsImage() || Clipboard.ContainsText();
         }
-        catch (System.Runtime.InteropServices.ExternalException)
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.ExternalException or ThreadStateException)
         {
+            // Busy, or asked from a thread that can't use the clipboard.
             return false;
         }
     }
