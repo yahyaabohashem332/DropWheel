@@ -144,20 +144,77 @@ internal static class PdfRaster
 
     public static SKBitmap Render(byte[] pdf, int pageIndex, int dpi, bool annotations = true, SKColor? background = null)
     {
-        var sizes = PageSizes(pdf);
-        var safe = SafeDpi(sizes[pageIndex], dpi);
-        var options = new RenderOptions
+        var options = Options(PageSizes(pdf)[pageIndex], dpi, annotations, background);
+        lock (Gate)
+            return Conversion.ToImage(pdf, pageIndex, null, options);
+    }
+
+    private static RenderOptions Options(PdfPageSize size, int dpi, bool annotations = true, SKColor? background = null)
+    {
+        var safe = SafeDpi(size, dpi);
+        return new RenderOptions
         {
             Dpi = safe,
             WithAnnotations = annotations,
             WithFormFill = true,
             AntiAliasing = PdfAntiAliasing.All,
             BackgroundColor = background ?? SKColors.White,
-            UseTiling = sizes[pageIndex].Width / 72 * safe * sizes[pageIndex].Height / 72 * safe > 40_000_000,
+            UseTiling = Pixels(size, safe) > 40_000_000,
         };
-        lock (Gate)
-            return Conversion.ToImage(pdf, pageIndex, null, options);
     }
+
+    private static double Pixels(PdfPageSize size, int dpi) => size.Width / 72 * dpi * size.Height / 72 * dpi;
+
+    /// <summary>
+    /// Every page, drawn one after another from a single load of the file (rendering page by page
+    /// would read the whole file again for each page). PDFium is held only while a page is being drawn,
+    /// so the caller can save one page while the next is drawn.
+    /// </summary>
+    public static IEnumerable<(int PageIndex, SKBitmap Bitmap)> RenderAll(byte[] pdf, int dpi)
+    {
+        var sizes = PageSizes(pdf);
+        // Pages drawn with the same options go together; only pages too big for the DPI differ.
+        for (int start = 0; start < sizes.Count;)
+        {
+            int end = start + 1;
+            while (end < sizes.Count && SafeDpi(sizes[end], dpi) == SafeDpi(sizes[start], dpi) &&
+                   Pixels(sizes[end], dpi) > 40_000_000 == Pixels(sizes[start], dpi) > 40_000_000)
+                end++;
+            var pages = Enumerable.Range(start, end - start).ToList();
+            int i = 0;
+            foreach (var bitmap in Drawn(pdf, pages, Options(sizes[start], dpi)))
+                yield return (pages[i++], bitmap);
+            start = end;
+        }
+    }
+
+    private static IEnumerable<SKBitmap> Drawn(byte[] pdf, IReadOnlyList<int> pages, RenderOptions options)
+    {
+        IEnumerator<SKBitmap> drawn;
+        lock (Gate)
+            drawn = Conversion.ToImages(pdf, pages, null, options).GetEnumerator();
+        try
+        {
+            while (true)
+            {
+                SKBitmap? bitmap;
+                lock (Gate)
+                    bitmap = drawn.MoveNext() ? drawn.Current : null;
+                if (bitmap is null)
+                    yield break;
+                yield return bitmap;
+            }
+        }
+        finally
+        {
+            lock (Gate)
+                drawn.Dispose();
+        }
+    }
+
+    /// <summary>How many drawn pages to save at once: one per core (up to four), one at a time for pages of over 40 megapixels.</summary>
+    public static int SavingAtOnce(byte[] pdf, int dpi) =>
+        PageSizes(pdf).Max(s => Pixels(s, SafeDpi(s, dpi))) > 40_000_000 ? 1 : Math.Clamp(Environment.ProcessorCount, 1, 4);
 
     public static SKBitmap RenderWidth(byte[] pdf, string? password, int pageIndex, int width, int rotation)
     {

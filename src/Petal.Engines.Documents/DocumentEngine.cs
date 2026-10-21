@@ -28,6 +28,29 @@ public static class DocumentEngine
             registry.Register(converter);
     }
 
+    /// <summary>
+    /// Loads PDFium and its map of the installed fonts by drawing a tiny page of text in a font the
+    /// file doesn't carry; otherwise the first PDF page anywhere in the app waits about five seconds.
+    /// Best effort, from any thread.
+    /// </summary>
+    public static void WarmUp()
+    {
+        const string page = "BT /F1 24 Tf 10 40 Td (Petal) Tj ET";
+        var pdf = System.Text.Encoding.ASCII.GetBytes(
+            "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+            "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 100]/Resources<</Font<</F1 4 0 R>>>>/Contents 5 0 R>>endobj\n" +
+            "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
+            $"5 0 obj<</Length {page.Length}>>stream\n{page}\nendstream endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
+        try
+        {
+            using var bitmap = PdfRaster.Render(pdf, 0, 36);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Only a head start.
+        }
+    }
+
     public static bool IsWordInstalled => OfficeAutomation.IsInstalled(OfficeApp.Word);
     public static bool IsExcelInstalled => OfficeAutomation.IsInstalled(OfficeApp.Excel);
     public static bool IsPowerPointInstalled => OfficeAutomation.IsInstalled(OfficeApp.PowerPoint);

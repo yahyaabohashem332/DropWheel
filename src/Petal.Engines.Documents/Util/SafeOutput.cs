@@ -73,25 +73,41 @@ internal static class SafeOutput
     /// several pages go into a new folder named after the input ("report/report 1.png"…),
     /// which is built under a temporary name and renamed when every page is done.
     /// </summary>
-    public static IReadOnlyList<string> WritePages(string inputPath, string outputPath, int pageCount, Action<int, string> writePage)
+    public static IReadOnlyList<string> WritePages(string inputPath, string outputPath, int pageCount, Action<int, string> writePage) =>
+        WritePages(inputPath, outputPath, pageCount, paths =>
+        {
+            for (var i = 0; i < paths.Count; i++)
+                writePage(i, paths[i]);
+        });
+
+    /// <summary>The same, with every page's path handed over at once, so pages can be written together.</summary>
+    public static IReadOnlyList<string> WritePages(string inputPath, string outputPath, int pageCount, Action<IReadOnlyList<string>> writeAll)
     {
         if (pageCount <= 0)
             throw new InvalidOperationException("The document has no pages.");
         if (pageCount == 1)
         {
-            Write(outputPath, t => writePage(0, t));
+            Write(outputPath, t => writeAll([t]));
             return [outputPath];
         }
         var stem = Petal.Core.Formats.Formats.BaseName(inputPath);
         var ext = Path.GetExtension(outputPath);
-        return WriteFolder(inputPath, outputPath, Enumerable.Range(1, pageCount).Select(n => $"{stem} {n}{ext}").ToList(), writePage);
+        return WriteFolder(inputPath, outputPath, Enumerable.Range(1, pageCount).Select(n => $"{stem} {n}{ext}").ToList(), writeAll);
     }
 
     /// <summary>
     /// Writes several files into a new folder beside the output, named after the input
     /// ("report", then "report 2"…). The folder only appears once every file is complete.
     /// </summary>
-    public static IReadOnlyList<string> WriteFolder(string inputPath, string outputPath, IReadOnlyList<string> fileNames, Action<int, string> write)
+    public static IReadOnlyList<string> WriteFolder(string inputPath, string outputPath, IReadOnlyList<string> fileNames, Action<int, string> write) =>
+        WriteFolder(inputPath, outputPath, fileNames, paths =>
+        {
+            for (var i = 0; i < paths.Count; i++)
+                write(i, paths[i]);
+        });
+
+    /// <summary>The same, with every file's path handed over at once.</summary>
+    public static IReadOnlyList<string> WriteFolder(string inputPath, string outputPath, IReadOnlyList<string> fileNames, Action<IReadOnlyList<string>> writeAll)
     {
         var dir = Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? Environment.CurrentDirectory;
         var stem = Petal.Core.Formats.Formats.BaseName(inputPath);
@@ -101,8 +117,7 @@ internal static class SafeOutput
         Directory.CreateDirectory(tempFolder);
         try
         {
-            for (var i = 0; i < fileNames.Count; i++)
-                write(i, Path.Combine(tempFolder, fileNames[i]));
+            writeAll(fileNames.Select(n => Path.Combine(tempFolder, n)).ToList());
             Directory.Move(tempFolder, folder);
             return fileNames.Select(n => Path.Combine(folder, n)).ToList();
         }

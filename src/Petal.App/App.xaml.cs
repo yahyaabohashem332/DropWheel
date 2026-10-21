@@ -50,6 +50,13 @@ public partial class App : Application
             return;
         }
 
+        if (args.Length >= 2 && args[0] == "--show-dialog")
+        {
+            ThemeResources.Install(this);
+            DesignSnapshots.ShowOnScreen(args);
+            return;
+        }
+
         if (args.Length >= 3 && args[0] == "--snapshots")
         {
             ThemeResources.Install(this);

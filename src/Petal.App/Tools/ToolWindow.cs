@@ -144,12 +144,12 @@ public abstract class ToolWindow : Window
     private void ApplyTheme()
     {
         var p = Theme.Current;
-        var tint = p.IsDark ? Color.FromArgb(0xCC, 0x24, 0x24, 0x2A) : Color.FromArgb(0xC8, 0xF6, 0xF6, 0xF8);
-        _translucent = Backdrop.Apply(this, p.IsDark, tint);
-        // Over a blur the content still gets a light wash so text stays readable on busy wallpapers.
-        _surface.Background = _translucent
-            ? Palette.Brush(p.IsDark ? Color.FromArgb(Backdrop.IsWindows11 ? (byte)0x50 : (byte)0x00, 0x20, 0x20, 0x24) : Color.FromArgb(Backdrop.IsWindows11 ? (byte)0x60 : (byte)0x00, 0xFA, 0xFA, 0xFB))
-            : Palette.Brush(p.WindowBackground);
+        _translucent = Backdrop.Apply(this, p.IsDark);
+        // Over a blur the content gets a wash so text stays readable on busy wallpapers: a light one over
+        // Windows 11's acrylic, which brings its own tint, and the whole tint over Windows 10's plain blur.
+        _surface.Background = !_translucent ? Palette.Brush(p.WindowBackground)
+            : Backdrop.IsWindows11 ? Palette.Brush(p.IsDark ? Color.FromArgb(0x50, 0x20, 0x20, 0x24) : Color.FromArgb(0x60, 0xFA, 0xFA, 0xFB))
+            : Palette.Brush(p.IsDark ? Color.FromArgb(0xCC, 0x24, 0x24, 0x2A) : Color.FromArgb(0xE6, 0xF6, 0xF6, 0xF8));
     }
 
     /// <summary>Shows the window centred on a screen point (physical pixels), kept on that monitor.</summary>

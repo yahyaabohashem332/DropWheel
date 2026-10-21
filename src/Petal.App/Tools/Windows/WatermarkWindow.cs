@@ -208,6 +208,6 @@ public sealed class WatermarkWindow : ToolWindow
             }
             return (IReadOnlyList<string>)[output];
         })).ToList();
-        _ = _jobs.RunAsync("Adding watermark", "Watermark added", work, _at);
+        _ = _jobs.RunAsync("Adding watermark", "Watermark added", work, _at, width: JobRunner.BatchWidth(_files));
     }
 }

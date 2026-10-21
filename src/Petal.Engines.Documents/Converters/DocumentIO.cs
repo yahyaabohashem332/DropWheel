@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Engines.Documents.IO;
@@ -123,12 +124,26 @@ internal static class PageImages
         IProgress<double>? progress, double progressStart, CancellationToken ct)
     {
         var count = PdfRaster.PageSizes(pdf).Count;
-        return SafeOutput.WritePages(inputPath, outputPath, count, (i, path) =>
+        int saved = 0;
+        return SafeOutput.WritePages(inputPath, outputPath, count, paths =>
         {
-            ct.ThrowIfCancellationRequested();
-            using var bitmap = PdfRaster.Render(pdf, i, settings.RenderDpi);
-            ImageTools.Save(bitmap, path, jpeg, settings.ImageQuality);
-            progress?.Report(progressStart + (1 - progressStart) * (i + 1) / count);
+            // Pages are drawn one at a time (PDFium does one thing at once) and saved on the other cores
+            // meanwhile; each worker takes the next page only when it is free, so few are held at once.
+            var options = new ParallelOptions { CancellationToken = ct, MaxDegreeOfParallelism = PdfRaster.SavingAtOnce(pdf, settings.RenderDpi) };
+            try
+            {
+                Parallel.ForEach(Partitioner.Create(PdfRaster.RenderAll(pdf, settings.RenderDpi), EnumerablePartitionerOptions.NoBuffering), options, page =>
+                {
+                    using var bitmap = page.Bitmap;
+                    ImageTools.Save(bitmap, paths[page.PageIndex], jpeg, settings.ImageQuality);
+                    progress?.Report(progressStart + (1 - progressStart) * Interlocked.Increment(ref saved) / count);
+                });
+            }
+            catch (AggregateException ex) when (ex.InnerExceptions.Count > 0)
+            {
+                // The first failure as itself ("The disk is full"), not wrapped.
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerExceptions[0]).Throw();
+            }
         });
     }
 }

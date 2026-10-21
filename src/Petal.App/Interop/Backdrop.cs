@@ -8,8 +8,14 @@ namespace Petal.App.Interop;
 
 /// <summary>
 /// Translucent window backgrounds: Acrylic through DWM on Windows 11, the accent-policy blur on
-/// Windows 10. Respects the "Transparency effects" setting; falls back to a solid colour.
+/// Windows 10 with the window painting its own tint over it. Respects the "Transparency effects"
+/// setting; falls back to a solid colour.
 /// </summary>
+/// <remarks>
+/// Windows 10's acrylic accent isn't used: it loses a WPF window's drawing whenever the window changes
+/// size, so a tool window sizing itself to its content opened as an empty box until the pointer passed
+/// over its controls, and it lags while the window is dragged. The plain blur has neither problem.
+/// </remarks>
 internal static class Backdrop
 {
     [DllImport("dwmapi.dll")]
@@ -50,7 +56,7 @@ internal static class Backdrop
     private const int DWMSBT_TRANSIENTWINDOW = 3;
     private const int DWMWCP_ROUND = 2;
     private const int WCA_ACCENT_POLICY = 19;
-    private const int ACCENT_ENABLE_ACRYLICBLURBEHIND = 4;
+    private const int ACCENT_ENABLE_BLURBEHIND = 3;
 
     public static bool IsWindows11 => Environment.OSVersion.Version.Build >= 22000;
 
@@ -71,7 +77,7 @@ internal static class Backdrop
     }
 
     /// <summary>Applies the backdrop. Returns true when the window is translucent (content should use a tint, not an opaque fill).</summary>
-    public static bool Apply(Window window, bool dark, Color tint)
+    public static bool Apply(Window window, bool dark)
     {
         var hwnd = new WindowInteropHelper(window).EnsureHandle();
         int darkValue = dark ? 1 : 0;
@@ -97,13 +103,8 @@ internal static class Backdrop
                 return DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref type, sizeof(int)) == 0;
             }
 
-            // Windows 10: AABBGGRR tint over the blur.
-            var policy = new AccentPolicy
-            {
-                AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND,
-                AccentFlags = 2,
-                GradientColor = ((uint)tint.A << 24) | ((uint)tint.B << 16) | ((uint)tint.G << 8) | tint.R,
-            };
+            // Windows 10: a plain blur; the window paints the tint.
+            var policy = new AccentPolicy { AccentState = ACCENT_ENABLE_BLURBEHIND };
             int size = Marshal.SizeOf(policy);
             var ptr = Marshal.AllocHGlobal(size);
             try

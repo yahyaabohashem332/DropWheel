@@ -8,9 +8,13 @@ namespace Petal.App;
 /// <summary>Registers every converter. More specific engines go first so they win.</summary>
 public static class EngineSetup
 {
+    private static int _warmed;
+
     /// <summary>
-    /// ImageMagick's OpenCL start-up costs seconds on the first image and rarely helps; turn it off
-    /// and load the native library in the background so the first conversion is instant.
+    /// ImageMagick's OpenCL start-up costs seconds on the first image and rarely helps; turn it off.
+    /// Then, once, a few seconds after start and at low priority, load what the first conversion would
+    /// otherwise wait for: ImageMagick's native library, PDFium and its map of the installed fonts
+    /// (about five seconds before the first PDF page), and FFmpeg and ExifTool, read from disk.
     /// </summary>
     public static void WarmUp()
     {
@@ -22,18 +26,35 @@ public static class EngineSetup
         {
             // Older builds without OpenCL support.
         }
-        Task.Run(() =>
+        if (Interlocked.Exchange(ref _warmed, 1) == 1)
+            return;
+        new Thread(() =>
         {
-            try
+            Thread.Sleep(3000);
+            Try(() =>
             {
                 using var image = new ImageMagick.MagickImage(ImageMagick.MagickColors.White, 8, 8);
                 image.Write(System.IO.Stream.Null, ImageMagick.MagickFormat.Png);
+            });
+            Try(Petal.Engines.Documents.DocumentEngine.WarmUp);
+            if (Petal.Core.Util.ToolLocator.Ffmpeg is { } ffmpeg)
+                Try(() => Petal.Core.Util.ProcessRunner.RunAsync(ffmpeg, ["-hide_banner", "-version"]).GetAwaiter().GetResult());
+            if (Petal.Core.Util.ToolLocator.ExifTool is { } exifTool)
+                Try(() => Petal.Core.Util.ProcessRunner.RunAsync(exifTool, ["-ver"]).GetAwaiter().GetResult());
+        })
+        { IsBackground = true, Priority = ThreadPriority.BelowNormal, Name = "Petal warm-up" }.Start();
+
+        static void Try(Action step)
+        {
+            try
+            {
+                step();
             }
             catch
             {
                 // Warm-up is best effort.
             }
-        });
+        }
     }
 
     public static ConverterRegistry CreateConverters()

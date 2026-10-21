@@ -14,7 +14,9 @@ another key to switch wheels in place. Drop on the centre (or press Esc) to canc
 the petal under the cursor in full: a long name goes onto up to three lines, set in a disc that fits
 the hub, instead of being cut short.
 
-Everything runs locally. Nothing is uploaded.
+Everything runs locally. Nothing is uploaded. Pictures and sounds dropped together are converted side
+by side, one per processor core (up to four); a PDF's pages are drawn from one reading of the file and
+saved together.
 
 No drag needed: right-click files in File Explorer → **Convert with Petal** opens the same wheel at
 the mouse; click a petal, or use the arrow keys and Enter (Shift, Ctrl and Alt switch wheels).
@@ -153,7 +155,7 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.3.1.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.3.2.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

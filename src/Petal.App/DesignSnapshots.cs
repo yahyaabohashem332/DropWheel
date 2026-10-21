@@ -228,6 +228,35 @@ internal static class DesignSnapshots
         }
     }
 
+    /// <summary>
+    /// Shows Settings on screen with the add-favourite dialog over it ("modal"), or the dialog on its own
+    /// the way the wheel opens tool windows ("near"), then quits after a few seconds: for checking how
+    /// windows first appear on the real desktop, which an off-screen render can't show.
+    /// </summary>
+    public static void ShowOnScreen(string[] args)
+    {
+        double seconds = args.Length > 2 ? double.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture) : 6;
+        if (args.Length > 3)
+            Theme.Configure(args[3] == "light" ? ThemePreference.Light : ThemePreference.Dark, false);
+        var quit = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(seconds) };
+        quit.Tick += (_, _) => Application.Current.Shutdown();
+        quit.Start();
+        var dialog = new Settings.FavouriteWindow(null, _ => { });
+        if (args[1] == "near")
+        {
+            dialog.ShowNear(new Input.ScreenPoint(900, 500));
+            return;
+        }
+        var settings = CreateSettings();
+        settings.Show();
+        settings.Dispatcher.BeginInvoke(() =>
+        {
+            dialog.Owner = settings;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            dialog.ShowDialog();
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+    }
+
     private static Window CreateSettings() =>
         (Window)typeof(Settings.SettingsWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
 

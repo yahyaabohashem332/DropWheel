@@ -183,7 +183,7 @@ public sealed class CompressWindow : ToolWindow
             return (IReadOnlyList<string>)[await backend(file, RequestFor(file, request), p, ct)];
         })).ToList();
         long before = _original;
-        _ = _jobs.RunAsync("Compressing", "Compressed", work, _at, outputs =>
+        _ = _jobs.RunAsync("Compressing", "Compressed", work, _at, width: JobRunner.BatchWidth(_files), describe: outputs =>
         {
             long after = outputs.Where(System.IO.File.Exists).Sum(f => new FileInfo(f).Length);
             if (after <= 0) return null;

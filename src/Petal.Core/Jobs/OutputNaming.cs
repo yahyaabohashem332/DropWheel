@@ -9,6 +9,25 @@ namespace Petal.Core.Jobs;
 /// </summary>
 public static class OutputNaming
 {
+    private static readonly AsyncLocal<HashSet<string>?> Batch = new();
+
+    /// <summary>
+    /// While the returned scope is open, names handed out on this flow stay apart even before their
+    /// files exist: files of one drop converted side by side ("photo.jpg" and "photo.png" to WEBP) must
+    /// not both get "photo.webp". Names worked out for display outside the scope are unaffected.
+    /// </summary>
+    public static IDisposable KeepApart()
+    {
+        var previous = Batch.Value;
+        Batch.Value = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return new Scope(() => Batch.Value = previous);
+    }
+
+    private sealed class Scope(Action close) : IDisposable
+    {
+        public void Dispose() => close();
+    }
+
     public static string ForConversion(string inputPath, FileFormat target, string? outputDirectory = null) =>
         Unique(outputDirectory ?? DirectoryOf(inputPath), Formats.Formats.BaseName(inputPath), target.WriteExtension);
 
@@ -37,8 +56,21 @@ public static class OutputNaming
     /// <summary>Picks "stem.ext", then "stem 2.ext", "stem 3.ext"… until nothing exists there.</summary>
     public static string Unique(string directory, string stem, string? extension, Func<string, bool>? exists = null)
     {
+        var batch = exists is null ? Batch.Value : null;
         exists ??= p => File.Exists(p) || Directory.Exists(p);
         var ext = string.IsNullOrEmpty(extension) ? "" : "." + extension;
+        if (batch is null)
+            return Pick(directory, stem, ext, exists);
+        lock (batch)
+        {
+            var name = Pick(directory, stem, ext, p => exists(p) || batch.Contains(p));
+            batch.Add(name);
+            return name;
+        }
+    }
+
+    private static string Pick(string directory, string stem, string ext, Func<string, bool> exists)
+    {
         var candidate = Path.Combine(directory, stem + ext);
         for (var n = 2; exists(candidate); n++)
             candidate = Path.Combine(directory, $"{stem} {n}{ext}");

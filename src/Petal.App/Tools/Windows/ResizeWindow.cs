@@ -232,6 +232,7 @@ public sealed class ResizeImageWindow : ToolWindow
             await ImageTransformer.TransformAsync(file, output, transform, p, ct);
             return (IReadOnlyList<string>)[output];
         })).ToList();
-        _ = _jobs.RunAsync("Resizing", "Resized", work, _at);
+        // The AI enlarger keeps every core busy on its own; ordinary resizes go one file per core.
+        _ = _jobs.RunAsync("Resizing", "Resized", work, _at, width: transform.AiEnlarge ? 1 : JobRunner.BatchWidth(_files));
     }
 }
