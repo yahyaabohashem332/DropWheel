@@ -2028,5 +2028,8 @@ internal static class Arabic
         ["{0} on"] = "{0} مفعّلة",
         ["{0} · {1} saved · {2}"] = "{0} · وُفّر {1} · {2}",
         ["{name} is the original name, {n} a running number, {date} the date a photo was taken."] = "{name} هو الاسم الأصلي، و{n} رقم متسلسل، و{date} تاريخ التقاط الصورة.",
+
+        // ---------- orbits ----------
+        ["Choose one around it"] = "اختر واحدة من حولها",
     };
 }

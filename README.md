@@ -49,8 +49,10 @@ Petal's settings instead.
   awake, hidden files, file extensions, desktop icons, Bluetooth; and Lock, Sleep, Empty Recycle Bin
   (Windows asks first), Eject Drives, Empty Clipboard, Show Desktop, Task View, Notifications, a
   screenshot of an area or the whole screen (straight onto the conversion wheel), and the clipboard's
-  wheel. Some wait under **More**, a group that opens in place: point at it, click it, or hold over it
-  while dragging; the centre goes back.
+  wheel. Some wait under **More**, a group: point at it, click it, or hold over it while dragging, and
+  its petals fly out of it as glass bubbles on an orbit just outside the ring (turning away from the
+  screen's edge and the wheel names); the rest of the ring steps back. Arrows, Enter and 1 to 9 work on
+  the bubbles; Esc, the group again or the centre takes them back in.
 * **Media** — play or pause, next, previous, shuffle, repeat and volume for whatever plays in Spotify,
   a browser or any app in Windows' media controls; the centre shows the song and its cover, turning
   while it plays.

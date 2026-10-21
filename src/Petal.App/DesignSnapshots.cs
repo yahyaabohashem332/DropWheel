@@ -300,6 +300,11 @@ internal static class DesignSnapshots
         Shot("ring-quick", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true));
         Shot("ring-quick-hover", () => wheel.Snapshot([], WheelMode.Conversions, 0, background, pages: pages, page: 1, keyboard: true));
         Shot("ring-quick-more", () => wheel.Snapshot([], WheelMode.Conversions, 2, background, pages: pages, page: 1, openGroup: quick.Content().Items.Count - 1));
+        // The orbit on its way out: just out of the petal, half way, overshooting, at rest, and with the keyboard.
+        int more = quick.Content().Items.Count - 1;
+        foreach (var (name, progress) in new[] { ("15", 0.15), ("45", 0.45), ("108", 1.08), ("100", 1.0) })
+            Shot($"orbit-{name}", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, openGroup: more, orbit: progress));
+        Shot("orbit-keys", () => wheel.Snapshot([], WheelMode.Conversions, 3, background, pages: pages, page: 1, keyboard: true, openGroup: more));
         Shot("ring-media", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 2));
         Shot("ring-browser", () => wheel.Snapshot([], WheelMode.Conversions, 4, background, pages: pages, page: 0, keyboard: true));
         Shot("ring-explorer", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: [explorer, quick, media], page: 0));

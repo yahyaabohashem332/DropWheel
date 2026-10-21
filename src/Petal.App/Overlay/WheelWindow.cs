@@ -21,7 +21,7 @@ namespace Petal.App.Overlay;
 /// slides under the cursor, Explorer hands it the dragged data, and dropping on a petal runs
 /// the petal's action. Nothing is intercepted: dropping elsewhere behaves exactly as usual.
 /// </summary>
-public sealed class WheelWindow : Window
+public sealed partial class WheelWindow : Window
 {
     public const double Side = 420;
     private const double Centre = Side / 2;
@@ -295,6 +295,10 @@ public sealed class WheelWindow : Window
         _anchor = new ScreenPoint(cx, cy);
         int px = (int)Math.Round(Side * scale);
         int left = cx - px / 2, top = cy - px / 2;
+        var onScreen = new Rect((work.Left - left) / scale - Centre, (work.Top - top) / scale - Centre,
+            (work.Right - work.Left) / scale, (work.Bottom - work.Top) / scale);
+        onScreen.Intersect(new Rect(-Centre, -Centre, Side, Side));
+        _visible = onScreen.IsEmpty ? new Rect(-Centre, -Centre, Side, Side) : onScreen;
 
         // Hint goes below the ring when there is no room above it.
         bool hintBelow = cy - work.Top < (WheelGeometry.OuterRadius + 64) * scale;
@@ -386,7 +390,24 @@ public sealed class WheelWindow : Window
     {
         base.OnMouseMove(e);
         if (!_interactive || _content is null) return;
-        var index = HitTestAt(e.GetPosition(_stage));
+        var p = e.GetPosition(_stage);
+        var v = new Vector(p.X - Centre, p.Y - Centre);
+        if (_orbit is { } o)
+        {
+            // Among the bubbles, or on the way to them from their petal: the orbit stays.
+            if (OrbitBubbleAt(v) is { } k)
+            {
+                SetOrbitHighlight(k, null);
+                return;
+            }
+            if (HitTestAt(p) == o.Group || InOrbitZone(o, v))
+            {
+                SetOrbitHighlight(null, null);
+                return;
+            }
+            CloseOrbit();
+        }
+        var index = HitTestAt(p);
         if (index is not null && index != _highlight)
         {
             SetHighlight(index, null);
@@ -394,7 +415,10 @@ public sealed class WheelWindow : Window
             _dwellTimer.Stop();
             _dwellOnHub = false;
             if (_content.Items[index.Value].IsGroup)
+            {
+                _dwellTimer.Interval = TimeSpan.FromMilliseconds(240);
                 _dwellTimer.Start();
+            }
         }
     }
 
@@ -404,6 +428,22 @@ public sealed class WheelWindow : Window
         if (!_interactive || _content is null) return;
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
+        if (_orbit is { } o)
+        {
+            if (OrbitBubbleAt(v) is { } k)
+            {
+                ChooseItem(o.Bubbles[k].Item);
+                return;
+            }
+            // The group petal again, or the middle, takes the bubbles back in.
+            if (HitTestAt(p) == o.Group || v.Length < CancelRadius)
+            {
+                CloseOrbit();
+                return;
+            }
+            if (InOrbitZone(o, v))
+                return;
+        }
         if (HitTestAt(p) is { } index)
             Choose(index);
         else if (v.Length < CancelRadius && _groups.Count > 0)
@@ -446,13 +486,18 @@ public sealed class WheelWindow : Window
         base.OnPreviewKeyDown(e);
         if (!_interactive) return;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (OrbitKey(key, e.IsRepeat))
+        {
+            e.Handled = true;
+            return;
+        }
         int count = _content?.Items.Count ?? 0;
         // 1 to 9 choose a petal straight away, clockwise from the top.
         int digit = key is >= Key.D1 and <= Key.D9 ? key - Key.D1 : key is >= Key.NumPad1 and <= Key.NumPad9 ? key - Key.NumPad1 : -1;
         if (digit >= 0 && _options.ShowNumbers && Keyboard.Modifiers == ModifierKeys.None)
         {
             if (digit < count && !e.IsRepeat)
-                Choose(digit);
+                Choose(digit, keyboard: true);
             e.Handled = true;
             return;
         }
@@ -478,7 +523,7 @@ public sealed class WheelWindow : Window
                 SetHighlight(count - 1, null);
                 break;
             case Key.Enter or Key.Space when _highlight is { } i && !e.IsRepeat:
-                Choose(i);
+                Choose(i, keyboard: true);
                 break;
             case Key.Tab:
                 Step(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1);
@@ -499,12 +544,30 @@ public sealed class WheelWindow : Window
         if (_interactive) CloseWheel(returnFocus: false);
     }
 
-    private void Choose(int index)
+    private void Choose(int index, bool keyboard = false)
     {
         if (_content is null || _files is null || index >= _content.Items.Count) return;
         var item = _content.Items[index];
         if (item.IsGroup)
         {
+            // Its petals come out around it; one too big for an orbit opens in place.
+            if (CanOrbit(item))
+                OpenOrbit(index, keyboard);
+            else
+                OpenGroup(item);
+            return;
+        }
+        ChooseItem(item);
+    }
+
+    /// <summary>Runs a petal of the wheel or of an orbit, once the wheel has gone.</summary>
+    private void ChooseItem(WheelItem item)
+    {
+        if (_files is null) return;
+        if (item.IsGroup)
+        {
+            // A group inside a group opens in place of the wheel.
+            CloseOrbit(animate: false);
             OpenGroup(item);
             return;
         }
@@ -545,6 +608,7 @@ public sealed class WheelWindow : Window
     {
         if (_content is null || group.Children is null) return;
         _dwellTimer.Stop();
+        ResetOrbit();
         _groups.Push((_content, L.T(group.Name)));
         _content = new WheelContent(group.Children, "");
         Sound.Tick();
@@ -571,7 +635,12 @@ public sealed class WheelWindow : Window
         if (_dwellOnHub)
             CloseGroup();
         else if (_highlight is { } i && i < _content.Items.Count && _content.Items[i].IsGroup)
-            OpenGroup(_content.Items[i]);
+        {
+            if (CanOrbit(_content.Items[i]))
+                OpenOrbit(i, keyboard: false);
+            else
+                OpenGroup(_content.Items[i]);
+        }
     }
 
     private bool _dwellOnHub;
@@ -626,6 +695,7 @@ public sealed class WheelWindow : Window
         _content = null;
         _highlight = null;
         _groups.Clear();
+        ResetOrbit();
         _pages = null;
         _hubPictureTurn.BeginAnimation(RotateTransform.AngleProperty, null);
         if (_interactive)
@@ -724,11 +794,16 @@ public sealed class WheelWindow : Window
         e.Handled = true;
         var files = _files;
         var content = _content;
-        int? index = _open && files is not null ? HitTest(e) : null;
+        var at = e.GetPosition(_stage);
+        // A bubble of an open group takes the drop before the ring.
+        var bubble = _open && files is not null && _orbit is { } orbit && OrbitBubbleAt(new Vector(at.X - Centre, at.Y - Centre)) is { } k
+            ? orbit.Bubbles[k].Item : null;
+        int? index = bubble is null && _open && files is not null ? HitTest(e) : null;
         var point = CursorPoint(e);
-        _dragHelper.Drop(e.Data, point, index is null ? DragDropEffects.None : DragDropEffects.Copy);
+        _dragHelper.Drop(e.Data, point, index is null && (bubble is null || bubble.IsGroup) ? DragDropEffects.None : DragDropEffects.Copy);
 
-        if (index is not { } i || content is null || files is null || i >= content.Items.Count || content.Items[i].IsGroup)
+        if (bubble is null && (index is not { } i || content is null || files is null || i >= content.Items.Count || content.Items[i].IsGroup)
+            || bubble is { IsGroup: true } || files is null)
         {
             // Dropped on the hub, a gap, the margin or a group that hadn't opened: do nothing, never move the files.
             e.Effects = DragDropEffects.None;
@@ -738,7 +813,7 @@ public sealed class WheelWindow : Window
 
         // Copy (never Move) so Explorer leaves the originals alone.
         e.Effects = DragDropEffects.Copy;
-        var item = content.Items[i];
+        var item = bubble ?? content!.Items[index!.Value];
         var page = PageKey;
         if (item.Unavailable is not null && item.Blocked)
         {
@@ -772,6 +847,25 @@ public sealed class WheelWindow : Window
 
     private void UpdatePointer(DragEventArgs e)
     {
+        if (_orbit is { } o)
+        {
+            var at = e.GetPosition(_stage);
+            var v = new Vector(at.X - Centre, at.Y - Centre);
+            if (OrbitBubbleAt(v) is { } k)
+            {
+                var item = o.Bubbles[k].Item;
+                e.Effects = item.IsGroup || item.Unavailable is not null && item.Blocked ? DragDropEffects.None : DragDropEffects.Copy;
+                SetOrbitHighlight(k, e.Data);
+                return;
+            }
+            if (HitTest(e) == o.Group || InOrbitZone(o, v))
+            {
+                e.Effects = DragDropEffects.None;
+                SetOrbitHighlight(null, e.Data);
+                return;
+            }
+            CloseOrbit();
+        }
         var index = HitTest(e);
         bool group = index is { } g && _content is not null && g < _content.Items.Count && _content.Items[g].IsGroup;
         e.Effects = index is null || group ? DragDropEffects.None : DragDropEffects.Copy;
@@ -783,7 +877,10 @@ public sealed class WheelWindow : Window
             _dwellTimer.Stop();
             _dwellOnHub = onHub;
             if (group || onHub)
+            {
+                _dwellTimer.Interval = TimeSpan.FromMilliseconds(group ? 340 : 420);
                 _dwellTimer.Start();
+            }
         }
         SetHighlight(index, e.Data);
     }
@@ -805,7 +902,7 @@ public sealed class WheelWindow : Window
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
             var item = _content.Items[i2];
-            _lastHubLabel = item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe ? item.Label : L.T(item.Name);
+            _lastHubLabel = HubTitle(item);
             SetHub(_lastHubLabel, Subtitle(item), animate: IsVisible);
             Sound.Tick();
             if (data is not null)
@@ -820,6 +917,10 @@ public sealed class WheelWindow : Window
                 ShowDefaultHub(animate: IsVisible);
         }
     }
+
+    /// <summary>The centre's name for a petal: a format's or favourite's own label, otherwise its name.</summary>
+    private static string HubTitle(WheelItem item) =>
+        item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe ? item.Label : L.T(item.Name);
 
     /// <summary>The centre's second line for a petal: why it can't run, its state, what it does, or what kind it is.</summary>
     private string Subtitle(WheelItem item)
@@ -859,8 +960,9 @@ public sealed class WheelWindow : Window
     /// Renders the wheel over a background image without a screen, for design reviews and tests.
     /// </summary>
     internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false,
-        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null)
+        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1)
     {
+        _visible = new Rect(-Centre, -Centre, Side, Side);
         _options = OptionsProvider();
         _palette = PaletteFor(_options);
         _files = files;
@@ -880,9 +982,19 @@ public sealed class WheelWindow : Window
         Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + gap : Centre - WheelGeometry.OuterRadius - gap - 30);
         _root.Visibility = Visibility.Visible;
         Render(animate: false);
-        if (openGroup is { } g && _content is not null && g < _content.Items.Count && _content.Items[g].IsGroup)
-            OpenGroup(_content.Items[g]);
-        SetHighlight(highlight, null);
+        if (openGroup is { } g && _content is not null && g < _content.Items.Count && CanOrbit(_content.Items[g]))
+        {
+            OpenOrbit(g, keyboard: false, animate: false);
+            if (highlight is { } h)
+                SetOrbitHighlight(h, null);
+            SettleOrbit(orbit);
+        }
+        else
+        {
+            if (openGroup is { } g2 && _content is not null && g2 < _content.Items.Count && _content.Items[g2].IsGroup)
+                OpenGroup(_content.Items[g2]);
+            SetHighlight(highlight, null);
+        }
         _interactive = false;
 
         var frame = new Grid { Width = Side, Height = Side };
@@ -900,6 +1012,9 @@ public sealed class WheelWindow : Window
         _open = false;
         _pages = null;
         _groups.Clear();
+        ResetOrbit();
+        foreach (var visual in _visuals)
+            visual.Recede(false, animate: false);
         return bitmap;
     }
 
@@ -926,6 +1041,7 @@ public sealed class WheelWindow : Window
             return;
         var p = _palette;
         _highlight = null;
+        ResetOrbit();
         _petals.Children.Clear();
         _labels.Children.Clear();
         _visuals.Clear();
@@ -1387,6 +1503,8 @@ public sealed class WheelWindow : Window
 
         _ring.Children.Add(_petals);
         _ring.Children.Add(_labels);
+        // A group's petals, out on their orbit around the ring.
+        _ring.Children.Add(_orbitLayer);
 
         // The centre's outline is a rounded rectangle so it can glide between a pill and a disc.
         _hubShape.Data = _hubOutline;
@@ -1494,8 +1612,10 @@ public sealed class WheelWindow : Window
                 line.Foreground = fg;
             if (Icon is Path icon)
                 icon.Stroke = on ? fg : Item.Tint is { } t ? Palette.Brush(Legible(t, p)) : fg;
-            LabelLayer.Opacity = dim && !on ? 0.45 : 1;
-            PetalLayer.Opacity = dim && !on ? 0.7 : 1;
+            _labelOpacity = dim && !on ? 0.45 : 1;
+            _petalOpacity = dim && !on ? 0.7 : 1;
+            LabelLayer.Opacity = _labelOpacity * (_receded ? 0.38 : 1);
+            PetalLayer.Opacity = _petalOpacity * (_receded ? 0.38 : 1);
             if (_edge is not null)
                 _edge.Stroke = Item.State == true
                     ? Palette.Brush(on ? Readable(accent, p) : accent)
@@ -1522,6 +1642,37 @@ public sealed class WheelWindow : Window
             _scale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(scale, ms, ease));
             _shift.BeginAnimation(TranslateTransform.XProperty, Motion.To(_axis.X * push, ms, ease));
             _shift.BeginAnimation(TranslateTransform.YProperty, Motion.To(_axis.Y * push, ms, ease));
+        }
+
+        private bool _receded;
+        private double _petalOpacity = 1, _labelOpacity = 1;
+
+        /// <summary>
+        /// While a group's petals are out on their orbit, the rest of the ring steps back (its key numbers
+        /// give way to the bubbles'); then forward again.
+        /// </summary>
+        public void Recede(bool back, bool animate)
+        {
+            if (_receded == back)
+                return;
+            _receded = back;
+            Fade(PetalLayer, _petalOpacity, animate);
+            Fade(LabelLayer, _labelOpacity, animate);
+            if (_number is not null)
+                _number.Visibility = back ? Visibility.Hidden : Visibility.Visible;
+        }
+
+        private void Fade(UIElement layer, double rest, bool animate)
+        {
+            double from = layer.Opacity, to = rest * (_receded ? 0.38 : 1);
+            layer.BeginAnimation(UIElement.OpacityProperty, null);
+            layer.Opacity = to;
+            if (animate && Math.Abs(from - to) > 0.01)
+                layer.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(from, to, TimeSpan.FromMilliseconds(_receded ? 220 : 180))
+                {
+                    EasingFunction = Motion.Standard,
+                    FillBehavior = FillBehavior.Stop,
+                });
         }
 
         /// <summary>For the unfolding entrance: the petal appears in its turn, from a little smaller.</summary>
