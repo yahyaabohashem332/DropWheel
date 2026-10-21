@@ -50,6 +50,13 @@ public static class ToolRegistry
         new(SeparateVocals, "VOCALS", "Separate Vocals", "music", true, ToolSelection.SingleOrBatch, "Stems", ToolOutputKind.Folder),
         new(EraseObject, "ERASE", "Erase Object", "brush", true, ToolSelection.Single, "Erased"),
         new(TranslateSubtitles, "ARABIC", "Translate to Arabic", "languages", true, ToolSelection.SingleOrBatch, "Arabic"),
+        new(ExportLayers, "LAYERS", "Export Layers", "layers", true, ToolSelection.SingleOrBatch, "Layers", ToolOutputKind.Folder),
+        new(SlimPhotoshop, "HISTORY", "Remove Photoshop History", "history", false, ToolSelection.SingleOrBatch, "Slim"),
+        new(FileDetails, "INFO", "File Info", "info", true, ToolSelection.Single, ""),
+        new(CollectFiles, "COLLECT", "Collect Files", "folderInput", true, ToolSelection.Single, "Collected", ToolOutputKind.Folder),
+        new(SavePreview, "PREVIEW", "Save Preview", "fileImage", false, ToolSelection.SingleOrBatch, "Preview", ToolOutputKind.FixedFormat, "png"),
+        new(Palette, "PALETTE", "Colour Palette", "palette", true, ToolSelection.Single, ""),
+        new(ExtractColours, "COLOURS", "Extract Colours", "dropper", true, ToolSelection.Single, "Colours", ToolOutputKind.FixedFormat, "ase"),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -57,7 +64,7 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText, ExtractColours];
     private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
     private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
@@ -70,6 +77,42 @@ public static class ToolRegistry
     private static readonly ToolId[] DocumentTools = [ReadAloud];
     private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
     private static readonly ToolId[] ArchiveTools = [ExtractArchive];
+    private static readonly ToolId[] PhotoshopSingle = [ExportLayers, FileDetails, ExtractColours, SlimPhotoshop];
+    private static readonly ToolId[] PhotoshopMulti = [ExportLayers, SlimPhotoshop, CreatePdf, CreateCollage];
+
+    /// <summary>Read-only pictures: Photoshop, camera RAW, Illustrator, EPS and SVG.</summary>
+    private static ToolId[] VectorTools(IReadOnlyCollection<FileFormat> formats, bool multi)
+    {
+        var kinds = formats.Distinct().ToList();
+        if (kinds.All(f => f == Formats.Formats.Psd || f == Formats.Formats.Psb))
+            return multi ? PhotoshopMulti : PhotoshopSingle;
+        if (multi)
+            return VectorMulti;
+        var only = kinds[0];
+        if (only == Formats.Formats.Raw)
+            return [FileDetails, ExtractColours];
+        if (only == Formats.Formats.Ai)
+            return [FileDetails, CollectFiles, ExtractColours];
+        if (only == Formats.Formats.Eps)
+            return [SavePreview, FileDetails];
+        return [ExtractColours];
+    }
+
+    /// <summary>Design and video projects: what is inside, previews, and gathering their linked files.</summary>
+    private static ToolId[] ProjectTools(IReadOnlyCollection<FileFormat> formats, bool multi)
+    {
+        var kinds = formats.Distinct().ToList();
+        if (multi)
+            return kinds.All(f => f == Formats.Formats.Indd || f == Formats.Formats.Xd) ? [SavePreview] : [];
+        var only = kinds[0];
+        if (only == Formats.Formats.Indd)
+            return [FileDetails, CollectFiles, SavePreview];
+        if (only == Formats.Formats.Idml)
+            return [FileDetails, CollectFiles];
+        if (only == Formats.Formats.Xd)
+            return [SavePreview, FileDetails];
+        return [CollectFiles];
+    }
 
     /// <summary>The tools offered on the tools wheel for a selection of files.</summary>
     public static IReadOnlyList<ToolInfo> ToolsFor(IReadOnlyCollection<FileFormat> formats)
@@ -87,7 +130,7 @@ public static class ToolRegistry
 
         ToolId[] ids = families[0] switch
         {
-            FormatFamily.Image when onlyVector => multi ? VectorMulti : [],
+            FormatFamily.Image when onlyVector => VectorTools(formats, multi),
             FormatFamily.Image when hasVector => multi ? VectorMulti : [],
             FormatFamily.Image => multi ? ImageMulti : ImageSingle,
             FormatFamily.Audio => multi ? AudioMulti : AudioSingle,
@@ -98,6 +141,8 @@ public static class ToolRegistry
             FormatFamily.Archive => ArchiveTools,
             FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => multi ? [] : DocumentTools,
             FormatFamily.Subtitle => SubtitleTools,
+            FormatFamily.Project => ProjectTools(formats, multi),
+            FormatFamily.Palette => multi ? [] : [Palette],
             _ => [],
         };
         return ids.Select(Get).ToList();

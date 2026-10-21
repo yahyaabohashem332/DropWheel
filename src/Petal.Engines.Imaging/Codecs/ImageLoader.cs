@@ -23,6 +23,12 @@ internal sealed record LoadOptions
 
     /// <summary>When set, decoders may return a smaller image (JPEG DCT scaling) no smaller than this box.</summary>
     public int? DecodeSizeHint { get; init; }
+
+    /// <summary>Resolution Illustrator and EPS drawings are rendered at.</summary>
+    public int DrawingDpi { get; init; } = 300;
+
+    /// <summary>Without Ghostscript, an EPS may give its small built-in preview instead of failing (for searching, not converting).</summary>
+    public bool AllowEpsPreview { get; init; }
 }
 
 /// <summary>Decodes any supported image into a single, upright, RGB <see cref="MagickImage"/>.</summary>
@@ -42,6 +48,10 @@ internal static class ImageLoader
         MagickImage image;
         if (format == F.Ico)
             image = LoadLargestFrame(path);
+        else if (format == F.Psd || format == F.Psb)
+            image = PhotoshopTools.LoadComposite(path, format);
+        else if (format == F.Ai || format == F.Eps)
+            image = LoadDrawing(path, format, options);
         else if (format == F.Svg)
             image = new MagickImage(path, CreateReadSettings(path, format, options)); // relative hrefs need the path
         else
@@ -88,7 +98,51 @@ internal static class ImageLoader
 
         if (format == F.Jpg && options.DecodeSizeHint is int hint and > 0)
             settings.Defines = new JpegReadDefines { Size = new MagickGeometry((uint)hint, (uint)hint) };
+
+        if (format == F.Raw)
+        {
+            // As the camera saw it: its white balance, in sRGB. For previews, the JPEG the camera embedded.
+            settings.Defines = new DngReadDefines
+            {
+                UseCameraWhiteBalance = true,
+                OutputColor = DngOutputColor.SRGB,
+                ReadThumbnail = options.DecodeSizeHint is > 0 and <= 2048 ? true : null,
+            };
+        }
         return settings;
+    }
+
+    /// <summary>
+    /// Illustrator files with PDF content are drawn by the PDF engine; PostScript (EPS, old
+    /// Illustrator) by Ghostscript when it is installed, else from the preview the file carries.
+    /// </summary>
+    private static MagickImage LoadDrawing(string path, FileFormat format, LoadOptions options)
+    {
+        Span<byte> head = stackalloc byte[8];
+        using (var fs = OpenRead(path))
+            head = head[..fs.ReadAtLeast(head, head.Length, throwOnEndOfStream: false)];
+        if (head.StartsWith("%PDF-"u8))
+        {
+            var render = PageRasterizer.Render ?? throw new InvalidOperationException("Illustrator files need the PDF engine.");
+            return new MagickImage(render(path, 0, options.DrawingDpi, true), new MagickReadSettings { Format = MagickFormat.Png });
+        }
+        if (Petal.Core.Util.Ghostscript.IsAvailable)
+        {
+            var png = Path.Combine(Path.GetTempPath(), "Petal", $"eps-{Guid.NewGuid():N}.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(png)!);
+            try
+            {
+                Petal.Core.Util.Ghostscript.RenderPngAsync(path, png, options.DrawingDpi).GetAwaiter().GetResult();
+                return new MagickImage(File.ReadAllBytes(png), new MagickReadSettings { Format = MagickFormat.Png });
+            }
+            finally
+            {
+                try { File.Delete(png); } catch (IOException) { }
+            }
+        }
+        if (options.AllowEpsPreview && EpsFile.LoadPreview(path) is { } preview)
+            return preview;
+        throw new InvalidOperationException(Petal.Core.Util.Ghostscript.Needed);
     }
 
     /// <summary>Density that renders the SVG at the requested scale, never beyond 8192 px.</summary>

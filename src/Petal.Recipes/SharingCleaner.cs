@@ -18,7 +18,8 @@ public static class SharingCleaner
     {
         if (OfficeMetadata.CanClean(path))
             return true;
-        return Formats.FromPath(path)?.Family is FormatFamily.Image or FormatFamily.Audio or FormatFamily.Video or FormatFamily.Pdf;
+        var format = Formats.FromPath(path);
+        return format?.Family is FormatFamily.Image or FormatFamily.Audio or FormatFamily.Video or FormatFamily.Pdf || format == Formats.Psd || format == Formats.Psb;
     }
 
     public static async Task CleanAsync(string input, string output, IProgress<double>? progress, CancellationToken cancellationToken)
@@ -28,7 +29,13 @@ public static class SharingCleaner
             await OfficeMetadata.CleanAsync(input, output, cancellationToken);
             return;
         }
-        switch (Formats.FromPath(input)?.Family)
+        var format = Formats.FromPath(input);
+        if (format == Formats.Psd || format == Formats.Psb)
+        {
+            await Petal.Engines.Imaging.PhotoshopTools.CleanForSharingAsync(input, output, cancellationToken);
+            return;
+        }
+        switch (format?.Family)
         {
             case FormatFamily.Image:
                 await ImageMetadata.RemoveAllAsync(input, output, progress, cancellationToken);

@@ -22,6 +22,17 @@ public static class ConversionMatrix
         foreach (var image in RasterImages)
             map[image] = [.. RasterImages.Where(f => f != image), Pdf];
         map[Svg] = [.. RasterImages, Pdf];
+        map[Psd] = [Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico, Pdf];
+        map[Psb] = [Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico, Pdf];
+        map[Raw] = [Jpg, Heic, Tiff, Png, Webp, Avif, Pdf];
+        map[Ai] = [Pdf, Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico];
+        map[Eps] = [Pdf, Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico];
+
+        // InDesign's interchange format: its text, as a document.
+        map[Idml] = [Docx, Odt, Txt, Md, Html];
+
+        map[Ase] = [Aco, Png];
+        map[Aco] = [Ase, Png];
 
         foreach (var audio in AudioFormats)
             map[audio] = [.. AudioFormats.Where(f => f != audio)];

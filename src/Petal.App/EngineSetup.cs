@@ -41,8 +41,10 @@ public static class EngineSetup
         WarmUp();
         Tools.Windows.ImageToolSetup.Register();
         Tools.Windows.PdfToolSetup.Register();
+        Tools.Windows.AdobeToolSetup.Register();
         var converters = new ConverterRegistry();
         converters.Register(new ImageConverter());
+        converters.Register(new PaletteConverter());
         converters.Register(new Petal.Engines.Media.MediaConverter());
         converters.Register(new ArchiveConverter());
         converters.Register(new SubtitleConverter());

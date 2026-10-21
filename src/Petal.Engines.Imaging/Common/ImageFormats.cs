@@ -26,6 +26,9 @@ internal static class ImageFormats
         "bmp" => MagickFormat.Bmp,
         "ico" => MagickFormat.Ico,
         "svg" => MagickFormat.Svg,
+        "psd" => MagickFormat.Psd,
+        "psb" => MagickFormat.Psb,
+        "raw" => MagickFormat.Dng,
         "gif" => MagickFormat.Gif,
         "pdf" => MagickFormat.Pdf,
         _ => throw new NotSupportedException($"{format.Label} is not an image format"),
@@ -64,7 +67,15 @@ internal static class ImageFormats
         {
             return F.FromPath(path);
         }
-        return Sniff(head[..n]) ?? F.FromPath(path);
+        var sniffed = Sniff(head[..n]);
+        var named = F.FromPath(path);
+        // Camera RAW files are TIFF (or ISO) containers, and Illustrator files are PDF or PostScript
+        // inside: the extension says what they really are.
+        if (named == F.Raw && sniffed is null or { Id: "tiff" })
+            return F.Raw;
+        if (named == F.Ai && sniffed is null or { Id: "pdf" } or { Id: "eps" })
+            return F.Ai;
+        return sniffed ?? named;
     }
 
     internal static ReadOnlySpan<byte> PngSignature => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
@@ -79,6 +90,8 @@ internal static class ImageFormats
         if (h.Length >= 2 && h[0] == (byte)'B' && h[1] == (byte)'M') return F.Bmp;
         if (h.Length >= 4 && h[0] == 0 && h[1] == 0 && h[2] == 1 && h[3] == 0) return F.Ico;
         if (h.Length >= 5 && h[..5].SequenceEqual("%PDF-"u8)) return F.Pdf;
+        if (PsdFile.IsPsd(h)) return h[5] == 2 ? F.Psb : F.Psd;
+        if (EpsFile.IsDosEps(h) || h.StartsWith("%!PS-Adobe"u8)) return F.Eps;
         if (h.Length >= 12 && h[4..8].SequenceEqual("ftyp"u8))
         {
             var brand = h[8..12];

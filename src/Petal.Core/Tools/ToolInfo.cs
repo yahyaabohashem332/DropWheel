@@ -43,6 +43,13 @@ public enum ToolId
     SeparateVocals,
     EraseObject,
     TranslateSubtitles,
+    ExportLayers,
+    SlimPhotoshop,
+    FileDetails,
+    CollectFiles,
+    SavePreview,
+    Palette,
+    ExtractColours,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

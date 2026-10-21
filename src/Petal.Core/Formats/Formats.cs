@@ -16,6 +16,25 @@ public static class Formats
     public static readonly FileFormat Ico = new("ico", "ICO", FormatFamily.Image, ["ico"]);
     public static readonly FileFormat Svg = new("svg", "SVG", FormatFamily.Vector, ["svg"], CanWrite: false);
 
+    // Design files and camera originals: read like pictures, never written.
+    public static readonly FileFormat Psd = new("psd", "PSD", FormatFamily.Vector, ["psd"], CanWrite: false);
+    public static readonly FileFormat Psb = new("psb", "PSB", FormatFamily.Vector, ["psb"], CanWrite: false);
+    public static readonly FileFormat Raw = new("raw", "RAW", FormatFamily.Vector,
+        ["dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "raf", "orf", "rw2", "rwl", "pef", "srw", "3fr", "iiq", "erf", "kdc", "mrw", "mos", "x3f"], CanWrite: false);
+    public static readonly FileFormat Ai = new("ai", "AI", FormatFamily.Vector, ["ai"], CanWrite: false);
+    public static readonly FileFormat Eps = new("eps", "EPS", FormatFamily.Vector, ["eps", "epsf", "epsi"], CanWrite: false);
+
+    // Projects
+    public static readonly FileFormat Indd = new("indd", "INDD", FormatFamily.Project, ["indd", "indt"], CanWrite: false);
+    public static readonly FileFormat Idml = new("idml", "IDML", FormatFamily.Project, ["idml"], CanWrite: false);
+    public static readonly FileFormat Xd = new("xd", "XD", FormatFamily.Project, ["xd"], CanWrite: false);
+    public static readonly FileFormat Prproj = new("prproj", "PRPROJ", FormatFamily.Project, ["prproj"], CanWrite: false);
+    public static readonly FileFormat Aep = new("aep", "AEP", FormatFamily.Project, ["aep"], CanWrite: false);
+
+    // Colour swatches
+    public static readonly FileFormat Ase = new("ase", "ASE", FormatFamily.Palette, ["ase"]);
+    public static readonly FileFormat Aco = new("aco", "ACO", FormatFamily.Palette, ["aco"]);
+
     // Audio
     public static readonly FileFormat Mp3 = new("mp3", "MP3", FormatFamily.Audio, ["mp3"]);
     public static readonly FileFormat M4a = new("m4a", "M4A", FormatFamily.Audio, ["m4a", "aac"]);
@@ -70,6 +89,9 @@ public static class Formats
     public static readonly IReadOnlyList<FileFormat> All =
     [
         Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Svg,
+        Psd, Psb, Raw, Ai, Eps,
+        Indd, Idml, Xd, Prproj, Aep,
+        Ase, Aco,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif,
         Pdf, Docx, Odt, Rtf, Md, Html, Txt, Epub,

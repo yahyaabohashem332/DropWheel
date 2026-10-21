@@ -1,5 +1,6 @@
 using Petal.Core.Jobs;
 using Petal.Engines.Documents.Office;
+using Petal.Engines.Documents.Pdf;
 using Petal.Engines.Documents.Ocr;
 
 namespace Petal.Engines.Documents;
@@ -7,14 +8,19 @@ namespace Petal.Engines.Documents;
 /// <summary>Entry point for the app: registers the document converters and reports what this machine can do.</summary>
 public static class DocumentEngine
 {
-    /// <summary>The four document converters, in registration order.</summary>
-    public static IReadOnlyList<IConverter> CreateConverters(DocumentEngineOptions? options = null) =>
-    [
-        new PdfConverter(options),
-        new DocumentConverter(options),
-        new SpreadsheetConverter(options),
-        new SlidesConverter(options),
-    ];
+    /// <summary>The document converters, in registration order (Illustrator and EPS to PDF first).</summary>
+    public static IReadOnlyList<IConverter> CreateConverters(DocumentEngineOptions? options = null)
+    {
+        IllustratorPdf.Register();
+        return
+        [
+            new DesignPdfConverter(),
+            new PdfConverter(options),
+            new DocumentConverter(options),
+            new SpreadsheetConverter(options),
+            new SlidesConverter(options),
+        ];
+    }
 
     public static void Register(ConverterRegistry registry, DocumentEngineOptions? options = null)
     {

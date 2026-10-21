@@ -104,7 +104,10 @@ public sealed class SearchIndexer(SearchIndex index, ConverterRegistry converter
         if (Meaning.IsReady)
             vector = await Task.Run(() => Meaning.EmbedImage(path), ct);
         string? text = null;
-        if (DocumentEngine.IsOcrAvailable && LooksLikeText(path, vector))
+        // Photoshop and Illustrator files carry their words; other pictures are read when they look like text.
+        if (Formats.FromPath(path) is { Family: FormatFamily.Vector } design && design != Formats.Svg && design != Formats.Raw && design != Formats.Eps)
+            text = await DocumentText.ReadAsync(path, converters, settings, null, ct);
+        else if (DocumentEngine.IsOcrAvailable && LooksLikeText(path, vector))
             text = await ImageRedactor.ReadTextAsync(path, ct);
         return (text, vector);
     }

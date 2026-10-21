@@ -8,9 +8,9 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_290_paths()
+    public void Conversion_matrix_has_342_paths()
     {
-        Assert.Equal(290, ConversionMatrix.TotalPaths);
+        Assert.Equal(342, ConversionMatrix.TotalPaths);
     }
 
     [Fact]
@@ -57,10 +57,10 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_41_tools_and_12_actions()
+    public void There_are_48_tools_and_12_actions()
     {
-        Assert.Equal(41, ToolRegistry.All.Count);
-        Assert.Equal(41, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(48, ToolRegistry.All.Count);
+        Assert.Equal(48, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
         Assert.Equal(12, Petal.Core.Actions.FileActionRegistry.All.Count);
     }
@@ -68,7 +68,7 @@ public class RegistryTests
     [Fact]
     public void Tools_change_with_selection_size()
     {
-        Assert.Equal(12, ToolRegistry.ToolsFor([F.Jpg]).Count);
+        Assert.Equal(13, ToolRegistry.ToolsFor([F.Jpg]).Count);
         var multi = ToolRegistry.ToolsFor([F.Jpg, F.Png]).Select(t => t.Id).ToList();
         Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.RemoveBackground, ToolId.CreatePdf, ToolId.MakeSearchable, ToolId.CreateCollage], multi);
         Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp3]).Select(t => t.Id));
@@ -81,7 +81,34 @@ public class RegistryTests
         Assert.Equal([ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
         Assert.Contains(ToolId.ReadAloud, ToolRegistry.ToolsFor([F.Pdf]).Select(t => t.Id));
         Assert.Empty(ToolRegistry.ToolsFor([F.Docx, F.Txt]));
-        Assert.Empty(ToolRegistry.ToolsFor([F.Svg]));
+        Assert.Equal([ToolId.ExtractColours], ToolRegistry.ToolsFor([F.Svg]).Select(t => t.Id));
+    }
+
+    [Fact]
+    public void Adobe_files_get_their_own_tools()
+    {
+        IEnumerable<ToolId> For(params FileFormat[] formats) => ToolRegistry.ToolsFor(formats).Select(t => t.Id);
+        Assert.Equal([ToolId.ExportLayers, ToolId.FileDetails, ToolId.ExtractColours, ToolId.SlimPhotoshop], For(F.Psd));
+        Assert.Equal([ToolId.ExportLayers, ToolId.SlimPhotoshop, ToolId.CreatePdf, ToolId.CreateCollage], For(F.Psd, F.Psb));
+        Assert.Equal([ToolId.FileDetails, ToolId.ExtractColours], For(F.Raw));
+        Assert.Equal([ToolId.CreatePdf, ToolId.CreateCollage], For(F.Raw, F.Raw));
+        Assert.Equal([ToolId.FileDetails, ToolId.CollectFiles, ToolId.ExtractColours], For(F.Ai));
+        Assert.Equal([ToolId.SavePreview, ToolId.FileDetails], For(F.Eps));
+        Assert.Equal([ToolId.FileDetails, ToolId.CollectFiles, ToolId.SavePreview], For(F.Indd));
+        Assert.Equal([ToolId.FileDetails, ToolId.CollectFiles], For(F.Idml));
+        Assert.Equal([ToolId.SavePreview, ToolId.FileDetails], For(F.Xd));
+        Assert.Equal([ToolId.CollectFiles], For(F.Prproj));
+        Assert.Equal([ToolId.CollectFiles], For(F.Aep));
+        Assert.Equal([ToolId.SavePreview], For(F.Indd, F.Xd));
+        Assert.Empty(For(F.Prproj, F.Aep));
+        Assert.Equal([ToolId.Palette], For(F.Ase));
+        Assert.Contains(ToolId.ExtractColours, For(F.Jpg));
+        // RAW files are recognised by every camera's extension.
+        foreach (var ext in new[] { "dng", "CR2", "cr3", "nef", "arw", "raf", "orf", "rw2", "pef", "srw" })
+            Assert.Equal(F.Raw, F.FromPath("photo." + ext));
+        Assert.Equal([F.Jpg, F.Heic, F.Tiff, F.Png, F.Webp, F.Avif, F.Pdf], ConversionMatrix.TargetsFor(F.Raw));
+        Assert.Equal([F.Docx, F.Odt, F.Txt, F.Md, F.Html], ConversionMatrix.TargetsFor(F.Idml));
+        Assert.Empty(ConversionMatrix.TargetsFor(F.Indd));
     }
 }
 

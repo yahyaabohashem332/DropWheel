@@ -43,7 +43,8 @@ public static class Meaning
     /// <summary>The picture's meaning, from its upright, centre-cropped middle.</summary>
     public static float[] EmbedImage(string path)
     {
-        using var image = ImageLoader.Load(path);
+        // CLIP looks at 224 pixels: a quick decode is plenty (camera RAW gives its JPEG preview, EPS its built-in picture).
+        using var image = ImageLoader.Load(path, new LoadOptions { DecodeSizeHint = 512, AllowEpsPreview = true, DrawingDpi = 96 });
         image.AutoOrient();
         return EmbedImage(image);
     }

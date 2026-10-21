@@ -19,6 +19,47 @@ public static class ToolLocator
         @"%ProgramFiles(x86)%\LibreOffice\program\soffice.exe",
         LibreOfficeFromRegistry() ?? "");
 
+    /// <summary>
+    /// Ghostscript's console program, which full-quality EPS (and pre-2000 Illustrator) files need.
+    /// It isn't bundled (its licence is the AGPL); Petal uses it when it is installed.
+    /// </summary>
+    public static string? Ghostscript => Find("gswin64c.exe", GhostscriptCandidates());
+
+    private static string[] GhostscriptCandidates()
+    {
+        var found = new List<string>();
+        foreach (var root in new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) })
+        {
+            var gs = Path.Combine(root, "gs");
+            if (root.Length == 0 || !Directory.Exists(gs))
+                continue;
+            // gs10.04.0 and the like: newest first.
+            foreach (var dir in Directory.GetDirectories(gs, "gs*").OrderByDescending(d => d, StringComparer.OrdinalIgnoreCase))
+            {
+                found.Add(Path.Combine(dir, "bin", "gswin64c.exe"));
+                found.Add(Path.Combine(dir, "bin", "gswin32c.exe"));
+            }
+        }
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\GPL Ghostscript");
+                foreach (var version in (key?.GetSubKeyNames() ?? []).OrderByDescending(v => v))
+                {
+                    using var sub = key!.OpenSubKey(version);
+                    if (sub?.GetValue("GS_DLL") is string dll)
+                        found.Add(Path.Combine(Path.GetDirectoryName(dll)!, "gswin64c.exe"));
+                }
+            }
+            catch
+            {
+                // No access to the registry: the folders above are enough.
+            }
+        }
+        return [.. found];
+    }
+
     /// <summary>LibreOffice records its install folder under UNO\InstallPath, even for custom locations.</summary>
     private static string? LibreOfficeFromRegistry()
     {

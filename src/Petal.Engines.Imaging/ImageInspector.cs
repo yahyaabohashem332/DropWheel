@@ -49,6 +49,9 @@ public sealed record ImageInfo(
 
 public static class ImageInspector
 {
+    /// <summary>A picture's real format, from its first bytes (and, for camera RAW and Illustrator files, its extension).</summary>
+    public static FileFormat? DetectFormat(string path) => ImageFormats.Detect(path);
+
     /// <summary>Reads dimensions, format, size, resolution, alpha and orientation of an image.</summary>
     public static ImageInfo Read(string path)
     {

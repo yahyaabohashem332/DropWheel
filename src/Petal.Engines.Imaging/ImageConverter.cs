@@ -21,7 +21,9 @@ public sealed class ImageConverter : IConverter, IResaver
         from.Family is FormatFamily.Image or FormatFamily.Vector &&
         (to.Family == FormatFamily.Image || to == F.Pdf) &&
         to.CanWrite &&
-        (to != F.Heic || HeifWriter.IsAvailable);
+        (to != F.Heic || HeifWriter.IsAvailable) &&
+        // Illustrator and EPS become vector PDFs elsewhere, not pictures in a PDF.
+        !(to == F.Pdf && (from == F.Ai || from == F.Eps));
 
     public Task<JobResult> ConvertAsync(ConversionJob job, IProgress<double>? progress, CancellationToken cancellationToken) =>
         Task.Run(async () =>
@@ -35,6 +37,7 @@ public sealed class ImageConverter : IConverter, IResaver
             {
                 SvgDensity = Math.Max(96, job.Settings.RenderDpi / 2.0),
                 SvgMinLongEdge = job.To == F.Ico ? 256 : 0,
+                DrawingDpi = Math.Clamp(job.Settings.RenderDpi, 72, 1200),
             };
             using var image = ImageLoader.Load(job.InputPath, actual, load);
             cancellationToken.ThrowIfCancellationRequested();
@@ -48,6 +51,9 @@ public sealed class ImageConverter : IConverter, IResaver
                 PdfPreferJpeg = ImageFormats.IsLossy(actual),
             };
             await ImageWriter.WriteAsync(image, job.OutputPath, job.To, options, cancellationToken);
+            // The RAW decoder keeps no metadata: copy the camera's (date, camera, lens, exposure, place).
+            if (actual == F.Raw && job.To != F.Pdf && job.To != F.Ico && job.To != F.Bmp)
+                await RawMetadata.CopyAsync(job.InputPath, job.OutputPath, cancellationToken);
             progress?.Report(1);
             return JobResult.Single(job.OutputPath);
         }, cancellationToken);

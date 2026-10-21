@@ -66,7 +66,7 @@ public sealed class TranslatorTests(ITestOutputHelper output)
         var cues = Petal.Engines.Files.Subtitles.SubtitleConverter.Parse(arabic);
         Assert.Equal(3, cues.Count);
         Assert.Equal(TimeSpan.FromSeconds(3.6), cues[1].Start);
-        Assert.All(cues, c => Assert.Contains(c.Text, ch => ch is >= '؀' and <= 'ۿ'));
+        Assert.All(cues, c => Assert.Contains(c.Text, ch => ch is >= '\u0600' and <= '\u06FF'));
         Assert.Contains("الخبز", cues[1].Text);
         Assert.Contains("الملح", cues[2].Text);
         Assert.DoesNotContain("<i>", arabic);

@@ -12,7 +12,7 @@ namespace Petal.Engines.Documents.Converters;
 /// <summary>Format dispatch for the document model.</summary>
 internal static class DocumentIO
 {
-    public static bool CanRead(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub;
+    public static bool CanRead(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub || f == F.Idml;
 
     public static bool CanWrite(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub;
 
@@ -25,6 +25,7 @@ internal static class DocumentIO
         "html" => HtmlReader.Read(path),
         "txt" => PlainTextIO.Read(path),
         "epub" => Epub.Read(path),
+        "idml" => IdmlReader.Read(path),
         _ => throw new NotSupportedException($"Cannot read {format.Label} documents."),
     };
 

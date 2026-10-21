@@ -5,8 +5,8 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
-| **Shift** | Convert | Your starred favourites first, then every format the file can become (290 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign… (41 tools), your recipes and your own petals |
+| **Shift** | Convert | Your starred favourites first, then every format the file can become (342 conversion paths) |
+| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes… (48 tools), your recipes and your own petals |
 | **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path, Terminal, Find Duplicates |
 
 The keys can be changed in Settings. Let go of the key — the wheel stays open until you drop. Tap
@@ -87,6 +87,30 @@ Each model downloads once from its tool window (sizes: natural voices 85 MB each
 search 227 MB, noise 27 MB, vocals 181 MB, eraser 208 MB, translation 114 MB) and is checked against
 a pinned SHA-256.
 
+**Adobe files** — no Adobe application needed:
+
+* **Photoshop (PSD, PSB)** — convert to PNG, JPG, WEBP, TIFF, PDF and more (files saved without
+  "Maximize compatibility" are combined from their visible layers); **Export Layers** saves every
+  layer as a PNG named after it (Unicode names, groups, hidden layers, cropped or on the full canvas);
+  **Remove Photoshop History** drops the hidden list of every file ever pasted in, which can make a
+  PSD many times larger; Clean for Sharing works on PSDs too.
+* **Camera RAW** (DNG, CR2, CR3, NEF, ARW, RAF, ORF, RW2 and more) — developed with the camera's white
+  balance into JPG, HEIC, TIFF, PNG, WEBP, AVIF or PDF, upright, keeping the date, camera, lens,
+  exposure and place.
+* **Illustrator (AI)** — drawn as pictures with a transparent background, or saved as a plain PDF
+  without Illustrator's editing data (often a much smaller file).
+* **EPS** — the picture stored inside for previews; full-quality drawing and vector PDFs when the free
+  Ghostscript is installed.
+* **File Info** — size, colour mode, layers, pages or artboards, colour plates, fonts (installed here or
+  not), linked files (found or missing) for PSD, RAW, AI, EPS, InDesign (INDD, IDML) and XD files.
+* **Collect Files** — a Premiere Pro, After Effects, InDesign, IDML or Illustrator project with every
+  file and font it uses, in one folder with a report; Premiere, After Effects and IDML copies are
+  pointed at the collected files.
+* **IDML** to Word, ODT, text, Markdown or HTML, in reading order; **Save Preview** for InDesign, XD and
+  EPS files.
+* **Swatches** — ASE (Photoshop, Illustrator, InDesign) and ACO files shown, converted into each other,
+  saved as CSS, JSON, a GIMP palette or a picture; **Extract Colours** makes swatches from any picture.
+
 **Make Petal yours:**
 
 * **Recipes** (Settings › Recipes) — several steps as one petal on the tools wheel: remove the
@@ -112,7 +136,8 @@ a pinned SHA-256.
 * **Command line** — `petal convert *.heic --to jpg --max 2048`, `petal resize`, `petal compress`,
   `petal zip`, `petal qr`, `petal text`, `petal codes`, `petal info`, `petal formats`, `petal run
   <recipe>`, `petal searchable`, `petal speak`, `petal ask "…"`, `petal search`, `petal denoise`,
-  `petal separate`, `petal translate`. Installed as
+  `petal separate`, `petal translate`, `petal layers`, `petal slim`, `petal preview`, `petal collect`,
+  `petal colours`, `petal palette`. Installed as
   `Petal.com` beside `Petal.exe` (setup can add it to PATH); `petal help` lists the options.
 * **Updates** — set an update address (an `update.json` over https, or a shared folder) in
   Settings › Updates and Petal checks once a day; the installer is verified against the feed's
@@ -126,22 +151,24 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.2.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.3.0.exe` (per-user, no admin rights; English or Arabic setup). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
 
 Microsoft Office or LibreOffice, when installed, is used for slides and exact-layout Word/Excel output;
-everything else is built in. On this development PC all 290 conversion paths are available.
+everything else is built in. EPS (and Illustrator files from before version 9) need Ghostscript for full
+quality: all 342 conversion paths have an engine, and the 9 from EPS run when Ghostscript is installed.
 
 ## Tests
 
-833 tests: core, app and command line (223, including a check that every interface string has
+896 tests: core, app and command line (242, including a check that every interface string has
 Arabic), media engine (216, transcription, voices, noise removal and vocal separation included),
-image engine (211, AI models included), documents and PDF (183). Tests that need a downloaded
-model look for it in a folder named by an environment variable (`PETAL_LLM`, `PETAL_VOICES`,
-`PETAL_SEARCH_MODELS`, `PETAL_DEEPFILTER`, `PETAL_DEMUCS`, `PETAL_LAMA`, `PETAL_OPUS`) and say
-they were skipped otherwise.
+image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and PDF (183).
+Tests that need a downloaded model look for it in a folder named by an environment variable
+(`PETAL_LLM`, `PETAL_VOICES`, `PETAL_SEARCH_MODELS`, `PETAL_DEEPFILTER`, `PETAL_DEMUCS`, `PETAL_LAMA`,
+`PETAL_OPUS`) and say they were skipped otherwise; `PETAL_ADOBE_SAMPLES` adds structure checks on
+real Photoshop, Illustrator and EPS files.
 `tests/Petal.DragHarness` performs real shell drags with key taps for end-to-end checks.
 
 ## How it works

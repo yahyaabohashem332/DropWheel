@@ -3,6 +3,7 @@ namespace Petal.Core.Formats;
 public enum FormatFamily
 {
     Image,
+    /// <summary>Pictures Petal reads but never writes: SVG, Photoshop, camera RAW, Illustrator and EPS.</summary>
     Vector,
     Audio,
     Video,
@@ -14,6 +15,10 @@ public enum FormatFamily
     Spreadsheet,
     Subtitle,
     Archive,
+    /// <summary>Design and video projects (InDesign, XD, Premiere, After Effects): information and tools, no conversions.</summary>
+    Project,
+    /// <summary>Colour swatches (Adobe Swatch Exchange and Photoshop swatches).</summary>
+    Palette,
 }
 
 /// <summary>A file format Petal knows how to read and/or write.</summary>

@@ -1,3 +1,4 @@
+using Petal.Engines.Files.Design;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
@@ -33,6 +34,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         try { MagickNET.SetLogEvents(LogEventTypes.None); OpenCL.IsEnabled = false; } catch { /* older ImageMagick builds */ }
         var converters = new ConverterRegistry();
         converters.Register(new ImageConverter());
+        converters.Register(new PaletteConverter());
         converters.Register(new MediaConverter());
         converters.Register(new ArchiveConverter());
         converters.Register(new SubtitleConverter());
@@ -68,6 +70,12 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 "voices" => Voices(),
                 "codes" => await CodesAsync(Arguments.Parse(rest), ct),
                 "info" => await InfoAsync(Arguments.Parse(rest), ct),
+                "layers" => await LayersAsync(Arguments.Parse(rest, "full", "hidden"), ct),
+                "slim" => await SlimAsync(Arguments.Parse(rest), ct),
+                "preview" => await PreviewAsync(Arguments.Parse(rest), ct),
+                "collect" => await CollectAsync(Arguments.Parse(rest, "no-fonts"), ct),
+                "colours" or "colors" => ColoursCommand(Arguments.Parse(rest)),
+                "palette" => PaletteCommand(Arguments.Parse(rest)),
                 "formats" => Formats(Arguments.Parse(rest)),
                 "recipes" => ListRecipes(),
                 "run" => await RunRecipeAsync(Arguments.Parse(rest), ct),
@@ -119,7 +127,17 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                                     Scans get a text layer so they can be searched and copied
                                     (pictures of pages become one PDF)
           petal codes <image>       Print the QR codes and barcodes in a picture
-          petal info <file>         Format, size, dimensions or duration
+          petal info <file>         Format, size, dimensions or duration; layers, pages, fonts and links of Adobe files
+          petal layers <psd> [--full] [--hidden] [--out <folder>]
+                                    Every layer of a Photoshop file as a PNG named after it
+          petal slim <psd>          A copy without Photoshop's hidden document history
+          petal preview <eps|indd|xd>  The preview picture stored in the file, as a PNG
+          petal collect <project> [--no-fonts] [--out <folder>]
+                                    A Premiere, After Effects, InDesign or IDML project with every file it uses
+          petal colours <picture> [--count <3-12>] [--as ase|aco|css|json|gpl|png] [--out <folder>]
+                                    The main colours of a picture, as swatches
+          petal palette <ase|aco> [--as css|json|gpl|png|ase|aco] [--out <folder>]
+                                    The colours of a swatch file, listed or saved for code and other apps
           petal formats [<file>]    What each format (or this file) converts to
           petal ask "<request>" <files> [--run] [--out <folder>]
                                     Says what Petal would do for a request in plain words
@@ -219,7 +237,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 failures += Fail(file, "Only pictures can be resized.");
                 continue;
             }
-            var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir, extensionOverride: to?.WriteExtension);
+            var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir, extensionOverride: to?.WriteExtension ?? PictureExtension(file));
             failures += await StepAsync(file, async progress =>
             {
                 await ImageTransformer.TransformAsync(file, path, transform, progress, ct);
@@ -251,7 +269,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
             {
                 FormatFamily.Image or FormatFamily.Vector => async progress =>
                 {
-                    var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+                    var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir, extensionOverride: PictureExtension(file));
                     var r = await ImageCompressor.CompressAsync(file, path, new ImageCompressOptions
                     {
                         Preset = strong ? CompressionPreset.Strong : CompressionPreset.Balanced,
@@ -696,7 +714,8 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         {
             switch (format?.Family)
             {
-                case FormatFamily.Image or FormatFamily.Vector:
+                // Illustrator and EPS drawings have no pixels of their own: their details follow below.
+                case FormatFamily.Image or FormatFamily.Vector when format != F.Ai && format != F.Eps:
                     var image = await ImageInspector.ReadAsync(file, ct);
                     output.WriteLine($"  Pixels    {image.DisplayWidth} × {image.DisplayHeight}{(image.FrameCount > 1 ? $", {image.FrameCount} frames" : "")}");
                     output.WriteLine($"  Colour    {image.ColorSpace}, {image.BitDepth}-bit{(image.HasAlpha ? ", transparent" : "")}{(image.ColorProfile is { } p ? $", {p}" : "")}");
@@ -714,6 +733,14 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             output.WriteLine($"  (Couldn't read the contents: {ex.Message})");
+        }
+        try
+        {
+            AdobeInfo(file, format);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            output.WriteLine($"  (Couldn't read the design details: {ex.Message})");
         }
         if (format is not null)
         {
@@ -744,6 +771,167 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 output.WriteLine($"  {format.Label,-7} → {(targets.Count == 0 ? "—" : string.Join(", ", targets.Select(t => t.Label)))}");
             }
         }
+        return Ok;
+    }
+
+    /// <summary>Pictures Petal can't write (Photoshop, RAW, Illustrator, EPS, SVG) are saved as PNG, or JPG for camera photos.</summary>
+    private static string? PictureExtension(string file) => F.FromPath(file) is { CanWrite: false } format ? (format == F.Raw ? "jpg" : "png") : null;
+
+    // ---------- Adobe files ----------
+
+    private void AdobeInfo(string file, FileFormat? format)
+    {
+        if (format == F.Psd || format == F.Psb)
+        {
+            var psd = PsdFile.Read(file);
+            output.WriteLine($"  Document  {psd.Width} × {psd.Height} px, {psd.ColorMode} {psd.Depth}-bit, {Math.Round(psd.DpiX)} ppi{(psd.HasComposite ? "" : ", no flat copy saved")}");
+            var kinds = psd.Layers.Where(l => l.Kind is not (PsdLayerKind.Empty or PsdLayerKind.Group)).GroupBy(l => l.Kind).Select(g => $"{g.Count()} {g.Key switch { PsdLayerKind.Text => "text", PsdLayerKind.SmartObject => "smart object", _ => "pixel" }}");
+            output.WriteLine($"  Layers    {string.Join(", ", kinds)}; {psd.Layers.Count(l => l.Kind == PsdLayerKind.Group)} groups, {psd.Layers.Count(l => l.FrameIndex >= 0 && l.Hidden)} hidden");
+            foreach (var layer in Enumerable.Reverse(psd.Layers).Where(l => l.Kind != PsdLayerKind.Empty))
+                output.WriteLine($"            {string.Concat(layer.Group.Select(_ => "  "))}{(layer.Kind == PsdLayerKind.Group ? "▸ " : "")}{layer.Name}{(layer.Hidden ? " (hidden)" : "")}");
+            if (psd.Fonts.Count > 0)
+                output.WriteLine($"  Fonts     {string.Join(", ", psd.Fonts.Select(f => FontIndex.Find(new DesignFont(f, null, null, f, null)) is null ? f + " (missing)" : f))}");
+            if (PhotoshopTools.HistoryEntries(psd) is int history and > 0)
+                output.WriteLine($"  History   {history} entries (petal slim removes them)");
+            return;
+        }
+        if (!DesignDocuments.CanRead(file))
+            return;
+        var d = DesignDocuments.Read(file);
+        output.WriteLine($"  Kind      {d.Kind}{(d.Application is { } app ? $" ({app})" : "")}");
+        foreach (var (label, value) in d.Facts)
+            output.WriteLine($"  {label,-9} {value}");
+        if (d.Fonts.Count > 0)
+            output.WriteLine($"  Fonts     {string.Join(", ", d.Fonts.Select(f => FontIndex.Find(f) is null ? f.Name + " (missing)" : f.Name))}");
+        var folder = Path.GetDirectoryName(Path.GetFullPath(file))!;
+        foreach (var link in d.Links)
+            output.WriteLine($"  Link      {link}{(ProjectCollector.Resolve(link, folder) is null ? " (missing)" : "")}");
+        if (d.Swatches.Count > 0)
+            output.WriteLine($"  Swatches  {d.Swatches.Count}");
+    }
+
+    private async Task<int> LayersAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("full", "hidden", "out");
+        var options = new LayerExportOptions(a.Has("full"), a.Has("hidden"));
+        var tool = ToolRegistry.Get(ToolId.ExportLayers);
+        var outDir = a.OutputFolder();
+        int failures = 0;
+        foreach (var file in a.Files())
+        {
+            if (F.FromPath(file) is not { } f || (f != F.Psd && f != F.Psb))
+            {
+                failures += Fail(file, "Name Photoshop files (PSD or PSB).");
+                continue;
+            }
+            var folder = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+            failures += await StepAsync(file, async progress => await PhotoshopTools.ExportLayersAsync(file, folder, options, progress, ct), ct);
+        }
+        return failures == 0 ? Ok : Failed;
+    }
+
+    private async Task<int> SlimAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("out");
+        var tool = ToolRegistry.Get(ToolId.SlimPhotoshop);
+        var outDir = a.OutputFolder();
+        int failures = 0;
+        foreach (var file in a.Files())
+        {
+            var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+            failures += await StepAsync(file, async _ =>
+            {
+                var (before, after, entries) = await PhotoshopTools.RemoveHistoryAsync(file, path, ct);
+                error.WriteLine($"{Path.GetFileName(file)}: {entries} history entries removed, {Size(before)} → {Size(after)}");
+                return [path];
+            }, ct);
+        }
+        return failures == 0 ? Ok : Failed;
+    }
+
+    private async Task<int> PreviewAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("out");
+        var tool = ToolRegistry.Get(ToolId.SavePreview);
+        var outDir = a.OutputFolder();
+        int failures = 0;
+        foreach (var file in a.Files())
+        {
+            var path = OutputNaming.ForTool(file, tool, outputDirectory: outDir);
+            failures += await StepAsync(file, _ => Task.Run<IReadOnlyList<string>>(() =>
+            {
+                MagickImage? image = F.FromPath(file) == F.Eps ? EpsFile.LoadPreview(file) : null;
+                if (image is null && DesignDocuments.CanRead(file) && DesignDocuments.Preview(file) is { } bytes)
+                    image = new MagickImage(bytes);
+                if (image is null)
+                    throw new InvalidOperationException("This file has no preview picture.");
+                using (image)
+                    image.Write(path, MagickFormat.Png);
+                return [path];
+            }, ct), ct);
+        }
+        return failures == 0 ? Ok : Failed;
+    }
+
+    private async Task<int> CollectAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only("no-fonts", "out");
+        var file = Single(a);
+        if (!ProjectCollector.CanCollect(file))
+            throw new UsageException("Name a Premiere (.prproj), After Effects (.aep), InDesign (.indd), IDML or Illustrator file.");
+        var plan = ProjectCollector.Plan(file);
+        foreach (var item in plan.Files.Where(i => i.Found is null))
+            error.WriteLine($"Missing: {item.Recorded}");
+        foreach (var font in plan.Fonts.Where(f => f.Installed is null))
+            error.WriteLine($"Font not on this PC: {font.Font.Name}");
+        var folder = OutputNaming.ForTool(file, ToolRegistry.Get(ToolId.CollectFiles), outputDirectory: a.OutputFolder());
+        var result = await ProjectCollector.CollectAsync(plan, folder, new CollectOptions(!a.Has("no-fonts")), new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+        ClearProgress();
+        output.WriteLine(result.Folder);
+        error.WriteLine($"{result.Copied} files collected, {result.Missing} missing, {result.Fonts} fonts{(result.Relinked ? "; the copied project points at them" : "")}.");
+        return result.Missing == 0 ? Ok : Failed;
+    }
+
+    private int ColoursCommand(Arguments a)
+    {
+        a.Only("count", "as", "out");
+        var file = Single(a);
+        int count = a.Int("count", 3, 12) ?? 6;
+        var swatches = Swatches.Extract(file, count);
+        return SwatchOutput(file, swatches, a.Get("as"), a.OutputFolder(), "Colours");
+    }
+
+    private int PaletteCommand(Arguments a)
+    {
+        a.Only("as", "out");
+        var file = Single(a);
+        return SwatchOutput(file, Swatches.Read(file), a.Get("as"), a.OutputFolder(), null);
+    }
+
+    /// <summary>Lists the colours, or saves them in the format asked for.</summary>
+    private int SwatchOutput(string file, IReadOnlyList<Swatch> swatches, string? format, string? outDir, string? suffix)
+    {
+        if (format is null)
+        {
+            foreach (var s in swatches)
+                output.WriteLine($"{s.Hex}  {s.Name}{(s.Group is { } g ? $"  ({g})" : "")}{(s.Spot ? "  spot" : "")}");
+            return Ok;
+        }
+        format = format.ToLowerInvariant();
+        if (format is not ("ase" or "aco" or "css" or "json" or "gpl" or "png"))
+            throw new UsageException("--as is ase, aco, css, json, gpl or png.");
+        var stem = Path.GetFileNameWithoutExtension(file) + (suffix is null ? "" : " " + suffix);
+        var path = OutputNaming.Unique(outDir ?? Path.GetDirectoryName(Path.GetFullPath(file))!, stem, format);
+        switch (format)
+        {
+            case "ase": Swatches.WriteAse(swatches, path); break;
+            case "aco": Swatches.WriteAco(swatches, path); break;
+            case "css": File.WriteAllText(path, Swatches.ToCss(swatches)); break;
+            case "json": File.WriteAllText(path, Swatches.ToJson(swatches)); break;
+            case "gpl": File.WriteAllText(path, Swatches.ToGpl(swatches, stem)); break;
+            default: Swatches.WriteSheet(swatches, path); break;
+        }
+        output.WriteLine(path);
         return Ok;
     }
 

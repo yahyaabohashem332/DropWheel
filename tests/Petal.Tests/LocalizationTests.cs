@@ -32,6 +32,8 @@ public partial class LocalizationTests
         // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Microsoft",
         // Sample requests and search results in the design snapshots, already in both languages.
+        // Photography abbreviations and ExifTool tag names, which read the same in Arabic.
+        "f/", "ISO", "mm", "FNumber", "Software",
         "make them 1080 px WEBP and zip them", "صغّرها إلى 1080 بكسل وحوّلها إلى WEBP ثم ضعها في ملف مضغوط", "…our trip to the «beach» in July…",
     };
 

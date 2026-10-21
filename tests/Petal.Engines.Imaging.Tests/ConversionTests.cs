@@ -14,6 +14,14 @@ public sealed class ConversionSamples : IDisposable
         using var image = Fixtures.Quadrants();
         foreach (var format in F.RasterImages.Append(F.Svg))
             Sources[format] = Fixtures.Save(image, Directory, format);
+        // Photoshop files whose flat picture is the quadrants, with one layer.
+        var rgba = image.GetPixels().ToByteArray(PixelMapping.RGBA)!;
+        (byte, byte, byte, byte) At(int x, int y) => (rgba[(y * 64 + x) * 4], rgba[(y * 64 + x) * 4 + 1], rgba[(y * 64 + x) * 4 + 2], 255);
+        TestLayer[] layers = [new("Background", 0, 0, 64, 48, (200, 200, 200))];
+        Sources[F.Psd] = Path.Combine(Directory, "sample.psd");
+        File.WriteAllBytes(Sources[F.Psd], PsdWriter.Write(64, 48, layers, At));
+        Sources[F.Psb] = Path.Combine(Directory, "sample.psb");
+        File.WriteAllBytes(Sources[F.Psb], PsdWriter.Write(64, 48, layers, At, large: true));
     }
 
     public string Directory { get; }
@@ -33,13 +41,15 @@ public sealed class ConversionTests(ConversionSamples samples) : IClassFixture<C
     public static TheoryData<string, string> ImagePaths()
     {
         var data = new TheoryData<string, string>();
-        foreach (var (from, to) in ConversionMatrix.AllPaths().Where(p => p.From.Family is FormatFamily.Image or FormatFamily.Vector))
+        // Camera RAW is developed (brightened) by design and Illustrator/EPS need the PDF engine or
+        // Ghostscript: they have their own tests.
+        foreach (var (from, to) in ConversionMatrix.AllPaths().Where(p => p.From.Family is FormatFamily.Image or FormatFamily.Vector && p.From != F.Raw && p.From != F.Ai && p.From != F.Eps))
             data.Add(from.Id, to.Id);
         return data;
     }
 
     [Fact]
-    public void MatrixHasEveryImagePath() => Assert.Equal(8 * 8 + 9, ImagePaths().Count);
+    public void MatrixHasEveryImagePath() => Assert.Equal(8 * 8 + 9 + 9 + 9, ImagePaths().Count);
 
     [Theory]
     [MemberData(nameof(ImagePaths))]

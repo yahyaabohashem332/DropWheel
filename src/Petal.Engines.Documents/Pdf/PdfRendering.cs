@@ -142,7 +142,7 @@ internal static class PdfRaster
         return Math.Max(18, (int)Math.Floor(dpi * scale));
     }
 
-    public static SKBitmap Render(byte[] pdf, int pageIndex, int dpi, bool annotations = true)
+    public static SKBitmap Render(byte[] pdf, int pageIndex, int dpi, bool annotations = true, SKColor? background = null)
     {
         var sizes = PageSizes(pdf);
         var safe = SafeDpi(sizes[pageIndex], dpi);
@@ -152,7 +152,7 @@ internal static class PdfRaster
             WithAnnotations = annotations,
             WithFormFill = true,
             AntiAliasing = PdfAntiAliasing.All,
-            BackgroundColor = SKColors.White,
+            BackgroundColor = background ?? SKColors.White,
             UseTiling = sizes[pageIndex].Width / 72 * safe * sizes[pageIndex].Height / 72 * safe > 40_000_000,
         };
         lock (Gate)

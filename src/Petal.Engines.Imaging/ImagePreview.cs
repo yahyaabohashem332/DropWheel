@@ -34,6 +34,9 @@ public static class ImagePreview
             DecodeSizeHint = maxSize,
             SvgDensity = 1, // the minimum; SvgMinLongEdge then sets the exact size
             SvgMinLongEdge = maxSize,
+            // Previews may use an EPS's built-in picture, and draw Illustrator files at screen resolution.
+            AllowEpsPreview = true,
+            DrawingDpi = 96,
         };
         var image = ImageLoader.Load(path, format, options);
         try
