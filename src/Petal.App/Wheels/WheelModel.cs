@@ -21,6 +21,8 @@ public enum EntryKind
     RunningApps,
     /// <summary>Opens a web address or a link such as ms-settings:.</summary>
     Link,
+    /// <summary>What was copied lately: each clip a petal, to paste in the app in front.</summary>
+    Clips,
 }
 
 public enum ScriptShell

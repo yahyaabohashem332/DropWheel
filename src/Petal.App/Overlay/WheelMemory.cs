@@ -15,6 +15,53 @@ public static class WheelMemory
         public Dictionary<string, string> LastPetal { get; set; } = [];
         public string? LastRing { get; set; }
         public WheelMode? LastFileMode { get; set; }
+
+        /// <summary>How often each petal was chosen, by kind of file and wheel ("jpg|Conversions").</summary>
+        public Dictionary<string, Dictionary<string, int>> Usual { get; set; } = [];
+    }
+
+    /// <summary>Choices before a petal counts as the usual one for a kind of file.</summary>
+    public const int UsualAfter = 3;
+
+    /// <summary>"jpg", "jpg,png": the kinds of file in a selection, or null for folders and mixed bags.</summary>
+    public static string? KindOf(IReadOnlyList<string> files)
+    {
+        if (files.Count == 0 || files.Any(Directory.Exists))
+            return null;
+        var kinds = files.Select(f => Path.GetExtension(f).TrimStart('.').ToLowerInvariant()).Where(e => e.Length > 0).Distinct().Order().ToList();
+        return kinds.Count is 0 or > 3 ? null : string.Join(",", kinds);
+    }
+
+    /// <summary>Counts a choice towards the usual petal for a kind of file on a wheel.</summary>
+    public static void CountChoice(string kind, string page, string key)
+    {
+        var state = Current;
+        lock (Gate)
+        {
+            var slot = kind + "|" + page;
+            if (!state.Usual.TryGetValue(slot, out var counts))
+                state.Usual[slot] = counts = [];
+            counts[key] = counts.GetValueOrDefault(key) + 1;
+            // Only the top few are worth keeping.
+            if (counts.Count > 12)
+                foreach (var drop in counts.OrderBy(c => c.Value).Take(counts.Count - 12).Select(c => c.Key).ToList())
+                    counts.Remove(drop);
+            _save?.Dispose();
+            _save = new Timer(_ => Save(), null, TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
+        }
+    }
+
+    /// <summary>The petal chosen most for this kind of file on this wheel, once it has been chosen a few times.</summary>
+    public static string? UsualFor(string kind, string page)
+    {
+        var state = Current;
+        lock (Gate)
+        {
+            if (!state.Usual.TryGetValue(kind + "|" + page, out var counts) || counts.Count == 0)
+                return null;
+            var best = counts.MaxBy(c => c.Value);
+            return best.Value >= UsualAfter ? best.Key : null;
+        }
     }
 
     private static readonly Lock Gate = new();

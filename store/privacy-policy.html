@@ -58,7 +58,22 @@
     the shortcut and mouse button you set to open it. It does not record, store or send what you type. It
     reads the clipboard, the selected text or the selected files only when you choose a petal that uses
     them, and it takes a screenshot only when you choose a screenshot petal; screenshots are saved in your
-    Pictures\Screenshots folder.</p>
+    Pictures\Screenshots folder. Screen recordings, scrolling screenshots, text from the screen, drawing,
+    zoom and the colour picker look at the screen only while you use them; recordings are saved in your
+    Videos\Screen Recordings folder. "Show clicks and keys" shows shortcuts on the screen while it is on
+    (typing too only if you ask) and keeps none of them.</p>
+
+    <h2>Microphone</h2>
+    <p>Petal uses the microphone only while you dictate, ask Petal out loud, or record the screen with the
+    microphone switched on. Speech is turned into text on this PC by the Whisper model; the recording is
+    deleted as soon as it is written down, and nothing is sent anywhere.</p>
+
+    <h2>Clipboard history</h2>
+    <p>When the clipboard history is on (Settings › Screen &amp; Text), Petal keeps the last 30 things you
+    copied while it runs, so you can paste them again. Copies that apps mark as private, such as passwords
+    from password managers, are never kept. The history is forgotten when Petal closes unless you turn on
+    "Remember it after Petal closes" or pin a clip; then it is kept in <code>%APPDATA%\Petal\Clipboard</code>
+    on this PC only. Sticky notes are kept in <code>%APPDATA%\Petal\notes.json</code>.</p>
 
     <h2>When Petal uses the internet</h2>
     <ul>
@@ -111,7 +126,20 @@
     <p>وأنت تسحب ملفًا، يراقب Petal ضغطات المفاتيح التي تفتح عجلته وتبدّلها، وينتظر الاختصار وزر الفأرة اللذين
     تختارهما لفتحها. لا يسجّل ما تكتبه ولا يحفظه ولا يرسله. يقرأ الحافظة أو النص المحدد أو الملفات المحددة فقط
     حين تختار بتلة تستخدمها، ولا يلتقط الشاشة إلا حين تختار بتلة لقطة الشاشة، وتُحفظ اللقطات في مجلد
-    الصور\لقطات الشاشة.</p>
+    الصور\لقطات الشاشة. تسجيل الشاشة واللقطة الطويلة ونص من الشاشة والرسم والتكبير والتقاط اللون تنظر إلى
+    الشاشة فقط وأنت تستخدمها، وتُحفظ التسجيلات في مجلد الفيديو\Screen Recordings. و«إظهار النقرات والمفاتيح»
+    يُظهر الاختصارات على الشاشة ما دام مفعّلًا (والكتابة أيضًا إن طلبت ذلك) ولا يحفظ منها شيئًا.</p>
+
+    <h2>الميكروفون</h2>
+    <p>يستخدم Petal الميكروفون فقط وأنت تُملي، أو تسأل Petal بصوتك، أو تسجّل الشاشة والميكروفون مفعّل. يتحول
+    الكلام إلى نص على هذا الجهاز بنموذج Whisper، ويُحذف التسجيل فور كتابته، ولا يُرسل شيء إلى أي مكان.</p>
+
+    <h2>سجل الحافظة</h2>
+    <p>حين يكون سجل الحافظة مفعّلًا (الإعدادات › الشاشة والنصوص)، يحتفظ Petal بآخر 30 شيئًا نسخته ما دام يعمل،
+    لتلصقها مجددًا. ما تعلّمه التطبيقات بأنه خاص، مثل كلمات المرور من مديري كلمات المرور، لا يُحفظ أبدًا. ويُنسى
+    السجل عند إغلاق Petal إلا إن فعّلت «تذكّره بعد إغلاق Petal» أو ثبّتّ قصاصة، فيُحفظ عندها في
+    <code dir="ltr">%APPDATA%\Petal\Clipboard</code> على هذا الجهاز وحده. والملاحظات اللاصقة تُحفظ في
+    <code dir="ltr">%APPDATA%\Petal\notes.json</code>.</p>
 
     <h2>متى يستخدم Petal الإنترنت</h2>
     <ul>

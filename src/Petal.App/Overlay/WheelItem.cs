@@ -40,6 +40,9 @@ public sealed record WheelItem(string Label, string Name, string? Icon, object P
     /// <summary>The centre's second line instead of the kind of petal ("Convert", "Tool"…): what the choice does.</summary>
     public string? Note { get; init; }
 
+    /// <summary>The petal usually chosen for this kind of file: marked with a small star.</summary>
+    public bool Suggested { get; init; }
+
     /// <summary>A group's petals, opened around it.</summary>
     public IReadOnlyList<WheelItem>? Children { get; init; }
 
@@ -59,6 +62,7 @@ public sealed record WheelItem(string Label, string Name, string? Icon, object P
         Wheels.WheelEntry e => "entry:" + e.Id,
         WheelGroup g => "group:" + g.Id,
         Wheels.RunningWindow w => "window:" + w.Handle,
+        Clips.ClipItem c => "clip:" + c.Id,
         Wheels.FolderDestination d => "folder:" + d.Id,
         _ => "other:" + payload,
     };

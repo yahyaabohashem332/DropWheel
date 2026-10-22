@@ -113,6 +113,30 @@ public sealed class AppSettings
     /// <summary>Watched folders whose new files are converted automatically.</summary>
     public List<WatchRule> Automations { get; set; } = [];
 
+    // ---------- the screen and text ----------
+
+    /// <summary>Showing keys on the screen shows typing too, not only shortcuts.</summary>
+    public bool ShowEveryKey { get; set; }
+
+    /// <summary>Recordings take the microphone and the PC's own sound.</summary>
+    public bool RecordMicrophone { get; set; }
+    public bool RecordSystemSound { get; set; } = true;
+
+    /// <summary>Recordings also show clicks and shortcuts.</summary>
+    public bool RecordShowsClicks { get; set; }
+
+    /// <summary>Dictation: the shortcut, the language spoken ("auto" to tell), and the accuracy chosen.</summary>
+    public string DictationShortcut { get; set; } = "Ctrl+Win+J";
+    public string DictationLanguage { get; set; } = "auto";
+    public string DictationAccuracy { get; set; } = "Balanced";
+
+    /// <summary>Clipboard history: kept while Petal runs, and remembered after it closes.</summary>
+    public bool KeepClipboardHistory { get; set; } = true;
+    public bool RememberClipboardHistory { get; set; }
+
+    /// <summary>Where sticky notes appear when Petal starts: shown or tucked away.</summary>
+    public bool NotesHidden { get; set; }
+
     public string? OutputDirectoryFor(string input) =>
         Output == OutputLocation.Folder && !string.IsNullOrWhiteSpace(OutputFolder) && Directory.Exists(OutputFolder)
             ? OutputFolder

@@ -20,7 +20,7 @@ public interface IWheelHost
 public sealed record WheelActionContext(ScreenPoint At, IntPtr Target, IWheelHost Host);
 
 /// <summary>A built-in action for the wheels without files, with its state when it is a switch.</summary>
-/// <param name="Section">Where the picker lists it: "Windows", "Screen", "Media" or "Petal".</param>
+/// <param name="Section">Where the picker lists it: "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Media" or "Petal".</param>
 public sealed record WheelAction(string Id, string Label, string Name, string Icon, string Description, string Section)
 {
     /// <summary>On or off for a switch, read now; null for a plain action or when it can't be told.</summary>
@@ -63,6 +63,24 @@ public static class WheelActions
     public static NowPlaying? Playing => _playing;
 
     private static Func<WheelActionContext, Task> Do(Action action) => _ => { action(); return Task.CompletedTask; };
+
+    /// <summary>A screen tool's way to open the conversion wheel on what it made.</summary>
+    private static Action<string, ScreenPoint> Open(WheelActionContext c) => (path, at) => c.Host.OpenFiles([path], at);
+
+    private static WheelAction Text(string id, string label, string name, string icon, string description) =>
+        new(id, label, name, icon, description, "Text") { Run = c => Words.TextActions.RunAsync(id, c) };
+
+    private static WheelAction Arrange(string id, string label, string name, string icon, string description, Func<IntPtr, bool> act) =>
+        new(id, label, name, icon, description, "Arrange")
+        {
+            Unavailable = () => Screen.WindowArranger.CanArrange(Screen.WindowArranger.Front) ? null : "No window to arrange",
+            Run = c =>
+            {
+                if (!act(c.Target))
+                    c.Host.Card(c.At, Localization.L.T("No window to arrange"), Localization.L.T("Open the wheel over an app's window."), false);
+                return Task.CompletedTask;
+            },
+        };
 
     public static readonly IReadOnlyList<WheelAction> All =
     [
@@ -167,6 +185,154 @@ public static class WheelActions
                 if (Screenshots.CaptureScreenUnderPointer() is { } shot)
                     c.Host.OpenFiles([Screenshots.Save(shot.Picture)], c.At);
             },
+        },
+
+        new("screen.record", "RECORD", "Record the Screen", "record", "Record an area or the whole screen to MP4, with the PC's sound and the microphone if wanted.", "Screen")
+        {
+            LiveLabel = () => Screen.ScreenRecorder.IsRecording ? "STOP" : "RECORD",
+            Note = () => Screen.ScreenRecorder.IsRecording ? "Recording" : null,
+            Run = async c => { await Task.Delay(180); Screen.ScreenRecorder.Toggle(Open(c)); },
+        },
+        new("screen.scroll", "SCROLL SHOT", "Scrolling Screenshot", "scrollCapture", "A whole long page in one picture: Petal scrolls it and joins what it sees.", "Screen")
+        {
+            Run = async c => { await Task.Delay(180); Screen.ScrollCapture.Toggle(Open(c)); },
+        },
+        new("screen.text", "COPY TEXT", "Text from the Screen", "scanText", "Copy the words in any part of the screen, even in pictures and videos. QR codes are read too.", "Screen")
+        {
+            Run = async c => { await Task.Delay(180); Screen.ScreenTextWindow.Start(c.At); },
+        },
+        new("screen.pin", "PIN", "Pin a Screenshot", "pinPicture", "Keep a piece of the screen on top of every window, to compare or copy from.", "Screen")
+        {
+            Run = async c => { await Task.Delay(180); Screen.PinnedShot.Start(Open(c)); },
+        },
+        new("screen.colour", "COLOUR", "Pick a Colour", "dropper", "The colour of any pixel on the screen, in HEX, RGB and HSL, with its contrast.", "Screen")
+        {
+            Run = async _ => { await Task.Delay(180); Screen.ColourPicker.Start(); },
+        },
+        new("screen.ruler", "RULER", "Screen Ruler", "ruler", "Measure spaces and sizes on the screen, in pixels.", "Screen")
+        {
+            Run = async _ => { await Task.Delay(180); Screen.ScreenRuler.Start(); },
+        },
+
+        // ---------- drawing and showing ----------
+        new("draw.screen", "DRAW", "Draw on Screen", "pen", "Pen, highlighter, arrows, boxes and text over anything on the screen. Esc puts it away.", "Draw")
+        {
+            State = () => Screen.DrawOverlay.IsOpen,
+            Run = async c => { await Task.Delay(150); Screen.DrawOverlay.Toggle(Screen.DrawBoard.Live, Open(c)); },
+        },
+        new("draw.whiteboard", "WHITE BOARD", "Whiteboard", "presentation", "A clean white board over the screen, to draw and explain on.", "Draw")
+        {
+            Run = async c => { await Task.Delay(150); Screen.DrawOverlay.Toggle(Screen.DrawBoard.White, Open(c)); },
+        },
+        new("draw.blackboard", "BLACK BOARD", "Blackboard", "presentation", "A dark board over the screen, to draw on in white and colour.", "Draw")
+        {
+            Run = async c => { await Task.Delay(150); Screen.DrawOverlay.Toggle(Screen.DrawBoard.Black, Open(c)); },
+        },
+        new("draw.zoom", "ZOOM", "Zoom In", "zoomIn", "Zoom into the screen with the mouse wheel, and draw on what is zoomed.", "Draw")
+        {
+            Run = async c => { await Task.Delay(180); Screen.ScreenZoom.Toggle(Open(c)); },
+        },
+        new("draw.lens", "MAGNIFIER", "Magnifier", "scanSearch", "A magnifying glass that follows the pointer. Ctrl and the mouse wheel change how much.", "Draw")
+        {
+            State = () => Screen.Lens.IsOpen,
+            Run = Do(Screen.Lens.Toggle),
+        },
+        new("draw.spotlight", "SPOTLIGHT", "Spotlight", "spotlight", "Darken the screen except around the pointer, to show where to look.", "Draw")
+        {
+            State = () => Screen.Spotlight.IsOn,
+            Run = Do(Screen.Spotlight.Toggle),
+        },
+        new("draw.clicks", "SHOW CLICKS", "Show Clicks and Keys", "clickShow", "Rings where you click and the shortcuts you press, for recordings and presentations.", "Draw")
+        {
+            State = () => Screen.InputVisualizer.IsOn,
+            Run = Do(Screen.InputVisualizer.Toggle),
+        },
+        new("draw.timer", "TIMER", "Timer", "timer", "A countdown or a stopwatch on top of everything, big enough for a room.", "Draw")
+        {
+            State = () => Screen.TimerWindow.IsOpen,
+            Note = () => Screen.TimerWindow.Showing,
+            Run = Do(Screen.TimerWindow.Toggle),
+        },
+
+        // ---------- text in any app ----------
+        Text("text.fixlayout", "FIX LAYOUT", "Fix Keyboard Layout", "keyboard", "Text typed with the wrong keyboard language put right: ؤشف becomes cat, and hgsghl becomes السلام."),
+        Text("text.translate", "TRANSLATE", "Translate", "languages", "The selected text in Arabic or English, translated on this PC."),
+        Text("text.upper", "UPPER", "UPPERCASE", "caseUpper", "The selected text in capital letters."),
+        Text("text.lower", "LOWER", "lowercase", "caseLower", "The selected text in small letters."),
+        Text("text.title", "TITLE", "Title Case", "heading", "Every word starting with a capital."),
+        Text("text.sentence", "SENTENCE", "Sentence case", "pilcrow", "Only the first word of each sentence starts with a capital."),
+        Text("text.diacritics", "TASHKEEL", "Remove Diacritics", "eraser", "Takes the harakat and tatweel off Arabic text."),
+        Text("text.digits", "DIGITS", "Swap Digits", "hash", "Arabic digits ١٢٣ into 123, or the other way."),
+        Text("text.tidy", "TIDY", "Tidy Spaces", "tidyText", "Double spaces, spaces at line ends and extra empty lines taken out."),
+        Text("text.count", "COUNT", "Count Words", "sigma", "Words, characters, lines and sentences in the selection."),
+        Text("text.calculate", "CALCULATE", "Calculate", "calculator", "Works out a selected sum or unit conversion (12% of 340, 5 km in mi) and copies the answer."),
+        Text("text.summarize", "SUMMARY", "Summarize", "summary", "A short summary of the selected text, made by the AI model on this PC."),
+        Text("text.rewrite", "REWRITE", "Rewrite", "wand", "Clearer, shorter, more formal, friendlier, or with mistakes fixed, by the AI model on this PC."),
+        new("text.dictate", "DICTATE", "Dictate", "mic", "Speak, and Petal types what you say where the cursor is, in Arabic, English and more.", "Text")
+        {
+            State = () => Words.Dictation.IsListening,
+            Unavailable = () => Words.Listener.HasMicrophone ? null : "No microphone found",
+            Run = async c => { await Task.Delay(150); Words.Dictation.Toggle(c.Target); },
+        },
+
+        // ---------- arranging the window in front ----------
+        Arrange("window.left", "LEFT", "Left Half", "panelLeft", "The window fills the left half of its screen.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.LeftHalf)),
+        Arrange("window.right", "RIGHT", "Right Half", "panelRight", "The window fills the right half of its screen.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.RightHalf)),
+        Arrange("window.top", "TOP", "Top Half", "panelTop", "The window fills the top half of its screen.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.TopHalf)),
+        Arrange("window.bottom", "BOTTOM", "Bottom Half", "panelBottom", "The window fills the bottom half of its screen.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.BottomHalf)),
+        Arrange("window.topleft", "TOP LEFT", "Top-Left Quarter", "layoutGrid", "The window fills the top-left quarter.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.TopLeft)),
+        Arrange("window.topright", "TOP RIGHT", "Top-Right Quarter", "layoutGrid", "The window fills the top-right quarter.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.TopRight)),
+        Arrange("window.bottomleft", "BOTTOM LEFT", "Bottom-Left Quarter", "layoutGrid", "The window fills the bottom-left quarter.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.BottomLeft)),
+        Arrange("window.bottomright", "BOTTOM RIGHT", "Bottom-Right Quarter", "layoutGrid", "The window fills the bottom-right quarter.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.BottomRight)),
+        Arrange("window.leftthird", "LEFT THIRD", "Left Third", "split", "The window fills the left third, for wide screens.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.LeftThird)),
+        Arrange("window.middlethird", "MIDDLE THIRD", "Middle Third", "split", "The window fills the middle third.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.MiddleThird)),
+        Arrange("window.rightthird", "RIGHT THIRD", "Right Third", "split", "The window fills the right third.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.RightThird)),
+        Arrange("window.centre", "CENTRE", "Centre", "target", "The window in the middle of its screen.", w => Screen.WindowArranger.Place(w, Screen.WindowPlace.Centre)),
+        Arrange("window.maximize", "MAXIMIZE", "Maximize", "maximize", "The window fills its screen, or goes back to its size.", Screen.WindowArranger.ToggleMaximised) with
+        {
+            State = () => Screen.WindowArranger.CanArrange(Screen.WindowArranger.Front) ? Screen.ScreenNative.IsZoomed(Screen.WindowArranger.Front) : null,
+        },
+        Arrange("window.nextscreen", "NEXT SCREEN", "Next Screen", "monitorNext", "The window moves to the next screen, in the same place.", Screen.WindowArranger.NextScreen) with
+        {
+            Unavailable = () => !Screen.WindowArranger.CanArrange(Screen.WindowArranger.Front) ? "No window to arrange" : Screen.ScreenNative.Monitors().Count < 2 ? "Only one screen" : null,
+        },
+        Arrange("window.ontop", "ON TOP", "Always on Top", "pin", "Keep the window above all others, or let it go back.", Screen.WindowArranger.ToggleOnTop) with
+        {
+            State = () => Screen.WindowArranger.IsOnTop(Screen.WindowArranger.Front),
+        },
+        new("window.seethrough", "SEE THROUGH", "See-Through", "blend", "Make the window see-through, a step at a time, then solid again.", "Arrange")
+        {
+            Unavailable = () => Screen.WindowArranger.CanArrange(Screen.WindowArranger.Front) ? null : "No window to arrange",
+            Note = () => Screen.WindowArranger.Opacity(Screen.WindowArranger.Front) is { } a && a < 250 ? Localization.L.F("{0}% solid", (int)Math.Round(a / 2.55)) : null,
+            Run = c =>
+            {
+                if (Screen.WindowArranger.CycleOpacity(c.Target) is { } percent)
+                    c.Host.Card(c.At, Localization.L.F("{0}% solid", percent), "", true);
+                return Task.CompletedTask;
+            },
+        },
+        Arrange("window.minimize", "MINIMIZE", "Minimize", "minimize", "The window goes down to the taskbar.", Screen.WindowArranger.Minimise),
+        Arrange("window.close", "CLOSE", "Close Window", "x", "Closes the window, as its own X would (it can still ask to save).", Screen.WindowArranger.Close),
+
+        // ---------- the clipboard and notes ----------
+        new("clipboard.history", "HISTORY", "Clipboard History", "clipboardList", "Everything you copied lately, to search, pin and paste again.", "Clipboard")
+        {
+            Run = c => { Clips.ClipboardWindow.ShowSingle(c.Target, c.At); return Task.CompletedTask; },
+        },
+        new("clipboard.forget", "FORGET", "Clear Clipboard History", "clipboardX", "Forget what was copied (pinned clips stay).", "Clipboard")
+        {
+            Run = c =>
+            {
+                Clips.ClipboardHistory.Clear(keepPinned: true);
+                c.Host.Card(c.At, Localization.L.T("Clipboard history cleared"), Localization.L.T("Pinned clips stay"), true);
+                return Task.CompletedTask;
+            },
+        },
+        new("notes.new", "NOTE", "New Note", "note", "A sticky note on the desktop, in any language and colour.", "Notes") { Run = Do(Notes.StickyNotes.New) },
+        new("notes.toggle", "NOTES", "Show or Hide Notes", "notebook", "Bring every sticky note out, or tuck them all away.", "Notes")
+        {
+            State = () => Notes.StickyNotes.Showing,
+            Run = Do(Notes.StickyNotes.ToggleAll),
         },
 
         // ---------- media ----------

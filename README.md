@@ -60,8 +60,46 @@ Petal's settings instead.
   give one its own shortcut, and add petals from a search over every action, every app on the PC, and
   kinds of your own: keys to press, a program to open (or switch to when it is open), a PowerShell or
   Command Prompt script (given the clipboard, the selected text or the selected files), a folder, a
-  link, a group of up to eight petals, or the open windows to switch to. A script that came in with
-  imported settings is shown once before it runs.
+  link, a group of up to eight petals, the open windows to switch to, or the clips copied lately. A
+  script that came in with imported settings is shown once before it runs.
+
+**The screen, text and windows (1.6).** Five more ready-made wheels, and every petal can go on any
+wheel:
+
+* **Screen** — snip an area or the whole screen; **record** an area or a monitor to MP4 with the PC's
+  sound and the microphone (a 3-2-1 countdown, a bar with the time, Stop and Cancel; the frame and the
+  bar stay out of the video), then the conversion wheel opens on it, for a GIF or a smaller copy;
+  **scrolling screenshots** (Petal scrolls the area and stitches it, sticky headers once); **text from
+  the screen** with Windows' OCR, QR codes and barcodes too, with Translate, Fix Keyboard Layout, Join
+  Lines and Search the Web; **pin a screenshot** on top of every window; **pick a colour** with a pixel
+  loupe (HEX, RGB, HSL and WCAG contrast against the colour picked before); and a **screen ruler**
+  (spacing between edges, or a dragged box).
+* **Draw & Present** — **draw on the screen** (pen, highlighter, line, arrow, box, ring, text, eraser,
+  eight colours, three sizes, undo and redo, over the live screen, a still of it, or a white or black
+  board; clicks can pass through to the apps; save or copy; P H L A R O T E, 1–3, W K F, Ctrl+Z/Y/S/C,
+  Esc), **zoom** into a still of the screen with the mouse wheel and draw on what is zoomed, a
+  **magnifier** that follows the pointer, a **spotlight**, **show clicks and keys** for recordings, and a
+  **timer** or stopwatch on top of everything ("7", "1:30", "90s", "1h 15m").
+* **Text** — on the text selected in any app: **fix keyboard layout** (ؤشف → cat, hgsghl → السلام, and
+  the keyboard switches), **translate** (English to Arabic with the translation model; Arabic to
+  English with the AI model), UPPERCASE, lowercase, Title and Sentence case, remove diacritics, swap
+  digits (١٢٣ ↔ 123), tidy spaces, count words, **calculate** (sums, percentages, functions and unit
+  conversions in English or Arabic, answer copied), **summarize** and **rewrite** with the local AI
+  model, and **dictate**.
+* **Arrange** — the window in front: each petal points where it goes (up maximises, right is the right
+  half, the corners are the quarters), and under More the middle, the next screen, top and bottom
+  halves, always on top, see-through, minimise and close; thirds are in the picker.
+* **Clipboard** — the clips copied lately as petals that paste, the clipboard history (search, pin,
+  delete; private copies such as passwords are never kept; remembered after Petal closes only if you
+  ask), and a new sticky note.
+
+**Dictation — Ctrl + Win + J** in any app: speak, press it again, and Whisper on this PC types what
+you said where the cursor is. Ask Petal has a microphone button too. **Sticky notes** in six colours
+come back where they were. The petal you choose most for a kind of file gets a small star and is lit
+when the wheel opens from the keyboard ("Your usual for JPG"). With the wheel open from the keyboard,
+type **=** and a sum: the centre answers as you type and Enter copies it. Settings › Screen & Text
+holds the dictation shortcut, language and accuracy, the recording defaults, every-key display and
+the clipboard history switches.
 
 **Folders work too.** Drop a folder (or several, mixed with files) and Petal works on the files
 inside, subfolders included, skipping hidden, system and temporary files. The centre shows the total

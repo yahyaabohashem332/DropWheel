@@ -130,6 +130,54 @@ public static partial class KeySender
         return true;
     }
 
+    /// <summary>
+    /// Types text into <paramref name="target"/> as if from the keyboard, in any language (each character is
+    /// sent as itself, whatever the keyboard layout). Stops if another window comes to the front.
+    /// </summary>
+    public static async Task<bool> TypeTextAsync(IntPtr target, string text)
+    {
+        if (target == IntPtr.Zero || !IsWindow(target))
+            return false;
+        GetWindowThreadProcessId(target, out var pid);
+        if (pid == Environment.ProcessId)
+            return false;
+        if (!await BringToFrontAsync(target))
+            return false;
+        for (int i = 0; i < 20 && AnyModifierHeld(); i++)
+            await Task.Delay(25);
+        var normal = text.Replace("\r\n", "\n");
+        for (int start = 0; start < normal.Length; start += 40)
+        {
+            if (!SameWindow(GetForegroundWindow(), target))
+                return false;
+            var chunk = normal.AsSpan(start, Math.Min(40, normal.Length - start));
+            var inputs = new List<INPUT>(chunk.Length * 2);
+            foreach (var c in chunk)
+            {
+                if (c == '\n')
+                {
+                    inputs.Add(Press(0x0D, up: false));
+                    inputs.Add(Press(0x0D, up: true));
+                    continue;
+                }
+                inputs.Add(Unicode(c, up: false));
+                inputs.Add(Unicode(c, up: true));
+            }
+            if (SendInput((uint)inputs.Count, [.. inputs], Marshal.SizeOf<INPUT>()) != inputs.Count)
+                return false;
+            await Task.Delay(15);
+        }
+        return true;
+    }
+
+    private static INPUT Unicode(char c, bool up) => new()
+    {
+        type = INPUT_KEYBOARD,
+        u = new INPUTUNION { ki = new KEYBDINPUTPAD { wVk = 0, wScan = c, dwFlags = KEYEVENTF_UNICODE | (up ? KEYEVENTF_KEYUP : 0) } },
+    };
+
+    private const uint KEYEVENTF_UNICODE = 0x4;
+
     /// <summary>Puts a window in front (restoring it when minimised) and waits until Windows agrees.</summary>
     public static async Task<bool> BringToFrontAsync(IntPtr window)
     {

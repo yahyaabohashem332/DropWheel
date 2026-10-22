@@ -71,6 +71,9 @@ public sealed partial class WheelWindow : Window
     private bool _sessionIgnored;
     private WheelMode _mode;
     private IReadOnlyList<string>? _files;
+
+    /// <summary>The files the wheel is open for (empty for the wheels without files).</summary>
+    public IReadOnlyList<string> CurrentFiles => _files ?? [];
     private WheelContent? _content;
     private int? _highlight;
     private string _lastHubLabel = "";
@@ -389,7 +392,7 @@ public sealed partial class WheelWindow : Window
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
-        if (!_interactive || _content is null) return;
+        if (!_interactive || _content is null || _calc is not null) return;
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
         if (_orbit is { } o)
@@ -486,6 +489,8 @@ public sealed partial class WheelWindow : Window
         base.OnPreviewKeyDown(e);
         if (!_interactive) return;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (CalcKey(key, e))
+            return;
         if (OrbitKey(key, e.IsRepeat))
         {
             e.Handled = true;
@@ -696,6 +701,7 @@ public sealed partial class WheelWindow : Window
         _highlight = null;
         _groups.Clear();
         ResetOrbit();
+        EndCalc();
         _pages = null;
         _hubPictureTurn.BeginAnimation(RotateTransform.AngleProperty, null);
         if (_interactive)
@@ -960,7 +966,7 @@ public sealed partial class WheelWindow : Window
     /// Renders the wheel over a background image without a screen, for design reviews and tests.
     /// </summary>
     internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false,
-        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1)
+        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1, string? calc = null)
     {
         _visible = new Rect(-Centre, -Centre, Side, Side);
         _options = OptionsProvider();
@@ -995,6 +1001,11 @@ public sealed partial class WheelWindow : Window
                 OpenGroup(_content.Items[g2]);
             SetHighlight(highlight, null);
         }
+        if (calc is not null)
+        {
+            _calc = calc;
+            ShowCalc();
+        }
         _interactive = false;
 
         var frame = new Grid { Width = Side, Height = Side };
@@ -1011,6 +1022,7 @@ public sealed partial class WheelWindow : Window
         Content = _root;
         _open = false;
         _pages = null;
+        _calc = null;
         _groups.Clear();
         ResetOrbit();
         foreach (var visual in _visuals)
@@ -1567,6 +1579,7 @@ public sealed partial class WheelWindow : Window
         public FrameworkElement? Icon { get; set; }
         public List<InkText> Lines { get; set; } = [];
         private InkText? _number;
+        private Path? _sparkle;
 
         /// <summary>
         /// A switch that is on gets a lit inner edge; a petal that can't run is drawn dashed and dim. With
@@ -1589,6 +1602,18 @@ public sealed partial class WheelWindow : Window
                 g.Freeze();
                 _edge = new Path { Data = g, StrokeThickness = 2.5, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, IsHitTestVisible = false };
                 PetalLayer.Children.Add(_edge);
+            }
+            if (Item.Suggested && _count > 1)
+            {
+                // Your usual for this kind of file: a small four-point star at the petal's outer corner.
+                double angle = WheelGeometry.Angle(_index, _count) + Math.PI / _count * 0.62;
+                var c = WheelGeometry.At(WheelGeometry.PetalOuter - 10, angle);
+                const double r = 4.6, k = 1.1;
+                var g = Geometry.Parse(string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                    $"M {c.X},{c.Y - r} Q {c.X + k},{c.Y - k} {c.X + r},{c.Y} Q {c.X + k},{c.Y + k} {c.X},{c.Y + r} Q {c.X - k},{c.Y + k} {c.X - r},{c.Y} Q {c.X - k},{c.Y - k} {c.X},{c.Y - r} Z"));
+                g.Freeze();
+                _sparkle = new Path { Data = g, IsHitTestVisible = false };
+                PetalLayer.Children.Add(_sparkle);
             }
             if (number && font is not null)
             {
@@ -1622,6 +1647,8 @@ public sealed partial class WheelWindow : Window
                     : Palette.Brush(Color.FromArgb(0x40, p.Text.R, p.Text.G, p.Text.B));
             if (_number is not null)
                 _number.Foreground = Palette.Brush(on ? p.Text : p.TextSecondary);
+            if (_sparkle is not null)
+                _sparkle.Fill = Palette.Brush(on ? Readable(accent, p) : accent);
         }
 
         /// <summary>The petal under the pointer swells a little and moves out from the centre; the others settle back.</summary>

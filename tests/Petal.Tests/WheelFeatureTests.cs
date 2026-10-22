@@ -119,7 +119,7 @@ public sealed class WheelFeatureTests : IDisposable
         foreach (var action in WheelActions.All)
         {
             Assert.True(Icons.Keys.Contains(action.Icon), action.Id);
-            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Media", "Petal" });
+            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Media", "Petal" });
         }
         Assert.Equal(WheelActions.All.Count, WheelActions.All.Select(a => a.Id).Distinct().Count());
     }
@@ -137,16 +137,16 @@ public sealed class WheelFeatureTests : IDisposable
         var (inChrome, start) = Rings.ForProgram(settings, "chrome");
         Assert.Equal(0, start);
         Assert.Equal(settings.Wheels.First(w => w.Template == "browser").Id, inChrome[0].Key);
-        // Other apps' wheels stay out; quick actions and media follow.
-        Assert.Equal(3, inChrome.Count);
-        Assert.Equal(["Browser", "Quick", "Media"], inChrome.Select(p => p.Title));
+        // Other apps' wheels stay out; quick actions, media and the other ready-made wheels follow.
+        string[] others = ["Quick", "Media", "Screen", "Draw & Present", "Text", "Arrange", "Clipboard"];
+        Assert.Equal(others.Prepend("Browser"), inChrome.Select(p => p.Title));
 
         var (elsewhere, _) = Rings.ForProgram(settings, "notepad");
-        Assert.Equal(["Quick", "Media"], elsewhere.Select(p => p.Title));
+        Assert.Equal(others, elsewhere.Select(p => p.Title));
 
         // A wheel that is off isn't shown; a wheel's own shortcut opens straight onto it.
         settings.Wheels.First(w => w.Kind == WheelKind.Media).Enabled = false;
-        Assert.Equal(["Quick"], Rings.ForProgram(settings, null).Pages.Select(p => p.Title));
+        Assert.Equal(others.Where(t => t != "Media"), Rings.ForProgram(settings, null).Pages.Select(p => p.Title));
         var zoom = settings.Wheels.First(w => w.Template == "zoom");
         var (only, at) = Rings.ForProgram(settings, null, zoom.Id);
         Assert.Equal(zoom.Id, only[at].Key);

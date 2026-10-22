@@ -21,8 +21,12 @@ public static class Rings
     /// quick, media and the user's own wheels in their order. Starts on the app's wheel, else on the one
     /// used last.
     /// </summary>
-    public static (List<RingPage> Pages, int Start) For(AppSettings settings, IntPtr front, string? onlyWheel = null) =>
-        ForProgram(settings, RunningApps.ProgramOf(front), onlyWheel);
+    public static (List<RingPage> Pages, int Start) For(AppSettings settings, IntPtr front, string? onlyWheel = null)
+    {
+        // The window petals act on, and read their switches from.
+        Screen.WindowArranger.Front = front;
+        return ForProgram(settings, RunningApps.ProgramOf(front), onlyWheel);
+    }
 
     /// <summary>As <see cref="For"/>, for the program in front by name ("chrome"), or none.</summary>
     public static (List<RingPage> Pages, int Start) ForProgram(AppSettings settings, string? program, string? onlyWheel = null)
@@ -55,7 +59,8 @@ public static class Rings
     }
 
     public static RingPage Page(UserWheel wheel) => new(wheel.Id, wheel.Name,
-        () => new WheelContent(wheel.Items.Select(Item).ToList(), L.T("This wheel is empty. Add petals to it in Settings › Wheels.")),
+        () => new WheelContent(wheel.Items.SelectMany(e => e.Kind == EntryKind.Clips ? ClipPetals(e) : [Item(e)]).ToList(),
+            wheel.Items.Any(e => e.Kind == EntryKind.Clips) ? L.T("Nothing copied yet. What you copy appears here.") : L.T("This wheel is empty. Add petals to it in Settings › Wheels.")),
         () => Hub(wheel));
 
     private static RingHub Hub(UserWheel wheel)
@@ -143,6 +148,18 @@ public static class Rings
                 var name = e.Name ?? e.Path ?? "";
                 return new WheelItem(e.Label ?? name.ToUpperInvariant(), name, e.Icon ?? "globe", e) { Tint = tint, Note = "Open" };
             }
+            case EntryKind.Clips:
+            {
+                var name = e.Name ?? "Recent Clips";
+                var children = ClipPetals(e);
+                return new WheelItem(e.Label ?? "CLIPS", name, e.Icon ?? "clipboardList", e)
+                {
+                    Tint = tint,
+                    Children = children,
+                    Unavailable = children.Count == 0 ? "Nothing copied yet" : null,
+                    Blocked = true,
+                };
+            }
             case EntryKind.RunningApps:
             {
                 var name = e.Name ?? "Open Windows";
@@ -164,6 +181,25 @@ public static class Rings
             }
         }
     }
+
+    /// <summary>The clips copied last (pinned first), each a petal that pastes it.</summary>
+    public static List<WheelItem> ClipPetals(WheelEntry e) =>
+        Clips.ClipboardHistory.All.Take(10).Select(clip =>
+        {
+            var preview = clip.Preview;
+            var label = clip.Kind switch
+            {
+                Clips.ClipKind.Picture => L.T("PICTURE"),
+                Clips.ClipKind.Files => clip.Files!.Count == 1 ? Short(Path.GetFileNameWithoutExtension(clip.Files[0])) : L.P(clip.Files.Count, "{0} FILE", "{0} FILES"),
+                _ => preview.Length > 14 ? preview[..13].TrimEnd() + "…" : preview,
+            };
+            return new WheelItem(label, preview, clip.Kind switch { Clips.ClipKind.Picture => "image", Clips.ClipKind.Files => "folder", _ => clip.Pinned ? "pin" : "fileText" }, clip)
+            {
+                Picture = clip.Kind == Clips.ClipKind.Picture ? clip.Picture() : null,
+                Note = clip.Pinned ? "Pinned · paste it" : "Paste it",
+                Tint = Colour(e.Tint),
+            };
+        }).ToList();
 
     /// <summary>"#RRGGBB" as a colour, or null.</summary>
     public static Color? Colour(string? text)
@@ -213,6 +249,10 @@ public static class EntryRunner
                 case RunningWindow window:
                     if (!await RunningApps.SwitchToAsync(window.Handle))
                         host.Card(at, L.T("That window has closed"), window.Title, false);
+                    return;
+                case Clips.ClipItem clip:
+                    if (!await Clips.ClipboardHistory.PasteAsync(clip, target))
+                        host.Card(at, L.T("On the clipboard"), L.T("Paste it with Ctrl+V."), true);
                     return;
                 case WheelEntry entry:
                     await RunAsync(entry, item, at, target, host);

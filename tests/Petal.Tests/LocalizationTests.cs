@@ -49,6 +49,12 @@ public partial class LocalizationTests
         "{name} {n}", "{0} file has no password and is skipped.", "{0} file already has a password and is skipped.",
         // A sample script, and a name the statistics window shows in the language Petal speaks.
         "$text = $env:PETAL_INPUT.ToUpper()\nSet-Clipboard $text\nWrite-Output $text", "Convert to WEBP",
+        // Message-window and thread names, clipboard formats and Windows class names the screen tools look for, and a code label.
+        // Sample texts, sums and notes in the design snapshots of 1.6 (the Arabic ones are written beside them).
+        "Hi team, the report is late again because the numbers came in late, sorry, we will send it tomorrow morning hopefully.",
+        "The meeting moves to Thursday at ten.", "Call Sara before five", "Send the updated slides", "Address: 14 Harbour Road, Bristol",
+        "Thanks for your time, I'll send the file today.", "12% of 340", "5 km in mi",
+        "Petal clipboard", "Petal screen recording", "Clipboard Viewer Ignore", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Windows.UI.Core.CoreWindow", "WPF / C#",
     };
 
     private static readonly Regex Literal = MakeLiteral();

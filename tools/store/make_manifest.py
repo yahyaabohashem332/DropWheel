@@ -122,6 +122,8 @@ manifest = f'''<?xml version="1.0" encoding="utf-8"?>
     <Capability Name="privateNetworkClientServer" />
     <rescap:Capability Name="runFullTrust" />
     <rescap:Capability Name="unvirtualizedResources" />
+    <!-- Dictation, asking Petal out loud and screen recordings with the voice. -->
+    <DeviceCapability Name="microphone" />
   </Capabilities>
 </Package>
 '''

@@ -139,6 +139,11 @@ public partial class App : Application
         SettingsStore.Saved += s => Dispatcher.BeginInvoke(() => _wheelKeys?.Apply(s.Wheels));
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
         ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
+        // The clipboard history listens from the start; notes come back where they were.
+        Clips.ClipboardHistory.Start();
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Notes.StickyNotes.Restore);
+        if (!Words.Dictation.RegisterShortcut())
+            Log.Info($"{settings.DictationShortcut} is already used by another program");
         if (command is not null)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
@@ -202,6 +207,7 @@ public partial class App : Application
         }
         LaunchAtLogin.Apply(s.LaunchAtStartup);
         ContextMenuRegistration.Apply(s.ExplorerContextMenu);
+        Words.Dictation.RegisterShortcut();
         Jobs.History.Reload();
         BuildTrayMenu();
     }
@@ -255,6 +261,21 @@ public partial class App : Application
             var controller = _controller;
             Wheels.Screenshots.ChooseArea((picture, middle) => controller.OpenWheelNow([Wheels.Screenshots.Save(picture)], middle));
         };
+        var drawItem = new MenuItem { Header = L.T("Draw on Screen") };
+        drawItem.Click += (_, _) => Screen.DrawOverlay.Toggle(Screen.DrawBoard.Live, OpenFilesFromTray);
+        var recordItem = new MenuItem { Header = L.T(Screen.ScreenRecorder.IsRecording ? "Stop Recording" : "Record the Screen…") };
+        recordItem.Click += (_, _) => Screen.ScreenRecorder.Toggle(OpenFilesFromTray);
+        var textItem = new MenuItem { Header = L.T("Text from the Screen…") };
+        textItem.Click += (_, _) => Screen.ScreenTextWindow.Start(new Input.ScreenPoint(0, 0));
+        var clipsItem = new MenuItem { Header = L.T("Clipboard History…") };
+        clipsItem.Click += (_, _) => Clips.ClipboardWindow.ShowSingle(IntPtr.Zero, new Input.ScreenPoint(0, 0));
+        var noteItem = new MenuItem { Header = L.T("New Note") };
+        noteItem.Click += (_, _) => Notes.StickyNotes.New();
+        var timerItem = new MenuItem { Header = L.T("Timer") };
+        timerItem.Click += (_, _) => Screen.TimerWindow.Toggle();
+        var screenMenu = new MenuItem { Header = L.T("Screen & Text") };
+        foreach (var item in new[] { snipItem, recordItem, drawItem, textItem, clipsItem, noteItem, timerItem })
+            screenMenu.Items.Add(item);
         var updatesItem = new MenuItem { Header = Shell.UpdateService.Waiting is { } waiting ? L.F("Install Petal {0}…", waiting.Version) : L.T("Check for Updates") };
         updatesItem.Click += async (_, _) =>
         {
@@ -272,7 +293,7 @@ public partial class App : Application
         menu.Items.Add(duplicatesItem);
         menu.Items.Add(qrItem);
         menu.Items.Add(historyItem);
-        menu.Items.Add(snipItem);
+        menu.Items.Add(screenMenu);
         menu.Items.Add(statsItem);
         menu.Items.Add(new Separator());
         menu.Items.Add(howItem);
@@ -285,6 +306,9 @@ public partial class App : Application
     }
 
     public void ShowSettings() => SettingsWindow.ShowSingle();
+
+    /// <summary>For screen tools started from the tray: the conversion wheel on what they made.</summary>
+    private void OpenFilesFromTray(string path, Input.ScreenPoint at) => _controller?.OpenWheelNow([path], at);
 
     /// <summary>
     /// The shortcut: with files selected in the File Explorer window in front (or on the desktop),
@@ -355,6 +379,9 @@ public partial class App : Application
         _tray?.Dispose();
         _controller?.Dispose();
         Search.SearchService.Stop();
+        Clips.ClipboardHistory.Stop();
+        Notes.StickyNotes.Save();
+        Words.Dictation.Dispose();
         Shutdown();
     }
 

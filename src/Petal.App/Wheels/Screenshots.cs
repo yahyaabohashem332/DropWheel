@@ -60,11 +60,19 @@ internal static class Screenshots
     /// Shows a still of the screen under the pointer to drag an area on; Esc or a right-click cancels.
     /// <paramref name="done"/> gets the area's picture and its middle on the screen.
     /// </summary>
-    public static void ChooseArea(Action<BitmapSource, ScreenPoint> done)
+    public static void ChooseArea(Action<BitmapSource, ScreenPoint> done) =>
+        ChooseArea("Drag over the area to capture · Esc cancels", false, (picture, area) =>
+            done(picture, new ScreenPoint(area.Left + area.Width / 2, area.Top + area.Height / 2)));
+
+    /// <summary>
+    /// The same, for the other screen tools: <paramref name="done"/> gets the area's picture and where it is on
+    /// the screen, in pixels. With <paramref name="wholeScreen"/>, Enter takes the whole monitor.
+    /// </summary>
+    public static void ChooseArea(string hint, bool wholeScreen, Action<BitmapSource, RECT> done)
     {
         if (CaptureScreenUnderPointer() is not { } shot)
             return;
-        new AreaWindow(shot.Picture, shot.Bounds, done).Show();
+        new AreaWindow(shot.Picture, shot.Bounds, L.T(hint), wholeScreen, done).Show();
     }
 
     /// <summary>A still of one monitor, covering it, to drag out an area.</summary>
@@ -72,7 +80,8 @@ internal static class Screenshots
     {
         private readonly BitmapSource _picture;
         private readonly RECT _bounds;
-        private readonly Action<BitmapSource, ScreenPoint> _done;
+        private readonly Action<BitmapSource, RECT> _done;
+        private readonly bool _wholeScreen;
         private readonly Canvas _canvas = new();
         private readonly System.Windows.Shapes.Path _shade = new() { Fill = new SolidColorBrush(Color.FromArgb(0x78, 0, 0, 0)), IsHitTestVisible = false };
         private readonly Rectangle _frame = new() { Stroke = Brushes.White, StrokeThickness = 1, StrokeDashArray = [4, 3], IsHitTestVisible = false, Visibility = Visibility.Collapsed };
@@ -80,11 +89,12 @@ internal static class Screenshots
         private readonly TextBlock _sizeText = new() { Foreground = Brushes.White, FontSize = 12, FontFamily = UiFonts.Text };
         private Point? _start;
 
-        public AreaWindow(BitmapSource picture, RECT bounds, Action<BitmapSource, ScreenPoint> done)
+        public AreaWindow(BitmapSource picture, RECT bounds, string hintText, bool wholeScreen, Action<BitmapSource, RECT> done)
         {
             _picture = picture;
             _bounds = bounds;
             _done = done;
+            _wholeScreen = wholeScreen;
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
             ShowInTaskbar = false;
@@ -104,7 +114,7 @@ internal static class Screenshots
                 Padding = new Thickness(12, 6, 12, 7),
                 Background = new SolidColorBrush(Color.FromArgb(0xD8, 0x20, 0x20, 0x24)),
                 IsHitTestVisible = false,
-                Child = new TextBlock { Text = L.T("Drag over the area to capture · Esc cancels"), Foreground = Brushes.White, FontSize = 13, FontFamily = UiFonts.Text, FlowDirection = L.Direction },
+                Child = new TextBlock { Text = hintText, Foreground = Brushes.White, FontSize = 13, FontFamily = UiFonts.Text, FlowDirection = L.Direction },
             };
             Canvas.SetTop(hint, 24);
             _canvas.Children.Add(hint);
@@ -125,6 +135,8 @@ internal static class Screenshots
             base.OnKeyDown(e);
             if (e.Key == Key.Escape)
                 Close();
+            else if (e.Key == Key.Return && _wholeScreen)
+                Finish(new Int32Rect(0, 0, _picture.PixelWidth, _picture.PixelHeight));
         }
 
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
@@ -167,11 +179,16 @@ internal static class Screenshots
             _start = null;
             if (px.Width < 4 || px.Height < 4)
                 return;
+            Finish(px);
+        }
+
+        private void Finish(Int32Rect px)
+        {
             var crop = new CroppedBitmap(_picture, px);
             crop.Freeze();
-            var middle = new ScreenPoint(_bounds.Left + px.X + px.Width / 2, _bounds.Top + px.Y + px.Height / 2);
+            var area = new RECT { Left = _bounds.Left + px.X, Top = _bounds.Top + px.Y, Right = _bounds.Left + px.X + px.Width, Bottom = _bounds.Top + px.Y + px.Height };
             Close();
-            _done(crop, middle);
+            _done(crop, area);
         }
 
         /// <summary>An area in this window's units as pixels of the still.</summary>

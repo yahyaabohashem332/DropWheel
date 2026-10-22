@@ -41,7 +41,8 @@ public sealed class PetalController : IDisposable, IWheelHost
             KeyLabel = KeyLabel,
             ModeForKey = ModeForKey,
             OptionsProvider = () => OptionsFrom(SettingsStore.Current),
-            Remembered = (page, content) => SettingsStore.Current.RememberLastPetal ? WheelMemory.IndexIn(page, content) : null,
+            Remembered = (page, content) => content.Items.ToList().FindIndex(i => i.Suggested) is >= 0 and var usual ? usual
+                : SettingsStore.Current.RememberLastPetal ? WheelMemory.IndexIn(page, content) : null,
         };
         _wheel.ItemDropped += OnItemDropped;
         _wheel.EntryChosen += OnEntryChosen;
@@ -50,6 +51,8 @@ public sealed class PetalController : IDisposable, IWheelHost
         {
             if (SettingsStore.Current.RememberLastPetal)
                 WheelMemory.Remember(page, item);
+            if (page.StartsWith("files:", StringComparison.Ordinal) && WheelMemory.KindOf(_wheel.CurrentFiles) is { } kind && !Practice.IsOn)
+                WheelMemory.CountChoice(kind, page, item.Key);
             if (!Practice.IsOn)
                 Statistics.RecordPetal(item.Key, 0, 0, 0, item.Name);
         };
@@ -234,7 +237,20 @@ public sealed class PetalController : IDisposable, IWheelHost
         return contents;
     }
 
-    private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files) => Coloured(Content(mode, files));
+    private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files) => Usual(Coloured(Content(mode, files)), mode, files);
+
+    /// <summary>The petal usually chosen for this kind of file gets its star and says so.</summary>
+    private static WheelContent Usual(WheelContent content, WheelMode mode, IReadOnlyList<string> files)
+    {
+        if (WheelMemory.KindOf(files) is not { } kind || WheelMemory.UsualFor(kind, "files:" + mode) is not { } key)
+            return content;
+        int at = content.Items.ToList().FindIndex(i => i.Key == key && i.Unavailable is null);
+        if (at < 0)
+            return content;
+        var items = content.Items.ToList();
+        items[at] = items[at] with { Suggested = true, Note = L.F("Your usual for {0}", kind.ToUpperInvariant().Replace(",", ", ")) };
+        return content with { Items = items };
+    }
 
     private WheelContent Content(WheelMode mode, IReadOnlyList<string> files)
     {

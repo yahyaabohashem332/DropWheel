@@ -37,6 +37,18 @@ public sealed class GlobalInputHook : IDisposable
     public event Action? EscapePressed;
     public event Action? OtherKeyPressed;
 
+    /// <summary>The hooks Petal is running, for the screen tools that watch clicks and keys.</summary>
+    public static GlobalInputHook? Current { get; private set; }
+
+    /// <summary>Any key went down or up (virtual-key code), modifiers included: for showing keys on screen.</summary>
+    public event Action<int, bool>? KeyChanged;
+
+    /// <summary>A mouse button went down: 1 left, 2 right, 3 middle.</summary>
+    public event Action<int, ScreenPoint>? ButtonPressed;
+
+    /// <summary>Asked first when the mouse wheel turns (by a screen tool such as the spotlight); true keeps the turn.</summary>
+    public Func<int, bool>? WheelFirst { get; set; }
+
     /// <summary>A side button went down (1 = Back, 2 = Forward); returns true to keep it from the app under the pointer.</summary>
     public Func<int, ScreenPoint, bool>? SideButtonDown { get; set; }
 
@@ -50,6 +62,7 @@ public sealed class GlobalInputHook : IDisposable
     {
         if (_thread is not null)
             return;
+        Current = this;
         _thread = new Thread(Run) { IsBackground = true, Name = "Petal input hooks", Priority = ThreadPriority.Highest };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();
@@ -75,7 +88,7 @@ public sealed class GlobalInputHook : IDisposable
         UnhookWindowsHookEx(_keyboardHook);
     }
 
-    private const int WM_MOUSEWHEEL = 0x020A, WM_XBUTTONDOWN = 0x020B, WM_XBUTTONUP = 0x020C;
+    private const int WM_MOUSEWHEEL = 0x020A, WM_XBUTTONDOWN = 0x020B, WM_XBUTTONUP = 0x020C, WM_RBUTTONDOWN_HOOK = 0x0204, WM_MBUTTONDOWN_HOOK = 0x0207;
 
     private IntPtr MouseProc(int nCode, IntPtr wParam, IntPtr lParam)
     {
@@ -91,13 +104,22 @@ public sealed class GlobalInputHook : IDisposable
                         return new IntPtr(1);
                     case WM_XBUTTONUP when SideButtonUp?.Invoke((int)(data.mouseData >> 16)) == true:
                         return new IntPtr(1);
+                    case WM_MOUSEWHEEL when WheelFirst?.Invoke((short)(data.mouseData >> 16)) == true:
+                        return new IntPtr(1);
                     case WM_MOUSEWHEEL when WheelTurned?.Invoke((short)(data.mouseData >> 16)) == true:
                         return new IntPtr(1);
+                    case WM_RBUTTONDOWN_HOOK:
+                        ButtonPressed?.Invoke(2, point);
+                        break;
+                    case WM_MBUTTONDOWN_HOOK:
+                        ButtonPressed?.Invoke(3, point);
+                        break;
                     case WM_MOUSEMOVE:
                         MouseMoved?.Invoke(point);
                         break;
                     case WM_LBUTTONDOWN:
                         LeftButtonDown?.Invoke(point);
+                        ButtonPressed?.Invoke(1, point);
                         break;
                     case WM_LBUTTONUP:
                         LeftButtonUp?.Invoke(point);
@@ -122,6 +144,8 @@ public sealed class GlobalInputHook : IDisposable
             var up = message is WM_KEYUP or WM_SYSKEYUP;
             try
             {
+                if (down || up)
+                    KeyChanged?.Invoke((int)data.vkCode, down);
                 var modifier = ToModifier((int)data.vkCode);
                 if (modifier != ModifierKey.None)
                 {

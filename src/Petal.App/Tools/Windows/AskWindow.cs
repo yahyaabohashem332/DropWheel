@@ -33,6 +33,8 @@ public sealed class AskWindow : ToolWindow
     private readonly TextBlock _modelHint;
     private CancellationTokenSource? _cts;
     private Recipe? _recipe;
+    private readonly Button _mic;
+    private Words.Listener? _listener;
 
     public static void Show(IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at)
     {
@@ -81,6 +83,11 @@ public sealed class AskWindow : ToolWindow
         var row = new DockPanel { Margin = new Thickness(0, 10, 0, 0) };
         DockPanel.SetDock(_ask, Dock.Right);
         row.Children.Add(_ask);
+        _mic = IconButton("mic", "Say it (press again when done)", 16);
+        _mic.Margin = new Thickness(6, 0, 0, 0);
+        _mic.Click += async (_, _) => await ListenAsync();
+        DockPanel.SetDock(_mic, Dock.Right);
+        row.Children.Add(_mic);
         row.Children.Add(_request);
         Body.Children.Add(row);
         Body.Children.Add(Text(L.T("For example: “make them 1080 px WEBP and zip them”, “اضغطها للواتساب”, “put them in one searchable PDF”."), "Petal.Caption").WithMarginT(6));
@@ -102,7 +109,69 @@ public sealed class AskWindow : ToolWindow
         PrimaryButton.IsEnabled = false;
         PrimaryButton.Click += (_, _) => Run();
         Loaded += (_, _) => _request.Focus();
-        Closed += (_, _) => _cts?.Cancel();
+        Closed += (_, _) =>
+        {
+            _cts?.Cancel();
+            _listener?.Dispose();
+        };
+    }
+
+    /// <summary>The request said out loud: the first press listens, the second writes it down and asks.</summary>
+    private async Task ListenAsync()
+    {
+        if (_listener is null)
+        {
+            if (Words.Listener.ReadyModel() is null)
+            {
+                Words.DictationSetupWindow.ShowSingle();
+                return;
+            }
+            _listener = new Words.Listener();
+            try
+            {
+                _listener.Start();
+            }
+            catch (Exception ex) when (ex is NAudio.MmException or InvalidOperationException)
+            {
+                _listener.Dispose();
+                _listener = null;
+                _thinking.Text = L.T("The microphone couldn't be opened.");
+                _thinking.Visibility = Visibility.Visible;
+                return;
+            }
+            _mic.Content = ThemedIcon("square", 14, "Petal.Danger");
+            _thinking.Text = L.T("Listening… press the button again when done.");
+            _thinking.Visibility = Visibility.Visible;
+            return;
+        }
+        var listener = _listener;
+        _listener = null;
+        _mic.IsEnabled = false;
+        _thinking.Text = L.T("Writing it down…");
+        try
+        {
+            var said = await listener.FinishAsync();
+            if (said.Length > 0)
+            {
+                _request.Text = said;
+                await AskAsync();
+            }
+            else
+            {
+                _thinking.Text = L.T("Nothing was heard.");
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Log.Error(ex, "Asking out loud");
+            _thinking.Text = L.T("It didn't work. The activity log has the details.");
+        }
+        finally
+        {
+            listener.Dispose();
+            _mic.IsEnabled = true;
+            _mic.Content = ThemedIcon("mic", 16);
+        }
     }
 
     private async Task AskAsync()

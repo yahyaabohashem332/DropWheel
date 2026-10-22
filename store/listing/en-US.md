@@ -70,6 +70,13 @@ AI models download once, the first time a tool needs them, from their authors' p
 
 ## What's new in this version
 
+Petal 1.6:
+• Draw on the screen, whiteboards, zoom, a magnifier, a spotlight, clicks and keys on screen, and a timer.
+• Screen recording to MP4 with sound, scrolling screenshots, text from the screen, pinned screenshots, a colour picker and a ruler.
+• Text in any app: fix the keyboard layout, translate, change case, remove diacritics, calculate, summarize and rewrite on this PC.
+• Dictation in any app with Ctrl+Win+J, and Ask Petal out loud.
+• Clipboard history, window arranging, sticky notes, your usual petal per file type, and a calculator in the wheel.
+
 Petal 1.5:
 • Wheels without files: the app in front, quick Windows switches, media controls, and wheels of your own.
 • Petals of your own: keys, programs, scripts, folders, links, groups and open windows.

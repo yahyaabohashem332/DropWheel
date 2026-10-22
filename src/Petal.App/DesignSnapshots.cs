@@ -34,6 +34,7 @@ internal static class DesignSnapshots
         };
         foreach (var extra in ExtraToolCases(F, jobs, at))
             cases.Add(extra);
+        var floating = FloatingCases().ToList();
         var only = args.Length > 3 ? args[3] : null;
         foreach (var dark in new[] { false, true })
         {
@@ -51,6 +52,21 @@ internal static class DesignSnapshots
                     window.Show();
                     await Task.Delay(2500);
                     Save(RenderWindow(window), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
+                    window.Close();
+                }
+                catch (Exception ex)
+                {
+                    File.AppendAllText(Path.Combine(output, "error.txt"), $"{name}: {ex}{Environment.NewLine}");
+                }
+            }
+            foreach (var (name, create) in floating)
+            {
+                if (only is not null && !name.Equals(only, StringComparison.OrdinalIgnoreCase)) continue;
+                try
+                {
+                    var window = create();
+                    await Task.Delay(600);
+                    Save(RenderFloating(window, dark), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
                     window.Close();
                 }
                 catch (Exception ex)
@@ -144,7 +160,82 @@ internal static class DesignSnapshots
                 .Invoke([SampleScript(), new TaskCompletionSource<bool>()])),
             ("trialended", () => (Window)typeof(Shell.TrialEndedWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!
                 .Invoke([])),
+            ("screentext", () => Screen.ScreenTextWindow.ForSnapshot(SamplePicture(file("figures.png")))),
+            ("colourcard", () => new Screen.ColourCard(Color.FromRgb(0x30, 0xA4, 0x6C), Colors.White)),
+            ("clipboard", () => { SampleClips(); return Clips.ClipboardWindow.ForSnapshot(); }),
+            ("rewrite", () => Words.TextResultWindow.ForSnapshot(Words.TextJob.Rewrite, "Hi team, the report is late again because the numbers came in late, sorry, we will send it tomorrow morning hopefully.")),
+            ("translatetext", () => Words.TextResultWindow.ForSnapshot(Words.TextJob.Translate, "The meeting moves to Thursday at ten.")),
+            ("dictationsetup", Private<Words.DictationSetupWindow>),
         ];
+    }
+
+    /// <summary>The floating windows of the screen tools, each rendered over a plain backdrop.</summary>
+    private static IEnumerable<(string Name, Func<Window> Create)> FloatingCases() =>
+    [
+        ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
+        ("timer", Private<Screen.TimerWindow>),
+        ("timerrunning", () => Screen.TimerWindow.ForSnapshot(TimeSpan.FromMinutes(5))),
+        ("recordbar", () => new Screen.RecordBar((Screen.RecordingSession)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Screen.RecordingSession)))),
+        ("dictation", () => new Words.DictationPill(IntPtr.Zero)),
+        ("note", () => new Notes.NoteWindow(new Notes.StickyNote
+        {
+            Text = Localization.L.IsArabic
+                ? "اتصل بسارة قبل الخامسة" + Environment.NewLine + "أرسل العرض المحدّث"
+                : "Call Sara before five" + Environment.NewLine + "Send the updated slides",
+            Colour = "yellow",
+        })),
+    ];
+
+    /// <summary>A window that sizes to its content, rendered on a backdrop the colour of a desktop.</summary>
+    private static BitmapSource RenderFloating(Window window, bool dark)
+    {
+        var content = (FrameworkElement)window.Content;
+        window.Content = null;
+        var frame = new System.Windows.Controls.Border
+        {
+            Background = new SolidColorBrush(dark ? Color.FromRgb(0x2B, 0x30, 0x3A) : Color.FromRgb(0xC9, 0xD3, 0xDF)),
+            Padding = new Thickness(24),
+            Child = content,
+            FlowDirection = window.FlowDirection,
+        };
+        if (!double.IsNaN(window.Width) && window.SizeToContent != SizeToContent.WidthAndHeight)
+        {
+            content.Width = window.Width;
+            content.Height = window.Height;
+        }
+        frame.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var size = frame.DesiredSize;
+        frame.Arrange(new Rect(size));
+        var host = new System.Windows.Controls.Border { Child = frame };
+        host.Measure(size);
+        host.Arrange(new Rect(size));
+        host.UpdateLayout();
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(size.Width * 2), (int)Math.Ceiling(size.Height * 2), 192, 192, PixelFormats.Pbgra32);
+        bitmap.Render(host);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    /// <summary>A picture from the test data, as the screen tools are given one.</summary>
+    private static BitmapSource SamplePicture(string path)
+    {
+        var image = Load(path);
+        int w = Math.Min(image.PixelWidth, 520), h = Math.Min(image.PixelHeight, 220);
+        var crop = new CroppedBitmap(image, new Int32Rect(0, 0, w, h));
+        crop.Freeze();
+        return crop;
+    }
+
+    /// <summary>A few made-up clips, so the clipboard snapshots never show what the user copied.</summary>
+    private static void SampleClips()
+    {
+        Clips.ClipboardHistory.Clear(keepPinned: false);
+        var now = DateTime.Now;
+        var pictures = Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures);
+        Clips.ClipboardHistory.Add(new Clips.ClipItem { Kind = Clips.ClipKind.Text, Text = "https://example.com/report-2026.pdf", Copied = now.AddMinutes(-42) });
+        Clips.ClipboardHistory.Add(new Clips.ClipItem { Kind = Clips.ClipKind.Text, Text = Localization.L.IsArabic ? "العنوان: شارع الملك فهد، الرياض" : "Address: 14 Harbour Road, Bristol", Copied = now.AddMinutes(-18), Pinned = true });
+        Clips.ClipboardHistory.Add(new Clips.ClipItem { Kind = Clips.ClipKind.Files, Files = [Path.Combine(pictures, "trip.jpg"), Path.Combine(pictures, "beach.jpg")], Copied = now.AddMinutes(-6) });
+        Clips.ClipboardHistory.Add(new Clips.ClipItem { Kind = Clips.ClipKind.Text, Text = Localization.L.IsArabic ? "شكرًا على وقتك، سأرسل الملف اليوم." : "Thanks for your time, I'll send the file today.", Copied = now.AddSeconds(-20) });
     }
 
     private static Wheels.WheelEntry SampleScript() => new()
@@ -309,6 +400,18 @@ internal static class DesignSnapshots
         Shot("ring-browser", () => wheel.Snapshot([], WheelMode.Conversions, 4, background, pages: pages, page: 0, keyboard: true));
         Shot("ring-explorer", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: [explorer, quick, media], page: 0));
         Shot("actions-more", () => wheel.Snapshot(files, WheelMode.Actions, 2, background, openGroup: Petal.Core.Actions.ActionWheel.Default.Count + s.Destinations.Count));
+        // The wheels of 1.6: the screen, drawing and presenting, text (with Case out), windows and clips; and the centre as a calculator.
+        RingPage Of(string template) => Wheels.Rings.Page(s.Wheels.First(w => w.Template == template));
+        RingPage[] newer = [Of("screen"), Of("present"), Of("text"), Of("windows"), Of("clipboard")];
+        Shot("ring-screen", () => wheel.Snapshot([], WheelMode.Conversions, 1, background, pages: newer, page: 0, keyboard: true));
+        Shot("ring-present", () => wheel.Snapshot([], WheelMode.Conversions, 0, background, pages: newer, page: 1));
+        Shot("ring-text", () => wheel.Snapshot([], WheelMode.Conversions, 1, background, pages: newer, page: 2, openGroup: 3));
+        Shot("ring-windows", () => wheel.Snapshot([], WheelMode.Conversions, 2, background, pages: newer, page: 3, keyboard: true));
+        Shot("ring-windows-more", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: newer, page: 3, openGroup: 4));
+        SampleClips();
+        Shot("ring-clipboard", () => wheel.Snapshot([], WheelMode.Conversions, 1, background, pages: newer, page: 4));
+        Shot("hub-calc", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "12% of 340"));
+        Shot("hub-units", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "5 km in mi"));
         var saved = (s.WheelStyle, s.ShowPetalNames, s.CancelZone, s.WheelMotion);
         try
         {

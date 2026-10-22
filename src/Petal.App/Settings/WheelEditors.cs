@@ -168,6 +168,7 @@ internal sealed class EntryList : StackPanel
             EntryKind.Folder or EntryKind.Link => entry.Path ?? "",
             EntryKind.Group => L.P(entry.Children?.Count ?? 0, "{0} petal", "{0} petals"),
             EntryKind.RunningApps => L.T("The windows that are open, to switch to one"),
+            EntryKind.Clips => L.T("What was copied lately, to paste again"),
             _ => "",
         };
     }
@@ -610,6 +611,7 @@ internal sealed class PetalPickerWindow : ToolWindow
             (EntryKind.Link, "Link", "globe", "Open a web address"),
             (EntryKind.Group, "Group", "layers", "Petals of its own, around it"),
             (EntryKind.RunningApps, "Open windows", "windows", "Switch to a window that is open"),
+            (EntryKind.Clips, "Recent clips", "clipboardList", "Paste something copied earlier"),
         };
         var own = make.Where(m => Matches(m.Name, m.Description)).ToList();
         if (own.Count > 0)
@@ -620,7 +622,18 @@ internal sealed class PetalPickerWindow : ToolWindow
         }
         foreach (var group in WheelActions.All.Where(a => Matches(a.Name, a.Description, a.Label)).GroupBy(a => a.Section))
         {
-            Section(group.Key switch { "Windows" => "Windows", "Screen" => "Screenshots", "Media" => "Media", _ => "Petal" });
+            Section(group.Key switch
+            {
+                "Windows" => "Windows",
+                "Screen" => "Screen",
+                "Draw" => "Draw & Present",
+                "Text" => "Text in any app",
+                "Arrange" => "Arrange windows",
+                "Clipboard" => "Clipboard",
+                "Notes" => "Notes",
+                "Media" => "Media",
+                _ => "Petal",
+            });
             foreach (var action in group)
                 Result(action.Icon, null, action.Name, action.Description, () => Choose(new WheelEntry { Kind = EntryKind.Action, Action = action.Id }));
         }
@@ -675,7 +688,7 @@ internal sealed class PetalPickerWindow : ToolWindow
     private void Make(EntryKind kind)
     {
         var entry = new WheelEntry { Kind = kind, Children = kind == EntryKind.Group ? [] : null };
-        if (kind == EntryKind.RunningApps)
+        if (kind is EntryKind.RunningApps or EntryKind.Clips)
         {
             Choose(entry);
             return;

@@ -7,7 +7,7 @@ namespace Petal.App.Wheels;
 public static class WheelTemplates
 {
     /// <summary>Raised to add wheels made after the user's settings were: see <see cref="Upgrade"/>.</summary>
-    public const int Version = 1;
+    public const int Version = 2;
 
     private static WheelEntry A(string action) => new() { Kind = EntryKind.Action, Action = action };
 
@@ -40,6 +40,76 @@ public static class WheelTemplates
         [
             A("media.playpause"), A("media.next"), A("media.shuffle"), A("media.volumeup"),
             A("system.mute"), A("media.volumedown"), A("media.repeat"), A("media.previous"),
+        ],
+    };
+
+    /// <summary>Screenshots, recording, text from the screen, pins, colours and the ruler.</summary>
+    public static UserWheel Screen() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Screen",
+        Template = "screen",
+        Items =
+        [
+            A("screen.area"), A("screen.record"), A("screen.text"), A("screen.scroll"),
+            A("screen.full"), A("screen.pin"), A("screen.colour"), A("screen.ruler"),
+        ],
+    };
+
+    /// <summary>For teaching, meetings and recordings: drawing, boards, zoom, spotlight, clicks and a timer.</summary>
+    public static UserWheel Present() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Draw & Present",
+        Template = "present",
+        Items =
+        [
+            A("draw.screen"), A("draw.zoom"), A("draw.spotlight"), A("draw.clicks"),
+            A("draw.whiteboard"), A("draw.lens"), A("draw.timer"), A("draw.blackboard"),
+        ],
+    };
+
+    /// <summary>What to do with the text selected in any app.</summary>
+    public static UserWheel Text() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Text",
+        Template = "text",
+        Items =
+        [
+            A("text.fixlayout"), A("text.translate"), A("text.dictate"),
+            Group("Case", "caseText", A("text.upper"), A("text.lower"), A("text.title"), A("text.sentence")),
+            A("text.calculate"), A("text.count"),
+            Group("Tidy", "tidyText", A("text.tidy"), A("text.diacritics"), A("text.digits")),
+            A("text.summarize"), A("text.rewrite"),
+        ],
+    };
+
+    /// <summary>The window in front, arranged: each petal points where the window goes.</summary>
+    public static UserWheel Windows() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Arrange",
+        Template = "windows",
+        Items =
+        [
+            A("window.maximize"), A("window.topright"), A("window.right"), A("window.bottomright"),
+            Group("More", "layers", A("window.centre"), A("window.nextscreen"), A("window.top"), A("window.bottom"),
+                A("window.ontop"), A("window.seethrough"), A("window.minimize"), A("window.close")),
+            A("window.bottomleft"), A("window.left"), A("window.topleft"),
+        ],
+    };
+
+    /// <summary>What was copied lately, to paste again, with the history and the clipboard's wheel.</summary>
+    public static UserWheel Clipboard() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Clipboard",
+        Template = "clipboard",
+        Items =
+        [
+            new WheelEntry { Kind = EntryKind.Clips },
+            A("clipboard.history"), A("petal.clipboard"), A("notes.new"),
         ],
     };
 
@@ -207,6 +277,11 @@ public static class WheelTemplates
     {
         "quick" => Quick(),
         "media" => Media(),
+        "screen" => Screen(),
+        "present" => Present(),
+        "text" => Text(),
+        "windows" => Windows(),
+        "clipboard" => Clipboard(),
         null => null,
         _ => Apps().FirstOrDefault(a => a.Template == template),
     };
@@ -224,6 +299,12 @@ public static class WheelTemplates
             settings.Wheels.Add(Quick());
             settings.Wheels.Add(Media());
             settings.Wheels.AddRange(Apps());
+        }
+        if (settings.WheelsVersion < 2)
+        {
+            // After the quick and media wheels, before the app wheels and the user's own.
+            int at = settings.Wheels.FindLastIndex(w => w.Template is "quick" or "media") + 1;
+            settings.Wheels.InsertRange(at, [Screen(), Present(), Text(), Windows(), Clipboard()]);
         }
         settings.WheelsVersion = Version;
         return true;
