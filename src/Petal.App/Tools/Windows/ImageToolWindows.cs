@@ -173,6 +173,7 @@ public sealed class RedactPhotoWindow : ToolWindow
     private readonly ColorWell _color = new(Colors.Black);
     private readonly Button _faces = new() { Content = L.T("Faces") };
     private readonly Button _text = new() { Content = L.T("Text"), Margin = new Thickness(8, 0, 0, 0) };
+    private readonly Button _private = new() { Content = L.T("Private details"), Margin = new Thickness(8, 0, 0, 0) };
     private readonly TextBlock _status = new();
 
     public RedactPhotoWindow(ToolInfo tool, string file, JobRunner jobs, ScreenPoint at) : base(tool.Name, 420)
@@ -192,9 +193,11 @@ public sealed class RedactPhotoWindow : ToolWindow
         styleRow.Children.Add(_color);
         Body.Children.Add(Row("Style", styleRow, 80, 14));
 
-        var detect = new StackPanel { Orientation = Orientation.Horizontal, Children = { _faces, _text } };
+        var detect = new StackPanel { Orientation = Orientation.Horizontal, Children = { _private, _faces, _text } };
         _faces.Click += async (_, _) => await DetectAsync(faces: true);
         _text.Click += async (_, _) => await DetectAsync(faces: false);
+        _private.Click += async (_, _) => await DetectPrivateAsync();
+        _private.ToolTip = L.T("E-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords");
         Body.Children.Add(Row("Detect", detect, 80, 10));
         _status.Style = (Style)FindResource("Petal.Caption");
         _status.Margin = new Thickness(80, 6, 0, 0);
@@ -217,6 +220,8 @@ public sealed class RedactPhotoWindow : ToolWindow
                 var info = await ImageInspector.ReadAsync(file);
                 _canvas.Source = await Parts.ImageLoader.LoadAsync(file, 1600);
                 _canvas.SourceSize = new Size(info.DisplayWidth, info.DisplayHeight);
+                // Private details are looked for straight away; each box can still be moved or deleted.
+                await DetectPrivateAsync();
             }
             catch (Exception ex)
             {
@@ -233,6 +238,31 @@ public sealed class RedactPhotoWindow : ToolWindow
             : new SolidColorBrush(_color.Color);
         _color.Visibility = _style.Value == RedactionStyle.Solid ? Visibility.Visible : Visibility.Collapsed;
         _canvas.Refresh();
+    }
+
+    private async Task DetectPrivateAsync()
+    {
+        _faces.IsEnabled = _text.IsEnabled = _private.IsEnabled = false;
+        _status.Text = L.T("Looking for private details…");
+        try
+        {
+            var found = await ImageRedactor.DetectPrivateAsync(_file);
+            foreach (var (r, _) in found)
+            {
+                double pad = Math.Max(2, r.Height * 0.15);
+                _canvas.Add(new Rect(Math.Max(0, r.X - pad), Math.Max(0, r.Y - pad), r.Width + pad * 2, r.Height + pad * 2));
+            }
+            _status.Text = found.Count == 0 ? L.T("No private details found.") : L.P(found.Count, "Covered {0} private detail.", "Covered {0} private details.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Looking for private details");
+            _status.Text = L.T("Detection isn't available on this PC.");
+        }
+        finally
+        {
+            _faces.IsEnabled = _text.IsEnabled = _private.IsEnabled = true;
+        }
     }
 
     private async Task DetectAsync(bool faces)

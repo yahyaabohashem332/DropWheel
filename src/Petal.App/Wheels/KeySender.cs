@@ -170,6 +170,56 @@ public static partial class KeySender
         return true;
     }
 
+    /// <summary>
+    /// In the window already in front: takes back <paramref name="backspaces"/> typed characters, types
+    /// <paramref name="text"/>, then moves the cursor <paramref name="cursorBack"/> characters back.
+    /// </summary>
+    public static async Task<bool> ReplaceTypedAsync(IntPtr target, int backspaces, string text, int cursorBack)
+    {
+        if (!SameWindow(GetForegroundWindow(), target))
+            return false;
+        var inputs = new List<INPUT>();
+        for (int i = 0; i < backspaces; i++)
+        {
+            inputs.Add(Press(0x08, up: false));
+            inputs.Add(Press(0x08, up: true));
+        }
+        if (inputs.Count > 0 && SendInput((uint)inputs.Count, [.. inputs], Marshal.SizeOf<INPUT>()) != inputs.Count)
+            return false;
+        await Task.Delay(20);
+        var normal = text.Replace("\r\n", "\n");
+        for (int start = 0; start < normal.Length; start += 40)
+        {
+            if (!SameWindow(GetForegroundWindow(), target))
+                return false;
+            var chunk = new List<INPUT>();
+            foreach (var c in normal.AsSpan(start, Math.Min(40, normal.Length - start)))
+            {
+                if (c == '\n')
+                {
+                    chunk.Add(Press(0x0D, up: false));
+                    chunk.Add(Press(0x0D, up: true));
+                    continue;
+                }
+                chunk.Add(Unicode(c, up: false));
+                chunk.Add(Unicode(c, up: true));
+            }
+            SendInput((uint)chunk.Count, [.. chunk], Marshal.SizeOf<INPUT>());
+            await Task.Delay(10);
+        }
+        if (cursorBack > 0)
+        {
+            var left = new List<INPUT>();
+            for (int i = 0; i < cursorBack; i++)
+            {
+                left.Add(Press(0x25, up: false));
+                left.Add(Press(0x25, up: true));
+            }
+            SendInput((uint)left.Count, [.. left], Marshal.SizeOf<INPUT>());
+        }
+        return true;
+    }
+
     private static INPUT Unicode(char c, bool up) => new()
     {
         type = INPUT_KEYBOARD,

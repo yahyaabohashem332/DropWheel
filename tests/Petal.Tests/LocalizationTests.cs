@@ -18,7 +18,7 @@ public partial class LocalizationTests
     // Strings in the app's sources that are not interface text, or read the same in Arabic.
     private static readonly HashSet<string> NotTranslated = new(StringComparer.Ordinal)
     {
-        "Petal", "Petal input hooks", "Preferred DropEffect", "Shell.Application", "System.Photo.Orientation", "PART_Track",
+        "Petal", "Petal input hooks", "Preferred DropEffect", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",
         "Segoe UI Variable Display, Segoe UI", "Segoe UI Variable Text, Segoe UI", "Cascadia Mono, Consolas",
         "Shift", "Ctrl", "Alt", "Win", "⇧ Shift", "Shift ⇧", "Windows ⊞", "English",
         "FFmpeg", "Microsoft Office", "4K (2160p)", "Full HD (1080p)", "HD (720p)", "SD (480p)",
@@ -54,6 +54,12 @@ public partial class LocalizationTests
         "Hi team, the report is late again because the numbers came in late, sorry, we will send it tomorrow morning hopefully.",
         "The meeting moves to Thursday at ten.", "Call Sara before five", "Send the updated slides", "Address: 14 Harbour Road, Bristol",
         "Thanks for your time, I'll send the file today.", "12% of 340", "5 km in mi",
+        // Apps the gallery has wheels for, by their own names; their program names; keycaps; a wheel code's mark; words added to searches.
+        "Figma", "Illustrator", "Premiere Pro", "Blender", "Notion", "Outlook", "adobe premiere pro", "Space", "Tab", "PETAL-WHEEL:", "snippet", "wheel", "workspace",
+        // Made-up windows, snippets, PCs, notes and captions in the design snapshots of 1.7 (the Arabic ones are written beside them).
+        "Spotify", "WINWORD", "Code", "petal-site — Visual Studio Code", "Project board - Google Chrome", "Landing page – Figma",
+        ";addr", ";thx", "14 Harbour Road, Bristol BS1 5TT", "Thanks so much, {cursor}. Best wishes.", "Office PC", "Sara's laptop", "Study",
+        "[00:00] Morning all, let's start with the launch date.\n[00:06] The translation isn't finished yet.", "We'll move the launch to next Thursday.",
         "Petal clipboard", "Petal screen recording", "Clipboard Viewer Ignore", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Windows.UI.Core.CoreWindow", "WPF / C#",
     };
 
@@ -87,7 +93,8 @@ public partial class LocalizationTests
                 {
                     if (m.Groups["prefix"].Value.Contains('$'))
                         continue;
-                    var text = m.Groups["body"].Value.Replace("\\\"", "\"").Replace("\\n", "\n");
+                    var text = UnicodeEscape().Replace(m.Groups["body"].Value, e => ((char)Convert.ToInt32(e.Groups[1].Value, 16)).ToString())
+                        .Replace("\\\"", "\"").Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\\\", "\\");
                     bool looks = skipped || m.Groups["call"].Success ? text.Any(char.IsAsciiLetter) : LooksLikeInterfaceText(text);
                     if (!looks || singulars.Contains(text) || NotTranslated.Contains(text.Trim()))
                         continue;
@@ -214,7 +221,11 @@ public partial class LocalizationTests
             return false;
         if (s.StartsWith("Petal.") || s.StartsWith("http") || s.StartsWith('.') || s.StartsWith('-') || s.StartsWith('/') || s.StartsWith('#') || (s.StartsWith('{') && !s.Contains(' ')) || s.StartsWith("pack:"))
             return false;
-        if (s.Contains('\\') || s.Contains("*.") || s.Contains("%1"))
+        // A path on its own is not text; a sentence that names a folder such as Downloads\Petal is.
+        if (s.Contains('\\') && (!s.Contains(' ') || s.StartsWith('%') || Regex.IsMatch(s, @"^[A-Za-z]:\\") || Regex.IsMatch(s, @"\.[A-Za-z0-9]{2,4}$")) || s.Contains("*.") || s.Contains("%1"))
+            return false;
+        // Batch commands, and text already written in Arabic.
+        if (s.StartsWith('@') || s.Any(c => c is >= (char)0x0600 and <= (char)0x06FF))
             return false;
         return !Regex.IsMatch(s, @"^[a-z][A-Za-z0-9]*$")              // icon names, ids
             && !Regex.IsMatch(s, @"^[A-Z][a-z]+[A-Z][A-Za-z0-9]*$")    // PascalCase ids
@@ -238,6 +249,9 @@ public partial class LocalizationTests
             dir = dir.Parent;
         return dir?.FullName ?? throw new DirectoryNotFoundException("Petal's sources were not found above the test folder.");
     }
+
+    [GeneratedRegex(@"\\u([0-9A-Fa-f]{4})")]
+    private static partial Regex UnicodeEscape();
 
     [GeneratedRegex(@"(?<call>L\.[TF]\()?(?<prefix>\$@|@\$|\$|@)?""(?<body>(?:[^""\\\n]|\\.)*)""")]
     private static partial Regex MakeLiteral();

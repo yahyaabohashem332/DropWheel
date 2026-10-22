@@ -152,7 +152,7 @@ public sealed class TranscribeWindow : ToolWindow
         languages.AddRange(Transcriber.Languages.Select(code => (code, NativeName(code))));
         _language = Choice(languages, "auto");
         Body.Children.Add(Row("Language", _language, 110, 12));
-        _into = Segments([("spoken", "As spoken"), ("en", "English"), ("ar", "Arabic")], "spoken");
+        _into = Segments([("spoken", "As spoken"), ("en", "In English"), ("ar", "In Arabic")], "spoken");
         _into.Changed += _ => Sync();
         Body.Children.Add(Row("Subtitles in", _into, 110, 10));
         Body.Children.Add(_translator);

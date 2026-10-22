@@ -17,6 +17,7 @@ public enum FileActionId
     CopyName,
     OpenInCode,
     OpenWith,
+    SendToPc,
 }
 
 public sealed record FileActionInfo(FileActionId Id, string WheelTitle, string Name, string Icon, string Description);
@@ -51,6 +52,7 @@ public static class FileActionRegistry
         new(FileActionId.Ask, "ASK", "Ask Petal", "ask", "Say what to do with the files in your own words, in English or Arabic. Petal shows the steps before anything runs."),
         new(FileActionId.Share, "SHARE", "Share", "share", "Send files and folders with Nearby Sharing or any app in the Windows share sheet."),
         new(FileActionId.Phone, "TO PHONE", "Send to Phone", "smartphone", "Show a QR code to scan with a phone on the same Wi-Fi, then save the files on it. Nothing goes through the internet."),
+        new(FileActionId.SendToPc, "TO PC", "Send to PC", "monitor", "Send files and folders to another PC with Petal on the same network. It asks before saving them; nothing goes through the internet."),
         new(FileActionId.Clean, "CLEAN", "Clean for Sharing", "shieldCheck", "Make copies without the location, device and author details hidden in photos, videos, PDFs and Office files."),
         new(FileActionId.Float, "FLOAT", "Float", "pin", "Keep files on a floating shelf. Pin it to a screen edge and drag files into another app."),
         new(FileActionId.Copy, "COPY", "Copy", "clipboard", "Copy files to the clipboard, ready to paste in File Explorer."),

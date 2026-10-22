@@ -15,7 +15,8 @@ public enum NameCase
 /// <summary>
 /// How a selection is renamed. <see cref="Pattern"/> builds each name from tokens:
 /// {name} the current name (after find and replace), {n} a running number, {date} the date the
-/// photo was taken or else the file was last changed (yyyy-MM-dd), {folder} the parent folder.
+/// photo was taken or else the file was last changed (yyyy-MM-dd), {folder} the parent folder, {content} a
+/// name from what the file holds (worked out by the caller; the current name until it is known).
 /// </summary>
 public sealed record RenameRule
 {
@@ -52,14 +53,14 @@ public sealed record RenameItem(string Path, string NewName, RenameProblem Probl
 public static class BatchRename
 {
     /// <summary>Works out every new name, and flags names that clash or already exist.</summary>
-    public static IReadOnlyList<RenameItem> Plan(IReadOnlyList<string> paths, RenameRule rule, Func<string, DateTime?>? dateTaken = null)
+    public static IReadOnlyList<RenameItem> Plan(IReadOnlyList<string> paths, RenameRule rule, Func<string, DateTime?>? dateTaken = null, Func<string, string?>? content = null)
     {
         int digits = rule.Digits > 0 ? rule.Digits : Math.Max(1, (rule.Start + paths.Count - 1).ToString(CultureInfo.InvariantCulture).Length);
         var names = new List<string>(paths.Count);
         var empty = new List<bool>(paths.Count);
         for (int i = 0; i < paths.Count; i++)
         {
-            var (name, isEmpty) = NameFor(paths[i], i, rule, digits, dateTaken);
+            var (name, isEmpty) = NameFor(paths[i], i, rule, digits, dateTaken, content);
             names.Add(name);
             empty.Add(isEmpty);
         }
@@ -91,7 +92,7 @@ public static class BatchRename
     }
 
     /// <summary>The new name, and whether it lost its name part (only an extension, or nothing, left).</summary>
-    private static (string Name, bool Empty) NameFor(string path, int index, RenameRule rule, int digits, Func<string, DateTime?>? dateTaken)
+    private static (string Name, bool Empty) NameFor(string path, int index, RenameRule rule, int digits, Func<string, DateTime?>? dateTaken, Func<string, string?>? content)
     {
         bool folder = Directory.Exists(path);
         var oldName = Path.GetFileName(path.TrimEnd('\\', '/'));
@@ -108,6 +109,8 @@ public static class BatchRename
             .Replace("{n}", (rule.Start + index).ToString(CultureInfo.InvariantCulture).PadLeft(digits, '0'))
             .Replace("{folder}", Path.GetFileName(Path.GetDirectoryName(path) ?? ""))
             .ToString();
+        if (name.Contains("{content}", StringComparison.Ordinal))
+            name = name.Replace("{content}", content?.Invoke(path) ?? stem);
         if (name.Contains("{date}", StringComparison.Ordinal))
         {
             var date = dateTaken?.Invoke(path) ?? SafeLastWrite(path);

@@ -14,6 +14,10 @@ namespace Petal.App.Wheels;
 /// <summary>Turns the user's wheels into what the wheel shows, with switches read as they are now.</summary>
 public static class Rings
 {
+    /// <summary>A workspace shows the icon of its first app, so workspaces tell apart in an orbit.</summary>
+    private static System.Windows.Media.ImageSource? WorkspacePicture(Screen.Workspace? workspace) =>
+        workspace?.Windows.FirstOrDefault(w => w.ExePath is not null && System.IO.File.Exists(w.ExePath))?.ExePath is { } exe ? IconOf(exe) : null;
+
     private static readonly ConcurrentDictionary<string, ImageSource?> Icons = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -160,6 +164,27 @@ public static class Rings
                     Blocked = true,
                 };
             }
+            case EntryKind.Workspace:
+            {
+                var workspace = SettingsStore.Current.Workspaces.FirstOrDefault(w => w.Id == e.Path);
+                var name = e.Name ?? workspace?.Name ?? L.T("Workspace");
+                return new WheelItem(e.Label ?? name.ToUpperInvariant(), name, e.Icon ?? "layoutGrid", e)
+                {
+                    Tint = tint,
+                    Picture = e.Icon is null ? WorkspacePicture(workspace) : null,
+                    Note = "Open and arrange",
+                    Unavailable = workspace is null ? "This workspace was deleted" : null,
+                    Blocked = true,
+                };
+            }
+            case EntryKind.Workspaces:
+            {
+                var children = SettingsStore.Current.Workspaces
+                    .Select(w => new WheelItem(w.Name.ToUpperInvariant(), w.Name, "layoutGrid", w) { Note = "Open and arrange", Picture = WorkspacePicture(w) })
+                    .Append(Item(new WheelEntry { Kind = EntryKind.Action, Action = "workspace.save" }))
+                    .Take(8).ToList();
+                return new WheelItem(e.Label ?? L.T("WORKSPACES"), e.Name ?? "Workspaces", e.Icon ?? "layoutGrid", e) { Tint = tint, Children = children };
+            }
             case EntryKind.RunningApps:
             {
                 var name = e.Name ?? "Open Windows";
@@ -184,7 +209,7 @@ public static class Rings
 
     /// <summary>The clips copied last (pinned first), each a petal that pastes it.</summary>
     public static List<WheelItem> ClipPetals(WheelEntry e) =>
-        Clips.ClipboardHistory.All.Take(10).Select(clip =>
+        Clips.ClipboardHistory.All.Take(8).Select(clip =>
         {
             var preview = clip.Preview;
             var label = clip.Kind switch
@@ -250,6 +275,9 @@ public static class EntryRunner
                     if (!await RunningApps.SwitchToAsync(window.Handle))
                         host.Card(at, L.T("That window has closed"), window.Title, false);
                     return;
+                case Screen.Workspace workspace:
+                    await Screen.Workspaces.OpenAsync(workspace);
+                    return;
                 case Clips.ClipItem clip:
                     if (!await Clips.ClipboardHistory.PasteAsync(clip, target))
                         host.Card(at, L.T("On the clipboard"), L.T("Paste it with Ctrl+V."), true);
@@ -289,6 +317,9 @@ public static class EntryRunner
                 return;
             case EntryKind.Link when e.Path is { } link:
                 SystemToggles.Open(link);
+                return;
+            case EntryKind.Workspace when SettingsStore.Current.Workspaces.FirstOrDefault(w => w.Id == e.Path) is { } workspace:
+                await Screen.Workspaces.OpenAsync(workspace);
                 return;
         }
     }

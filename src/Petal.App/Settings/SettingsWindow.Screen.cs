@@ -3,12 +3,13 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Petal.App.Input;
 using Petal.App.Localization;
 
 namespace Petal.App.Settings;
 
-/// <summary>Settings for the screen and text tools: dictation, showing keys, recording, and the clipboard history.</summary>
+/// <summary>Settings for the screen and text tools, and for work and sharing.</summary>
 public sealed partial class SettingsWindow
 {
     private UIElement ScreenTextSection()
@@ -16,11 +17,7 @@ public sealed partial class SettingsWindow
         var panel = new StackPanel();
 
         panel.Children.Add(Text("Dictation", "Petal.Label"));
-        var warning = Text("", "Petal.Caption");
-        warning.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
-        warning.Visibility = Visibility.Collapsed;
-        panel.Children.Add(Row("Shortcut", DictationShortcutPicker(warning), 120, 8));
-        panel.Children.Add(warning.WithMargin(120, 4, 0, 0));
+        panel.Children.Add(ShortcutRow(() => _s.DictationShortcut, v => _s.DictationShortcut = v, Words.Dictation.RegisterShortcut, "Ctrl+Win+J"));
         var accuracy = Segments([("Fast", "Fast"), ("Balanced", "Balanced"), ("Accurate", "Accurate")], _s.DictationAccuracy);
         accuracy.Changed += v =>
         {
@@ -28,9 +25,7 @@ public sealed partial class SettingsWindow
             Save();
         };
         panel.Children.Add(Row("Accuracy", accuracy, 120, 8));
-        var languages = new List<(string, string)> { ("auto", "Detect automatically"), ("ar", "العربية"), ("en", "English") };
-        languages.AddRange(Petal.Engines.Media.Transcriber.Languages.Where(c => c is not "ar" and not "en").Select(c => (c, System.Globalization.CultureInfo.GetCultureInfo(c).NativeName)));
-        var language = Choice(languages, _s.DictationLanguage);
+        var language = Choice(Languages(), _s.DictationLanguage);
         language.SelectionChanged += (_, _) =>
         {
             _s.DictationLanguage = ValueOf<string>(language);
@@ -41,12 +36,70 @@ public sealed partial class SettingsWindow
         setup.Click += (_, _) => Words.DictationSetupWindow.ShowSingle();
         panel.Children.Add(Row("", setup, 120, 8));
 
+        panel.Children.Add(Text("Live captions", "Petal.Label").WithMargin(0, 18, 0, 0));
+        var show = Segments([("both", "Both"), ("arabic", "In Arabic"), ("original", "As spoken"), ("english", "In English")], _s.CaptionsShow);
+        show.Changed += v =>
+        {
+            _s.CaptionsShow = v;
+            Save();
+        };
+        panel.Children.Add(Row("Show", show, 120, 6));
+        var spoken = Choice(Languages(), _s.CaptionsLanguage);
+        spoken.SelectionChanged += (_, _) =>
+        {
+            _s.CaptionsLanguage = ValueOf<string>(spoken);
+            Save();
+        };
+        panel.Children.Add(Row("Spoken in", spoken, 120, 8));
+        panel.Children.Add(Text("From the PC's sound or the microphone (a button on the captions switches). Arabic needs the translation model, which downloads the first time.", "Petal.Caption").WithMargin(120, 4, 0, 0));
+
         panel.Children.Add(Text("Showing clicks and keys", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Show every key", "Typing shows too, not only shortcuts. Leave it off when typing passwords on screen.", _s.ShowEveryKey, v => _s.ShowEveryKey = v, top: 6));
 
         panel.Children.Add(Text("Screen recording", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Record the PC's sound", "What plays through the speakers goes into the video.", _s.RecordSystemSound, v => _s.RecordSystemSound = v, top: 6));
         panel.Children.Add(Switch("Record the microphone", "Your voice goes into the video, mixed with the PC's sound.", _s.RecordMicrophone, v => _s.RecordMicrophone = v));
+        panel.Children.Add(Switch("Polish recordings", "The camera glides in where you click and follows the pointer, the pointer is smoothed and larger, and the video sits on a background with rounded corners.", _s.RecordPolish, v => _s.RecordPolish = v));
+        var backgrounds = new WrapPanel();
+        foreach (var (key, name, from, to) in Screen.PolishOptions.Backgrounds)
+        {
+            var swatch = new Border
+            {
+                Width = 30,
+                Height = 22,
+                CornerRadius = new CornerRadius(6),
+                Margin = new Thickness(0, 0, 6, 0),
+                Cursor = Cursors.Hand,
+                ToolTip = L.T(name),
+                BorderThickness = new Thickness(key == _s.PolishBackground ? 2.5 : 1),
+                Background = key == "none" ? Brushes.Black : new LinearGradientBrush(Color.FromRgb(from.Red, from.Green, from.Blue), Color.FromRgb(to.Red, to.Green, to.Blue), 45),
+            };
+            swatch.SetResourceReference(Border.BorderBrushProperty, key == _s.PolishBackground ? "Petal.Accent" : "Petal.ControlBorder");
+            var chosen = key;
+            swatch.MouseLeftButtonUp += (_, _) =>
+            {
+                _s.PolishBackground = chosen;
+                Save();
+                foreach (var other in backgrounds.Children.OfType<Border>())
+                {
+                    bool on = (string)other.Tag == chosen;
+                    other.BorderThickness = new Thickness(on ? 2.5 : 1);
+                    other.SetResourceReference(Border.BorderBrushProperty, on ? "Petal.Accent" : "Petal.ControlBorder");
+                }
+            };
+            swatch.Tag = key;
+            backgrounds.Children.Add(swatch);
+        }
+        panel.Children.Add(Row("Background", backgrounds, 150, 10));
+        var zoom = Segments([(1.0, "Off"), (1.5, "Gentle"), (1.8, "Medium"), (2.3, "Strong")], _s.PolishZoom switch { <= 1.01 => 1.0, < 1.7 => 1.5, < 2.1 => 1.8, _ => 2.3 });
+        zoom.Changed += v =>
+        {
+            _s.PolishZoom = v;
+            Save();
+        };
+        panel.Children.Add(Row("Zoom on clicks", zoom, 150, 8));
+        panel.Children.Add(Switch("A larger pointer", "Easier to follow in the video.", _s.PolishLargeCursor, v => _s.PolishLargeCursor = v));
+        panel.Children.Add(Switch("Rings at clicks", "A ring shows where each click was.", _s.PolishClickRings, v => _s.PolishClickRings = v));
         panel.Children.Add(Switch("Show clicks and shortcuts in recordings", "Rings where you click and the keys you press appear in the video.", _s.RecordShowsClicks, v => _s.RecordShowsClicks = v));
         var folder = new Button { Content = L.T("Open the recordings folder"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         folder.Click += (_, _) =>
@@ -69,10 +122,76 @@ public sealed partial class SettingsWindow
         return panel;
     }
 
-    /// <summary>The dictation shortcut: click, then press the keys.</summary>
-    private UIElement DictationShortcutPicker(TextBlock warning)
+    private UIElement WorkSection()
     {
-        var saved = Shortcut.Parse(_s.DictationShortcut);
+        var panel = new StackPanel();
+        panel.Children.Add(Text("Command palette", "Petal.Label"));
+        panel.Children.Add(ShortcutRow(() => _s.PaletteShortcut, v => _s.PaletteShortcut = v, Commands.CommandPalette.RegisterShortcut, "Ctrl+Win+K"));
+
+        panel.Children.Add(Text("Snippets", "Petal.Label").WithMargin(0, 18, 0, 0));
+        panel.Children.Add(Switch("Expand snippets as I type", "An abbreviation such as ;addr becomes its text in any app. Petal holds only the last few letters typed, in memory, to spot one; nothing is kept or sent.", _s.SnippetsOn, v => _s.SnippetsOn = v, top: 6));
+        var snippets = new Button { Content = L.T("Edit Snippets…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
+        snippets.Click += (_, _) => new SnippetsWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
+        panel.Children.Add(snippets);
+
+        panel.Children.Add(Text("Workspaces", "Petal.Label").WithMargin(0, 18, 0, 0));
+        var workspaces = new StackPanel();
+        void FillWorkspaces()
+        {
+            workspaces.Children.Clear();
+            if (_s.Workspaces.Count == 0)
+                workspaces.Children.Add(Text("None yet. Arrange your apps, then choose Save Workspace on the Work wheel.", "Petal.Caption"));
+            foreach (var workspace in _s.Workspaces.ToList())
+            {
+                var item = workspace;
+                var row = new DockPanel { Margin = new Thickness(0, 4, 0, 4) };
+                var remove = IconButton("trash", "Delete", 14);
+                remove.Click += (_, _) =>
+                {
+                    _s.Workspaces.Remove(item);
+                    Save();
+                    FillWorkspaces();
+                };
+                var open = IconButton("play", "Open", 14);
+                open.Click += async (_, _) => await Screen.Workspaces.OpenAsync(item);
+                DockPanel.SetDock(remove, Dock.Right);
+                DockPanel.SetDock(open, Dock.Right);
+                row.Children.Add(remove);
+                row.Children.Add(open);
+                row.Children.Add(Text(item.Name + " · " + L.P(item.Windows.Count, "{0} window", "{0} windows"), "Petal.Body"));
+                workspaces.Children.Add(row);
+            }
+        }
+        FillWorkspaces();
+        panel.Children.Add(workspaces);
+        var saveNow = new Button { Content = L.T("Save the Windows Open Now…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };
+        saveNow.Click += (_, _) => Screen.SaveWorkspaceWindow.ShowSingle();
+        panel.Children.Add(saveNow);
+
+        panel.Children.Add(Text("Other PCs", "Petal.Label").WithMargin(0, 18, 0, 0));
+        panel.Children.Add(Switch("Let other PCs send me files", "PCs with Petal on the same network can send files with Send to PC. Petal asks every time, and saves them in Downloads\\Petal.", _s.ReceiveFromPcs, v =>
+        {
+            _s.ReceiveFromPcs = v;
+            _ = Actions.PcDrop.ApplyAsync(v);
+        }, top: 6));
+        panel.Children.Add(Text(L.F("Other PCs see this one as “{0}”.", Actions.PcDrop.Name), "Petal.Caption").WithMargin(0, 6, 0, 0));
+        return panel;
+    }
+
+    private static List<(string, string)> Languages()
+    {
+        var list = new List<(string, string)> { ("auto", "Detect automatically"), ("ar", "العربية"), ("en", "English") };
+        list.AddRange(Petal.Engines.Media.Transcriber.Languages.Where(c => c is not "ar" and not "en").Select(c => (c, System.Globalization.CultureInfo.GetCultureInfo(c).NativeName)));
+        return list;
+    }
+
+    /// <summary>A shortcut row: click, then press the keys; with the default back and off.</summary>
+    private UIElement ShortcutRow(Func<string> get, Action<string> set, Func<bool> register, string usual)
+    {
+        var warning = Text("", "Petal.Caption");
+        warning.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Danger");
+        warning.Visibility = Visibility.Collapsed;
+        var saved = Shortcut.Parse(get());
         bool recording = false;
         var record = new Button { MinWidth = 180, ToolTip = L.T("Click, then press the keys you want.") };
         void Show() => record.Content = recording ? L.T("Press the new shortcut…") : saved?.Display ?? L.T("Off");
@@ -84,9 +203,9 @@ public sealed partial class SettingsWindow
         void Apply(Shortcut? shortcut)
         {
             recording = false;
-            var before = _s.DictationShortcut;
-            _s.DictationShortcut = shortcut?.ToString() ?? "";
-            if (Words.Dictation.RegisterShortcut())
+            var before = get();
+            set(shortcut?.ToString() ?? "");
+            if (register())
             {
                 saved = shortcut;
                 Save();
@@ -94,8 +213,8 @@ public sealed partial class SettingsWindow
             }
             else
             {
-                _s.DictationShortcut = before;
-                Words.Dictation.RegisterShortcut();
+                set(before);
+                register();
                 Warn(L.F("Another program already uses {0}. Choose a different shortcut.", shortcut!.Display));
             }
             Show();
@@ -136,10 +255,11 @@ public sealed partial class SettingsWindow
             Show();
         };
         var reset = IconButton("rotateCcw", "Restore the default shortcut", 14);
-        reset.Click += (_, _) => Apply(Shortcut.Parse("Ctrl+Win+J"));
+        reset.Click += (_, _) => Apply(Shortcut.Parse(usual));
         var off = IconButton("x", "Turn the shortcut off", 14);
         off.Click += (_, _) => Apply(null);
         Show();
-        return new StackPanel { Orientation = Orientation.Horizontal, Children = { record, reset.WithMargin(6, 0, 0, 0), off.WithMargin(2, 0, 0, 0) } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Children = { record, reset.WithMargin(6, 0, 0, 0), off.WithMargin(2, 0, 0, 0) } };
+        return new StackPanel { Children = { Row("Shortcut", row, 120, 8), warning.WithMargin(120, 4, 0, 0) } };
     }
 }

@@ -54,7 +54,7 @@ internal static class WindowArranger
     }
 
     /// <summary>Moves the window so what can be seen of it fills <paramref name="area"/> exactly.</summary>
-    private static void MoveTo(IntPtr window, RECT area)
+    internal static void MoveTo(IntPtr window, RECT area)
     {
         if (ScreenNative.IsZoomed(window) || ScreenNative.IsIconic(window))
             ScreenNative.ShowWindow(window, ScreenNative.SW_RESTORE);

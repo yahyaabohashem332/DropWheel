@@ -125,6 +125,15 @@ public sealed class AppSettings
     /// <summary>Recordings also show clicks and shortcuts.</summary>
     public bool RecordShowsClicks { get; set; }
 
+    /// <summary>Recordings are polished: the camera zooms in on clicks, the pointer is smoothed, a background frames them.</summary>
+    public bool RecordPolish { get; set; } = true;
+    public string PolishBackground { get; set; } = "violet";
+
+    /// <summary>How far the camera goes in on a click; 1 keeps it still.</summary>
+    public double PolishZoom { get; set; } = 1.8;
+    public bool PolishLargeCursor { get; set; } = true;
+    public bool PolishClickRings { get; set; } = true;
+
     /// <summary>Dictation: the shortcut, the language spoken ("auto" to tell), and the accuracy chosen.</summary>
     public string DictationShortcut { get; set; } = "Ctrl+Win+J";
     public string DictationLanguage { get; set; } = "auto";
@@ -136,6 +145,30 @@ public sealed class AppSettings
 
     /// <summary>Where sticky notes appear when Petal starts: shown or tucked away.</summary>
     public bool NotesHidden { get; set; }
+
+    /// <summary>The command palette's shortcut.</summary>
+    public string PaletteShortcut { get; set; } = "Ctrl+Win+K";
+
+    /// <summary>Live captions: from the PC's sound ("system") or the microphone ("mic"); shown as "both", "arabic", "original" or "english"; the language spoken.</summary>
+    public string CaptionsSource { get; set; } = "system";
+    public string CaptionsShow { get; set; } = "both";
+    public string CaptionsLanguage { get; set; } = "auto";
+
+    /// <summary>Focus sessions: the length chosen last, the apps that wait, and whether the sound is muted.</summary>
+    public int FocusMinutes { get; set; } = 25;
+    public List<string> FocusApps { get; set; } = [];
+    public bool FocusMute { get; set; }
+
+    /// <summary>Snippets: abbreviations that become longer text as they are typed.</summary>
+    public bool SnippetsOn { get; set; } = true;
+    public List<Petal.Core.Text.Snippet> Snippets { get; set; } = Petal.Core.Text.Snippets.Starters();
+
+    /// <summary>Other PCs with Petal may send files here (it asks each time); the id other PCs know this one by.</summary>
+    public bool ReceiveFromPcs { get; set; }
+    public string DropId { get; set; } = "";
+
+    /// <summary>Workspaces: sets of apps arranged on the screens, opened together.</summary>
+    public List<Petal.App.Screen.Workspace> Workspaces { get; set; } = [];
 
     public string? OutputDirectoryFor(string input) =>
         Output == OutputLocation.Folder && !string.IsNullOrWhiteSpace(OutputFolder) && Directory.Exists(OutputFolder)

@@ -102,6 +102,10 @@ public sealed class RenameWindow : ToolWindow
     private readonly Grid _startRow;
     private readonly StackPanel _list = new();
     private readonly Dictionary<string, DateTime> _taken = new(StringComparer.OrdinalIgnoreCase);
+    // Names from what each file holds, for {content}, as they are worked out.
+    private readonly Dictionary<string, string?> _content = new(StringComparer.OrdinalIgnoreCase);
+    private readonly TextBlock _reading;
+    private CancellationTokenSource? _readingContent;
     private IReadOnlyList<RenameItem> _plan = [];
 
     public RenameWindow(IReadOnlyList<string> paths, ScreenPoint at) : base("Rename", 470)
@@ -112,7 +116,7 @@ public sealed class RenameWindow : ToolWindow
 
         Body.Children.Add(Row("New name", _pattern, 110, 12));
         var tokens = new WrapPanel { Margin = new Thickness(110, 6, 0, 0) };
-        foreach (var (token, label) in new[] { ("{name}", "Name"), ("{n}", "Number"), ("{date}", "Date"), ("{folder}", "Folder") })
+        foreach (var (token, label) in new[] { ("{name}", "Name"), ("{n}", "Number"), ("{date}", "Date"), ("{folder}", "Folder"), ("{content}", "What's inside") })
         {
             var b = new Button { Content = "+ " + L.T(label), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(0, 0, 6, 0), Padding = new Thickness(8, 2, 8, 2) };
             b.Click += (_, _) => Insert(token);
@@ -120,6 +124,11 @@ public sealed class RenameWindow : ToolWindow
         }
         Body.Children.Add(tokens);
         Body.Children.Add(Text("Name is the current name, Number counts up, Date is when the photo was taken (or the file last changed).", "Petal.Caption").WithMargin(110, 4, 0, 0));
+        Body.Children.Add(Text("What's inside reads each file on this PC: a document's title, an invoice's sender, a screenshot's words, what a photo shows.", "Petal.Caption").WithMargin(110, 2, 0, 0));
+        _reading = Text("", "Petal.Caption");
+        _reading.Margin = new Thickness(110, 4, 0, 0);
+        _reading.Visibility = Visibility.Collapsed;
+        Body.Children.Add(_reading);
 
         Body.Children.Add(Row("Find", _find, 110, 12));
         Body.Children.Add(Row("Replace with", _replace, 110, 6));
@@ -170,7 +179,9 @@ public sealed class RenameWindow : ToolWindow
     private void Refresh()
     {
         _startRow.Visibility = _pattern.Text.Contains("{n}", StringComparison.Ordinal) ? Visibility.Visible : Visibility.Collapsed;
-        _plan = BatchRename.Plan(_paths, Rule(), p => _taken.TryGetValue(p, out var d) ? d : null);
+        if (_pattern.Text.Contains("{content}", StringComparison.Ordinal) && _readingContent is null)
+            _ = ReadContentAsync();
+        _plan = BatchRename.Plan(_paths, Rule(), p => _taken.TryGetValue(p, out var d) ? d : null, p => _content.GetValueOrDefault(p));
         _list.Children.Clear();
         foreach (var item in _plan.Take(300))
             _list.Children.Add(PreviewRow(item));
@@ -183,6 +194,36 @@ public sealed class RenameWindow : ToolWindow
         FooterNote = problems > 0
             ? L.P(problems, "{0} name needs fixing", "{0} names need fixing")
             : L.F("{0} of {1} will change", changes, _plan.Count);
+    }
+
+    /// <summary>Works out a name from each file's contents, one after another, showing them as they come.</summary>
+    private async Task ReadContentAsync()
+    {
+        var cts = _readingContent = new CancellationTokenSource();
+        Closed += (_, _) => cts.Cancel();
+        _reading.Visibility = Visibility.Visible;
+        var converters = App.Current.Controller.Jobs.Converters;
+        int done = 0;
+        foreach (var path in _paths.Where(p => !Directory.Exists(p)))
+        {
+            if (cts.IsCancellationRequested)
+                return;
+            _reading.Text = L.F("Reading what's inside… {0} of {1}", done + 1, _paths.Count);
+            try
+            {
+                _content[path] = await Petal.Recipes.SmartNamer.NameAsync(path, converters, L.IsArabic, useModel: true, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            done++;
+            Refresh();
+        }
+        int named = _content.Values.Count(v => v is not null);
+        _reading.Text = named == 0
+            ? L.T("Nothing could be read from these files; their names stay.")
+            : L.P(named, "A name was found for {0} file.", "Names were found for {0} files.");
     }
 
     private UIElement PreviewRow(RenameItem item)

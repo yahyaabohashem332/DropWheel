@@ -101,6 +101,46 @@ type **=** and a sum: the centre answers as you type and Enter copies it. Settin
 holds the dictation shortcut, language and accuracy, the recording defaults, every-key display and
 the clipboard history switches.
 
+**Work and sharing (1.7).** A Work wheel (palette, focus, meeting notes, captions, dictation, your
+workspaces, timer, a new note), a Work submenu in the tray, and Settings › Work & Sharing:
+
+* **Command palette — Ctrl + Win + K** anywhere: type a few letters to run any petal or action, the
+  petals for the files selected in File Explorer, an installed app, a wheel, a clip, a snippet, a
+  workspace, a file from the search index, a sum (answered as you type), "Ask Petal: …" or a web search.
+  Initials and letters in order count ("rts" finds Record the Screen), Arabic matches with or without
+  hamza, taa marbuta and diacritics, and what you choose often rises. ↑↓, Enter, Ctrl+Enter, Esc.
+* **Live captions** of the PC's sound or the microphone, in a small window that never takes the focus:
+  Whisper writes what is said a few seconds at a time and Opus-MT puts it into Arabic (in Arabic, as
+  spoken, in English, or both).
+* **Meeting notes** — records the PC's sound and the microphone, then writes the transcript with times
+  and, with the AI model, a summary, the decisions and the action items (a long meeting is summarised
+  part by part); `Documents\Petal Meetings\Meeting <date>.md` and `.m4a`.
+* **Polished recordings** — after a screen recording, the camera glides in where you clicked (springs,
+  not cuts), the pointer is smoothed and drawn larger, clicks get rings, and the video sits on a
+  gradient with rounded corners and a shadow; the sound is kept as recorded. Off, Gentle, Medium or
+  Strong zoom, six backgrounds, and a sparkles button on the recording bar to skip it once.
+* **Snippets** — ";addr" becomes your address in any app, even typed with the Arabic layout on, with
+  `{date}`, `{time}`, `{day}`, `{hijri}`, `{clipboard}` and `{cursor}`. Only the last 48 characters
+  typed are held, in memory, and typing that programs make is ignored.
+* **Workspaces** — save the apps open now and where their windows are; one petal opens what isn't
+  running and puts every window back, maximised ones maximised.
+* **Focus sessions** — 25, 50 or 90 minutes (or any): chosen apps go down to the taskbar whenever they
+  come to the front, the sound can be muted, a pill at the top counts down with +5 and Stop, and the
+  minutes of each day and the streak are kept.
+* **Private Screenshot** — a screenshot with e-mail addresses, phone numbers, card numbers (Luhn),
+  IBANs (mod 97), IP addresses and passwords already covered, read with Windows' OCR; Redact Photo has
+  the same **Private details** button.
+* **Rename by what's inside** — `{content}` in Rename: a document's title (or the AI model's
+  suggestion), an invoice's sender and date, a screenshot's first words, what a photo shows.
+* **Similar shots** in Find Duplicates — photos taken within two minutes of each other that look alike,
+  with the sharpest one kept.
+* **Send to PC** (Actions wheel, under More) — straight to another PC with Petal on the same network,
+  found by a broadcast on the local network; the other PC asks before saving anything, one offer at a
+  time, into `Downloads\Petal`, and names can't leave that folder. Receiving is off until you turn it on.
+* **Wheel gallery and sharing** — ten ready-made wheels (Student, Presenter, Writer, Developer, Figma,
+  Illustrator, Premiere Pro, Blender, Notion, Outlook), and any wheel shared as one line of text
+  (`PETAL-WHEEL:…`) or a `.petalwheel` file, imported with a summary of what it holds.
+
 **Folders work too.** Drop a folder (or several, mixed with files) and Petal works on the files
 inside, subfolders included, skipping hidden, system and temporary files. The centre shows the total
 size and how many files there are. Results go to a copy of the folder beside it, with the same
@@ -296,8 +336,9 @@ quality: all 342 conversion paths have an engine, and the 9 from EPS run when Gh
 
 ## Tests
 
-966 tests: core, app and command line (309, including a check that every interface string has
-Arabic, folders, the wheels without files and the Store package), media engine (216, transcription, voices, noise removal and vocal separation
+1076 tests: core, app and command line (419, including a check that every interface string has
+Arabic, folders, the wheels without files, the palette, snippets, private details, sending to a PC,
+shared wheels and the Store package), media engine (216, transcription, voices, noise removal and vocal separation
 included), image engine (255, AI models, Photoshop, camera RAW and swatches included), documents and
 PDF (186).
 Tests that need a downloaded model look for it in a folder named by an environment variable

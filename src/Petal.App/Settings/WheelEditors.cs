@@ -169,6 +169,8 @@ internal sealed class EntryList : StackPanel
             EntryKind.Group => L.P(entry.Children?.Count ?? 0, "{0} petal", "{0} petals"),
             EntryKind.RunningApps => L.T("The windows that are open, to switch to one"),
             EntryKind.Clips => L.T("What was copied lately, to paste again"),
+            EntryKind.Workspaces => L.T("Your saved workspaces, and saving a new one"),
+            EntryKind.Workspace => L.T("Opens a workspace and arranges its windows"),
             _ => "",
         };
     }
@@ -612,6 +614,7 @@ internal sealed class PetalPickerWindow : ToolWindow
             (EntryKind.Group, "Group", "layers", "Petals of its own, around it"),
             (EntryKind.RunningApps, "Open windows", "windows", "Switch to a window that is open"),
             (EntryKind.Clips, "Recent clips", "clipboardList", "Paste something copied earlier"),
+            (EntryKind.Workspaces, "Workspaces", "layoutGrid", "Open a saved set of apps, each in its place"),
         };
         var own = make.Where(m => Matches(m.Name, m.Description)).ToList();
         if (own.Count > 0)
@@ -631,6 +634,7 @@ internal sealed class PetalPickerWindow : ToolWindow
                 "Arrange" => "Arrange windows",
                 "Clipboard" => "Clipboard",
                 "Notes" => "Notes",
+                "Work" => "Work",
                 "Media" => "Media",
                 _ => "Petal",
             });
@@ -688,7 +692,7 @@ internal sealed class PetalPickerWindow : ToolWindow
     private void Make(EntryKind kind)
     {
         var entry = new WheelEntry { Kind = kind, Children = kind == EntryKind.Group ? [] : null };
-        if (kind is EntryKind.RunningApps or EntryKind.Clips)
+        if (kind is EntryKind.RunningApps or EntryKind.Clips or EntryKind.Workspaces)
         {
             Choose(entry);
             return;

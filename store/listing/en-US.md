@@ -49,6 +49,17 @@ Wheels without files (Ctrl + Win + Z with nothing selected)
 • Your own wheels and petals: keys to press, programs, PowerShell or Command Prompt scripts, folders,
   links, groups and the open windows.
 
+Work faster
+• A command palette (Ctrl+Win+K): type a few letters to run any action, open an app or a file, paste a
+  clip or work out a sum.
+• Live captions of any video, call or lesson, translated into Arabic as they come.
+• Meeting notes: the transcript, a summary, the decisions and the action items, written on this PC.
+• Snippets: ";addr" becomes your address in any app, with today's date or the Hijri date filled in.
+• Workspaces that open your apps and put every window back, and focus sessions that keep distractions down.
+• Screen recordings that zoom in where you click, with a smooth pointer and a clean background.
+• Private screenshots with e-mails, phone and card numbers already covered.
+• Send files to another PC on the same network, and share wheels as a line of text.
+
 Folders work too
 • Drop a folder to convert everything inside into a copy beside it, or organize it by kind or month,
   turn it into one PDF, a contact sheet or an Excel report.
@@ -70,20 +81,20 @@ AI models download once, the first time a tool needs them, from their authors' p
 
 ## What's new in this version
 
+Petal 1.7:
+• A command palette (Ctrl+Win+K): any action, app, file, clip or sum in a few letters, Arabic too.
+• Live captions of any sound, translated into Arabic, and meeting notes with a summary and action items.
+• Polished screen recordings: zoom on clicks, a smooth pointer, a background and rounded corners.
+• Snippets that type themselves in any app, window workspaces, and focus sessions.
+• Private screenshots, rename by what's inside, similar shots that keep the sharpest, send to another PC.
+• A gallery of ready-made wheels, and wheels shared as a line of text.
+
 Petal 1.6:
 • Draw on the screen, whiteboards, zoom, a magnifier, a spotlight, clicks and keys on screen, and a timer.
 • Screen recording to MP4 with sound, scrolling screenshots, text from the screen, pinned screenshots, a colour picker and a ruler.
 • Text in any app: fix the keyboard layout, translate, change case, remove diacritics, calculate, summarize and rewrite on this PC.
 • Dictation in any app with Ctrl+Win+J, and Ask Petal out loud.
 • Clipboard history, window arranging, sticky notes, your usual petal per file type, and a calculator in the wheel.
-
-Petal 1.5:
-• Wheels without files: the app in front, quick Windows switches, media controls, and wheels of your own.
-• Petals of your own: keys, programs, scripts, folders, links, groups and open windows.
-• Number keys, the mouse wheel and a side button; the wheel remembers your last petal.
-• Practice mode, a guided tour, and reasons on dim petals.
-• Accent colours, wheel styles, animations, sounds and petal colours.
-• Statistics, backup to one file, Copy Name, Open in VS Code, Open With, and screenshots to the wheel.
 
 ## Product features (one per line, up to 20)
 

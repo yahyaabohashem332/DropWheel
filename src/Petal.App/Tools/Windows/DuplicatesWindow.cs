@@ -36,6 +36,7 @@ public sealed class DuplicatesWindow : ToolWindow
     private readonly ScreenPoint _at;
     private readonly CheckBox _photos = new() { Content = L.T("Similar photos"), IsChecked = true, Margin = new Thickness(0, 0, 16, 0) };
     private readonly CheckBox _videos = new() { Content = L.T("Similar videos"), IsChecked = true, Margin = new Thickness(0, 0, 16, 0) };
+    private readonly CheckBox _shots = new() { Content = L.T("Similar shots (keep the sharpest)"), IsChecked = true, Margin = new Thickness(0, 0, 16, 0) };
     private readonly CheckBox _subfolders = new() { Content = L.T("Include subfolders"), IsChecked = true };
     private readonly TextBlock _status;
     private readonly ProgressBar _progress = new() { Height = 4, Margin = new Thickness(0, 8, 0, 0), Maximum = 1 };
@@ -72,8 +73,9 @@ public sealed class DuplicatesWindow : ToolWindow
         var options = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) };
         options.Children.Add(_photos);
         options.Children.Add(_videos);
+        options.Children.Add(_shots);
         options.Children.Add(_subfolders);
-        foreach (var box in new[] { _photos, _videos, _subfolders })
+        foreach (var box in new[] { _photos, _videos, _shots, _subfolders })
             box.Click += (_, _) => _ = SearchAsync();
         Body.Children.Add(options);
 
@@ -120,6 +122,7 @@ public sealed class DuplicatesWindow : ToolWindow
         {
             SimilarPhotos = _photos.IsChecked == true,
             SimilarVideos = _videos.IsChecked == true,
+            SimilarShots = _shots.IsChecked == true,
             IncludeSubfolders = _subfolders.IsChecked == true,
         };
         var progress = new Progress<DuplicateProgress>(p =>
@@ -169,6 +172,7 @@ public sealed class DuplicatesWindow : ToolWindow
             {
                 DuplicateKind.Identical => L.T("Identical files"),
                 DuplicateKind.SimilarPhotos => L.T("Similar photos"),
+                DuplicateKind.SimilarShots => L.T("Similar shots"),
                 _ => L.T("Similar videos"),
             };
             var count = L.P(group.Files.Count, "{0} file", "{0} files");
@@ -181,7 +185,7 @@ public sealed class DuplicatesWindow : ToolWindow
                 var box = new CheckBox { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
                 box.Click += (_, _) => Sync();
                 rows.Add((file, box));
-                card.Children.Add(FileRow(file, box));
+                card.Children.Add(FileRow(file, box, group.Kind == DuplicateKind.SimilarShots && file == group.Files[0]));
             }
             var frame = new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8, 10, 6), Margin = new Thickness(0, 0, 0, 8), Child = card };
             frame.SetResourceReference(Border.BackgroundProperty, "Petal.Control");
@@ -192,7 +196,7 @@ public sealed class DuplicatesWindow : ToolWindow
         ApplyRule();
     }
 
-    private UIElement FileRow(DuplicateFile file, CheckBox box)
+    private UIElement FileRow(DuplicateFile file, CheckBox box, bool sharpest = false)
     {
         var thumb = new Image { Width = 44, Height = 44, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 10, 0) };
         _ = Task.Run(() => ShellIcons.Thumbnail(file.Path, 88)).ContinueWith(t => thumb.Source = t.Result, TaskScheduler.FromCurrentSynchronizationContext());
@@ -204,6 +208,8 @@ public sealed class DuplicatesWindow : ToolWindow
         var detail = new List<string> { Sizes.Format(file.Size), file.Modified.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) };
         if (file.Width > 0)
             detail.Add($"{file.Width} × {file.Height}");
+        if (sharpest)
+            detail.Add(L.T("The sharpest"));
         var info = Text(string.Join(" · ", detail), "Petal.Caption");
         var folder = Text(Path.GetDirectoryName(file.Path) ?? "", "Petal.Caption");
         folder.TextTrimming = TextTrimming.CharacterEllipsis;

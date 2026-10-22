@@ -144,6 +144,11 @@ public partial class App : Application
         Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Notes.StickyNotes.Restore);
         if (!Words.Dictation.RegisterShortcut())
             Log.Info($"{settings.DictationShortcut} is already used by another program");
+        Commands.PaletteSources.Register();
+        if (!Commands.CommandPalette.RegisterShortcut())
+            Log.Info($"{settings.PaletteShortcut} is already used by another program");
+        Words.TextExpander.Start();
+        _ = Actions.PcDrop.ApplyAsync(settings.ReceiveFromPcs);
         if (command is not null)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
@@ -208,6 +213,8 @@ public partial class App : Application
         LaunchAtLogin.Apply(s.LaunchAtStartup);
         ContextMenuRegistration.Apply(s.ExplorerContextMenu);
         Words.Dictation.RegisterShortcut();
+        Commands.CommandPalette.RegisterShortcut();
+        _ = Actions.PcDrop.ApplyAsync(s.ReceiveFromPcs);
         Jobs.History.Reload();
         BuildTrayMenu();
     }
@@ -273,9 +280,20 @@ public partial class App : Application
         noteItem.Click += (_, _) => Notes.StickyNotes.New();
         var timerItem = new MenuItem { Header = L.T("Timer") };
         timerItem.Click += (_, _) => Screen.TimerWindow.Toggle();
+        var captionsItem = new MenuItem { Header = L.T(Words.LiveCaptions.IsOn ? "Turn Off Live Captions" : "Live Captions") };
+        captionsItem.Click += (_, _) => Words.LiveCaptions.Toggle();
+        var meetingItem = new MenuItem { Header = L.T(Words.MeetingRecorder.IsRecording ? "Stop the Meeting Notes" : "Meeting Notes") };
+        meetingItem.Click += (_, _) => Words.MeetingRecorder.Toggle();
+        var focusItem = new MenuItem { Header = L.T(Screen.FocusMode.IsOn ? "End the Focus Session" : "Focus…") };
+        focusItem.Click += (_, _) => Screen.FocusMode.Toggle();
         var screenMenu = new MenuItem { Header = L.T("Screen & Text") };
         foreach (var item in new[] { snipItem, recordItem, drawItem, textItem, clipsItem, noteItem, timerItem })
             screenMenu.Items.Add(item);
+        var workMenu = new MenuItem { Header = L.T("Work") };
+        foreach (var item in new[] { captionsItem, meetingItem, focusItem })
+            workMenu.Items.Add(item);
+        var paletteItem = new MenuItem { Header = L.T("Command Palette") };
+        paletteItem.Click += (_, _) => _ = Commands.CommandPalette.ToggleAsync(IntPtr.Zero);
         var updatesItem = new MenuItem { Header = Shell.UpdateService.Waiting is { } waiting ? L.F("Install Petal {0}…", waiting.Version) : L.T("Check for Updates") };
         updatesItem.Click += async (_, _) =>
         {
@@ -293,7 +311,9 @@ public partial class App : Application
         menu.Items.Add(duplicatesItem);
         menu.Items.Add(qrItem);
         menu.Items.Add(historyItem);
+        menu.Items.Add(paletteItem);
         menu.Items.Add(screenMenu);
+        menu.Items.Add(workMenu);
         menu.Items.Add(statsItem);
         menu.Items.Add(new Separator());
         menu.Items.Add(howItem);
@@ -382,6 +402,11 @@ public partial class App : Application
         Clips.ClipboardHistory.Stop();
         Notes.StickyNotes.Save();
         Words.Dictation.Dispose();
+        Commands.CommandPalette.Dispose();
+        if (Words.LiveCaptions.IsOn)
+            Words.LiveCaptions.Stop();
+        Screen.FocusMode.End(early: true);
+        _ = Actions.PcDrop.ApplyAsync(false);
         Shutdown();
     }
 

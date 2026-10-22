@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO;
 using Petal.App.Hud;
 using Petal.App.Input;
@@ -17,7 +18,8 @@ public sealed class ToolLauncher(JobRunner jobs)
     public bool IsAvailable(ToolInfo tool) => Factories.ContainsKey(tool.Id) || Direct.ContainsKey(tool.Id) || FolderFactories.ContainsKey(tool.Id);
 
     /// <summary>Tools for a dropped folder as a whole: they get what is inside it.</summary>
-    private static readonly Dictionary<ToolId, Func<ToolInfo, Petal.Core.Jobs.FolderContents, JobRunner, ScreenPoint, ToolWindow>> FolderFactories = [];
+    // Concurrent: the setup classes register as engines come online, possibly on several threads at once.
+    private static readonly ConcurrentDictionary<ToolId, Func<ToolInfo, Petal.Core.Jobs.FolderContents, JobRunner, ScreenPoint, ToolWindow>> FolderFactories = new();
 
     internal static void RegisterFolder(ToolId id, Func<ToolInfo, Petal.Core.Jobs.FolderContents, JobRunner, ScreenPoint, ToolWindow> factory) =>
         FolderFactories[id] = factory;
@@ -26,7 +28,7 @@ public sealed class ToolLauncher(JobRunner jobs)
 
     private delegate Task DirectRun(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at);
 
-    private static readonly Dictionary<ToolId, WindowFactory> Factories = new()
+    private static readonly ConcurrentDictionary<ToolId, WindowFactory> Factories = new()
     {
         [ToolId.Metadata] = (t, f, j, a) => new MetadataWindow(t, f, j, a),
         [ToolId.AnnotatePhoto] = (t, f, j, a) => new AnnotateWindow(t, f[0], j, a),
@@ -49,7 +51,7 @@ public sealed class ToolLauncher(JobRunner jobs)
         [ToolId.Transcribe] = (t, f, j, a) => new TranscribeWindow(t, f, j, a),
     };
 
-    private static readonly Dictionary<ToolId, DirectRun> Direct = new()
+    private static readonly ConcurrentDictionary<ToolId, DirectRun> Direct = new()
     {
         [ToolId.RemoveAudio] = (tool, files, jobs, at) => jobs.RunAsync("Removing audio", "Audio removed",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (progress, ct) =>

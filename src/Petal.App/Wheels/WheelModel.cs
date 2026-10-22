@@ -23,6 +23,10 @@ public enum EntryKind
     Link,
     /// <summary>What was copied lately: each clip a petal, to paste in the app in front.</summary>
     Clips,
+    /// <summary>One saved workspace (<see cref="WheelEntry.Path"/> is its id): its apps opened and arranged.</summary>
+    Workspace,
+    /// <summary>Every saved workspace around it, and saving the windows open now as one.</summary>
+    Workspaces,
 }
 
 public enum ScriptShell

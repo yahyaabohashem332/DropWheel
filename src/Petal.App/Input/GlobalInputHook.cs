@@ -43,6 +43,9 @@ public sealed class GlobalInputHook : IDisposable
     /// <summary>Any key went down or up (virtual-key code), modifiers included: for showing keys on screen.</summary>
     public event Action<int, bool>? KeyChanged;
 
+    /// <summary>A key went down: its virtual-key code, its scan code, and whether a program (not a hand) pressed it.</summary>
+    public event Action<int, int, bool>? KeyPressed;
+
     /// <summary>A mouse button went down: 1 left, 2 right, 3 middle.</summary>
     public event Action<int, ScreenPoint>? ButtonPressed;
 
@@ -146,6 +149,8 @@ public sealed class GlobalInputHook : IDisposable
             {
                 if (down || up)
                     KeyChanged?.Invoke((int)data.vkCode, down);
+                if (down)
+                    KeyPressed?.Invoke((int)data.vkCode, (int)data.scanCode, (data.flags & 0x10) != 0);
                 var modifier = ToModifier((int)data.vkCode);
                 if (modifier != ModifierKey.None)
                 {

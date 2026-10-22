@@ -28,7 +28,7 @@
 <body>
 <main>
   <h1>Petal Privacy Policy</h1>
-  <p class="muted">Last updated 21 October 2026</p>
+  <p class="muted">Last updated 22 October 2026</p>
   <nav><a href="#en">English</a><a href="#ar" lang="ar">العربية</a></nav>
 
   <section id="en">
@@ -49,6 +49,12 @@
       <li>A search index, so Search finds files by the words inside them and photos by what they show:
       of your Pictures, Documents, Desktop, Downloads and Videos folders, or the folders you choose in
       Settings. With it, downloaded AI models and an activity log, in <code>%LOCALAPPDATA%\Petal</code>.</li>
+      <li>Your snippets and workspaces (the apps of a workspace, their window titles and where the windows
+      were), in the settings; how often you choose each command in the command palette, in
+      <code>palette.json</code>; and your focus minutes, in <code>focus.json</code>, all in
+      <code>%APPDATA%\Petal</code>.</li>
+      <li>Meeting notes and their sound, in your Documents\Petal Meetings folder, and files other PCs sent
+      you, in your Downloads\Petal folder.</li>
     </ul>
     <p>None of this leaves your PC unless you export it yourself (Settings › Backup). Uninstalling Petal and
     deleting these folders removes it.</p>
@@ -61,12 +67,27 @@
     Pictures\Screenshots folder. Screen recordings, scrolling screenshots, text from the screen, drawing,
     zoom and the colour picker look at the screen only while you use them; recordings are saved in your
     Videos\Screen Recordings folder. "Show clicks and keys" shows shortcuts on the screen while it is on
-    (typing too only if you ask) and keeps none of them.</p>
+    (typing too only if you ask) and keeps none of them. While a recording is polished, Petal notes where
+    the pointer was and where you clicked during the recording, to zoom in on the clicks; these notes are
+    held in memory and forgotten once the video is made.</p>
+    <p><strong>Snippets.</strong> When snippets are on (Settings › Work &amp; Sharing), Petal looks at the
+    last few characters you type, at most 48, to notice an abbreviation such as ";addr". They are held in
+    memory only, forgotten when you switch windows or click, never saved and never sent. Typing made by
+    programs, Petal included, is ignored.</p>
+    <p><strong>Focus sessions.</strong> During a focus session Petal checks which app is in front, to send
+    the apps you chose down to the taskbar. Only the minutes of each session are kept.</p>
+    <p><strong>Private Screenshot.</strong> The text in the screenshot is read on this PC, to cover e-mail
+    addresses, phone and card numbers and passwords before you share it.</p>
 
-    <h2>Microphone</h2>
-    <p>Petal uses the microphone only while you dictate, ask Petal out loud, or record the screen with the
-    microphone switched on. Speech is turned into text on this PC by the Whisper model; the recording is
-    deleted as soon as it is written down, and nothing is sent anywhere.</p>
+    <h2>Microphone and the PC's sound</h2>
+    <p>Petal uses the microphone only while you dictate, ask Petal out loud, record the screen with the
+    microphone switched on, show live captions of the microphone, or record meeting notes. Speech is turned
+    into text on this PC by the Whisper model, and nothing is sent anywhere. A dictation's recording is
+    deleted as soon as it is written down.</p>
+    <p>Live captions listen to the PC's sound (or the microphone) only while they are on; the sound is
+    written down a few seconds at a time and not kept. Meeting notes record the PC's sound and the
+    microphone only between the moment you start them and the moment you stop; the sound and the notes are
+    saved in your Documents\Petal Meetings folder, on this PC only, and you can delete them like any file.</p>
 
     <h2>Clipboard history</h2>
     <p>When the clipboard history is on (Settings › Screen &amp; Text), Petal keeps the last 30 things you
@@ -91,6 +112,13 @@
     <p>Send to Phone and Scan with Phone work directly between your PC and your phone on the same Wi-Fi.
     Petal opens a temporary address on your local network that only works with a random secret part, and
     closes it when you close the window. Nothing goes through the internet or any server.</p>
+
+    <h2>Other PCs</h2>
+    <p>Send to PC sends files straight to another PC with Petal on the same network. To find those PCs,
+    Petal asks on your local network "who has Petal?", and PCs set to receive answer with their name.
+    Receiving is off until you turn on "Let other PCs send me files" (Settings › Work &amp; Sharing); then
+    this PC answers with its name, asks you before saving anything, and saves what you accept in
+    Downloads\Petal. Nothing goes through the internet or any server.</p>
 
     <h2>Children</h2>
     <p>Petal does not collect personal information from anyone, children included.</p>
@@ -118,6 +146,11 @@
       <li>فهرس للبحث، ليجد البحثُ الملفات بالكلمات التي فيها والصور بما تُظهره: لمجلدات الصور والمستندات وسطح
       المكتب والتنزيلات والفيديو، أو للمجلدات التي تختارها في الإعدادات. ومعه نماذج الذكاء الاصطناعي المنزّلة
       وسجل النشاط، في <code dir="ltr">%LOCALAPPDATA%\Petal</code>.</li>
+      <li>مقتطفاتك ومساحات العمل (تطبيقات كل مساحة وعناوين نوافذها وأماكنها) في الإعدادات، وعدد مرات اختيارك
+      كل أمر في لوحة الأوامر في <code dir="ltr">palette.json</code>، ودقائق التركيز في
+      <code dir="ltr">focus.json</code>، كلها في <code dir="ltr">%APPDATA%\Petal</code>.</li>
+      <li>ملاحظات الاجتماعات وأصواتها في مجلد المستندات\Petal Meetings، والملفات التي أرسلتها إليك أجهزة أخرى
+      في مجلد التنزيلات\Petal.</li>
     </ul>
     <p>لا يغادر شيء من ذلك جهازك إلا إذا صدّرته بنفسك (الإعدادات › النسخ الاحتياطي). إلغاء تثبيت Petal وحذف هذه
     المجلدات يزيله.</p>
@@ -128,11 +161,24 @@
     حين تختار بتلة تستخدمها، ولا يلتقط الشاشة إلا حين تختار بتلة لقطة الشاشة، وتُحفظ اللقطات في مجلد
     الصور\لقطات الشاشة. تسجيل الشاشة واللقطة الطويلة ونص من الشاشة والرسم والتكبير والتقاط اللون تنظر إلى
     الشاشة فقط وأنت تستخدمها، وتُحفظ التسجيلات في مجلد الفيديو\Screen Recordings. و«إظهار النقرات والمفاتيح»
-    يُظهر الاختصارات على الشاشة ما دام مفعّلًا (والكتابة أيضًا إن طلبت ذلك) ولا يحفظ منها شيئًا.</p>
+    يُظهر الاختصارات على الشاشة ما دام مفعّلًا (والكتابة أيضًا إن طلبت ذلك) ولا يحفظ منها شيئًا. وحين يُصقل
+    التسجيل، يدوّن Petal مكان المؤشر ومواضع النقر أثناء التسجيل ليقرّب الصورة عندها، وتبقى هذه الملاحظات في الذاكرة
+    وتُنسى حين يكتمل الفيديو.</p>
+    <p><strong>المقتطفات.</strong> حين تكون المقتطفات مفعّلة (الإعدادات › العمل والمشاركة)، ينظر Petal في آخر
+    الأحرف التي تكتبها، 48 حرفًا على الأكثر، ليعرف اختصارًا مثل «;addr». تبقى في الذاكرة فقط، وتُنسى حين تنتقل إلى
+    نافذة أخرى أو تنقر، ولا تُحفظ ولا تُرسل أبدًا. وما تكتبه البرامج، وPetal منها، لا يُلتفت إليه.</p>
+    <p><strong>جلسات التركيز.</strong> أثناء جلسة التركيز يرى Petal أي تطبيق في المقدمة، لينزل التطبيقات التي
+    اخترتها إلى شريط المهام. لا يُحفظ إلا عدد دقائق كل جلسة.</p>
+    <p><strong>اللقطة الخاصة.</strong> يُقرأ النص الذي في اللقطة على هذا الجهاز، لتُغطّى عناوين البريد وأرقام
+    الهواتف والبطاقات وكلمات المرور قبل أن تشاركها.</p>
 
-    <h2>الميكروفون</h2>
-    <p>يستخدم Petal الميكروفون فقط وأنت تُملي، أو تسأل Petal بصوتك، أو تسجّل الشاشة والميكروفون مفعّل. يتحول
-    الكلام إلى نص على هذا الجهاز بنموذج Whisper، ويُحذف التسجيل فور كتابته، ولا يُرسل شيء إلى أي مكان.</p>
+    <h2>الميكروفون وصوت الجهاز</h2>
+    <p>يستخدم Petal الميكروفون فقط وأنت تُملي، أو تسأل Petal بصوتك، أو تسجّل الشاشة والميكروفون مفعّل، أو تعرض
+    الترجمة الفورية لما يقوله الميكروفون، أو تسجّل ملاحظات اجتماع. يتحول الكلام إلى نص على هذا الجهاز بنموذج
+    Whisper، ولا يُرسل شيء إلى أي مكان. ويُحذف تسجيل الإملاء فور كتابته.</p>
+    <p>الترجمة الفورية تستمع إلى صوت الجهاز (أو الميكروفون) ما دامت مفعّلة فقط، ويُكتب الصوت بضع ثوانٍ في كل مرة
+    ولا يُحفظ. وملاحظات الاجتماع تسجّل صوت الجهاز والميكروفون من لحظة بدئها إلى لحظة إيقافها فقط، ويُحفظ الصوت
+    والملاحظات في مجلد المستندات\Petal Meetings على هذا الجهاز وحده، وتحذفها كأي ملف.</p>
 
     <h2>سجل الحافظة</h2>
     <p>حين يكون سجل الحافظة مفعّلًا (الإعدادات › الشاشة والنصوص)، يحتفظ Petal بآخر 30 شيئًا نسخته ما دام يعمل،
@@ -156,6 +202,12 @@
     <p>الإرسال إلى الهاتف والمسح بالهاتف يعملان مباشرة بين جهازك وهاتفك على شبكة Wi-Fi نفسها. يفتح Petal عنوانًا
     مؤقتًا على شبكتك المحلية لا يعمل إلا بجزء سري عشوائي، ويغلقه حين تغلق النافذة. لا يمر شيء عبر الإنترنت أو أي
     خادم.</p>
+
+    <h2>الأجهزة الأخرى</h2>
+    <p>«إرسال إلى جهاز» يرسل الملفات مباشرة إلى جهاز آخر عليه Petal في الشبكة نفسها. ليجد Petal تلك الأجهزة يسأل
+    في شبكتك المحلية «من عنده Petal؟»، فتجيب الأجهزة المهيأة للاستقبال بأسمائها. الاستقبال متوقف حتى تفعّل
+    «السماح للأجهزة الأخرى بإرسال ملفات إليّ» (الإعدادات › العمل والمشاركة)؛ عندها يجيب هذا الجهاز باسمه، ويسألك
+    قبل حفظ أي شيء، ويحفظ ما تقبله في التنزيلات\Petal. لا يمر شيء عبر الإنترنت أو أي خادم.</p>
 
     <h2>الأطفال</h2>
     <p>لا يجمع Petal معلومات شخصية من أحد، والأطفال منهم.</p>

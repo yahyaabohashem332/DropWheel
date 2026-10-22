@@ -33,9 +33,15 @@ public sealed partial class SettingsWindow
         var add = new Button { Content = L.T("New Wheel…"), Margin = new Thickness(0, 0, 8, 6) };
         var ready = new Button { Content = L.T("Ready-Made Wheels…"), Margin = new Thickness(0, 0, 8, 6) };
         var tryIt = new Button { Content = L.T("Try Them"), Margin = new Thickness(0, 0, 8, 6) };
+        var gallery = new Button { Content = L.T("Wheel Gallery…"), Margin = new Thickness(0, 0, 8, 6) };
+        var import = new Button { Content = L.T("Import…"), Margin = new Thickness(0, 0, 8, 6) };
         buttons.Children.Add(add);
         buttons.Children.Add(ready);
+        buttons.Children.Add(gallery);
+        buttons.Children.Add(import);
         buttons.Children.Add(tryIt);
+        gallery.Click += (_, _) => new WheelGalleryWindow(FillWheels) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
+        import.Click += (_, _) => new ImportWheelWindow(FillWheels) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
         panel.Children.Add(buttons);
         add.Click += (_, _) =>
         {
@@ -51,7 +57,7 @@ public sealed partial class SettingsWindow
         {
             var menu = new ContextMenu { PlacementTarget = ready, Placement = PlacementMode.Bottom };
             L.Apply(menu);
-            foreach (var template in new[] { WheelTemplates.Quick(), WheelTemplates.Media() }.Concat(WheelTemplates.Apps()))
+            foreach (var template in WheelTemplates.All())
             {
                 var present = _s.Wheels.Any(w => w.Template == template.Template);
                 var item = new MenuItem { Header = L.T(template.Name), IsEnabled = !present, ToolTip = present ? L.T("Already on your list") : null };
@@ -154,7 +160,30 @@ public sealed partial class SettingsWindow
                 Save();
                 FillWheels();
             };
+            var share = IconButton("share", "Share this wheel", 15);
+            share.Click += (_, _) =>
+            {
+                var menu = new ContextMenu { PlacementTarget = share, Placement = PlacementMode.Bottom };
+                L.Apply(menu);
+                var file = new MenuItem { Header = L.T("Save as a File…") };
+                file.Click += (_, _) =>
+                {
+                    var dialog = new SaveFileDialog { FileName = L.T(wheel.Name), DefaultExt = WheelSharing.Extension, Filter = L.T("Petal wheel") + $"|*{WheelSharing.Extension}" };
+                    if (dialog.ShowDialog(this) == true)
+                        File.WriteAllText(dialog.FileName, WheelSharing.ToJson(wheel));
+                };
+                var code = new MenuItem { Header = L.T("Copy as Text") };
+                code.Click += (_, _) =>
+                {
+                    if (Words.SelectedText.TrySet(WheelSharing.ToCode(wheel)))
+                        Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(L.T("Wheel copied"), L.T("Paste it in a chat or an e-mail; Import adds it."), null);
+                };
+                menu.Items.Add(file);
+                menu.Items.Add(code);
+                menu.IsOpen = true;
+            };
             buttons.Children.Add(up);
+            buttons.Children.Add(share);
             buttons.Children.Add(edit);
             if (WheelTemplates.Fresh(wheel.Template) is not null)
             {

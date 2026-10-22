@@ -166,7 +166,49 @@ internal static class DesignSnapshots
             ("rewrite", () => Words.TextResultWindow.ForSnapshot(Words.TextJob.Rewrite, "Hi team, the report is late again because the numbers came in late, sorry, we will send it tomorrow morning hopefully.")),
             ("translatetext", () => Words.TextResultWindow.ForSnapshot(Words.TextJob.Translate, "The meeting moves to Thursday at ten.")),
             ("dictationsetup", Private<Words.DictationSetupWindow>),
+            ("meetingnotes", () => Words.MeetingNotesWindow.ForSnapshot(SampleMeeting())),
+            ("focus", () => Screen.FocusWindow.ForSnapshot(["chrome", "Discord", "Spotify", "WhatsApp", "WINWORD"])),
+            ("saveworkspace", () => Screen.SaveWorkspaceWindow.ForSnapshot(
+            [
+                new Screen.WorkspaceWindow { Program = "Code", Title = "petal-site — Visual Studio Code" },
+                new Screen.WorkspaceWindow { Program = "chrome", Title = Localization.L.IsArabic ? "لوحة المشروع - Google Chrome" : "Project board - Google Chrome" },
+                new Screen.WorkspaceWindow { Program = "Figma", Title = Localization.L.IsArabic ? "الصفحة الرئيسية – Figma" : "Landing page – Figma" },
+            ])),
+            ("snippets", () =>
+            {
+                Settings.SettingsStore.Current.Snippets =
+                [
+                    .. Petal.Core.Text.Snippets.Starters(),
+                    new() { Abbreviation = ";addr", Text = Localization.L.IsArabic ? "شارع الملك فهد، الرياض 12271" : "14 Harbour Road, Bristol BS1 5TT" },
+                    new() { Abbreviation = ";thx", Text = Localization.L.IsArabic ? "شكرًا جزيلًا {cursor}، مع التحية." : "Thanks so much, {cursor}. Best wishes." },
+                ];
+                return new Settings.SnippetsWindow();
+            }),
+            ("gallery", () => new Settings.WheelGalleryWindow(() => { })),
+            ("importwheel", () => new Settings.ImportWheelWindow(() => { })),
+            ("sendtopc", () => Actions.SendToPcWindow.ForSnapshot([file("landscape.jpg"), file("album.pdf")],
+            [
+                new Petal.Engines.Files.Sharing.DropPeer(Localization.L.IsArabic ? "حاسوب المكتب" : "Office PC", "a", System.Net.IPAddress.Loopback, 1),
+                new Petal.Engines.Files.Sharing.DropPeer(Localization.L.IsArabic ? "لابتوب سارة" : "Sara's laptop", "b", System.Net.IPAddress.Loopback, 1),
+            ])),
+            ("receive", () => Actions.ReceiveWindow.ForSnapshot(new Petal.Engines.Files.Sharing.DropOffer(Localization.L.IsArabic ? "لابتوب سارة" : "Sara's laptop",
+                [new("trip.jpg", 3_400_000), new("report.pdf", 820_000), new(Path.Combine("slides", "deck.pptx"), 12_600_000)]))),
         ];
+    }
+
+    /// <summary>Made-up meeting notes in a scratch file.</summary>
+    private static string SampleMeeting()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "petal-snapshot-meeting.md");
+        bool ar = Localization.L.IsArabic;
+        var summary = ar
+            ? "## الملخص\nناقش الفريق موعد إطلاق الموقع الجديد واتفق على تأجيله أسبوعًا لإنهاء الترجمة.\n\n## القرارات\n- الإطلاق يوم 12 مايو\n- تُراجع سارة النصوص العربية\n\n## المهام\n- سارة: مراجعة الترجمة قبل الخميس\n- أحمد: تجهيز صور المتجر"
+            : "## Summary\nThe team discussed the launch of the new site and agreed to move it a week to finish the translation.\n\n## Decisions\n- Launch on 12 May\n- Sara reviews the Arabic text\n\n## Action items\n- Sara: review the translation by Thursday\n- Omar: prepare the store pictures";
+        var transcript = ar
+            ? "[00:00] صباح الخير، نبدأ بموعد الإطلاق.\n[00:06] الترجمة لم تنتهِ بعد."
+            : "[00:00] Morning all, let's start with the launch date.\n[00:06] The translation isn't finished yet.";
+        File.WriteAllText(path, Petal.Recipes.MeetingNotes.Markdown(new DateTime(2026, 5, 3, 10, 0, 0), TimeSpan.FromMinutes(32), summary, transcript, ar));
+        return path;
     }
 
     /// <summary>The floating windows of the screen tools, each rendered over a plain backdrop.</summary>
@@ -177,6 +219,19 @@ internal static class DesignSnapshots
         ("timerrunning", () => Screen.TimerWindow.ForSnapshot(TimeSpan.FromMinutes(5))),
         ("recordbar", () => new Screen.RecordBar((Screen.RecordingSession)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Screen.RecordingSession)))),
         ("dictation", () => new Words.DictationPill(IntPtr.Zero)),
+        ("palette", () => Commands.CommandPalette.ForSnapshot("", [])),
+        ("palettequery", () => Commands.CommandPalette.ForSnapshot(Localization.L.IsArabic ? "تسجيل" : "rec", [])),
+        ("captions", () =>
+        {
+            var captions = new Words.CaptionWindow();
+            if (Localization.L.IsArabic)
+                captions.Show("We'll move the launch to next Thursday.", "سننقل الإطلاق إلى الخميس القادم.");
+            else
+                captions.Show("سننقل الإطلاق إلى الخميس القادم.", "We'll move the launch to next Thursday.");
+            return captions;
+        }),
+        ("focuspill", () => new Screen.FocusPill()),
+        ("meetingpill", () => new Words.MeetingPill()),
         ("note", () => new Notes.NoteWindow(new Notes.StickyNote
         {
             Text = Localization.L.IsArabic
@@ -198,6 +253,8 @@ internal static class DesignSnapshots
             Child = content,
             FlowDirection = window.FlowDirection,
         };
+        // Out of its window the content loses what the window gave it, such as Western digits in Arabic.
+        Localization.L.Apply(frame, mirror: false);
         if (!double.IsNaN(window.Width) && window.SizeToContent != SizeToContent.WidthAndHeight)
         {
             content.Width = window.Width;
@@ -300,6 +357,11 @@ internal static class DesignSnapshots
         s.WheelsVersion = 0;
         Wheels.WheelTemplates.Upgrade(s);
         s.Destinations = [new Wheels.FolderDestination { Folder = folder, Name = Localization.L.T("Projects") }];
+        s.Workspaces =
+        [
+            new Screen.Workspace { Name = Localization.L.T("Work") },
+            new Screen.Workspace { Name = Localization.L.IsArabic ? "الدراسة" : "Study" },
+        ];
         s.PetalColours = new() { ["tool:Compress"] = "#30A46C", ["tool:Watermark"] = "#0090FF", ["action:Share"] = "#D6409F" };
     }
 
@@ -410,6 +472,10 @@ internal static class DesignSnapshots
         Shot("ring-windows-more", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: newer, page: 3, openGroup: 4));
         SampleClips();
         Shot("ring-clipboard", () => wheel.Snapshot([], WheelMode.Conversions, 1, background, pages: newer, page: 4));
+        RingPage[] work = [Of("work"), Of("clipboard")];
+        Shot("ring-work", () => wheel.Snapshot([], WheelMode.Conversions, 0, background, pages: work, page: 0, keyboard: true));
+        Shot("ring-work-spaces", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: work, page: 0,
+            openGroup: s.Wheels.First(w => w.Template == "work").Items.FindIndex(e => e.Kind == Wheels.EntryKind.Workspaces)));
         Shot("hub-calc", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "12% of 340"));
         Shot("hub-units", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "5 km in mi"));
         var saved = (s.WheelStyle, s.ShowPetalNames, s.CancelZone, s.WheelMotion);

@@ -167,11 +167,11 @@ public sealed class ScreenToolTests : IDisposable
         var settings = new AppSettings();
         WheelTemplates.Upgrade(settings);
         var order = settings.Wheels.Select(w => w.Template).ToList();
-        Assert.Equal(["quick", "media", "screen", "present", "text", "windows", "clipboard"], order.Take(7));
+        Assert.Equal(["quick", "media", "screen", "present", "text", "windows", "clipboard", "work"], order.Take(8));
         // Settings from 1.5 get them too, once, and keep their own wheels where they were.
         var old = new AppSettings { WheelsVersion = 1, Wheels = [WheelTemplates.Quick(), WheelTemplates.Media(), WheelTemplates.Custom("Mine")] };
         Assert.True(WheelTemplates.Upgrade(old));
-        Assert.Equal(["quick", "media", "screen", "present", "text", "windows", "clipboard", null], old.Wheels.Select(w => w.Template));
+        Assert.Equal(["quick", "media", "screen", "present", "text", "windows", "clipboard", "work", null], old.Wheels.Select(w => w.Template));
         Assert.False(WheelTemplates.Upgrade(old));
         // The windows wheel points where the window goes: up is maximise, right the right half, left the left half.
         var windows = WheelTemplates.Windows().Items;

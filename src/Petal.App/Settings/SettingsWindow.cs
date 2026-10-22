@@ -62,7 +62,8 @@ public sealed partial class SettingsWindow : ToolWindow
         page.Children.Add(Card("Wheels", "Wheels that need no files: quick actions, what's playing, shortcuts for the app in front, and your own. The quick shortcut opens them when nothing is selected; Tab or the mouse wheel goes to the next.", WheelsSection()));
         page.Children.Add(Card("Appearance", null, AppearanceSection()));
         page.Children.Add(Card("The Wheel", "How the wheel behaves under the pointer.", BehaviourSection()));
-        page.Children.Add(Card("Screen & Text", "Dictation in any app, showing clicks and keys, screen recording, and the clipboard history.", ScreenTextSection()));
+        page.Children.Add(Card("Screen & Text", "Dictation and live captions, showing clicks and keys, screen recording, and the clipboard history.", ScreenTextSection()));
+        page.Children.Add(Card("Work & Sharing", "The command palette, snippets, workspaces, and receiving files from other PCs.", WorkSection()));
         page.Children.Add(Card("Actions Wheel", "The actions on the wheel itself (the rest are under More), and folders that dropped files are copied or moved to.", ActionsWheelSection()));
         page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
         page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));

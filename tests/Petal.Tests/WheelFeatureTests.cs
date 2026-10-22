@@ -119,7 +119,7 @@ public sealed class WheelFeatureTests : IDisposable
         foreach (var action in WheelActions.All)
         {
             Assert.True(Icons.Keys.Contains(action.Icon), action.Id);
-            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Media", "Petal" });
+            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Work", "Media", "Petal" });
         }
         Assert.Equal(WheelActions.All.Count, WheelActions.All.Select(a => a.Id).Distinct().Count());
     }
@@ -138,7 +138,7 @@ public sealed class WheelFeatureTests : IDisposable
         Assert.Equal(0, start);
         Assert.Equal(settings.Wheels.First(w => w.Template == "browser").Id, inChrome[0].Key);
         // Other apps' wheels stay out; quick actions, media and the other ready-made wheels follow.
-        string[] others = ["Quick", "Media", "Screen", "Draw & Present", "Text", "Arrange", "Clipboard"];
+        string[] others = ["Quick", "Media", "Screen", "Draw & Present", "Text", "Arrange", "Clipboard", "Work"];
         Assert.Equal(others.Prepend("Browser"), inChrome.Select(p => p.Title));
 
         var (elsewhere, _) = Rings.ForProgram(settings, "notepad");

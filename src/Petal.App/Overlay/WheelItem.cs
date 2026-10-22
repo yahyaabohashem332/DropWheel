@@ -63,6 +63,7 @@ public sealed record WheelItem(string Label, string Name, string? Icon, object P
         WheelGroup g => "group:" + g.Id,
         Wheels.RunningWindow w => "window:" + w.Handle,
         Clips.ClipItem c => "clip:" + c.Id,
+        Screen.Workspace w => "workspace:" + w.Id,
         Wheels.FolderDestination d => "folder:" + d.Id,
         _ => "other:" + payload,
     };

@@ -14,6 +14,8 @@ public enum DuplicateKind
     SimilarPhotos,
     /// <summary>The same video re-encoded or resized.</summary>
     SimilarVideos,
+    /// <summary>Photos of the same moment taken one after another (a burst): the sharpest is kept.</summary>
+    SimilarShots,
 }
 
 public sealed record DuplicateFile(string Path, long Size, DateTime Modified)
@@ -21,6 +23,9 @@ public sealed record DuplicateFile(string Path, long Size, DateTime Modified)
     /// <summary>Pixels across × down, for pictures and videos.</summary>
     public int Width { get; init; }
     public int Height { get; init; }
+
+    /// <summary>For similar shots: how sharp the photo is (higher is sharper).</summary>
+    public double Sharpness { get; init; }
 }
 
 public sealed record DuplicateGroup(DuplicateKind Kind, IReadOnlyList<DuplicateFile> Files)
@@ -33,6 +38,7 @@ public sealed record DuplicateOptions
 {
     public bool SimilarPhotos { get; init; } = true;
     public bool SimilarVideos { get; init; } = true;
+    public bool SimilarShots { get; init; }
     public bool IncludeSubfolders { get; init; } = true;
 
     /// <summary>Smaller files are left out (empty files are all "identical").</summary>
@@ -87,6 +93,12 @@ public static class DuplicateFinder
             groups.AddRange(await SimilarPhotosAsync(single, progress, files.Count, cancellationToken));
         if (options.SimilarVideos)
             groups.AddRange(await SimilarVideosAsync(single, progress, files.Count, cancellationToken));
+        if (options.SimilarShots)
+        {
+            // Pictures already in a set of copies stay out of the bursts.
+            var inSets = groups.SelectMany(g => g.Files.Select(f => f.Path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            groups.AddRange(await SimilarShotsAsync(single.Where(f => !inSets.Contains(f.FullName)).ToList(), cancellationToken));
+        }
         progress?.Report(new DuplicateProgress(1, files.Count, ""));
         return groups.OrderByDescending(g => g.Spare).ToList();
     }
@@ -218,12 +230,69 @@ public static class DuplicateFinder
     }
 
     /// <summary>
-    /// Which file of a group to keep: for identical files the oldest (the original), for near
-    /// copies the one with the most pixels, then the largest.
+    /// Photos taken within two minutes of each other that look alike (but are not copies of one another):
+    /// the moments of a burst. Each set is ordered sharpest first.
     /// </summary>
-    public static DuplicateFile Keeper(DuplicateGroup group) => group.Kind == DuplicateKind.Identical
-        ? group.Files.MinBy(f => f.Modified)!
-        : group.Files.MaxBy(f => ((long)f.Width * f.Height, f.Size))!;
+    private static async Task<List<DuplicateGroup>> SimilarShotsAsync(List<FileInfo> files, CancellationToken ct)
+    {
+        var pictures = files.Where(f => Formats.FromPath(f.FullName) is { Family: FormatFamily.Image, CanRead: true }).Take(MaxPictures).ToList();
+        var shots = new ShotInfo?[pictures.Count];
+        await Parallel.ForEachAsync(Enumerable.Range(0, pictures.Count), new ParallelOptions { CancellationToken = ct, MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1) }, (i, _) =>
+        {
+            shots[i] = ImageQuality.Measure(pictures[i].FullName);
+            return ValueTask.CompletedTask;
+        });
+        var timeline = Enumerable.Range(0, pictures.Count).Where(i => shots[i] is not null)
+            .Select(i => (Index: i, When: shots[i]!.Taken ?? pictures[i].LastWriteTime)).OrderBy(t => t.When).ToList();
+        return Bursts(timeline.Select(t => (t.When, shots[t.Index]!)).ToList())
+            .Select(burst => new DuplicateGroup(DuplicateKind.SimilarShots, burst
+                .Select(k => File(pictures[timeline[k].Index]) with { Width = shots[timeline[k].Index]!.Width, Height = shots[timeline[k].Index]!.Height, Sharpness = shots[timeline[k].Index]!.Sharpness })
+                .OrderByDescending(f => f.Sharpness).ToList()))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Runs of shots in time order where each follows the one before within two minutes, with the same
+    /// shape and a similar look. Positions in the list; sets of two or more.
+    /// </summary>
+    public static List<List<int>> Bursts(IReadOnlyList<(DateTime When, ShotInfo Shot)> timeline)
+    {
+        var bursts = new List<List<int>>();
+        List<int>? current = null;
+        for (int i = 0; i < timeline.Count; i++)
+        {
+            if (current is not null)
+            {
+                var before = timeline[current[^1]];
+                var now = timeline[i];
+                bool close = now.When - before.When <= TimeSpan.FromMinutes(2);
+                bool alike = ImageFingerprint.Distance(before.Shot.Hash, now.Shot.Hash) <= 20
+                    && Math.Abs(before.Shot.Aspect - now.Shot.Aspect) < 0.05 * Math.Max(before.Shot.Aspect, now.Shot.Aspect);
+                if (close && alike)
+                {
+                    current.Add(i);
+                    continue;
+                }
+                if (current.Count > 1)
+                    bursts.Add(current);
+            }
+            current = [i];
+        }
+        if (current is { Count: > 1 })
+            bursts.Add(current);
+        return bursts;
+    }
+
+    /// <summary>
+    /// Which file of a group to keep: for identical files the oldest (the original), for near
+    /// copies the one with the most pixels, then the largest; for similar shots the sharpest.
+    /// </summary>
+    public static DuplicateFile Keeper(DuplicateGroup group) => group.Kind switch
+    {
+        DuplicateKind.Identical => group.Files.MinBy(f => f.Modified)!,
+        DuplicateKind.SimilarShots => group.Files.MaxBy(f => f.Sharpness)!,
+        _ => group.Files.MaxBy(f => ((long)f.Width * f.Height, f.Size))!,
+    };
 
     private sealed class UnionFind(int count)
     {

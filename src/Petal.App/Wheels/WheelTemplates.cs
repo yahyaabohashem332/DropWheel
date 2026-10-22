@@ -7,7 +7,7 @@ namespace Petal.App.Wheels;
 public static class WheelTemplates
 {
     /// <summary>Raised to add wheels made after the user's settings were: see <see cref="Upgrade"/>.</summary>
-    public const int Version = 2;
+    public const int Version = 3;
 
     private static WheelEntry A(string action) => new() { Kind = EntryKind.Action, Action = action };
 
@@ -52,7 +52,7 @@ public static class WheelTemplates
         Items =
         [
             A("screen.area"), A("screen.record"), A("screen.text"), A("screen.scroll"),
-            A("screen.full"), A("screen.pin"), A("screen.colour"), A("screen.ruler"),
+            A("screen.full"), A("screen.pin"), A("screen.private"), A("screen.colour"), A("screen.ruler"),
         ],
     };
 
@@ -97,6 +97,19 @@ public static class WheelTemplates
             Group("More", "layers", A("window.centre"), A("window.nextscreen"), A("window.top"), A("window.bottom"),
                 A("window.ontop"), A("window.seethrough"), A("window.minimize"), A("window.close")),
             A("window.bottomleft"), A("window.left"), A("window.topleft"),
+        ],
+    };
+
+    /// <summary>For getting things done: the palette, focus, meetings, captions, dictation and workspaces.</summary>
+    public static UserWheel Work() => new()
+    {
+        Kind = WheelKind.Custom,
+        Name = "Work",
+        Template = "work",
+        Items =
+        [
+            A("petal.palette"), A("work.focus"), A("work.meeting"), A("work.captions"),
+            A("text.dictate"), new WheelEntry { Kind = EntryKind.Workspaces }, A("draw.timer"), A("notes.new"),
         ],
     };
 
@@ -264,6 +277,10 @@ public static class WheelTemplates
             K("READ", "Mark as Read", "check", "Escape")),
     ];
 
+    /// <summary>Every ready-made wheel, in the order they are first added.</summary>
+    public static IReadOnlyList<UserWheel> All() =>
+        [Quick(), Media(), Screen(), Present(), Text(), Windows(), Clipboard(), Work(), .. Apps()];
+
     /// <summary>A new custom wheel to fill in.</summary>
     public static UserWheel Custom(string name) => new()
     {
@@ -282,6 +299,7 @@ public static class WheelTemplates
         "text" => Text(),
         "windows" => Windows(),
         "clipboard" => Clipboard(),
+        "work" => Work(),
         null => null,
         _ => Apps().FirstOrDefault(a => a.Template == template),
     };
@@ -305,6 +323,16 @@ public static class WheelTemplates
             // After the quick and media wheels, before the app wheels and the user's own.
             int at = settings.Wheels.FindLastIndex(w => w.Template is "quick" or "media") + 1;
             settings.Wheels.InsertRange(at, [Screen(), Present(), Text(), Windows(), Clipboard()]);
+        }
+        if (settings.WheelsVersion < 3)
+        {
+            // After the wheels of 1.6, or after quick and media.
+            int at = settings.Wheels.FindLastIndex(w => w.Template is "quick" or "media" or "screen" or "present" or "text" or "windows" or "clipboard") + 1;
+            settings.Wheels.Insert(at, Work());
+            // The Screen wheel of 1.6 gets the private screenshot.
+            if (settings.Wheels.FirstOrDefault(w => w.Template == "screen") is { } screen && screen.Items.Count < 12
+                && !screen.Items.Any(e => e.Action == "screen.private"))
+                screen.Items.Insert(Math.Min(6, screen.Items.Count), A("screen.private"));
         }
         settings.WheelsVersion = Version;
         return true;

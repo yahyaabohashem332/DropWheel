@@ -205,6 +205,19 @@ public static class WheelActions
         {
             Run = async c => { await Task.Delay(180); Screen.PinnedShot.Start(Open(c)); },
         },
+        new("screen.private", "PRIVATE SHOT", "Private Screenshot", "eyeOff", "A screenshot with e-mail addresses, phone numbers, card numbers and passwords already covered, to share safely.", "Screen")
+        {
+            Run = async c =>
+            {
+                await Task.Delay(180);
+                Screenshots.ChooseArea((picture, middle) =>
+                {
+                    var path = Screenshots.Save(picture);
+                    var controller = App.Current.Controller;
+                    new Tools.Windows.RedactPhotoWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.RedactPhoto), path, controller.Jobs, middle).ShowNear(middle);
+                });
+            },
+        },
         new("screen.colour", "COLOUR", "Pick a Colour", "dropper", "The colour of any pixel on the screen, in HEX, RGB and HSL, with its contrast.", "Screen")
         {
             Run = async _ => { await Task.Delay(180); Screen.ColourPicker.Start(); },
@@ -333,6 +346,32 @@ public static class WheelActions
         {
             State = () => Notes.StickyNotes.Showing,
             Run = Do(Notes.StickyNotes.ToggleAll),
+        },
+
+        // ---------- work ----------
+        new("petal.palette", "COMMANDS", "Command Palette", "search", "Type what you want: any action, a petal for the selected files, an app, a file, a sum.", "Work")
+        {
+            Run = c => Commands.CommandPalette.ToggleAsync(c.Target),
+        },
+        new("work.focus", "FOCUS", "Focus", "target", "A focus session: distracting apps wait until it ends, and the minutes are counted.", "Work")
+        {
+            State = () => Screen.FocusMode.IsOn,
+            Note = () => Screen.FocusMode.IsOn ? Petal.Core.Text.Durations.Format(Screen.FocusMode.Left) : null,
+            Run = Do(Screen.FocusMode.Toggle),
+        },
+        new("work.meeting", "MEETING", "Meeting Notes", "notebook", "Records the meeting, then writes the transcript, a summary, the decisions and the action items, on this PC.", "Work")
+        {
+            State = () => Words.MeetingRecorder.IsRecording,
+            Run = Do(Words.MeetingRecorder.Toggle),
+        },
+        new("work.captions", "CC", "Live Captions", "captions", "Captions for any video, call or lesson, translated into Arabic as they come, on this PC.", "Work")
+        {
+            State = () => Words.LiveCaptions.IsOn,
+            Run = Do(Words.LiveCaptions.Toggle),
+        },
+        new("workspace.save", "SAVE LAYOUT", "Save Workspace", "plus", "Keep the apps open now and where their windows are, to open them all together later.", "Work")
+        {
+            Run = Do(Screen.SaveWorkspaceWindow.ShowSingle),
         },
 
         // ---------- media ----------

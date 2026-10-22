@@ -76,6 +76,11 @@ internal sealed class RecordingSession
     private bool _showedClicks;
     private int _fps = 30;
     private string? _warning;
+    // For polishing: the pointer in every frame, and the clicks, in the recording's pixels.
+    private bool _polish;
+    private readonly List<Petal.Core.Imaging.CursorSample> _cursor = [];
+    private readonly List<Petal.Core.Imaging.ClickSample> _clicks = [];
+    private Action<int, ScreenPoint>? _onClick;
 
     public event Action? Ended;
 
@@ -177,10 +182,22 @@ internal sealed class RecordingSession
             AddTrack(() => new WasapiLoopbackCapture(), "system.wav", L.T("The PC's sound couldn't be recorded."));
         if (settings.RecordMicrophone)
             AddTrack(() => new WasapiCapture(), "mic.wav", L.T("The microphone couldn't be recorded."));
-        if (settings.RecordShowsClicks && !InputVisualizer.IsOn)
+        if (settings.RecordShowsClicks && !InputVisualizer.IsOn && !settings.RecordPolish)
         {
             InputVisualizer.Toggle();
             _showedClicks = true;
+        }
+        _polish = settings.RecordPolish;
+        if (_polish && GlobalInputHook.Current is { } hook)
+        {
+            _onClick = (button, at) =>
+            {
+                if (at.X < _area.Left || at.X >= _area.Right || at.Y < _area.Top || at.Y >= _area.Bottom)
+                    return;
+                lock (_clicks)
+                    _clicks.Add(new Petal.Core.Imaging.ClickSample(_clock.Elapsed.TotalSeconds, at.X - _area.Left, at.Y - _area.Top, button));
+            };
+            hook.ButtonPressed += _onClick;
         }
         Recording = true;
         _clock.Start();
@@ -206,7 +223,8 @@ internal sealed class RecordingSession
     /// <summary>Frames at a steady rate; when the PC falls behind, the last frame is sent again so the video keeps time with the sound.</summary>
     private void Grab()
     {
-        using var grabber = new FrameGrabber(_area);
+        // Polished recordings draw a smoother pointer of their own later, so the real one stays out.
+        using var grabber = new FrameGrabber(_area, drawCursor: !_polish);
         var input = _ffmpeg!.StandardInput.BaseStream;
         double frameMs = 1000.0 / _fps;
         long sent = 0;
@@ -223,11 +241,13 @@ internal sealed class RecordingSession
                 }
                 var frame = grabber.Grab();
                 input.Write(frame, 0, frame.Length);
+                _cursor.Add(grabber.Cursor);
                 sent++;
                 // Behind: repeat this frame for the time that went by.
                 while (!_stopping && sent * frameMs < _clock.Elapsed.TotalMilliseconds - frameMs)
                 {
                     input.Write(frame, 0, frame.Length);
+                    _cursor.Add(grabber.Cursor);
                     sent++;
                 }
             }
@@ -255,6 +275,7 @@ internal sealed class RecordingSession
             await _ffmpeg.WaitForExitAsync();
         if (_showedClicks && InputVisualizer.IsOn)
             InputVisualizer.Toggle();
+        StopListening();
         var video = System.IO.Path.Combine(_work, "video.mkv");
         if (!File.Exists(video) || new FileInfo(video).Length == 0)
         {
@@ -265,10 +286,29 @@ internal sealed class RecordingSession
         var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
         var output = Petal.Core.Jobs.OutputNaming.Unique(ScreenRecorder.Folder, $"Recording {stamp}", "mp4");
         var sounds = _tracks.Where(t => t.HasSound).Select(t => t.Path).ToList();
-        bool ok = await Mux(video, sounds, output);
+        // Polished: the plain recording goes beside the work files first, and the finished one is drawn from it.
+        var plain = _polish ? System.IO.Path.Combine(_work, "plain.mp4") : output;
+        bool ok = await Mux(video, sounds, plain);
         if (!ok && sounds.Count > 0)
-            ok = await Mux(video, [], output);
+            ok = await Mux(video, [], plain);
         Close();
+        if (ok && _polish)
+        {
+            var polishing = Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Polishing the recording…"), L.T("Zooming in on the clicks and smoothing the pointer"));
+            polishing.SetProgress(0);
+            List<Petal.Core.Imaging.ClickSample> clicks;
+            lock (_clicks)
+                clicks = [.. _clicks];
+            var progress = new Progress<double>(p => polishing.SetProgress(p));
+            bool polished = await RecordingPolish.RenderAsync(plain, output, _area.Width, _area.Height, _fps, _cursor, clicks, PolishOptions.FromSettings(), progress, CancellationToken.None);
+            if (!polished)
+            {
+                // The plain recording is better than none.
+                try { File.Copy(plain, output, overwrite: true); } catch (IOException) { ok = false; }
+                _warning ??= L.T("The recording couldn't be polished; it is saved as it was.");
+            }
+            polishing.Close();
+        }
         Cleanup();
         if (!ok)
         {
@@ -334,8 +374,16 @@ internal sealed class RecordingSession
         }
         if (_showedClicks && InputVisualizer.IsOn)
             InputVisualizer.Toggle();
+        StopListening();
         Close();
         Cleanup();
+    }
+
+    private void StopListening()
+    {
+        if (_onClick is not null && GlobalInputHook.Current is { } hook)
+            hook.ButtonPressed -= _onClick;
+        _onClick = null;
     }
 
     private void Fail(string why)
@@ -384,9 +432,15 @@ internal sealed class FrameGrabber : IDisposable
     private readonly IntPtr _screen, _memory, _dib, _old, _bits;
     private readonly byte[] _buffer;
 
-    public FrameGrabber(RECT area)
+    private readonly bool _drawCursor;
+
+    /// <summary>Where the pointer was in the frame grabbed last, in the area's pixels.</summary>
+    public Petal.Core.Imaging.CursorSample Cursor { get; private set; }
+
+    public FrameGrabber(RECT area, bool drawCursor = true)
     {
         _area = area;
+        _drawCursor = drawCursor;
         _screen = GetDC(IntPtr.Zero);
         _memory = CreateCompatibleDC(_screen);
         var header = new BITMAPINFOHEADER
@@ -406,7 +460,10 @@ internal sealed class FrameGrabber : IDisposable
     {
         BitBlt(_memory, 0, 0, _area.Width, _area.Height, _screen, _area.Left, _area.Top, SRCCOPY | CAPTUREBLT);
         var info = new ScreenNative.CURSORINFO { cbSize = Marshal.SizeOf<ScreenNative.CURSORINFO>() };
-        if (ScreenNative.GetCursorInfo(ref info) && (info.flags & ScreenNative.CURSOR_SHOWING) != 0 && ScreenNative.GetIconInfo(info.hCursor, out var icon))
+        bool showing = ScreenNative.GetCursorInfo(ref info) && (info.flags & ScreenNative.CURSOR_SHOWING) != 0;
+        Cursor = new Petal.Core.Imaging.CursorSample(info.ptScreenPos.X - _area.Left, info.ptScreenPos.Y - _area.Top,
+            showing && info.ptScreenPos.X >= _area.Left && info.ptScreenPos.X < _area.Right && info.ptScreenPos.Y >= _area.Top && info.ptScreenPos.Y < _area.Bottom);
+        if (_drawCursor && showing && ScreenNative.GetIconInfo(info.hCursor, out var icon))
         {
             ScreenNative.DrawIconEx(_memory, info.ptScreenPos.X - _area.Left - icon.xHotspot, info.ptScreenPos.Y - _area.Top - icon.yHotspot, info.hCursor, 0, 0, 0, IntPtr.Zero, ScreenNative.DI_NORMAL);
             if (icon.hbmMask != IntPtr.Zero) DeleteObject(icon.hbmMask);
@@ -625,9 +682,17 @@ internal sealed class RecordBar : Window
             clicks!.IsOn = settings.RecordShowsClicks;
             Settings.SettingsStore.Save();
         }) { IsOn = settings.RecordShowsClicks };
+        StripButton? polish = null;
+        polish = new StripButton("sparkles", "Polish: zoom in on clicks, a smooth pointer and a background", () =>
+        {
+            settings.RecordPolish = !settings.RecordPolish;
+            polish!.IsOn = settings.RecordPolish;
+            Settings.SettingsStore.Save();
+        }) { IsOn = settings.RecordPolish };
         _row.Children.Add(system);
         _row.Children.Add(mic);
         _row.Children.Add(clicks);
+        _row.Children.Add(polish);
         _row.Children.Add(ScreenUi.Divider());
         _row.Children.Add(new StripButton("x", "Cancel", _session.Cancel));
     }

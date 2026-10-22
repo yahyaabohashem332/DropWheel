@@ -52,6 +52,9 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             case FileActionId.Phone:
                 PhoneWindow.ShowFor(paths, at);
                 break;
+            case FileActionId.SendToPc:
+                SendToPcWindow.Show(paths, at);
+                break;
             case FileActionId.Clean:
                 return CleanAsync(paths, at);
             case FileActionId.Rename:

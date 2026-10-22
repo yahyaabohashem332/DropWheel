@@ -36,12 +36,18 @@ public sealed class AskWindow : ToolWindow
     private readonly Button _mic;
     private Words.Listener? _listener;
 
-    public static void Show(IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at)
+    public static void Show(IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at, string? request = null)
     {
         _open?.Close();
-        _open = new AskWindow(files, jobs, at);
-        _open.Closed += (_, _) => _open = null;
-        _open.ShowNear(at);
+        var window = _open = new AskWindow(files, jobs, at);
+        window.Closed += (_, _) => _open = null;
+        window.ShowNear(at);
+        // From the command palette: the request is already typed, so ask straight away.
+        if (!string.IsNullOrWhiteSpace(request))
+        {
+            window._request.Text = request;
+            window.Loaded += async (_, _) => await window.AskAsync();
+        }
     }
 
     /// <summary>From the tray: files chosen first.</summary>

@@ -144,6 +144,52 @@ public static class ImageRedactor
         return results.OrderBy(r => r.Bounds.Y).ThenBy(r => r.Bounds.X).ToList();
     }
 
+    /// <summary>
+    /// Private details in a picture (e-mail addresses, phone numbers, card numbers, IBANs, IP addresses,
+    /// passwords): the boxes of just their words, in upright pixels of the full image.
+    /// </summary>
+    public static Task<IReadOnlyList<(PixelRect Bounds, Petal.Core.Text.PrivateKind Kind)>> DetectPrivateAsync(string path, CancellationToken cancellationToken = default) =>
+        Task.Run(async () =>
+        {
+            using var image = ImageLoader.Load(path);
+            var (bitmap, scale) = Downscaled(image, Math.Min(OcrMaxSize, (int)OcrEngine.MaxImageDimension));
+            var engines = OcrEngines();
+            var found = new List<(PixelRect Bounds, Petal.Core.Text.PrivateKind Kind)>();
+            if (engines.Count == 0)
+                return (IReadOnlyList<(PixelRect, Petal.Core.Text.PrivateKind)>)found;
+            using var input = ToSoftwareBitmap(bitmap);
+            foreach (var engine in engines)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var ocr = await engine.RecognizeAsync(input).AsTask(cancellationToken);
+                foreach (var line in ocr.Lines)
+                {
+                    // The line's words joined by spaces, remembering where each word sits in the text.
+                    var words = line.Words.Select(w => (Rect: ToPixels(w.BoundingRect), w.Text)).Where(w => !w.Rect.IsEmpty).ToList();
+                    var text = new System.Text.StringBuilder();
+                    var spans = new List<(int Start, int End, PixelRect Rect)>();
+                    foreach (var (rect, word) in words)
+                    {
+                        if (text.Length > 0)
+                            text.Append(' ');
+                        spans.Add((text.Length, text.Length + word.Length, rect));
+                        text.Append(word);
+                    }
+                    foreach (var match in Petal.Core.Text.PrivateInfo.Find(text.ToString()))
+                    {
+                        var covered = spans.Where(s => s.Start < match.Start + match.Length && match.Start < s.End).ToList();
+                        if (covered.Count == 0)
+                            continue;
+                        var box = covered.Aggregate(covered[0].Rect, (acc, s) => acc.Union(s.Rect));
+                        box = Scale(box, scale).ClampTo((int)image.Width, (int)image.Height);
+                        if (!found.Any(f => Overlap(f.Bounds, box) > 0.5))
+                            found.Add((box, match.Kind));
+                    }
+                }
+            }
+            return (IReadOnlyList<(PixelRect, Petal.Core.Text.PrivateKind)>)found;
+        }, cancellationToken);
+
     /// <summary>Covers every region and saves in the output path's format (default: the source's).</summary>
     public static Task RedactAsync(string inputPath, string outputPath, IReadOnlyList<RedactionRegion> regions,
         IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>
