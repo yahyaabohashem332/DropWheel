@@ -22,6 +22,10 @@ public sealed class HudCard : Window
 {
     private const double CardWidth = 300;
     private const double CardHeight = 84;
+    // A saved file's card: its folder, and a row of buttons where the progress bar was.
+    private const double SavedHeight = 100;
+    // Wider, for the two buttons in every language ("Afficher dans le dossier").
+    private const double SavedWidth = 360;
     private const double CardMargin = 24;
 
     private static readonly List<HudCard> Open = [];
@@ -41,14 +45,19 @@ public sealed class HudCard : Window
     private bool _finished;
     private bool _indeterminate = true;
     private Palette _palette = Theme.Current;
+    private readonly double _height, _width;
+    private readonly string? _savedPath;
 
     public event Action? CancelRequested;
 
     /// <summary>Invoked when a finished card is clicked.</summary>
     public Action? OnClick { get; set; }
 
-    private HudCard()
+    private HudCard(string? savedPath = null)
     {
+        _savedPath = savedPath;
+        _height = savedPath is null ? CardHeight : SavedHeight;
+        _width = savedPath is null ? CardWidth : SavedWidth;
         WindowStyle = WindowStyle.None;
         AllowsTransparency = true;
         Background = Brushes.Transparent;
@@ -56,8 +65,8 @@ public sealed class HudCard : Window
         ShowInTaskbar = false;
         ShowActivated = false;
         Topmost = true;
-        Width = CardWidth + CardMargin * 2;
-        Height = CardHeight + CardMargin * 2;
+        Width = _width + CardMargin * 2;
+        Height = _height + CardMargin * 2;
         Title = L.T("Petal");
         Content = Build();
         _dismissTimer.Tick += (_, _) => Dismiss();
@@ -86,26 +95,81 @@ public sealed class HudCard : Window
         var card = new HudCard();
         card._title.Text = Localization.L.T(title);
         card._subtitle.Text = Localization.L.T(subtitle);
-        card.Show();
+        card.Place(at);
+        card.Pop();
+        return card;
+    }
 
+    /// <summary>
+    /// A file just saved, above the notification area: what it is, the folder it is in on this PC, and buttons
+    /// to show it in that folder or open it. <paramref name="note"/>, when there is one, takes the folder's
+    /// line (the folder stays in its tooltip).
+    /// </summary>
+    public static HudCard ShowSaved(string title, string path, string? note = null)
+    {
+        var card = new HudCard(path);
+        var folder = System.IO.Path.GetDirectoryName(path) ?? path;
+        card._title.Text = Localization.L.T(title);
+        card._subtitle.Text = note ?? folder;
+        // A path reads left to right, whatever the language around it.
+        card._subtitle.FlowDirection = note is null ? FlowDirection.LeftToRight : Localization.L.Direction;
+        card._subtitle.TextAlignment = note is null && Localization.L.IsRightToLeft ? TextAlignment.Right : TextAlignment.Left;
+        card._subtitle.ToolTip = note is null ? path : note + Environment.NewLine + path;
+        card._title.ToolTip = System.IO.Path.GetFileName(path);
+        card.Place(HudCard.SavedCornerPoint());
+        card._finished = true;
+        card._card.Opacity = 0;
+        card._card.BeginAnimation(OpacityProperty, Motion.To(1, 120, Motion.Standard, from: 0));
+        card._scale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 420, Motion.Pop, from: 0.45));
+        card._scale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 420, Motion.Pop, from: 0.45));
+        card.ShowBadge(success: true);
+        // Long enough to reach for a button; the pointer on the card holds it.
+        card.DismissAfter(TimeSpan.FromSeconds(7));
+        return card;
+    }
+
+    /// <summary>For design snapshots: a saved file's card, built but not shown.</summary>
+    internal static HudCard SavedForSnapshot(string title, string path, string? note = null)
+    {
+        var card = new HudCard(path);
+        card._title.Text = Localization.L.T(title);
+        card._subtitle.Text = note ?? System.IO.Path.GetDirectoryName(path) ?? path;
+        card._subtitle.FlowDirection = note is null ? FlowDirection.LeftToRight : Localization.L.Direction;
+        card._subtitle.TextAlignment = note is null && Localization.L.IsRightToLeft ? TextAlignment.Right : TextAlignment.Left;
+        card._finished = true;
+        card.ShowBadge(success: true);
+        // Off screen its pop never plays: the badge as it ends up.
+        card._badge.RenderTransform = Transform.Identity;
+        return card;
+    }
+
+    private static ScreenPoint SavedCornerPoint()
+    {
+        var (_, work, scale) = MonitorAt(new POINT(0, 0));
+        return new ScreenPoint(
+            work.Right - (int)Math.Round((SavedWidth / 2 + CardMargin) * scale),
+            work.Bottom - (int)Math.Round((SavedHeight / 2 + CardMargin) * scale));
+    }
+
+    private void Place(ScreenPoint at)
+    {
+        Show();
         var (_, work, scale) = MonitorAt(new POINT(at.X, at.Y));
-        int w = (int)Math.Round(card.Width * scale), h = (int)Math.Round(card.Height * scale);
+        int w = (int)Math.Round(Width * scale), h = (int)Math.Round(Height * scale);
         int x = Math.Clamp(at.X - w / 2, work.Left, work.Right - w);
         int y = Math.Clamp(at.Y - h / 2, work.Top, work.Bottom - h);
 
         // Do not cover a card that is still on screen.
-        int step = (int)((CardHeight + 10) * scale);
         foreach (var other in Open)
         {
+            int step = (int)(((_height + other._height) / 2 + 10) * scale);
             if (Math.Abs(other._screenY - y) < step && Math.Abs(other._screenX - x) < w * 0.6)
                 y = other._screenY - step >= work.Top ? other._screenY - step : other._screenY + step;
         }
-        card._screenX = x;
-        card._screenY = y;
-        SetWindowPos(card._hwnd, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        Open.Add(card);
-        card.Pop();
-        return card;
+        _screenX = x;
+        _screenY = y;
+        SetWindowPos(_hwnd, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        Open.Add(this);
     }
 
     private int _screenX, _screenY;
@@ -239,8 +303,8 @@ public sealed class HudCard : Window
         var p = _palette;
         var root = new Grid();
         Localization.L.Apply(root);
-        _card.Width = CardWidth;
-        _card.Height = CardHeight;
+        _card.Width = _width;
+        _card.Height = _height;
         _card.CornerRadius = new CornerRadius(20);
         _card.Background = Palette.Brush(p.IsDark ? Color.FromArgb(0xF2, 0x2A, 0x2A, 0x30) : Color.FromArgb(0xF5, 0xFF, 0xFF, 0xFF));
         _card.BorderBrush = Palette.Brush(p.GlassEdge);
@@ -320,9 +384,67 @@ public sealed class HudCard : Window
         _bar.Children.Add(_track);
         _bar.Children.Add(_fill);
         _bar.Clip = new RectangleGeometry(new Rect(0, 0, CardWidth - 64, 5), 2.5, 2.5);
-        text.Children.Add(_bar);
+        if (_savedPath is { } path)
+        {
+            _closeButton.Visibility = Visibility.Collapsed;
+            _subtitle.TextTrimming = TextTrimming.CharacterEllipsis;
+            var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 9, 0, 0) };
+            buttons.Children.Add(CardButton("folderOpen", "Show in Folder", () => Shell.ExplorerSelection.Reveal([path])));
+            buttons.Children.Add(CardButton("externalLink", "Open", () => OpenFile(path)));
+            text.Children.Add(buttons);
+        }
+        else
+        {
+            text.Children.Add(_bar);
+        }
         layout.Children.Add(text);
 
         return root;
+    }
+
+    /// <summary>A small pill on a saved file's card; it acts on release, and the card goes.</summary>
+    private Border CardButton(string icon, string label, Action act)
+    {
+        var p = _palette;
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        var glyph = Icons.Create(icon, 13, Palette.Brush(p.Text), 2);
+        glyph.VerticalAlignment = VerticalAlignment.Center;
+        glyph.Margin = new Thickness(0, 0, 6, 0);
+        row.Children.Add(glyph);
+        row.Children.Add(new TextBlock { Text = L.T(label), FontFamily = UiFonts.Text, FontSize = 12, Foreground = Palette.Brush(p.Text), VerticalAlignment = VerticalAlignment.Center });
+        var button = new Border
+        {
+            Child = row,
+            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(10, 4, 11, 5),
+            Margin = new Thickness(0, 0, 6, 0),
+            Background = Palette.Brush(p.Control),
+            Cursor = Cursors.Hand,
+        };
+        System.Windows.Automation.AutomationProperties.SetName(button, L.T(label));
+        button.MouseEnter += (_, _) => button.Background = Palette.Brush(p.ControlHover);
+        button.MouseLeave += (_, _) => button.Background = Palette.Brush(p.Control);
+        button.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            try
+            {
+                act();
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or System.IO.IOException)
+            {
+                Log.Error(ex, "Acting on a saved file");
+            }
+            Dismiss();
+        };
+        return button;
+    }
+
+    private static void OpenFile(string path)
+    {
+        if (System.IO.File.Exists(path))
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+        else if (System.IO.Path.GetDirectoryName(path) is { } folder && System.IO.Directory.Exists(folder))
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder) { UseShellExecute = true });
     }
 }

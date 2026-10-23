@@ -174,7 +174,7 @@ public static class WheelActions
             {
                 // Let the wheel leave the screen first.
                 await Task.Delay(180);
-                Screenshots.ChooseArea((picture, middle) => c.Host.OpenFiles([Screenshots.Save(picture)], middle));
+                Screenshots.ChooseArea((picture, middle) => c.Host.OpenFiles([Screenshots.Keep(picture)], middle));
             },
         },
         new("screen.full", "SCREEN", "Screenshot the Screen", "monitor", "The whole screen under the pointer, straight onto the conversion wheel.", "Screen")
@@ -183,7 +183,7 @@ public static class WheelActions
             {
                 await Task.Delay(180);
                 if (Screenshots.CaptureScreenUnderPointer() is { } shot)
-                    c.Host.OpenFiles([Screenshots.Save(shot.Picture)], c.At);
+                    c.Host.OpenFiles([Screenshots.Keep(shot.Picture)], c.At);
             },
         },
 

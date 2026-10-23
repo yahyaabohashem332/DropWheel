@@ -57,6 +57,53 @@ internal static class Screenshots
     }
 
     /// <summary>
+    /// A screenshot taken to keep: saved, put on the Windows clipboard at once (to paste anywhere, as
+    /// Win+Shift+S does), and a card says where it is with buttons to show it or open it. Returns its path.
+    /// </summary>
+    public static string Keep(BitmapSource picture, string title = "Screenshot saved and copied", string? note = null)
+    {
+        var path = Save(picture);
+        bool copied = Copy(picture);
+        Hud.HudCard.ShowSaved(copied ? title : "Screenshot saved", path, copied ? note : note ?? L.T("The clipboard is busy, so it wasn't copied."));
+        return path;
+    }
+
+    /// <summary>
+    /// The picture on the clipboard as a bitmap and as PNG (which browsers and Office prefer); false when
+    /// another program holds the clipboard all through a few tries.
+    /// </summary>
+    public static bool Copy(BitmapSource picture)
+    {
+        var data = ClipboardData(picture);
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                Clipboard.SetDataObject(data, copy: true);
+                return true;
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                Thread.Sleep(60);
+            }
+        }
+        return false;
+    }
+
+    internal static DataObject ClipboardData(BitmapSource picture)
+    {
+        var data = new DataObject();
+        data.SetImage(picture);
+        var png = new MemoryStream();
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(picture));
+        encoder.Save(png);
+        png.Position = 0;
+        data.SetData("PNG", png);
+        return data;
+    }
+
+    /// <summary>
     /// Shows a still of the screen under the pointer to drag an area on; Esc or a right-click cancels.
     /// <paramref name="done"/> gets the area's picture and its middle on the screen.
     /// </summary>

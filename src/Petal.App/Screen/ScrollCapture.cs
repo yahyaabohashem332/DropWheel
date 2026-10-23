@@ -103,10 +103,9 @@ internal static class ScrollCapture
             return;
         var bitmap = BitmapSource.Create(stitcher.Width, stitcher.Height, 96, 96, PixelFormats.Bgra32, null, stitcher.Result(), stitcher.Width * 4);
         bitmap.Freeze();
-        var path = Wheels.Screenshots.Save(bitmap);
+        // Saved, copied, and a card with where it is (and what stopped the scrolling, if anything did).
+        var path = Wheels.Screenshots.Keep(bitmap, "Scrolling screenshot saved and copied", problem);
         var at = new ScreenPoint(middle.X, middle.Y);
-        if (problem is not null)
-            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(L.T("Scrolling screenshot saved"), problem, null);
         openFiles?.Invoke(path, at);
     }
 

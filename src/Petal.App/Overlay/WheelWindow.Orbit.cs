@@ -154,6 +154,9 @@ public sealed partial class WheelWindow
         {
             var b = new Bubble(children[k], k, centre + ((n - 1) / 2.0 - k) * OrbitStep, anchor);
             b.Glass.Fill = _glass ?? (Brush)Palette.Brush(p.WindowBackground);
+            // Over frosted glass, the ring's own tint, so a bubble reads as the ring does whatever is behind it
+            // (without it a dark ring's light icons vanished into bubbles over a white page).
+            b.Tint.Fill = _glass is null ? null : Palette.Brush(p.GlassTint);
             AddBubbleFace(b, p);
             PaintBubble(b, p, false);
             _orbitLayer.Children.Add(b.Root);
@@ -599,6 +602,7 @@ public sealed partial class WheelWindow
             Angle = angle;
             From = from;
             Glass = new Path { Data = _shape, IsHitTestVisible = false };
+            Tint = new Path { Data = _shape, IsHitTestVisible = false };
             Fill = new Path { Data = _shape, StrokeThickness = 0.9, IsHitTestVisible = false };
             Halo = new Path { Data = _halo, StrokeThickness = 2.5, Fill = null, IsHitTestVisible = false, Opacity = 0 };
             Shadow = new Path
@@ -612,6 +616,7 @@ public sealed partial class WheelWindow
             Root.IsHitTestVisible = false;
             Root.Children.Add(Shadow);
             Root.Children.Add(Glass);
+            Root.Children.Add(Tint);
             Root.Children.Add(Fill);
             Root.Children.Add(Halo);
             Root.Children.Add(Face);
@@ -628,6 +633,7 @@ public sealed partial class WheelWindow
         public Canvas Root { get; } = new();
         public Canvas Face { get; } = new();
         public Path Glass { get; }
+        public Path Tint { get; }
         public Path Fill { get; }
         public Path Halo { get; }
         public Path Shadow { get; }

@@ -421,8 +421,8 @@ internal sealed class RecordingSession
             return;
         }
         var middle = new ScreenPoint(_area.Left + _area.Width / 2, _area.Top + _area.Height / 2);
-        var card = Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Recording saved"), "");
-        card.Succeed(L.T("Recording saved"), _warning ?? System.IO.Path.GetFileName(output), () => _openFiles?.Invoke(output, middle));
+        // Where the video is, with buttons to show it in its folder or play it.
+        Hud.HudCard.ShowSaved("Recording saved", output, _warning);
         _openFiles?.Invoke(output, middle);
     }
 

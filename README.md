@@ -66,9 +66,11 @@ Petal's settings instead.
 **The screen, text and windows (1.6).** Five more ready-made wheels, and every petal can go on any
 wheel:
 
-* **Screen** — snip an area or the whole screen; **record** an area or a monitor to MP4 with the PC's
+* **Screen** — snip an area or the whole screen (saved in Pictures\Screenshots and put on the clipboard
+  at once, to paste anywhere); **record** an area or a monitor to MP4 with the PC's
   sound and the microphone (a 3-2-1 countdown, a bar with the time, Stop and Cancel; the frame and the
-  bar stay out of the video), then the conversion wheel opens on it, for a GIF or a smaller copy;
+  bar stay out of the video), then the conversion wheel opens on it, for a GIF or a smaller copy. A
+  card by the clock says where a screenshot or recording was saved, with Show in Folder and Open;
   **scrolling screenshots** (Petal scrolls the area and stitches it, sticky headers once); **text from
   the screen** with Windows' OCR, QR codes and barcodes too, with Translate, Fix Keyboard Layout, Join
   Lines and Search the Web; **pin a screenshot** on top of every window; **pick a colour** with a pixel
@@ -369,8 +371,8 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.8.0.exe` (per-user, no admin rights; English or Arabic setup), or
-`Petal-Setup-1.8.0-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
+Run `dist\Petal-Setup-1.8.1.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
+French or Spanish), or `Petal-Setup-1.8.1-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

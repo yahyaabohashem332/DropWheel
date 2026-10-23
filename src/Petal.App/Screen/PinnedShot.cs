@@ -122,8 +122,7 @@ internal sealed class PinnedShot : Window
         });
         Item("Save to Screenshots", () =>
         {
-            var path = Wheels.Screenshots.Save(_picture);
-            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(L.T("Screenshot saved"), System.IO.Path.GetFileName(path), null);
+            Wheels.Screenshots.Keep(_picture);
         });
         Item("Open the Wheel for It", () =>
         {

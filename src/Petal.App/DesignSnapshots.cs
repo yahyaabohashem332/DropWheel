@@ -249,6 +249,8 @@ internal static class DesignSnapshots
     private static IEnumerable<(string Name, Func<Window> Create)> FloatingCases() =>
     [
         ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
+        ("savedshot", () => Hud.HudCard.SavedForSnapshot("Screenshot saved and copied", Path.Combine(Wheels.Screenshots.Folder, "Screenshot 2026-10-23 09.41.12.png"))),
+        ("savedrecording", () => Hud.HudCard.SavedForSnapshot("Recording saved", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Recording 2026-10-23 09.42.30.mp4"), Localization.L.T("The camera couldn't be added; the recording is saved without it."))),
         ("timer", Private<Screen.TimerWindow>),
         ("timerrunning", () => Screen.TimerWindow.ForSnapshot(TimeSpan.FromMinutes(5))),
         ("recordbar", () => new Screen.RecordBar((Screen.RecordingSession)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Screen.RecordingSession)))),

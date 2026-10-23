@@ -304,7 +304,7 @@ public partial class App : Application
         {
             if (_controller is null) return;
             var controller = _controller;
-            Wheels.Screenshots.ChooseArea((picture, middle) => controller.OpenWheelNow([Wheels.Screenshots.Save(picture)], middle));
+            Wheels.Screenshots.ChooseArea((picture, middle) => controller.OpenWheelNow([Wheels.Screenshots.Keep(picture)], middle));
         };
         var drawItem = new MenuItem { Header = L.T("Draw on Screen") };
         drawItem.Click += (_, _) => Screen.DrawOverlay.Toggle(Screen.DrawBoard.Live, OpenFilesFromTray);
