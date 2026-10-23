@@ -71,7 +71,18 @@ public static class Translator
         return result;
     }
 
-    private static string Translate(string text)
+    /// <summary>
+    /// One line in Arabic. Quick follows only the likeliest word at each step (about four times less work): for
+    /// a sentence still being said, whose words may change before it is translated properly.
+    /// </summary>
+    public static string ToArabic(string line, bool quick)
+    {
+        Load();
+        line = line.Trim();
+        return line.Length == 0 || !line.Any(char.IsLetter) ? line : Translate(line, quick ? 1 : Beams);
+    }
+
+    private static string Translate(string text, int width = Beams)
     {
         var ids = Encode(text);
         int length = ids.Length;
@@ -82,7 +93,7 @@ public static class Translator
         using (var run = new RunOptions())
         using (var encoded = _encoder!.Run(run, ["input_ids", "attention_mask"], [idsTensor, maskTensor], [_encoder.OutputMetadata.Keys.First()]))
             hidden = encoded[0].GetTensorDataAsSpan<float>().ToArray();
-        int width = hidden.Length / length;
+        int size = hidden.Length / length;
 
         var beams = new List<(List<long> Tokens, double Score)> { ([Pad], 0) };
         var finished = new List<(List<long> Tokens, double Score)>();
@@ -101,7 +112,7 @@ public static class Translator
                 mask.CopyTo(encoderMask, b * length);
             }
             using var idsValue = OrtValue.CreateTensorValueFromMemory(decoderIds, [batch, steps]);
-            using var statesValue = OrtValue.CreateTensorValueFromMemory(encoderStates, [batch, length, width]);
+            using var statesValue = OrtValue.CreateTensorValueFromMemory(encoderStates, [batch, length, size]);
             using var maskValue = OrtValue.CreateTensorValueFromMemory(encoderMask, [batch, length]);
             using var run = new RunOptions();
             var names = _decoder!.InputMetadata.Keys.ToList();
@@ -121,7 +132,7 @@ public static class Translator
                 foreach (var v in row)
                     sum += Math.Exp(v - max);
                 double logSum = max + Math.Log(sum);
-                foreach (int token in Top(row, Beams))
+                foreach (int token in Top(row, width))
                     candidates.Add(([.. beams[b].Tokens, token], beams[b].Score + row[token] - logSum));
             }
             beams.Clear();
@@ -129,12 +140,12 @@ public static class Translator
             {
                 if (candidate.Tokens[^1] == Eos)
                     finished.Add(candidate);
-                else if (beams.Count < Beams)
+                else if (beams.Count < width)
                     beams.Add(candidate);
-                if (beams.Count == Beams)
+                if (beams.Count == width)
                     break;
             }
-            if (finished.Count >= Beams)
+            if (finished.Count >= width)
                 break;
         }
         var best = (finished.Count > 0 ? finished : beams).MaxBy(c => c.Score / c.Tokens.Count).Tokens;

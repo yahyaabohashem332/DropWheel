@@ -9,13 +9,34 @@ using F = Petal.Core.Formats.Formats;
 
 namespace Petal.Tests;
 
+/// <summary>Tests that measure how long something takes: run on their own, after the others, so no other test's work slows them.</summary>
+[CollectionDefinition("Timing", DisableParallelization = true)]
+public sealed class TimingCollection;
+
+/// <summary>A preview on the wheel comes quickly.</summary>
+[Collection("Timing")]
+public sealed class WheelPreviewTimingTests
+{
+    [Fact]
+    public async Task A_video_preview_is_worked_out_from_a_few_seconds()
+    {
+        // The first one may wait for the video encoders to be found; after that it is quick.
+        await PetalPreviews.SizeAsync([WheelPowerTests.Data("weekend.mov")], F.Mp4, new ConversionSettings(), WheelPowerTests.Converters.Find, CancellationToken.None);
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var preview = await PetalPreviews.SizeAsync([WheelPowerTests.Data("weekend.mov")], F.Webm, new ConversionSettings(), WheelPowerTests.Converters.Find, CancellationToken.None);
+        Assert.NotNull(preview);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(8), clock.Elapsed.ToString());
+        Assert.Contains("%", preview.Text);
+    }
+}
+
 /// <summary>Steps chained on the wheel, and what a petal will make before the drop.</summary>
 public sealed class WheelPowerTests
 {
-    private static readonly ConverterRegistry Converters = Petal.App.EngineSetup.CreateConverters();
+    internal static readonly ConverterRegistry Converters = Petal.App.EngineSetup.CreateConverters();
 
     /// <summary>A sample file of the repository's testdata folder.</summary>
-    private static string Data(string name)
+    internal static string Data(string name)
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "testdata")))
@@ -123,18 +144,6 @@ public sealed class WheelPowerTests
         }
         // Nothing for a petal that isn't a conversion of these files.
         Assert.Null(await PetalPreviews.SizeAsync([Data("album.pdf")], F.Mp3, settings, Converters.Find, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task A_video_preview_is_worked_out_from_a_few_seconds()
-    {
-        // The first one may wait for the video encoders to be found; after that it is quick.
-        await PetalPreviews.SizeAsync([Data("weekend.mov")], F.Mp4, new ConversionSettings(), Converters.Find, CancellationToken.None);
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        var preview = await PetalPreviews.SizeAsync([Data("weekend.mov")], F.Webm, new ConversionSettings(), Converters.Find, CancellationToken.None);
-        Assert.NotNull(preview);
-        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(8), clock.Elapsed.ToString());
-        Assert.Contains("%", preview.Text);
     }
 
     [Fact]

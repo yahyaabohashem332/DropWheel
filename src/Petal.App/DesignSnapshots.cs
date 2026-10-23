@@ -711,6 +711,58 @@ internal static class DesignSnapshots
         }
     }
 
+    /// <summary>
+    /// "Petal.exe --captions-test &lt;folder&gt; &lt;sound.wav&gt; [models folder] [both|arabic|original|english]" plays the
+    /// sound into the live captions (off screen) and writes what they show every quarter second, with pictures.
+    /// </summary>
+    public static async Task RunCaptionsAsync(string[] args)
+    {
+        var output = args[1];
+        Directory.CreateDirectory(output);
+        if (args.Length >= 4)
+            Petal.Core.Models.ModelStore.Folder = args[3];
+        var settings = Settings.SettingsStore.Load();
+        settings.CaptionsShow = args.Length >= 5 ? args[4] : "both";
+        Words.LiveCaptions.SoundFile = args[2];
+        double length;
+        using (var reader = new NAudio.Wave.WaveFileReader(args[2]))
+            length = reader.TotalTime.TotalSeconds;
+        Words.LiveCaptions.Toggle();
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var log = new System.Text.StringBuilder();
+        string last = "";
+        int picture = 0;
+        while (clock.Elapsed.TotalSeconds < length + 5 && Words.LiveCaptions.Window is { } window)
+        {
+            await Task.Delay(250);
+            if (window.IsLoaded && window.Left > -10000)
+                window.Left = -20000;
+            var (small, main) = window.Shown;
+            var line = small + " || " + main;
+            if (line != last)
+                log.AppendLine($"{clock.Elapsed.TotalSeconds:0.00}\t{small}\t{main}");
+            last = line;
+            if (clock.Elapsed.TotalSeconds > (picture + 1) * 8 && window.Content is FrameworkElement content && content.ActualWidth > 0)
+            {
+                picture++;
+                // Drawn on its own, the card misses the window's right-to-left mirroring: it is put back here.
+                var drawing = new DrawingVisual();
+                using (var dc = drawing.RenderOpen())
+                {
+                    if (window.FlowDirection == FlowDirection.RightToLeft)
+                        dc.PushTransform(new ScaleTransform(-1, 1, content.ActualWidth / 2, 0));
+                    dc.DrawRectangle(new VisualBrush(content), null, new Rect(0, 0, content.ActualWidth, content.ActualHeight));
+                }
+                var bitmap = new RenderTargetBitmap((int)Math.Ceiling(content.ActualWidth * 2), (int)Math.Ceiling(content.ActualHeight * 2), 192, 192, PixelFormats.Pbgra32);
+                bitmap.Render(drawing);
+                Save(bitmap, Path.Combine(output, $"captions-{picture:00}.png"));
+            }
+        }
+        File.WriteAllText(Path.Combine(output, "captions.txt"), log.ToString());
+        Words.LiveCaptions.Stop();
+        await Task.Delay(1500);
+    }
+
     private static void Save(BitmapSource image, string path)
     {
         using var stream = File.Create(path);

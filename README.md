@@ -112,8 +112,8 @@ workspaces, timer, a new note), a Work submenu in the tray, and Settings › Wor
   Initials and letters in order count ("rts" finds Record the Screen), Arabic matches with or without
   hamza, taa marbuta and diacritics, and what you choose often rises. ↑↓, Enter, Ctrl+Enter, Esc.
 * **Live captions** of the PC's sound or the microphone, in a small window that never takes the focus:
-  Whisper writes what is said a few seconds at a time and Opus-MT puts it into Arabic (in Arabic, as
-  spoken, in English, or both).
+  the words appear as they are said and Opus-MT puts each sentence into Arabic (in Arabic, as spoken,
+  in English, or both).
 * **Meeting notes** — records the PC's sound and the microphone, then writes the transcript with times
   and, with the AI model, a summary, the decisions and the action items (a long meeting is summarised
   part by part); `Documents\Petal Meetings\Meeting <date>.md` and `.m4a`.
@@ -142,6 +142,30 @@ workspaces, timer, a new note), a Work submenu in the tray, and Settings › Wor
 * **Wheel gallery and sharing** — ten ready-made wheels (Student, Presenter, Writer, Developer, Figma,
   Illustrator, Premiere Pro, Blender, Notion, Outlook), and any wheel shared as one line of text
   (`PETAL-WHEEL:…`) or a `.petalwheel` file, imported with a summary of what it holds.
+
+**Near-live captions (1.8.3).** Live captions were rebuilt so the words keep pace with a video or a
+lesson instead of coming a sentence late, and never stop.
+
+* **Words as they are said** — about every half second Whisper writes the talk since the last finished
+  sentence again; the words two passes agree on are final ("local agreement", as in Whisper-Streaming),
+  the newest show at once, dimmer, until they are sure. A finished sentence's sound is let go, so each
+  pass stays short. Measured on a 63-second lecture fed in real time: a word is on screen 0.4 s after it
+  is said on average (before: 3 s, and up to 7 s), with the same accuracy (4.5% words wrong against
+  4.0%); with music under the voice, 5.5% against 9.5%, and 7% against 19% when it is loud. On a PC
+  whose graphics card Whisper can't use, 2.3 s against 6–7 s, at 4–4.5% words wrong.
+* **No more stalls** — the old captions waited for a pause, so music or fast talk held them back, and
+  a queue dropped pieces when the PC was busy. Now nothing waits for a pause, a pass never retries at a
+  higher temperature and has a time limit, and when the PC falls behind the words heard so far become
+  final and the next pass starts after them.
+* **Whisper's own mistakes caught** — word times aligned to the sound (DTW); where the sound stops
+  mid-word Whisper sometimes makes up a sentence, and its words all fall on the same moment, so they
+  are left out; words already final are found again by their text, never written twice.
+* **Ready at once** — the model warms up on a moment of quiet while the bar appears (a graphics card's
+  first pass takes seconds), and when the speech model chosen is too slow for the PC, a quicker one
+  that is downloaded warms up and takes over by itself.
+* **Translation in a lane of its own** — each finished sentence is translated properly, the sentence
+  being said quickly (one candidate) in between, so the Arabic grows with the talk and a slow
+  translation never holds the words up. The bar rolls over two lines, the newest words never cut off.
 
 **The Tools Guide (1.8.2).** Every tool, file action and action of the wheels without files explained —
 what it does, how to use it, three examples and what it works on — in all eight languages
@@ -384,8 +408,8 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.8.2.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
-French or Spanish), or `Petal-Setup-1.8.2-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
+Run `dist\Petal-Setup-1.8.3.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
+French or Spanish), or `Petal-Setup-1.8.3-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

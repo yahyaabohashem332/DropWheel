@@ -2921,6 +2921,7 @@ internal static class Arabic
         ["The description is in English. Download the model to have it in your language."] = "الوصف بالإنجليزية. نزّل النموذج لتحصل عليه بلغتك.",
         ["Recording steps · {0}"] = "تسجيل الخطوات · {0}",
         ["{0} open"] = "واحدة مفتوحة|اثنتان مفتوحتان|{0} مفتوحة|{0} مفتوحة|{0} مفتوحة",
+        ["A quicker speech model took over, so the captions keep up."] = "تولّى نموذج كلام أسرع العمل لتبقى الترجمة مواكبة للكلام.",
         ["Best for this"] = "الأنسب لطلبك",
         ["amount:More"] = "أكثر",
         ["audio:Mono"] = "أحادي",

@@ -59,6 +59,18 @@ public partial class App : Application
             return;
         }
 
+        if (args.Length >= 3 && args[0] == "--captions-test")
+        {
+            ThemeResources.Install(this);
+            Dispatcher.BeginInvoke(async () =>
+            {
+                try { await DesignSnapshots.RunCaptionsAsync(args); }
+                catch (Exception ex) { File.WriteAllText(Path.Combine(args[1], "error.txt"), ex.ToString()); }
+                Shutdown();
+            });
+            return;
+        }
+
         if (args.Length >= 2 && args[0] == "--show-dialog")
         {
             ThemeResources.Install(this);

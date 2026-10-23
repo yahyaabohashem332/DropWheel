@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Petal.Core.Audio;
 using Petal.Core.Models;
 using Petal.Engines.Media;
@@ -89,6 +90,79 @@ public sealed class LiveSpeechTests
         {
             File.Delete(wav);
         }
+    }
+
+    /// <summary>Windows' own voice saying some sentences, as 16 kHz samples (null when it can't).</summary>
+    private static async Task<float[]?> SayAsync(string text)
+    {
+        var wav = Path.Combine(Path.GetTempPath(), $"petal-speech-{Guid.NewGuid():N}.wav");
+        try
+        {
+            var say = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+            foreach (var a in new[] { "-NoProfile", "-Command", $"Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SetOutputToWaveFile('{wav}'); $s.Speak('{text}'); $s.Dispose()" })
+                say.ArgumentList.Add(a);
+            using (var p = Process.Start(say)!)
+                await p.WaitForExitAsync();
+            if (!File.Exists(wav))
+                return null;
+            using var reader = new NAudio.Wave.WaveFileReader(wav);
+            var bytes = new byte[reader.Length];
+            int read = reader.Read(bytes, 0, bytes.Length);
+            var floats = new float[read / 2];
+            for (int i = 0; i < floats.Length; i++)
+                floats[i] = BitConverter.ToInt16(bytes, i * 2) / 32768f;
+            return new SpeechResampler(reader.WaveFormat.SampleRate, reader.WaveFormat.Channels).Convert(floats);
+        }
+        finally
+        {
+            File.Delete(wav);
+        }
+    }
+
+    [Fact]
+    public async Task Words_come_while_the_sentence_is_still_being_said()
+    {
+        if (ModelStore.Find(ModelCatalog.WhisperFast) is not { } model)
+            return;
+        var samples = await SayAsync("The first clocks used water that dripped slowly from one bowl into another, and the level showed how much time had passed. Later, mechanical clocks appeared in the towers of European cities.");
+        if (samples is null)
+            return;
+        using var engine = new StreamingTranscriber(model, "en");
+        var clock = Stopwatch.StartNew();
+        double firstWords = -1;
+        var sentences = new List<StreamSentence>();
+        engine.Changed += s =>
+        {
+            if (firstWords < 0 && (s.Current + s.Draft).Length > 0)
+                firstWords = clock.Elapsed.TotalSeconds;
+        };
+        engine.Sentence += s => { lock (sentences) sentences.Add(s); };
+        using var stop = new CancellationTokenSource();
+        var run = engine.RunAsync(stop.Token);
+        // Fed as it would be said, a tenth of a second at a time.
+        for (int at = 0; at < samples.Length; at += 1600)
+        {
+            engine.Add(samples.AsSpan(at, Math.Min(1600, samples.Length - at)));
+            double wait = (at + 1600) / 16000.0 - clock.Elapsed.TotalSeconds;
+            if (wait > 0)
+                await Task.Delay(TimeSpan.FromSeconds(wait));
+        }
+        double spoken = samples.Length / 16000.0;
+        engine.Add(new float[16000 * 2]);
+        await Task.Delay(3000);
+        stop.Cancel();
+        await run;
+        var text = string.Join(' ', sentences.Select(s => s.Text));
+        // The first words are up long before the first sentence is over (the old pieces waited for a pause).
+        Assert.InRange(firstWords, 0.1, spoken / 2);
+        Assert.Contains("water", text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("towers", text, StringComparison.OrdinalIgnoreCase);
+        Assert.True(sentences.Count >= 2, text);
+        // Nothing written twice where the passes meet.
+        var words = text.Split(' ').Select(StreamWord.Normalize).ToArray();
+        for (int i = 0; i + 3 < words.Length; i++)
+            Assert.False(words[i] == words[i + 2] && words[i + 1] == words[i + 3], $"repeated at {i}: {text}");
+        Assert.Equal(1, Regex.Count(text, "dripped", RegexOptions.IgnoreCase));
     }
 
     [Theory]
