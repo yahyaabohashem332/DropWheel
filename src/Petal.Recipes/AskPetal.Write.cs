@@ -65,6 +65,10 @@ public static partial class AskPetal
     {
         private static string Language(bool arabic) => arabic ? "Arabic" : "the same language as the text";
 
+        /// <summary>Into a language by its English name; text already in it goes into English instead.</summary>
+        public static string TranslateInto(string language) =>
+            $"Translate the user's text into {language}. If it is already in {language}, translate it into English instead. Keep the meaning, names, numbers and line breaks. Reply with the translation only, nothing else.";
+
         public static string Translate(bool intoEnglish) =>
             $"Translate the user's text into {(intoEnglish ? "English" : "Arabic")}. Keep the meaning, names, numbers and line breaks. Reply with the translation only, nothing else.";
 

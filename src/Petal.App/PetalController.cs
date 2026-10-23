@@ -27,6 +27,7 @@ public sealed class PetalController : IDisposable, IWheelHost
     private readonly ToolLauncher _tools;
     private readonly FileActionRunner _actions;
     private readonly FolderWatcher _folders;
+    private readonly PetalPreviews _previews;
     private string _automations = "";
     private (IReadOnlyList<string> Files, FolderContents Contents, DateTime At)? _look;
 
@@ -45,6 +46,8 @@ public sealed class PetalController : IDisposable, IWheelHost
                 : SettingsStore.Current.RememberLastPetal ? WheelMemory.IndexIn(page, content) : null,
         };
         _wheel.ItemDropped += OnItemDropped;
+        _wheel.ChainDropped += OnChainDropped;
+        _wheel.ChainView = Chains.View;
         _wheel.EntryChosen += OnEntryChosen;
         _wheel.UnavailableChosen += (item, at) => Card(at, L.T(item.Name), L.T(item.Unavailable ?? ""), false);
         _wheel.Chose += (page, item) =>
@@ -59,6 +62,9 @@ public sealed class PetalController : IDisposable, IWheelHost
         _wheel.ShowHints = SettingsStore.Current.ShowKeyHints;
         SettingsStore.Saved += s => _wheel.ShowHints = s.ShowKeyHints;
         _jobs = new JobRunner(converters);
+        _previews = new PetalPreviews(_jobs);
+        _wheel.PreviewProvider = (item, files, ct) => _previews.MakeAsync(item, files, ct);
+        _wheel.ChainCheck = (chain, next, files) => Chains.Check(chain, next, files, _jobs.Converters);
         _tools = new ToolLauncher(_jobs);
         _actions = new FileActionRunner(_jobs);
         _gestures = new GestureController(_wheel, ui)
@@ -266,7 +272,7 @@ public sealed class PetalController : IDisposable, IWheelHost
         {
             return mode == WheelMode.Conversions
                 ? FolderDrop.Conversions(folder, _jobs.Converters, SettingsStore.Current.Favourites, actionsKey)
-                : FolderDrop.Tools(folder, _tools.IsAvailable, convert, actionsKey);
+                : Overflow(FolderDrop.Tools(folder, _tools.IsAvailable, convert, actionsKey));
         }
         switch (mode)
         {
@@ -294,10 +300,23 @@ public sealed class PetalController : IDisposable, IWheelHost
                 var recipes = formats is null or { Count: 0 } ? [] : SettingsStore.Current.Recipes.Where(r => r.OnWheel && r.AppliesTo(formats, _jobs.Converters));
                 // The user's own petals, by extension, so they also work for files Petal doesn't know.
                 var petals = Petal.Recipes.CustomPetal.LoadAll().Where(p => p.Takes(files));
-                return new WheelContent(recipes.Select(WheelItem.From).Concat(petals.Select(WheelItem.From)).Concat(tools.Select(t => Availability.Of(WheelItem.From(t)))).ToList(),
-                    files.Count > 1 ? L.F("No tools for this selection. Tap {0} to convert or {1} for file actions.", convert, actionsKey) : L.F("No tools for this format. Tap {0} to convert or {1} for file actions.", convert, actionsKey));
+                return Overflow(new WheelContent(recipes.Select(WheelItem.From).Concat(petals.Select(WheelItem.From)).Concat(tools.Select(t => Availability.Of(WheelItem.From(t)))).ToList(),
+                    files.Count > 1 ? L.F("No tools for this selection. Tap {0} to convert or {1} for file actions.", convert, actionsKey) : L.F("No tools for this format. Tap {0} to convert or {1} for file actions.", convert, actionsKey)));
             }
         }
+    }
+
+    /// <summary>More petals than this and their labels grow too small to read.</summary>
+    public const int MostToolPetals = 12;
+
+    /// <summary>A tools wheel with too many petals keeps the first ones and gathers the rest under More, which opens around itself.</summary>
+    internal static WheelContent Overflow(WheelContent content)
+    {
+        if (content.Items.Count <= MostToolPetals)
+            return content;
+        var kept = content.Items.Take(MostToolPetals - 1).ToList();
+        kept.Add(WheelItem.Group("more-tools", "MORE", "More", "layers", content.Items.Skip(MostToolPetals - 1).ToList()));
+        return content with { Items = kept };
     }
 
     /// <summary>
@@ -419,6 +438,32 @@ public sealed class PetalController : IDisposable, IWheelHost
         catch (Exception ex)
         {
             Log.Error(ex, $"Running {item.Name}");
+        }
+    }
+
+    /// <summary>
+    /// Steps chosen on the wheel and the petal dropped on: one recipe when that petal is a step too,
+    /// otherwise the steps first and the petal on what they made.
+    /// </summary>
+    private async void OnChainDropped(IReadOnlyList<WheelItem> chain, WheelItem last, IReadOnlyList<string> files, ScreenPoint at)
+    {
+        try
+        {
+            if (Practice.IsOn)
+            {
+                Practice.Explain(last, files, at, _wheel.PageKey);
+                return;
+            }
+            var name = string.Join(" → ", chain.Append(last).Select(Chains.Name));
+            bool ends = Chains.StepsFor(last) is not null && Chains.Check(chain, last, files, _jobs.Converters) is null;
+            var steps = Chains.Steps(ends ? chain.Append(last) : chain);
+            var made = await _jobs.RunRecipeAsync(files, new Petal.Recipes.Recipe { Name = name, Steps = steps, OnWheel = false }, at);
+            if (!ends && made.Count > 0)
+                OnItemDropped(last, made, at);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Running steps");
         }
     }
 

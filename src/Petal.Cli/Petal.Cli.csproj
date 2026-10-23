@@ -12,9 +12,11 @@
     <AssemblyName>petal-cli</AssemblyName>
     <RootNamespace>Petal.Cli</RootNamespace>
     <ApplicationIcon>..\Petal.App\Assets\Petal.ico</ApplicationIcon>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>x64;ARM64</Platforms>
+    <!-- x64 unless a build asks for ARM64 (tools\scripts\build.ps1 -Arch arm64). -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <PlatformTarget Condition="'$(RuntimeIdentifier)' == 'win-arm64'">ARM64</PlatformTarget>
+    <PlatformTarget Condition="'$(RuntimeIdentifier)' != 'win-arm64'">x64</PlatformTarget>
     <SelfContained>false</SelfContained>
   </PropertyGroup>
 

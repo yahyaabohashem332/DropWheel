@@ -79,8 +79,10 @@ New-Item -ItemType Directory -Force $cache | Out-Null
 $models = Join-Path $layout 'tools\models'
 New-Item -ItemType Directory -Force $models | Out-Null
 foreach ($id in 'piper', 'llama-cpp', 'deepfilternet') {
-    $match = [regex]::Match($catalog, "new\(\s*""$id"",\s*""[^""]+"",\s*""([^""]+)"",\s*""([^""]+)"",\s*""([0-9a-f]{64})"",\s*([0-9_]+)", 'Singleline')
-    if (-not $match.Success) { throw "The model catalogue has no entry $id." }
+    # The package is x64 (it packs dist\Petal): an entry with an ARM64 build too gives its x64 one.
+    $match = [regex]::Matches($catalog, "new\(\s*""$id"",\s*""[^""]+"",\s*""([^""]+)"",\s*""([^""]+)"",\s*""([0-9a-f]{64})"",\s*([0-9_]+)", 'Singleline') |
+        Where-Object { $_.Groups[1].Value -notmatch 'arm64' } | Select-Object -First 1
+    if (-not $match) { throw "The model catalogue has no x64 entry $id." }
     $file, $url, $sha, $size = $match.Groups[1].Value, $match.Groups[2].Value, $match.Groups[3].Value, [long]($match.Groups[4].Value -replace '_', '')
     $cached = Join-Path $cache $file
     if (-not (Test-Path $cached) -or (Get-FileHash $cached -Algorithm SHA256).Hash -ne $sha.ToUpperInvariant()) {

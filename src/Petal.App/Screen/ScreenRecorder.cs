@@ -81,6 +81,12 @@ internal sealed class RecordingSession
     private readonly List<Petal.Core.Imaging.CursorSample> _cursor = [];
     private readonly List<Petal.Core.Imaging.ClickSample> _clicks = [];
     private Action<int, ScreenPoint>? _onClick;
+    // The webcam: its picture, its bubble on the screen, its own video and where the bubble was.
+    private CameraFeed? _feed;
+    private CameraBubble? _bubble;
+    private CameraTrack? _cameraTrack;
+    private bool _cameraStarting, _cameraWanted;
+    private readonly List<BubbleSample> _places = [];
 
     public event Action? Ended;
 
@@ -118,6 +124,71 @@ internal sealed class RecordingSession
         _bar = new RecordBar(this);
         _bar.Show();
         _bar.PlaceNear(area, monitor);
+        if (Settings.SettingsStore.Current.RecordCamera)
+            _ = SetCameraAsync(true);
+    }
+
+    public bool CameraOn => _feed is not null || _cameraStarting && _cameraWanted;
+
+    /// <summary>Shows or hides the camera's bubble before recording; false when the camera can't be used.</summary>
+    public async Task<bool> SetCameraAsync(bool on)
+    {
+        _cameraWanted = on;
+        if (!on)
+        {
+            StopCamera();
+            return false;
+        }
+        if (_feed is not null || _cameraStarting)
+            return true;
+        // (A start still under way picks up the wish to have the camera again.)
+        _cameraStarting = true;
+        CameraFeed? feed;
+        string? problem;
+        try
+        {
+            (feed, problem) = await CameraFeed.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            // Whatever the camera's driver throws, the recording goes on without it.
+            Log.Error(ex, "Starting the camera");
+            (feed, problem) = (null, L.T("The camera may be in use by another app."));
+        }
+        finally
+        {
+            _cameraStarting = false;
+        }
+        if (feed is null)
+        {
+            _bar.ShowCamera(false);
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("The camera couldn't be started"), problem ?? "");
+            return false;
+        }
+        // The recording began (or ended), or the camera was switched off again, while it was starting.
+        if (_stopping || Recording || !_cameraWanted)
+        {
+            feed.Dispose();
+            return false;
+        }
+        _feed = feed;
+        _bubble = new CameraBubble(feed, _area);
+        _bubble.Moved += () =>
+        {
+            if (Recording && _bubble is not null)
+                lock (_places)
+                    _places.Add(_bubble.Sample(_clock.Elapsed.TotalSeconds));
+        };
+        _bubble.Show();
+        return true;
+    }
+
+    private void StopCamera()
+    {
+        _bubble?.Close();
+        _bubble = null;
+        _feed?.Dispose();
+        _feed = null;
     }
 
     // ---------- the steps ----------
@@ -141,6 +212,11 @@ internal sealed class RecordingSession
             if (_stopping)
                 return;
         }
+        // A camera still waking up gets a few more seconds, rather than a recording without it.
+        for (int i = 0; i < 50 && _cameraStarting && !_stopping; i++)
+            await Task.Delay(100);
+        if (_stopping)
+            return;
         Start();
     }
 
@@ -198,6 +274,19 @@ internal sealed class RecordingSession
                     _clicks.Add(new Petal.Core.Imaging.ClickSample(_clock.Elapsed.TotalSeconds, at.X - _area.Left, at.Y - _area.Top, button));
             };
             hook.ButtonPressed += _onClick;
+        }
+        if (_feed is not null && _bubble is not null)
+        {
+            _cameraTrack = new CameraTrack(_feed, _clock, _fps, System.IO.Path.Combine(_work, "camera.mkv"));
+            if (_cameraTrack.Start())
+            {
+                _places.Add(_bubble.Sample(0));
+            }
+            else
+            {
+                _cameraTrack = null;
+                _warning ??= L.T("The camera couldn't be added; the recording is saved without it.");
+            }
         }
         Recording = true;
         _clock.Start();
@@ -273,6 +362,8 @@ internal sealed class RecordingSession
         try { _ffmpeg?.StandardInput.Close(); } catch (IOException) { }
         if (_ffmpeg is not null)
             await _ffmpeg.WaitForExitAsync();
+        if (_cameraTrack is not null)
+            await _cameraTrack.StopAsync();
         if (_showedClicks && InputVisualizer.IsOn)
             InputVisualizer.Toggle();
         StopListening();
@@ -286,26 +377,40 @@ internal sealed class RecordingSession
         var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
         var output = Petal.Core.Jobs.OutputNaming.Unique(ScreenRecorder.Folder, $"Recording {stamp}", "mp4");
         var sounds = _tracks.Where(t => t.HasSound).Select(t => t.Path).ToList();
-        // Polished: the plain recording goes beside the work files first, and the finished one is drawn from it.
-        var plain = _polish ? System.IO.Path.Combine(_work, "plain.mp4") : output;
+        CameraOverlay? webcam = null;
+        if (_cameraTrack is { HasPictures: true } && File.Exists(_cameraTrack.Path) && new FileInfo(_cameraTrack.Path).Length > 0)
+        {
+            lock (_places)
+                webcam = new CameraOverlay(_cameraTrack.Path, CameraFeed.Side, [.. _places]);
+        }
+        else if (_cameraTrack is not null)
+        {
+            _warning ??= L.T("The camera sent no picture, so the recording has none.");
+        }
+        // Polished or with the camera: the plain recording goes beside the work files first, and the finished one is drawn from it.
+        bool render = _polish || webcam is not null;
+        var plain = render ? System.IO.Path.Combine(_work, "plain.mp4") : output;
         bool ok = await Mux(video, sounds, plain);
         if (!ok && sounds.Count > 0)
             ok = await Mux(video, [], plain);
         Close();
-        if (ok && _polish)
+        if (ok && render)
         {
-            var polishing = Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Polishing the recording…"), L.T("Zooming in on the clicks and smoothing the pointer"));
+            var polishing = _polish
+                ? Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Polishing the recording…"), L.T("Zooming in on the clicks and smoothing the pointer"))
+                : Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Adding the camera…"), L.T("Putting the camera's bubble into the recording"));
             polishing.SetProgress(0);
             List<Petal.Core.Imaging.ClickSample> clicks;
             lock (_clicks)
                 clicks = [.. _clicks];
             var progress = new Progress<double>(p => polishing.SetProgress(p));
-            bool polished = await RecordingPolish.RenderAsync(plain, output, _area.Width, _area.Height, _fps, _cursor, clicks, PolishOptions.FromSettings(), progress, CancellationToken.None);
+            var options = _polish ? PolishOptions.FromSettings() : PolishOptions.Plain;
+            bool polished = await RecordingPolish.RenderAsync(plain, output, _area.Width, _area.Height, _fps, _cursor, clicks, options, progress, CancellationToken.None, webcam);
             if (!polished)
             {
                 // The plain recording is better than none.
                 try { File.Copy(plain, output, overwrite: true); } catch (IOException) { ok = false; }
-                _warning ??= L.T("The recording couldn't be polished; it is saved as it was.");
+                _warning ??= _polish ? L.T("The recording couldn't be polished; it is saved as it was.") : L.T("The camera couldn't be added; the recording is saved without it.");
             }
             polishing.Close();
         }
@@ -363,6 +468,7 @@ internal sealed class RecordingSession
         foreach (var track in _tracks)
             track.Stop(_clock.Elapsed);
         _grabber?.Join(2000);
+        _cameraTrack?.Kill();
         try
         {
             _ffmpeg?.StandardInput.Close();
@@ -394,6 +500,7 @@ internal sealed class RecordingSession
 
     private void Close()
     {
+        StopCamera();
         _frame.Close();
         _bar.Close();
         Ended?.Invoke();
@@ -405,6 +512,7 @@ internal sealed class RecordingSession
         foreach (var track in _tracks)
             track.Dispose();
         _ffmpeg?.Dispose();
+        _cameraTrack?.Dispose();
         // FFmpeg may still hold the files for a moment.
         _ = Task.Run(async () =>
         {
@@ -592,6 +700,7 @@ internal sealed class RecordBar : Window
     private readonly StackPanel _row = new() { Orientation = Orientation.Horizontal };
     private readonly System.Windows.Threading.DispatcherTimer _tick = new() { Interval = TimeSpan.FromMilliseconds(250) };
     private TextBlock? _time;
+    private StripButton? _camera;
 
     public RecordBar(RecordingSession session)
     {
@@ -606,11 +715,7 @@ internal sealed class RecordBar : Window
         Title = L.T("Screen Recording");
         L.Apply(this, mirror: false);
         Content = ScreenUi.Strip(_row, 22);
-        _row.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.OriginalSource is not StripButton)
-                DragMove();
-        };
+        ScreenUi.DragFromBackground(this, _row);
         SourceInitialized += (_, _) => ScreenNative.SetWindowDisplayAffinity(new WindowInteropHelper(this).Handle, ScreenNative.WDA_EXCLUDEFROMCAPTURE);
         _tick.Tick += (_, _) =>
         {
@@ -682,6 +787,29 @@ internal sealed class RecordBar : Window
             clicks!.IsOn = settings.RecordShowsClicks;
             Settings.SettingsStore.Save();
         }) { IsOn = settings.RecordShowsClicks };
+        StripButton? camera = null;
+        _camera = camera = new StripButton("video", "Show me from the camera, in a bubble", async () =>
+        {
+            bool on = !_session.CameraOn;
+            camera!.IsOn = on;
+            bool working;
+            try
+            {
+                working = await _session.SetCameraAsync(on);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "The camera's switch");
+                working = false;
+            }
+            camera.IsOn = working;
+            // Turned on and working, or turned off: remembered. A camera that failed leaves the setting as it was.
+            if (working || !on)
+            {
+                settings.RecordCamera = working;
+                Settings.SettingsStore.Save();
+            }
+        }) { IsOn = settings.RecordCamera };
         StripButton? polish = null;
         polish = new StripButton("sparkles", "Polish: zoom in on clicks, a smooth pointer and a background", () =>
         {
@@ -692,9 +820,17 @@ internal sealed class RecordBar : Window
         _row.Children.Add(system);
         _row.Children.Add(mic);
         _row.Children.Add(clicks);
+        _row.Children.Add(camera);
         _row.Children.Add(polish);
         _row.Children.Add(ScreenUi.Divider());
         _row.Children.Add(new StripButton("x", "Cancel", _session.Cancel));
+    }
+
+    /// <summary>Lights the camera's switch or puts it out (when the camera couldn't start).</summary>
+    public void ShowCamera(bool on)
+    {
+        if (_camera is not null)
+            _camera.IsOn = on;
     }
 
     public void Counting()

@@ -6,7 +6,7 @@ drop it on a petal of the wheel that appears under your cursor. The result is sa
 | Tap while dragging | Wheel | What's on it |
 |---|---|---|
 | **Shift** | Convert | Your starred favourites first, then every format the file can become (342 conversion paths) |
-| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes, and for folders organize, one PDF, contact sheet, report and gather… (53 tools), your recipes and your own petals |
+| **Ctrl** | Tools | Compress, metadata, edit, remove or erase, resize, watermark, crop, redact, copy text or QR, searchable PDF, read aloud, transcribe, remove noise, separate vocals, trim, split, PDF password, page numbers, sign, export Photoshop layers, file info, collect project files, colour palettes, remove pauses, animated captions, vertical video, describe a picture, table to Excel, compare two files, and for folders organize, one PDF, contact sheet, report and gather… (59 tools; more than twelve gather under More), your recipes and your own petals |
 | **Alt** | Actions | Ask Petal, Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Open With, Find Duplicates, your folders, and under More: Copy Path, Copy Name, Open in VS Code, Terminal |
 | **Ctrl + Win + Z**, nothing selected | Wheels without files | The app in front's shortcuts, quick actions for Windows, what's playing, and wheels of your own |
 
@@ -140,6 +140,57 @@ workspaces, timer, a new note), a Work submenu in the tray, and Settings › Wor
 * **Wheel gallery and sharing** — ten ready-made wheels (Student, Presenter, Writer, Developer, Figma,
   Illustrator, Premiere Pro, Blender, Notion, Outlook), and any wheel shared as one line of text
   (`PETAL-WHEEL:…`) or a `.petalwheel` file, imported with a summary of what it holds.
+
+**More power on the wheel, and Petal in Windows (1.8).**
+
+* **See what a petal makes** — rest on a petal and the centre says how big the result will be ("About
+  1.2 MB · 64% smaller", measured on the real file, a few seconds of a video or song), or shows the
+  cut-out before Remove Background.
+* **Chains** — press Space (or +) on a petal to make it a step, then drop on the last one: "Remove
+  background → resize → WEBP" runs as one recipe, up to eight steps, and the centre lists them.
+* **Drags without files** — an Outlook attachment, a picture from a browser, a file from WhatsApp or
+  Teams: the wheel reads it during the drag and the result lands in Downloads.
+* **Quick Look** — Space on a file in File Explorer or on the desktop shows it at once: pictures,
+  Photoshop and RAW files, PDF pages, videos and songs playing, a document's words, a ZIP's contents, a
+  font, a folder; the arrow keys move along, Space or Esc closes, and the wheel is one click away.
+* **Thumbnails in File Explorer** for PSD, PSB, AI, EPS, INDD, Krita and OpenRaster files (a small
+  .NET Framework handler, registered per user, only for file types nothing else draws).
+* **Other programs can run petals** — a local channel for this Windows user only: `petal with webp a.png`,
+  `petal do screen.full`, `petal open-wheel Work`, AutoHotkey, Power Automate, and a **Stream Deck plugin** (Settings › Work &
+  Sharing › Add to Stream Deck) with keys that run petals, open wheels and the command palette.
+* **Petal Health** (tray, palette) — eleven checks: the keyboard hook, shortcuts, helper programs, AI
+  models, graphics, disk space, settings, File Explorer, recent errors and connections, each with a fix,
+  and a report for support saved on the desktop without anything personal.
+* **Voice commands — Ctrl + Win + M** or the microphone in the command palette: say "record the screen"
+  and the palette opens on it, ready for Enter. Questions typed there go to Ask Your Files.
+
+**Video, documents and AI (1.8).**
+
+* **Record Steps** — a step-by-step guide made while you work: each click becomes a picture with a ring
+  and words ("Click «Save» in Notepad", from Windows' accessibility names), typing is noted (passwords
+  never), and the guide is edited, then saved as PDF, Word, a web page or Markdown.
+* **A camera bubble in recordings** — your webcam in a round bubble you drag anywhere and size with the
+  mouse wheel; it stays out of the screen's frames and is drawn into the video sharply, in time with it,
+  polished or not.
+* **Remove Pauses** — cuts the silences out of a talk, a lesson or a recording, picture and sound
+  together, with a little kept at each cut.
+* **Animated Captions** — the words of a video burned in, lit word by word, one word at a time or line by
+  line, in Arabic or English (shaped properly), at the top, middle or bottom.
+* **Vertical Video** — a wide video made 9:16 for Reels, Shorts and TikTok: following the person (with
+  the background model) or what moves, from the middle, or the whole picture over a blurred copy.
+* **Live Region** — part of another window (a call, a stream, a build) kept on top and live, drawn by
+  Windows itself; see-through in three steps, and it closes with its window.
+* **Table to Excel** — a table in a picture or on the screen (Text from the Screen › Copy as Table or
+  Save as Excel) read into rows and columns, numbers as numbers, right to left for Arabic; empty cells
+  are read again on their own.
+* **Compare Files** — two versions of a document (Word, PDF, text, an e-book; even a PDF against its Word
+  original) or two pictures: a page with the words added and removed marked in place, and the pages of
+  two PDFs side by side with what changed boxed.
+* **Ask Your Files** — in Search, a question ("when does the car insurance end?") is answered from your
+  indexed documents by the AI model on this PC, citing the files it came from; without the model, the
+  passages that mention it are shown.
+* **Describe Picture** — alt text or a paragraph about a picture, written by SmolVLM (500M) on this PC,
+  translated on this PC into the language Petal speaks, copied or saved in the picture's own details.
 
 **Folders work too.** Drop a folder (or several, mixed with files) and Petal works on the files
 inside, subfolders included, skipping hidden, system and temporary files. The centre shows the total
@@ -309,15 +360,17 @@ a pinned SHA-256.
   key in `%USERPROFILE%\.petal\update-signing-key.pem`, kept out of the repository: back it up, since
   a new key would make installed copies refuse updates.
 
-**English and Arabic.** Petal follows the Windows display language, and Settings › Appearance ›
-Language switches it on the spot (Automatic · English · العربية). In Arabic every window is laid out
-right to left, with proper Arabic plurals ("ملفان", "3 ملفات", "11 ملفًا"); pictures, timelines,
+**Eight languages.** Petal speaks English, العربية, Türkçe, فارسی, اردو, Bahasa Indonesia, Français and
+Español. It follows the Windows display language, and Settings › Appearance › Language switches it on
+the spot. In Arabic, Persian and Urdu every window is laid out right to left; Arabic has its proper
+plurals ("ملفان", "3 ملفات", "11 ملفًا"), the others their own one-and-many forms. Pictures, timelines,
 waveforms and playback controls stay left to right, and digits stay Western so numbers read the same
 everywhere. The right-click menu entry and the notification-area menu follow the language too.
 
 ## Install
 
-Run `dist\Petal-Setup-1.5.1.exe` (per-user, no admin rights; English or Arabic setup). It includes
+Run `dist\Petal-Setup-1.8.0.exe` (per-user, no admin rights; English or Arabic setup), or
+`Petal-Setup-1.8.0-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

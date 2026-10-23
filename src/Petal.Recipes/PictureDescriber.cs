@@ -1,0 +1,86 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using Petal.Core.Models;
+
+namespace Petal.Recipes;
+
+/// <summary>
+/// Says what a picture shows, in English, on this PC: SmolVLM (500 million parameters) run by the same
+/// llama.cpp program as Ask Petal. A sentence for alt text, or a fuller paragraph. The interface translates it
+/// when it speaks another language.
+/// </summary>
+public static class PictureDescriber
+{
+    public static IReadOnlyList<ModelInfo> Models { get; } = [ModelCatalog.LlamaCpp, ModelCatalog.SmolVlm, ModelCatalog.SmolVlmProjector];
+
+    public static bool ModelReady => Models.All(ModelStore.IsAvailable);
+
+    /// <summary>Pictures are made this small first: the model sees them at about this size anyway, and larger ones only cost time.</summary>
+    public const int Side = 640;
+
+    /// <summary>
+    /// Describes a picture. <paramref name="picture"/> must be a PNG or JPEG the model can open; callers make
+    /// one from any other format first.
+    /// </summary>
+    public static async Task<string> DescribeAsync(string picture, bool detailed, CancellationToken cancellationToken = default)
+    {
+        var folder = AskPetal.RuntimeFolder();
+        var program = Path.Combine(folder, "llama-mtmd-cli.exe");
+        if (!File.Exists(program))
+            throw new InvalidOperationException("The AI program is missing a part. Download the model again.");
+        var model = ModelStore.Find(ModelCatalog.SmolVlm) ?? throw new InvalidOperationException("The picture model isn't downloaded yet.");
+        var projector = ModelStore.Find(ModelCatalog.SmolVlmProjector) ?? throw new InvalidOperationException("The picture model isn't downloaded yet.");
+        var start = new ProcessStartInfo(program)
+        {
+            WorkingDirectory = folder,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+        };
+        int threads = Math.Clamp(Environment.ProcessorCount - 1, 1, 8);
+        foreach (var arg in new[]
+        {
+            "-m", model, "--mmproj", projector, "--image", picture, "-p", Prompt(detailed),
+            "-n", detailed ? "260" : "90", "--temp", "0.1", "-t", threads.ToString(CultureInfo.InvariantCulture),
+        })
+            start.ArgumentList.Add(arg);
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("The AI model didn't start.");
+        using var kill = cancellationToken.Register(() => { try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } });
+        var errors = process.StandardError.ReadToEndAsync(CancellationToken.None);
+        var output = await process.StandardOutput.ReadToEndAsync(CancellationToken.None).ConfigureAwait(false);
+        await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        _ = await errors.ConfigureAwait(false);
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException("The AI model stopped unexpectedly.");
+        return Clean(output);
+    }
+
+    internal static string Prompt(bool detailed) => detailed
+        ? "Describe this image in detail in one short paragraph: what it shows, the setting, colours and any text in it."
+        : "Write alt text for this image: one clear, detailed sentence about what it shows.";
+
+    /// <summary>The answer alone: no end marks, no "In this image we can see", starting with a capital and ending with a full stop.</summary>
+    internal static string Clean(string output)
+    {
+        var text = AskPetal.CleanAnswer(output).Replace("<end_of_utterance>", "", StringComparison.Ordinal).Trim();
+        foreach (var opener in new[] { "In this image we can see ", "In this image, we can see ", "In this picture we can see ", "The image shows ", "This image shows " })
+        {
+            if (text.StartsWith(opener, StringComparison.OrdinalIgnoreCase) && text.Length > opener.Length + 3)
+            {
+                text = text[opener.Length..];
+                break;
+            }
+        }
+        if (text.Length == 0)
+            return text;
+        text = char.ToUpperInvariant(text[0]) + text[1..];
+        if (!".!?".Contains(text[^1]))
+            text += ".";
+        return text;
+    }
+}

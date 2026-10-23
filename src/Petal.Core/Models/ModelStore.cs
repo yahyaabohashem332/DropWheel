@@ -70,17 +70,32 @@ public static class ModelCatalog
         "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/joe/medium/en_US-joe-medium.onnx.json",
         "3d6d5410b3795cb1950595247ef8f06190719e6fdbfa3a2356d8ec368e1aad33", 4_794, "MIT");
 
-    /// <summary>llama.cpp b11763, CPU build (MIT): runs the language model below on any PC.</summary>
-    public static readonly ModelInfo LlamaCpp = new(
-        "llama-cpp", "llama.cpp", "llama-b11763-bin-win-cpu-x64.zip",
-        "https://github.com/ggml-org/llama.cpp/releases/download/b11763/llama-b11763-bin-win-cpu-x64.zip",
-        "a24504506cd03a352f4990c5f3cbff347eff3a2cf7ec15038835aa690b73d0ad", 23_958_528, "MIT");
+    /// <summary>llama.cpp b11763, CPU build (MIT): runs the language model below on any PC; the ARM64 build on ARM64 PCs.</summary>
+    public static readonly ModelInfo LlamaCpp = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64
+        ? new("llama-cpp", "llama.cpp", "llama-b11763-bin-win-cpu-arm64.zip",
+            "https://github.com/ggml-org/llama.cpp/releases/download/b11763/llama-b11763-bin-win-cpu-arm64.zip",
+            "606bfaf95260114152102cafbbdb70318339b01c05a9c63d6e1d040d9cb2bdda", 12_596_851, "MIT")
+        : new("llama-cpp", "llama.cpp", "llama-b11763-bin-win-cpu-x64.zip",
+            "https://github.com/ggml-org/llama.cpp/releases/download/b11763/llama-b11763-bin-win-cpu-x64.zip",
+            "a24504506cd03a352f4990c5f3cbff347eff3a2cf7ec15038835aa690b73d0ad", 23_958_528, "MIT");
 
     /// <summary>Qwen2.5 1.5B Instruct, 4-bit (Apache-2.0): understands requests in English and Arabic for Ask Petal.</summary>
     public static readonly ModelInfo Qwen = new(
         "qwen2.5-1.5b", "Qwen2.5 1.5B", "qwen2.5-1.5b-instruct-q4_k_m.gguf",
         "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
         "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e", 1_117_320_736, "Apache-2.0");
+
+    /// <summary>SmolVLM 500M Instruct, 8-bit (Apache-2.0): says what a picture shows, for Describe Picture. Run by llama.cpp.</summary>
+    public static readonly ModelInfo SmolVlm = new(
+        "smolvlm-500m", "SmolVLM 500M", "SmolVLM-500M-Instruct-Q8_0.gguf",
+        "https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF/resolve/main/SmolVLM-500M-Instruct-Q8_0.gguf",
+        "9d4612de6a42214499e301494a3ecc2be0abdd9de44e663bda63f1152fad1bf4", 436_806_912, "Apache-2.0");
+
+    /// <summary>SmolVLM's picture reader (Apache-2.0): turns the picture into what the model reads.</summary>
+    public static readonly ModelInfo SmolVlmProjector = new(
+        "smolvlm-500m-mmproj", "SmolVLM picture reader", "mmproj-SmolVLM-500M-Instruct-Q8_0.gguf",
+        "https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF/resolve/main/mmproj-SmolVLM-500M-Instruct-Q8_0.gguf",
+        "d1eb8b6b23979205fdf63703ed10f788131a3f812c7b1f72e0119d5d81295150", 108_783_360, "Apache-2.0");
 
     /// <summary>CLIP ViT-B/32 image encoder, 8-bit (MIT): what pictures show, for Search by Meaning.</summary>
     public static readonly ModelInfo ClipVision = new(
@@ -144,7 +159,7 @@ public static class ModelCatalog
         "8b74af9e4c1ec122b8d06362db6c38795e10ca2b0156b2110cf08d4716744b76", 2_243_581, "Apache-2.0");
 
     public static IReadOnlyList<ModelInfo> All { get; } =
-        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen,
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen, SmolVlm, SmolVlmProjector,
          ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Lama,
          OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary];
 }

@@ -5,18 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q8-x64" Version="15.0.0" />
+    <!-- AnyCPU: the native library for the build's processor (x64 or ARM64) is picked at publish. -->
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" />
     <PackageReference Include="Microsoft.AI.DirectML" Version="1.15.4" GeneratePathProperty="true" />
     <PackageReference Include="ZXing.Net" Version="0.16.10" />
-  </ItemGroup>
-
-  <!--
-    Ship DirectML next to the app. Without it Windows 10 loads its own DirectML 1.0 from System32,
-    which is too old for ONNX Runtime and leaves the AI tools on the processor.
-  -->
-  <ItemGroup>
-    <None Include="$(PkgMicrosoft_AI_DirectML)\bin\x64-win\DirectML.dll" Link="DirectML.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

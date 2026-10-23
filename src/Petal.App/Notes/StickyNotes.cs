@@ -258,11 +258,7 @@ internal sealed class NoteWindow : Window
         _buttons.Children.Add(pin);
         _buttons.Children.Add(BandButton("trash", "Delete note", () => StickyNotes.Delete(_note)));
         _band = new Border { Height = 28, CornerRadius = new CornerRadius(10, 10, 0, 0), Child = _buttons, Cursor = Cursors.SizeAll };
-        _band.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.ClickCount == 1)
-                DragMove();
-        };
+        Screen.ScreenUi.DragFromBackground(this, _band);
         var layout = new DockPanel();
         DockPanel.SetDock(_band, Dock.Top);
         layout.Children.Add(_band);

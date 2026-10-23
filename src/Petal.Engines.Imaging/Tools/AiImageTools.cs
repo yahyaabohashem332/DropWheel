@@ -146,6 +146,32 @@ public static class BackgroundRemover
             return stream.ToArray();
         }, cancellationToken);
 
+    /// <summary>
+    /// Where the subject stands across a picture: the middle of its mask, 0 at the left edge and 1 at the
+    /// right; null when there is hardly any subject (an empty scene). For following someone in a video.
+    /// </summary>
+    public static Task<double?> SubjectCentreAsync(byte[] picture, CancellationToken cancellationToken = default) =>
+        Task.Run<double?>(() =>
+        {
+            using var image = new MagickImage(picture);
+            if (Math.Max(image.Width, image.Height) > 512)
+                image.Resize(new MagickGeometry(512, 512));
+            using var mask = Mask(image, cancellationToken);
+            var values = mask.GetPixels().ToByteArray("R") ?? [];
+            int w = (int)mask.Width, h = (int)mask.Height;
+            double sum = 0, weighted = 0;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    int v = values[y * w + x];
+                    if (v < 128)
+                        continue;
+                    sum += v;
+                    weighted += v * (x + 0.5) / w;
+                }
+            return sum < w * h * 255 * 0.02 ? null : weighted / sum;
+        }, cancellationToken);
+
     /// <summary>The subject's mask at the image's size: white where it is, black where it isn't.</summary>
     internal static MagickImage Mask(MagickImage image, CancellationToken cancellationToken)
     {

@@ -146,6 +146,20 @@ internal static class SearchService
         return index.Search(query, meaning);
     }
 
+    /// <summary>The indexed files that mention the most of these words, with their words: for answering questions.</summary>
+    public static IReadOnlyList<(string Path, string Body)> Mentions(IReadOnlyList<string> terms, int limit = 5)
+    {
+        lock (Gate)
+        {
+            if (_index is not null)
+                return _index.Mentions(terms, limit);
+        }
+        if (!File.Exists(SearchIndex.DefaultPath))
+            return [];
+        using var index = new SearchIndex();
+        return index.Mentions(terms, limit);
+    }
+
     private static void Loop(CancellationToken stop)
     {
         int read = 0;

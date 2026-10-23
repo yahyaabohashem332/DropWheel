@@ -57,10 +57,10 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_53_tools_and_16_actions()
+    public void There_are_59_tools_and_16_actions()
     {
-        Assert.Equal(53, ToolRegistry.All.Count);
-        Assert.Equal(53, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(59, ToolRegistry.All.Count);
+        Assert.Equal(59, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
         Assert.Equal(16, Petal.Core.Actions.FileActionRegistry.All.Count);
     }
@@ -68,9 +68,9 @@ public class RegistryTests
     [Fact]
     public void Tools_change_with_selection_size()
     {
-        Assert.Equal(13, ToolRegistry.ToolsFor([F.Jpg]).Count);
+        Assert.Equal(15, ToolRegistry.ToolsFor([F.Jpg]).Count);
         var multi = ToolRegistry.ToolsFor([F.Jpg, F.Png]).Select(t => t.Id).ToList();
-        Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.RemoveBackground, ToolId.CreatePdf, ToolId.MakeSearchable, ToolId.CreateCollage], multi);
+        Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.RemoveBackground, ToolId.CreatePdf, ToolId.MakeSearchable, ToolId.CreateCollage, ToolId.TableFromImage, ToolId.CompareFiles], multi);
         Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp3]).Select(t => t.Id));
         Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp4, F.Mov]).Select(t => t.Id));
         Assert.Contains(ToolId.Watermark, ToolRegistry.ToolsFor([F.Mp4]).Select(t => t.Id));
@@ -80,7 +80,14 @@ public class RegistryTests
         Assert.Contains(ToolId.MergePdfs, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
         Assert.Equal([ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
         Assert.Contains(ToolId.ReadAloud, ToolRegistry.ToolsFor([F.Pdf]).Select(t => t.Id));
-        Assert.Empty(ToolRegistry.ToolsFor([F.Docx, F.Txt]));
+        // Two documents of any kinds, or two pictures, can be compared; three can't.
+        Assert.Equal([ToolId.CompareFiles], ToolRegistry.ToolsFor([F.Docx, F.Txt]).Select(t => t.Id));
+        Assert.Equal([ToolId.CompareFiles], ToolRegistry.ToolsFor([F.Pdf, F.Docx]).Select(t => t.Id));
+        Assert.Contains(ToolId.CompareFiles, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
+        Assert.DoesNotContain(ToolId.CompareFiles, ToolRegistry.ToolsFor([F.Pdf, F.Pdf, F.Pdf]).Select(t => t.Id));
+        Assert.Empty(ToolRegistry.ToolsFor([F.Docx, F.Txt, F.Txt]));
+        Assert.Empty(ToolRegistry.ToolsFor([F.Mp4, F.Pdf]));
+        Assert.DoesNotContain(ToolId.CompareFiles, ToolRegistry.ToolsFor([F.Mp3, F.Mp3]).Select(t => t.Id));
         Assert.Equal([ToolId.ExtractColours], ToolRegistry.ToolsFor([F.Svg]).Select(t => t.Id));
     }
 

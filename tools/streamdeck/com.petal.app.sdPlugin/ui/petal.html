@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Petal</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; font-size: 9pt; color: #d8d8d8; background: transparent; margin: 0; padding: 4px 8px; }
+  label { display: block; color: #969696; margin: 8px 0 4px; }
+  select, input { width: 100%; box-sizing: border-box; background: #3d3d3d; color: #d8d8d8; border: 0; border-radius: 3px; padding: 5px 6px; font: inherit; }
+  .note { color: #969696; margin-top: 10px; line-height: 1.4; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div id="petal-row" class="hidden">
+    <label for="petal">Petal</label>
+    <select id="petal"><option value="">Loading…</option></select>
+  </div>
+  <div id="wheel-row" class="hidden">
+    <label for="wheel">Wheel</label>
+    <select id="wheel"><option value="">Loading…</option></select>
+  </div>
+  <div id="text-row" class="hidden">
+    <label for="text">Already typed (optional)</label>
+    <input id="text" type="text" placeholder="e.g. record">
+  </div>
+  <p id="note" class="note">Petal must be running, with "Let other programs run petals" on in its Settings › Work &amp; Sharing.</p>
+<script>
+'use strict';
+// Stream Deck calls this with the port to talk to it and what the key is.
+let socket, uuid, action, context, settings = {};
+
+function send(message) { if (socket && socket.readyState === 1) socket.send(JSON.stringify(message)); }
+function save() { send({ event: 'setSettings', context: uuid, payload: settings }); }
+
+function fill(select, items, value) {
+  select.innerHTML = '';
+  for (const group of items) {
+    const parent = group.label ? document.createElement('optgroup') : select;
+    if (group.label) { parent.label = group.label; select.appendChild(parent); }
+    for (const item of group.items) {
+      const option = document.createElement('option');
+      option.value = item.value;
+      option.textContent = item.text;
+      parent.appendChild(option);
+    }
+  }
+  if (value) select.value = value;
+  if (!select.value && select.options.length) { select.selectedIndex = 0; }
+}
+
+function show(lists) {
+  if (lists.error) { document.getElementById('note').textContent = lists.error; return; }
+  const sections = {};
+  for (const a of lists.actions) (sections[a.section] = sections[a.section] || []).push({ value: a.id, text: a.name });
+  fill(document.getElementById('petal'), Object.keys(sections).map(s => ({ label: s, items: sections[s] })), settings.petal);
+  fill(document.getElementById('wheel'), [{ items: lists.wheels.map(w => ({ value: w.name, text: w.name })) }], settings.wheel);
+  // A key set up for the first time gets the first choice, so it works straight away.
+  if (action === 'com.petal.app.do' && !settings.petal) { settings.petal = document.getElementById('petal').value; save(); }
+  if (action === 'com.petal.app.wheel' && !settings.wheel) { settings.wheel = document.getElementById('wheel').value; save(); }
+}
+
+window.connectElgatoStreamDeckSocket = function (port, inUuid, registerEvent, info, actionInfo) {
+  uuid = inUuid;
+  const details = JSON.parse(actionInfo);
+  action = details.action;
+  context = details.context;
+  settings = (details.payload && details.payload.settings) || {};
+  const rows = { 'com.petal.app.do': 'petal-row', 'com.petal.app.wheel': 'wheel-row', 'com.petal.app.commands': 'text-row' };
+  document.getElementById(rows[action]).classList.remove('hidden');
+  document.getElementById('text').value = settings.text || '';
+  socket = new WebSocket('ws://127.0.0.1:' + port);
+  socket.onopen = () => {
+    send({ event: registerEvent, uuid });
+    if (action !== 'com.petal.app.commands') send({ event: 'sendToPlugin', action, context: uuid, payload: { ask: 'lists' } });
+  };
+  socket.onmessage = (e) => {
+    const message = JSON.parse(e.data);
+    if (message.event === 'sendToPropertyInspector') show(message.payload);
+  };
+};
+
+document.getElementById('petal').addEventListener('change', e => { settings.petal = e.target.value; save(); });
+document.getElementById('wheel').addEventListener('change', e => { settings.wheel = e.target.value; save(); });
+document.getElementById('text').addEventListener('input', e => { settings.text = e.target.value; save(); });
+</script>
+</body>
+</html>

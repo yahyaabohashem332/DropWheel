@@ -22,7 +22,7 @@ internal static class PcDrop
 
     public static string Name => Environment.MachineName;
 
-    public static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "Petal");
+    public static string Folder => Path.Combine(PhoneWindow.DownloadsFolder(), "Petal");
 
     /// <summary>Stable and random, so a PC never finds itself.</summary>
     public static string Id

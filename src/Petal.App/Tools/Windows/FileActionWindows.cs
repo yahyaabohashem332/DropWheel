@@ -234,7 +234,7 @@ public sealed class RenameWindow : ToolWindow
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         var old = new TextBlock { Text = item.OldName, TextTrimming = TextTrimming.CharacterEllipsis, ToolTip = item.OldName };
         old.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
-        var arrow = new TextBlock { Text = L.IsArabic ? "←" : "→", HorizontalAlignment = HorizontalAlignment.Center };
+        var arrow = new TextBlock { Text = L.IsRightToLeft ? "←" : "→", HorizontalAlignment = HorizontalAlignment.Center };
         arrow.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
         var problem = item.Problem switch
         {

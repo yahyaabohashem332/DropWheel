@@ -63,6 +63,13 @@ public static class ToolRegistry
         new(ContactSheet, "CONTACT SHEET", "Contact Sheet", "galleryThumbnails", true, ToolSelection.Folder, "Contact Sheet", ToolOutputKind.FixedFormat, "pdf"),
         new(FolderReport, "REPORT", "Folder Report", "fileSpreadsheet", true, ToolSelection.Folder, "Report", ToolOutputKind.FixedFormat, "xlsx"),
         new(GatherFiles, "GATHER", "Gather Files", "folders", true, ToolSelection.Folder, "Gathered", ToolOutputKind.Folder),
+        new(RemovePauses, "PAUSES", "Remove Pauses", "scissors", true, ToolSelection.SingleOrBatch, "No pauses"),
+        new(AnimatedCaptions, "CAPTION", "Animated Captions", "captions", true, ToolSelection.SingleOrBatch, "Captioned"),
+        new(Reframe, "VERTICAL", "Vertical Video", "smartphone", true, ToolSelection.SingleOrBatch, "Vertical"),
+        new(DescribePicture, "DESCRIBE", "Describe Picture", "eye", true, ToolSelection.Single, ""),
+        new(TableFromImage, "TABLE", "Table to Excel", "sheet", false, ToolSelection.SingleOrBatch, "Table", ToolOutputKind.FixedFormat, "xlsx"),
+        // Exactly two files: two versions of a document, or two pictures.
+        new(CompareFiles, "COMPARE", "Compare Files", "fileDiff", false, ToolSelection.MultipleOnly, "Compared", ToolOutputKind.FixedFormat, "html"),
     ];
 
     private static readonly FrozenDictionary<ToolId, ToolInfo> ById = All.ToFrozenDictionary(t => t.Id);
@@ -70,13 +77,13 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, RedactPhoto, CopyText, ExtractColours];
-    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
+    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
-    private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, SeparateVocals];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, Transcribe, RemoveNoise, RemoveAudio, TrimVideo, CropVideo, ChangeSpeed, VideoSnapshots, SplitVideo, RedactVideo, Watermark];
-    private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, RemoveNoise, RemoveAudio, JoinVideos, Watermark];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
     private static readonly ToolId[] PdfSingle = [Compress, Metadata, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
@@ -164,8 +171,9 @@ public static class ToolRegistry
         if (formats.Count == 0)
             return [];
         var families = formats.Select(f => f.Family == FormatFamily.Vector ? FormatFamily.Image : f.Family).Distinct().ToList();
+        // Two versions of a document compare whatever each is saved as (a PDF against its Word original).
         if (families.Count != 1)
-            return [];
+            return Comparable(formats) ? [Get(CompareFiles)] : [];
 
         var multi = formats.Count > 1;
         bool hasVector = formats.Any(f => f.Family == FormatFamily.Vector);
@@ -189,6 +197,18 @@ public static class ToolRegistry
             FormatFamily.Palette => multi ? [] : [Palette],
             _ => [],
         };
-        return ids.Select(Get).ToList();
+        var tools = ids.Select(Get).ToList();
+        if (Comparable(formats))
+            tools.Add(Get(CompareFiles));
+        return tools;
+    }
+
+    /// <summary>Two documents with words in them, or two pictures (not drawings): what Compare Files takes.</summary>
+    public static bool Comparable(IReadOnlyCollection<FileFormat> formats)
+    {
+        if (formats.Count != 2)
+            return false;
+        static bool Document(FileFormat f) => f.Family is FormatFamily.Pdf or FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook;
+        return formats.All(Document) || formats.All(f => f.Family == FormatFamily.Image);
     }
 }

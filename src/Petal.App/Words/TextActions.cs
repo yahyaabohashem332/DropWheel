@@ -231,8 +231,8 @@ internal sealed class TextResultWindow : ToolWindow
             string answer = _job switch
             {
                 TextJob.Translate => await Translation.RunAsync(_text, cts.Token),
-                TextJob.Summarize => await AskPetal.WriteAsync(AskPetal.Instructions.Summary(_style!.Value == "points", KeyboardLayout.LooksArabic(_text)), _text, 500, cts.Token),
-                _ => await AskPetal.WriteAsync(AskPetal.Instructions.Rewrite(_style!.Value, KeyboardLayout.LooksArabic(_text)), _text, Math.Clamp(_text.Length, 200, 1200), cts.Token),
+                TextJob.Summarize => await AskPetal.WriteAsync(AskPetal.Instructions.Summary(_style!.Value == "points", KeyboardLayout.LooksArabicLanguage(_text)), _text, 500, cts.Token),
+                _ => await AskPetal.WriteAsync(AskPetal.Instructions.Rewrite(_style!.Value, KeyboardLayout.LooksArabicLanguage(_text)), _text, Math.Clamp(_text.Length, 200, 1200), cts.Token),
             };
             if (cts.IsCancellationRequested)
                 return;

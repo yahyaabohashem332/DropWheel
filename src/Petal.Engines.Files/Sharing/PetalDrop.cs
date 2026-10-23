@@ -36,7 +36,7 @@ public static class PetalDrop
 {
     public const int DiscoveryPort = 47131;
     private const string Question = "petal-drop?1";
-    internal const int MaxFiles = 10_000;
+    public const int MaxFiles = 10_000;
     private const int LongestName = 40;
 
     /// <summary>The PCs that answer within <paramref name="wait"/>, by name.</summary>

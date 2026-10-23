@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    File Explorer's thumbnails for Photoshop, Illustrator, EPS, InDesign, Krita and OpenRaster files.
+    Built for .NET Framework 4.8, which every Windows 10 and 11 has, so Explorer's thumbnail process can
+    load it through mscoree without Petal's own runtime; it reads the preview each file carries, with
+    nothing but the framework (no native libraries).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>Petal.Shell</AssemblyName>
+    <RootNamespace>Petal.Shell</RootNamespace>
+    <!-- Registered by version: it stays 1.0.0.0 whatever Petal's own version is. -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+
+</Project>

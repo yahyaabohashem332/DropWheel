@@ -1,45 +1,99 @@
 using System.Globalization;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 
 namespace Petal.App.Localization;
 
+/// <summary>The interface languages. New ones are added at the end: settings store them by number.</summary>
 public enum UiLanguage
 {
     /// <summary>Follow Windows' display language.</summary>
     System,
     English,
     Arabic,
+    Turkish,
+    Persian,
+    Urdu,
+    Indonesian,
+    French,
+    Spanish,
 }
 
 /// <summary>
 /// Petal's interface language. Strings are written in English in the code and looked up in the
-/// Arabic table at display time; anything without a translation stays English. Looking up a
-/// string that is already translated returns it unchanged, so translating twice is harmless.
+/// language's table at display time; anything without a translation stays English. Looking up a
+/// string that is already translated returns it unchanged, so translating twice is harmless. Arabic's
+/// table is in the code (<see cref="Arabic"/>); the others are JSON files built into Petal, read when
+/// chosen.
 /// </summary>
 public static class L
 {
-    private static string _code = Resolve(UiLanguage.System);
+    /// <summary>Every language Petal speaks: its code, its own name, and whether it is written right to left.</summary>
+    public static readonly IReadOnlyList<(UiLanguage Language, string Code, string Name, bool RightToLeft)> Languages =
+    [
+        (UiLanguage.English, "en", "English", false),
+        (UiLanguage.Arabic, "ar", "العربية", true),
+        (UiLanguage.Turkish, "tr", "Türkçe", false),
+        (UiLanguage.Persian, "fa", "فارسی", true),
+        (UiLanguage.Urdu, "ur", "اردو", true),
+        (UiLanguage.Indonesian, "id", "Bahasa Indonesia", false),
+        (UiLanguage.French, "fr", "Français", false),
+        (UiLanguage.Spanish, "es", "Español", false),
+    ];
+
+    private static readonly Dictionary<string, IReadOnlyDictionary<string, string>> Loaded = new(StringComparer.Ordinal);
+    // The language and its table, swapped together so a count made during a switch never mixes the two.
+    private sealed record State(string Code, IReadOnlyDictionary<string, string>? Table);
+    private static volatile State _state = new("en", null);
+
+    private static string _code => _state.Code;
+
+    static L() => Use(Resolve(UiLanguage.System));
 
     public static event Action? Changed;
 
-    /// <summary>"en" or "ar".</summary>
+    /// <summary>"en", "ar", "tr", "fa", "ur", "id", "fr" or "es".</summary>
     public static string Code => _code;
 
+    /// <summary>Arabic itself: for what Petal writes in Arabic (names of files, translations), not for layout.</summary>
     public static bool IsArabic => _code == "ar";
 
-    public static FlowDirection Direction => IsArabic ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+    /// <summary>Arabic, Persian and Urdu: written right to left, in the Arabic script.</summary>
+    public static bool IsRightToLeft => _code is "ar" or "fa" or "ur";
+
+    public static FlowDirection Direction => IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+
+    /// <summary>The culture dates and month names are written in.</summary>
+    public static CultureInfo Culture => _code switch
+    {
+        "en" => CultureInfo.GetCultureInfo("en-GB"),
+        "ar" => CultureInfo.GetCultureInfo("ar-EG"),
+        "fa" => CultureInfo.GetCultureInfo("fa-IR"),
+        "ur" => CultureInfo.GetCultureInfo("ur-PK"),
+        _ => CultureInfo.GetCultureInfo(_code),
+    };
 
     public static void Configure(UiLanguage preference)
     {
         var code = Resolve(preference);
         if (code == _code)
             return;
-        _code = code;
+        Use(code);
         Changed?.Invoke();
     }
 
-    public static void Initialize(UiLanguage preference) => _code = Resolve(preference);
+    public static void Initialize(UiLanguage preference) => Use(Resolve(preference));
+
+    /// <summary>The language for a code ("tr"), or English for one Petal doesn't speak.</summary>
+    public static UiLanguage FromCode(string code) =>
+        Languages.FirstOrDefault(l => l.Code.Equals(code, StringComparison.OrdinalIgnoreCase)).Language is var found && found != UiLanguage.System ? found : UiLanguage.English;
+
+    private static void Use(string code)
+    {
+        _state = new State(code, Table(code));
+    }
 
     /// <summary>
     /// Gives a window or popup root the interface direction, and keeps digits Western
@@ -54,24 +108,66 @@ public static class L
         NumberSubstitution.SetSubstitution(root, NumberSubstitutionMethod.European);
     }
 
-    private static string Resolve(UiLanguage preference) => preference switch
+    private static string Resolve(UiLanguage preference)
     {
-        UiLanguage.Arabic => "ar",
-        UiLanguage.English => "en",
-        _ => CultureInfo.InstalledUICulture.TwoLetterISOLanguageName == "ar" || CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? "ar" : "en",
-    };
+        if (preference != UiLanguage.System)
+            return Languages.FirstOrDefault(l => l.Language == preference).Code ?? "en";
+        // Windows' display language when Petal speaks it, English otherwise.
+        foreach (var culture in new[] { CultureInfo.CurrentUICulture, CultureInfo.InstalledUICulture })
+        {
+            var two = culture.TwoLetterISOLanguageName;
+            if (Languages.Any(l => l.Code == two))
+                return two;
+        }
+        return "en";
+    }
+
+    /// <summary>A language's table: Arabic's from the code, the others from their JSON file; English has none.</summary>
+    internal static IReadOnlyDictionary<string, string>? Table(string code)
+    {
+        if (code == "en")
+            return null;
+        if (code == "ar")
+            return Arabic.Table;
+        lock (Loaded)
+        {
+            if (Loaded.TryGetValue(code, out var table))
+                return table;
+            table = Load(code);
+            Loaded[code] = table;
+            return table;
+        }
+    }
+
+    private static IReadOnlyDictionary<string, string> Load(string code)
+    {
+        try
+        {
+            using var stream = typeof(L).Assembly.GetManifestResourceStream($"Petal.App.Localization.Languages.{code}.json");
+            if (stream is null)
+                return new Dictionary<string, string>();
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) is { } table
+                ? new Dictionary<string, string>(table, StringComparer.Ordinal)
+                : new Dictionary<string, string>();
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            Log.Info($"The {code} translation couldn't be read: {ex.Message}");
+            return new Dictionary<string, string>();
+        }
+    }
 
     /// <summary>Translates an English interface string.</summary>
     public static string T(string english)
     {
-        if (!IsArabic || string.IsNullOrEmpty(english))
+        if (_state.Table is not { } table || string.IsNullOrEmpty(english))
             return english;
-        if (Arabic.Table.TryGetValue(english, out var arabic))
-            return First(arabic);
+        if (table.TryGetValue(english, out var translated))
+            return Last(translated);
         // Labels padded with spaces for spacing next to an icon keep their padding.
         var trimmed = english.Trim();
-        if (trimmed.Length != english.Length && Arabic.Table.TryGetValue(trimmed, out arabic))
-            return english.Replace(trimmed, First(arabic));
+        if (trimmed.Length != english.Length && table.TryGetValue(trimmed, out translated))
+            return english.Replace(trimmed, Last(translated));
         return english;
     }
 
@@ -81,7 +177,7 @@ public static class L
     /// key is "photo:Light"; without one, the plain translation is used.
     /// </summary>
     public static string T(string english, string context) =>
-        IsArabic && Arabic.Table.TryGetValue(context + ":" + english, out var arabic) ? arabic : T(english);
+        _state.Table is { } table && table.TryGetValue(context + ":" + english, out var translated) ? translated : T(english);
 
     /// <summary>The Arabic table, for the tests that check it is complete and well formed.</summary>
     public static IReadOnlyDictionary<string, string> ArabicTable => Arabic.Table;
@@ -94,33 +190,45 @@ public static class L
         string.Format(CultureInfo.CurrentCulture, T(englishFormat), args);
 
     /// <summary>
-    /// Counted phrase with the right grammar: English one/many; Arabic uses its own forms for
-    /// 1, 2, 3–10 and 11+ ("ملف واحد", "ملفان", "3 ملفات", "11 ملفًا"), written in the table as
-    /// "one|two|few|many" with {0} for the number.
+    /// Counted phrase with the right grammar. English: one/many. Arabic has its own forms for 1, 2, 3–10
+    /// and 11+ ("ملف واحد", "ملفان", "3 ملفات", "11 ملفًا"), written in its table as "one|two|few|many|hundreds".
+    /// The other languages write "one|other", or a single form when, like Turkish, they use one after every number.
     /// </summary>
     public static string P(int count, string englishOne, string englishMany)
     {
-        if (!IsArabic)
-            return string.Format(CultureInfo.CurrentCulture, count == 1 ? englishOne : englishMany, count);
-        if (!Arabic.Table.TryGetValue(englishMany, out var forms))
+        var state = _state;
+        if (state.Table is not { } table || !table.TryGetValue(englishMany, out var forms))
             return string.Format(CultureInfo.CurrentCulture, count == 1 ? englishOne : englishMany, count);
         var parts = forms.Split('|');
+        return string.Format(CultureInfo.CurrentCulture, state.Code == "ar" ? ArabicForm(parts, count) : OtherForm(parts, count, state.Code), count);
+    }
+
+    private static string ArabicForm(string[] parts, int count)
+    {
         if (parts.Length < 4)
-            return string.Format(CultureInfo.CurrentCulture, parts[0], count);
+            return parts[0];
         int mod = count % 100;
         // Arabic: 1 and 2 have their own words, 3–10 take the plural, 11–99 the singular
         // accusative, and 0 / 100 / 101… the singular genitive (fifth form, when given).
-        string form = count == 1 ? parts[0]
+        return count == 1 ? parts[0]
             : count == 2 ? parts[1]
             : mod is >= 3 and <= 10 ? parts[2]
             : mod is >= 11 and <= 99 ? parts[3]
             : parts.Length > 4 ? parts[4] : parts[3];
-        return string.Format(CultureInfo.CurrentCulture, form, count);
     }
 
-    private static string First(string value)
+    private static string OtherForm(string[] parts, int count, string code)
     {
-        // Plural entries looked up with T (not P) use their "many" form.
+        if (parts.Length < 2)
+            return parts[0];
+        // French counts 0 and 1 as one; the rest only 1.
+        bool one = code == "fr" ? count is 0 or 1 : count == 1;
+        return one ? parts[0] : parts[^1];
+    }
+
+    private static string Last(string value)
+    {
+        // Counted entries looked up with T (not P) use their last, "many" form.
         int bar = value.IndexOf('|');
         return bar < 0 ? value : value.Split('|')[^1];
     }

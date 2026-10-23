@@ -10,6 +10,7 @@ using Petal.App.Tools;
 using Petal.App.Tools.Parts;
 using Petal.Core.Text;
 using Petal.Engines.Documents;
+using Petal.Engines.Documents.Ocr;
 using Petal.Engines.Imaging;
 using static Petal.App.Interop.NativeMethods;
 
@@ -28,6 +29,9 @@ internal sealed class ScreenTextWindow : ToolWindow
     private readonly StackPanel _codes = new();
     private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.Models) { Visibility = Visibility.Collapsed };
     private readonly Button _translate, _search;
+    // The picture read, kept for reading it again as a table.
+    private byte[]? _pixels;
+    private int _width, _height;
 
     /// <summary>Drag over an area; its text opens in the window.</summary>
     public static void Start(ScreenPoint at)
@@ -72,10 +76,18 @@ internal sealed class ScreenTextWindow : ToolWindow
         tidy.Click += (_, _) => _text.Text = JoinLines(_text.Text);
         _search = new Button { Content = L.T("Search the Web"), Margin = new Thickness(0, 0, 8, 6), IsEnabled = false };
         _search.Click += (_, _) => Search();
+        var table = new Button { Content = L.T("Copy as Table"), Margin = new Thickness(0, 0, 8, 6) };
+        table.ToolTip = L.T("The text in rows and columns: it pastes into Excel or Google Sheets cell by cell.");
+        table.Click += async (_, _) => await TableAsync(save: false);
+        var excel = new Button { Content = L.T("Save as Excel"), Margin = new Thickness(0, 0, 8, 6) };
+        excel.ToolTip = L.T("The table in the area as an Excel sheet, with numbers as numbers.");
+        excel.Click += async (_, _) => await TableAsync(save: true);
         actions.Children.Add(_translate);
         actions.Children.Add(fix);
         actions.Children.Add(tidy);
         actions.Children.Add(_search);
+        actions.Children.Add(table);
+        actions.Children.Add(excel);
         Body.Children.Add(actions);
         _model.Ready += async () => await TranslateAsync();
 
@@ -90,6 +102,7 @@ internal sealed class ScreenTextWindow : ToolWindow
         var pixels = new byte[w * h * 4];
         var bgra = picture.Format == PixelFormats.Bgra32 ? picture : new FormatConvertedBitmap(picture, PixelFormats.Bgra32, null, 0);
         bgra.CopyPixels(pixels, w * 4, 0);
+        (_pixels, _width, _height) = (pixels, w, h);
         var codes = await Task.Run(() =>
         {
             try { return BarcodeScanner.Scan(new BgraBitmap(w, h, pixels)); }
@@ -172,6 +185,49 @@ internal sealed class ScreenTextWindow : ToolWindow
         {
             _translate.IsEnabled = true;
         }
+    }
+
+    /// <summary>The area read again as a table: copied as cells, or saved as an Excel sheet and opened.</summary>
+    private async Task TableAsync(bool save)
+    {
+        if (_pixels is null || !DocumentEngine.IsOcrAvailable)
+            return;
+        _status.Text = L.T("Reading the table…");
+        try
+        {
+            var table = await PictureTables.ReadAsync(_pixels, _width, _height);
+            if (table.IsEmpty)
+            {
+                _status.Text = L.T("No table was found in the area.");
+                return;
+            }
+            var size = L.P(table.Rows.Count, "{0} row", "{0} rows") + " · " + L.P(table.Columns, "{0} column", "{0} columns");
+            if (!save)
+            {
+                Clipboard.SetText(PictureTables.ToTabs(table));
+                _status.Text = L.T("The table is copied. Paste it into a spreadsheet.");
+                HudCard.ShowAt(HudCard.CornerPoint(), "", "").Succeed(L.T("Table copied"), size, null);
+                return;
+            }
+            var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
+            var output = Petal.Core.Jobs.OutputNaming.Unique(folder, L.T("Table") + " " + stamp, "xlsx");
+            await Task.Run(() => PictureTables.SaveXlsx(table, output, L.T("Table")));
+            _status.Text = L.T("The table is saved in Documents.");
+            HudCard.ShowAt(HudCard.CornerPoint(), "", "").Succeed(L.T("Table saved"), size, () => Open(output));
+            Open(output);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.COMException or System.IO.IOException or UnauthorizedAccessException)
+        {
+            _status.Text = L.T("The table couldn't be read.");
+            Log.Info($"Table from the screen: {ex.Message}");
+        }
+    }
+
+    private static void Open(string path)
+    {
+        try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
+        catch (System.ComponentModel.Win32Exception) { }
     }
 
     private void Search()

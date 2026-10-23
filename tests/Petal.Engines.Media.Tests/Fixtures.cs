@@ -42,6 +42,7 @@ internal static class Fixtures
 
     private const string Picture = "testsrc2=s=160x120:r=15:d=1";
     private const string Tone = "sine=f=440:r=44100:d=1";
+    private const string Pauses = "aevalsrc='if(between(t,0,1)+between(t,3,4)+between(t,5.5,6.5),0.3*sin(2*PI*440*t),0)':s=44100:d=6.5";
 
     /// <summary>name → ffmpeg arguments (inputs, codecs) without the output path.</summary>
     private static readonly Dictionary<string, string[]> Recipes = new()
@@ -80,6 +81,9 @@ internal static class Fixtures
         ["left_only.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.5*sin(2*PI*440*t)|0:s=44100:d=1", "-c:a", "pcm_s16le"],
         // Silence 0–1 s, tone 1–2 s, pause 2–2.5 s, tone 2.5–3.5 s, silence to 4.5 s.
         ["padded.wav"] = ["-f", "lavfi", "-i", "aevalsrc='if(between(t,1,2)+between(t,2.5,3.5),0.3*sin(2*PI*440*t),0)':s=44100:d=4.5", "-c:a", "pcm_s16le"],
+        // Tone 0–1 s, pause 1–3 s, tone 3–4 s, pause 4–5.5 s, tone 5.5–6.5 s: two pauses to remove.
+        ["pauses.wav"] = ["-f", "lavfi", "-i", Pauses, "-c:a", "pcm_s16le"],
+        ["pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=6.5", "-f", "lavfi", "-i", Pauses, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
         ["quiet.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.03*sin(2*PI*440*t):s=44100:d=6", "-ac", "2", "-c:a", "pcm_s16le"],
         ["cover.jpg"] = ["-f", "lavfi", "-i", "color=c=orange:s=64x64", "-frames:v", "1"],
         ["tagged.mp4"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",

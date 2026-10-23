@@ -59,6 +59,7 @@ public sealed partial class SettingsWindow
         panel.Children.Add(Text("Screen recording", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Record the PC's sound", "What plays through the speakers goes into the video.", _s.RecordSystemSound, v => _s.RecordSystemSound = v, top: 6));
         panel.Children.Add(Switch("Record the microphone", "Your voice goes into the video, mixed with the PC's sound.", _s.RecordMicrophone, v => _s.RecordMicrophone = v));
+        panel.Children.Add(Switch("Show me from the camera", "Your webcam in a round bubble over the recording. Drag the bubble anywhere and scroll on it to resize it; the camera's picture never leaves this PC.", _s.RecordCamera, v => _s.RecordCamera = v));
         panel.Children.Add(Switch("Polish recordings", "The camera glides in where you click and follows the pointer, the pointer is smoothed and larger, and the video sits on a background with rounded corners.", _s.RecordPolish, v => _s.RecordPolish = v));
         var backgrounds = new WrapPanel();
         foreach (var (key, name, from, to) in Screen.PolishOptions.Backgrounds)
@@ -127,6 +128,9 @@ public sealed partial class SettingsWindow
         var panel = new StackPanel();
         panel.Children.Add(Text("Command palette", "Petal.Label"));
         panel.Children.Add(ShortcutRow(() => _s.PaletteShortcut, v => _s.PaletteShortcut = v, Commands.CommandPalette.RegisterShortcut, "Ctrl+Win+K"));
+        panel.Children.Add(Text("Voice commands", "Petal.Label").WithMargin(0, 18, 0, 0));
+        panel.Children.Add(Text("Press the shortcut and say what you want (\"record the screen\", \"focus for 25 minutes\"); the command palette opens with it, ready for Enter. Heard on this PC by the dictation model.", "Petal.Caption").WithMargin(0, 4, 0, 0));
+        panel.Children.Add(ShortcutRow(() => _s.VoiceShortcut, v => _s.VoiceShortcut = v, Words.VoiceCommand.RegisterShortcut, "Ctrl+Win+M"));
 
         panel.Children.Add(Text("Snippets", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Expand snippets as I type", "An abbreviation such as ;addr becomes its text in any app. Petal holds only the last few letters typed, in memory, to spot one; nothing is kept or sent.", _s.SnippetsOn, v => _s.SnippetsOn = v, top: 6));
@@ -168,6 +172,33 @@ public sealed partial class SettingsWindow
         saveNow.Click += (_, _) => Screen.SaveWorkspaceWindow.ShowSingle();
         panel.Children.Add(saveNow);
 
+        panel.Children.Add(Text("Quick Look", "Petal.Label").WithMargin(0, 18, 0, 0));
+        panel.Children.Add(Switch("Space shows the selected file", "In File Explorer and on the desktop: a picture, a page of a PDF, a video or a song, a document's words, what a ZIP or a folder holds, a font. Space or Esc closes it, and the arrow keys move along.", _s.QuickLook, v => _s.QuickLook = v));
+        if (!Shell.Packaged.IsPackaged)
+            panel.Children.Add(Switch("Thumbnails in File Explorer", "Photoshop, Illustrator, EPS, InDesign, Krita and OpenRaster files show their picture, for file types no other program draws.", _s.ExplorerThumbnails, v =>
+            {
+                _s.ExplorerThumbnails = v;
+                _ = Task.Run(() => Shell.ExplorerThumbnails.Apply(v));
+            }));
+        panel.Children.Add(Text("Other programs", "Petal.Label").WithMargin(0, 18, 0, 0));
+        panel.Children.Add(Switch("Let other programs run petals", "Stream Deck, AutoHotkey, Power Automate, scripts and the petal command can run Petal's own petals and open its wheels, for this Windows user only. Your own scripts on the wheels can't be run this way.", _s.LocalApi, v => _s.LocalApi = v));
+        var deck = System.IO.Path.Combine(AppContext.BaseDirectory, "integrations", "Petal.streamDeckPlugin");
+        if (System.IO.File.Exists(deck))
+        {
+            var add = new Button { Content = L.T("Add to Stream Deck…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0), ToolTip = L.T("Keys that run petals, open wheels and the command palette. Needs Stream Deck 6.4 or later.") };
+            add.Click += (_, _) =>
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(deck) { UseShellExecute = true });
+                }
+                catch (System.ComponentModel.Win32Exception ex)
+                {
+                    Log.Error(ex, "Opening the Stream Deck plugin");
+                }
+            };
+            panel.Children.Add(add);
+        }
         panel.Children.Add(Text("Other PCs", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Let other PCs send me files", "PCs with Petal on the same network can send files with Send to PC. Petal asks every time, and saves them in Downloads\\Petal.", _s.ReceiveFromPcs, v =>
         {

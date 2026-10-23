@@ -151,7 +151,7 @@ internal static class MeetingRecorder
                 }
             }
             var notes = System.IO.Path.ChangeExtension(audio, ".md");
-            bool arabic = transcript.Language == "ar" || KeyboardLayout.LooksArabic(text);
+            bool arabic = transcript.Language == "ar" || transcript.Language is null or "" && KeyboardLayout.LooksArabicLanguage(text);
             await File.WriteAllTextAsync(notes, MeetingNotes.Markdown(_started, length, summary, text, arabic));
             card.Succeed(L.T("Meeting notes ready"), System.IO.Path.GetFileName(notes), () => MeetingNotesWindow.Open(notes, audio));
             MeetingNotesWindow.Open(notes, audio);
@@ -245,11 +245,7 @@ internal sealed class MeetingPill : Window
         row.Children.Add(new StripButton("x", "Cancel", () => Cancel?.Invoke(), null, 30));
         var strip = ScreenUi.Strip(row, 20);
         strip.Margin = new Thickness(10);
-        strip.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.OriginalSource is not StripButton)
-                DragMove();
-        };
+        ScreenUi.DragFromBackground(this, strip);
         Content = strip;
         _tick.Tick += (_, _) => UpdateTime();
         _tick.Start();

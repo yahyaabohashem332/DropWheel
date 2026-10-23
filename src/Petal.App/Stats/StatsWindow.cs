@@ -67,7 +67,7 @@ public sealed class StatsWindow : ToolWindow
         numbers.Add(Big(streak.ToString(System.Globalization.CultureInfo.InvariantCulture), L.P(streak, "day in a row", "days in a row")));
         _page.Children.Add(numbers.Panel);
 
-        _page.Children.Add(Text(L.F("Since {0} · longest run {1}", data.Since.ToString("d MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo(L.IsArabic ? "ar-EG" : "en-GB")), L.P(Statistics.LongestStreak(data), "{0} day", "{0} days")), "Petal.Caption").WithMargin(0, 8, 0, 0));
+        _page.Children.Add(Text(L.F("Since {0} · longest run {1}", data.Since.ToString("d MMM yyyy", L.Culture), L.P(Statistics.LongestStreak(data), "{0} day", "{0} days")), "Petal.Caption").WithMargin(0, 8, 0, 0));
 
         // Twelve weeks of days, oldest on the left, today at the bottom right.
         _page.Children.Add(Heading("The last twelve weeks"));
@@ -161,10 +161,14 @@ public sealed class StatsWindow : ToolWindow
 
     private static StackPanel Big(string number, string caption)
     {
-        var value = new TextBlock { Text = number, FontSize = 24, FontWeight = FontWeights.SemiBold, FlowDirection = FlowDirection.LeftToRight, HorizontalAlignment = HorizontalAlignment.Left };
+        // A number reads left to right, unless its unit is written in a right-to-left language ("3.3 گیگابایت").
+        bool rightToLeftUnit = number.Any(c => c is >= '\u0600' and <= '\u06FF');
+        var value = new TextBlock { Text = number, FontSize = 24, FontWeight = FontWeights.SemiBold, FlowDirection = rightToLeftUnit ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         value.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
         var label = Text(caption, "Petal.Caption");
-        return new StackPanel { Margin = new Thickness(0, 0, 12, 0), Children = { value, label } };
+        // Shrinks, rather than being cut, when a long unit doesn't fit the column.
+        var fit = new Viewbox { Child = value, StretchDirection = StretchDirection.DownOnly, HorizontalAlignment = HorizontalAlignment.Left, Height = 32 };
+        return new StackPanel { Margin = new Thickness(0, 0, 12, 0), Children = { fit, label } };
     }
 
     private static Grid Bar(string name, int count, int most)
@@ -223,7 +227,7 @@ public sealed class StatsWindow : ToolWindow
                     Fill = level == 0
                         ? new SolidColorBrush(Theme.Current.IsDark ? Color.FromArgb(0x22, 255, 255, 255) : Color.FromArgb(0x14, 0, 0, 0))
                         : new SolidColorBrush(Color.FromArgb((byte)(70 + 185 * level), accent.R, accent.G, accent.B)),
-                    ToolTip = date.ToString("d MMM", System.Globalization.CultureInfo.GetCultureInfo(L.IsArabic ? "ar-EG" : "en-GB")),
+                    ToolTip = date.ToString("d MMM", L.Culture),
                 };
                 Canvas.SetLeft(square, week * 16);
                 Canvas.SetTop(square, day * 16);

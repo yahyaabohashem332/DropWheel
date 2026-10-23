@@ -59,7 +59,7 @@ public abstract class FolderToolWindow : ToolWindow
         new() { Content = new TextBlock { Text = L.T(label), TextWrapping = TextWrapping.Wrap }, IsChecked = on, Margin = new Thickness(0, 10, 0, 0) };
 
     /// <summary>A file name for the footer; in Arabic a closing bracket stays with the name it belongs to.</summary>
-    protected static string Name(string path) => L.IsArabic ? Path.GetFileName(path) + "\u200E" : Path.GetFileName(path);
+    protected static string Name(string path) => L.IsRightToLeft ? Path.GetFileName(path) + "\u200E" : Path.GetFileName(path);
 
     protected static bool On(CheckBox box) => box.IsChecked == true;
 
@@ -114,7 +114,7 @@ public sealed class OrganizeFolderWindow : FolderToolWindow
         var counts = files.GroupBy(f => Organizer.CategoryAsync(f.Path, plain, Jobs.Converters, SettingsStore.Current.Conversion).GetAwaiter().GetResult())
             .ToDictionary(g => g.Key ?? (FileCategory)(-1), g => g.Count());
         var parts = Enum.GetValues<FileCategory>().Where(counts.ContainsKey)
-            .Select(c => $"{Organizer.Names(c)[L.IsArabic ? 1 : 0]} {counts[c]}").ToList();
+            .Select(c => $"{(L.IsArabic ? Organizer.Names(c)[1] : L.T(Organizer.Names(c)[0]))} {counts[c]}").ToList();
         if (counts.TryGetValue((FileCategory)(-1), out var stay))
             parts.Add(L.P(stay, "{0} other file stays where it is", "{0} other files stay where they are"));
         _summary.Text = parts.Count == 0 ? L.T("There are no files to sort.") : string.Join(" · ", parts);
@@ -245,7 +245,7 @@ public sealed class ContactSheetWindow : FolderToolWindow
         Paper = _paper.Value,
         Names = On(_names),
         Title = title,
-        RightToLeft = L.IsArabic,
+        RightToLeft = L.IsRightToLeft,
         PageLabel = (page, pages) => L.F("Page {0} of {1}", page, pages),
     };
 
@@ -323,7 +323,7 @@ public sealed class FolderReportWindow : FolderToolWindow
     private void Apply()
     {
         bool subfolders = On(_subfolders);
-        var options = new FolderReportOptions { Csv = _format.Value, Details = On(_details), RightToLeft = L.IsArabic };
+        var options = new FolderReportOptions { Csv = _format.Value, Details = On(_details), RightToLeft = L.IsRightToLeft };
         var text = new FolderReportText(
             L.T("Files"), L.T("By kind"), L.T("Largest folders"), L.T("Largest files"),
             L.T("Name"), L.T("Folder"), L.T("Type"), L.T("Size"), L.T("Modified"), L.T("Created"),

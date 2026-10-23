@@ -51,7 +51,10 @@ internal static class DesignSnapshots
                     window.ShowActivated = false;
                     window.Show();
                     await Task.Delay(2500);
-                    Save(RenderWindow(window), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
+                    var cut = new List<string>();
+                    Save(RenderWindow(window, inspect: dark ? null : frame => cut.AddRange(CutTexts(frame))), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
+                    if (cut.Count > 0)
+                        File.AppendAllLines(Path.Combine(output, "cut.txt"), cut.Select(c => $"{name}: {c}"));
                     window.Close();
                 }
                 catch (Exception ex)
@@ -66,6 +69,8 @@ internal static class DesignSnapshots
                 {
                     var window = create();
                     await Task.Delay(600);
+                    if (!dark && window.Content is FrameworkElement content)
+                        File.AppendAllLines(Path.Combine(output, "cut.txt"), CutTexts(content).Select(c => $"{name}: {c}"));
                     Save(RenderFloating(window, dark), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
                     window.Close();
                 }
@@ -193,7 +198,36 @@ internal static class DesignSnapshots
             ])),
             ("receive", () => Actions.ReceiveWindow.ForSnapshot(new Petal.Engines.Files.Sharing.DropOffer(Localization.L.IsArabic ? "لابتوب سارة" : "Sara's laptop",
                 [new("trip.jpg", 3_400_000), new("report.pdf", 820_000), new(Path.Combine("slides", "deck.pptx"), 12_600_000)]))),
+            // 1.8
+            ("removepauses", () => new Tools.Windows.RemovePausesWindow(T(Petal.Core.Tools.ToolId.RemovePauses), video, jobs, at)),
+            ("animatedcaptions", () => new Tools.Windows.AnimatedCaptionsWindow(T(Petal.Core.Tools.ToolId.AnimatedCaptions), video, jobs, at)),
+            ("vertical", () => new Tools.Windows.ReframeWindow(T(Petal.Core.Tools.ToolId.Reframe), video, jobs, at)),
+            ("describe", () => new Tools.Windows.DescribePictureWindow(T(Petal.Core.Tools.ToolId.DescribePicture), file("landscape.jpg"))),
+            ("health", () => Settings.HealthWindow.ForSnapshot(
+            [
+                new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("Petal sees drags and key taps")),
+                new Settings.HealthCheck(Localization.L.T("Shortcuts"), Settings.HealthState.Problem, Localization.L.F("Another program has {0}", "Ctrl+Win+M"),
+                    Localization.L.T("Choose another shortcut in Settings, or close the program that uses it."), Localization.L.T("Open Settings"), () => { }),
+                new Settings.HealthCheck(Localization.L.T("AI models"), Settings.HealthState.Note, Localization.L.F("{0} of {1} on this PC · {2}", 3, 9, "1.4 GB")),
+                new Settings.HealthCheck(Localization.L.T("Disk space"), Settings.HealthState.Good, Localization.L.F("{0} free on {1}", "212 GB", "C:")),
+            ])),
+            ("stepguide", () => Screen.StepGuideWindow.ForSnapshot(
+            [
+                new Screen.GuideStep { Kind = Screen.StepKind.Click, Text = Screen.StepWords.For(Screen.StepKind.Click, "File", "menu item", "Notepad"), Picture = file("landscape.jpg") },
+                new Screen.GuideStep { Kind = Screen.StepKind.Click, Text = Screen.StepWords.For(Screen.StepKind.Click, "Save as", "menu item", "Notepad"), Picture = file("figures.png") },
+                new Screen.GuideStep { Kind = Screen.StepKind.Type, Text = Screen.StepWords.For(Screen.StepKind.Type, null, null, null, "notes.txt"), Picture = file("landscape.jpg") },
+            ])),
+            ("quicklook", () => QuickLook(file("landscape.jpg"))),
+            ("quicklookpdf", () => QuickLook(file("album.pdf"))),
+            ("quicklooktext", () => QuickLook(file("weekend.srt"))),
         ];
+    }
+
+    private static Window QuickLook(string path)
+    {
+        var window = new Shell.QuickLookWindow(IntPtr.Zero, [path], null);
+        window.Loaded += async (_, _) => await window.ShowFirstAsync();
+        return window;
     }
 
     /// <summary>Made-up meeting notes in a scratch file.</summary>
@@ -549,7 +583,7 @@ internal static class DesignSnapshots
         (Window)typeof(Onboarding.WelcomeWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
 
     /// <summary>Lays out a window's content at its width and renders it over the window background.</summary>
-    public static BitmapSource RenderWindow(Window window, double height = double.NaN)
+    public static BitmapSource RenderWindow(Window window, double height = double.NaN, Action<FrameworkElement>? inspect = null)
     {
         var content = (FrameworkElement)window.Content;
         window.Content = null;
@@ -573,6 +607,7 @@ internal static class DesignSnapshots
         host.Measure(size);
         host.Arrange(new Rect(size));
         host.UpdateLayout();
+        inspect?.Invoke(frame);
         var bitmap = new RenderTargetBitmap((int)Math.Ceiling(size.Width * 2), (int)Math.Ceiling(size.Height * 2), 192, 192, PixelFormats.Pbgra32);
         bitmap.Render(host);
         bitmap.Freeze();
@@ -594,6 +629,80 @@ internal static class DesignSnapshots
         var normal = BitmapSource.Create(image.PixelWidth, image.PixelHeight, 96, 96, PixelFormats.Bgra32, null, pixels, stride);
         normal.Freeze();
         return normal;
+    }
+
+    private const string Trimmed = "trimmed", Cut = "CUT";
+
+    // Mixed-script words measure a pixel or two apart from how the text block lays them out.
+    private const double Slack = 2.5;
+
+    /// <summary>
+    /// Texts a rendered window cuts: wider than their own box, or pushed past an ancestor's edge.
+    /// Trimmed texts (with "…") are listed apart, since a file name may be trimmed on purpose.
+    /// </summary>
+    public static IEnumerable<string> CutTexts(FrameworkElement root)
+    {
+        var all = new List<System.Windows.Controls.TextBlock>();
+        void Walk(DependencyObject node)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
+            {
+                var child = VisualTreeHelper.GetChild(node, i);
+                if (child is System.Windows.Controls.TextBlock block)
+                    all.Add(block);
+                Walk(child);
+            }
+        }
+        Walk(root);
+        // (IsVisible is false all through a tree laid out away from any window, as snapshots are.)
+        bool Shown(DependencyObject node)
+        {
+            for (; node is not null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is UIElement { Visibility: not Visibility.Visible })
+                    return false;
+                if (ReferenceEquals(node, root))
+                    return true;
+            }
+            return true;
+        }
+        foreach (var block in all)
+        {
+            if (string.IsNullOrWhiteSpace(block.Text) || block.ActualWidth < 1 || !Shown(block))
+                continue;
+            bool trimmed = block.TextTrimming != TextTrimming.None;
+            // (A report for the design review, in English.)
+            string kind = trimmed ? Trimmed : Cut;
+            if (block.TextWrapping == TextWrapping.NoWrap)
+            {
+                var text = new FormattedText(block.Text, Localization.L.Culture, block.FlowDirection,
+                    new Typeface(block.FontFamily, block.FontStyle, block.FontWeight, block.FontStretch), block.FontSize, Brushes.Black, VisualTreeHelper.GetDpi(block).PixelsPerDip);
+                if (text.WidthIncludingTrailingWhitespace > block.ActualWidth - block.Padding.Left - block.Padding.Right + Slack)
+                {
+                    yield return $"{kind} by its box ({text.WidthIncludingTrailingWhitespace:0} > {block.ActualWidth:0}): {block.Text}";
+                    continue;
+                }
+            }
+            var bounds = new Rect(0, 0, block.ActualWidth, block.ActualHeight);
+            // The block's own clip first (set when it is arranged narrower than its words), then its ancestors'.
+            for (FrameworkElement? parent = block; parent is not null;
+                 parent = ReferenceEquals(parent, root) ? null : VisualTreeHelper.GetParent(parent) as FrameworkElement)
+            {
+                // Scrolled content is meant to run past the view.
+                if (parent is System.Windows.Controls.ScrollContentPresenter)
+                    break;
+                var clip = System.Windows.Controls.Primitives.LayoutInformation.GetLayoutClip(parent)?.Bounds
+                    ?? (parent.ClipToBounds ? new Rect(0, 0, parent.ActualWidth, parent.ActualHeight) : (Rect?)null);
+                if (clip is not { } edge)
+                    continue;
+                var inParent = ReferenceEquals(parent, block) ? bounds : block.TransformToAncestor(parent).TransformBounds(bounds);
+                if (inParent.Left < edge.Left - Slack || inParent.Right > edge.Right + Slack)
+                {
+                    yield return $"{kind} by {parent.GetType().Name} ({inParent.Width:0} in {edge.Width:0}): {block.Text}";
+                    break;
+                }
+            }
+        }
     }
 
     private static void Save(BitmapSource image, string path)

@@ -79,6 +79,12 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 "formats" => Formats(Arguments.Parse(rest)),
                 "recipes" => ListRecipes(),
                 "run" => await RunRecipeAsync(Arguments.Parse(rest), ct),
+                "do" => await AskPetalAsync(new() { ["cmd"] = "do", ["action"] = One(rest, "petal do <petal>") }, ct),
+                "open-wheel" => await AskPetalAsync(new() { ["cmd"] = "wheel", ["name"] = One(rest, "petal open-wheel <name>") }, ct),
+                "commands" => await AskPetalAsync(new() { ["cmd"] = "commands", ["text"] = string.Join(' ', rest) }, ct),
+                "with" => await WithAsync(rest, ct),
+                "actions" => await ActionsAsync(ct),
+                "status" => await StatusAsync(ct),
                 "version" or "--version" or "-v" => Print($"Petal {Version}"),
                 _ => throw new UsageException($"Unknown command \"{args[0]}\". Try \"petal help\"."),
             };
@@ -147,6 +153,15 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
           petal run <recipe> <files> [--out <folder>]   Runs a recipe on the files
           petal version
 
+        The running Petal (turn on "Let other programs run petals" in Settings):
+          petal actions             The petals that "petal do" can run, and the wheels
+          petal do <petal>          Runs a petal of the wheels without files, e.g. screen.full
+          petal open-wheel <name>   Opens a wheel under the pointer, e.g. Work
+          petal commands [<text>]   Opens the command palette, with the text typed in it
+          petal with <petal> <files>  A petal of the file wheels on files: a format (webp),
+                                    tool:Compress, action:Zip, or a favourite's or recipe's name
+          petal status              Whether Petal is running, and its version
+
         Notes:
           Wildcards work everywhere: petal convert *.heic --to jpg
           --max keeps pictures and videos within that many pixels on the longest side.
@@ -156,6 +171,71 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
           ever overwritten. Each saved path is printed on its own line.
 
         """;
+
+    // ---------- the running Petal ----------
+
+    private static string One(List<string> rest, string usage) =>
+        rest.Count == 1 ? rest[0] : throw new UsageException("Usage: " + usage);
+
+    /// <summary>Asks the running Petal; a failure is printed and is an error.</summary>
+    private async Task<int> AskPetalAsync(System.Text.Json.Nodes.JsonObject request, CancellationToken ct)
+    {
+        var answer = await Petal.Core.Util.PetalApi.SendAsync(request, null, ct);
+        if (answer is null)
+        {
+            error.WriteLine("Petal isn't running, or \"Let other programs run petals\" is off in its Settings.");
+            return Failed;
+        }
+        if (answer["ok"]?.GetValue<bool>() != true)
+        {
+            error.WriteLine(answer["error"]?.GetValue<string>() ?? "Petal said no.");
+            return Failed;
+        }
+        return Ok;
+    }
+
+    private async Task<int> WithAsync(List<string> rest, CancellationToken ct)
+    {
+        if (rest.Count < 2)
+            throw new UsageException("Usage: petal with <petal> <files>");
+        var files = Arguments.Parse(rest.Skip(1).ToList()).Files();
+        var list = new System.Text.Json.Nodes.JsonArray(files.Select(f => (System.Text.Json.Nodes.JsonNode)Path.GetFullPath(f)).ToArray());
+        return await AskPetalAsync(new() { ["cmd"] = "files", ["petal"] = rest[0], ["files"] = list }, ct);
+    }
+
+    private async Task<int> ActionsAsync(CancellationToken ct)
+    {
+        var answer = await Petal.Core.Util.PetalApi.SendAsync(new() { ["cmd"] = "actions" }, null, ct);
+        if (answer is null)
+            return await AskPetalAsync(new() { ["cmd"] = "status" }, ct);
+        if (answer["actions"] is not System.Text.Json.Nodes.JsonArray actions)
+            return await AskPetalAsync(new() { ["cmd"] = "actions" }, ct);
+        foreach (var group in actions.GroupBy(a => a?["section"]?.GetValue<string>() ?? ""))
+        {
+            output.WriteLine(group.Key);
+            foreach (var a in group)
+                output.WriteLine($"  {a?["id"]?.GetValue<string>(),-22} {a?["name"]?.GetValue<string>()}");
+        }
+        if (answer["wheels"] is System.Text.Json.Nodes.JsonArray wheels)
+        {
+            output.WriteLine("Wheels");
+            foreach (var w in wheels)
+                output.WriteLine($"  {w?["name"]?.GetValue<string>()}{(w?["on"]?.GetValue<bool>() == false ? " (off)" : "")}");
+        }
+        return Ok;
+    }
+
+    private async Task<int> StatusAsync(CancellationToken ct)
+    {
+        var answer = await Petal.Core.Util.PetalApi.SendAsync(new() { ["cmd"] = "status" }, TimeSpan.FromSeconds(3), ct);
+        if (answer is null)
+        {
+            output.WriteLine("Petal isn't running (or doesn't let other programs in).");
+            return Failed;
+        }
+        output.WriteLine($"Petal {answer["version"]?.GetValue<string>()} is running{(answer["paused"]?.GetValue<bool>() == true ? ", paused" : "")}.");
+        return Ok;
+    }
 
     // ---------- convert ----------
 

@@ -438,7 +438,7 @@ public sealed class BleepWindow : AudioToolWindow
         Body.Children.Add(lanes);
 
         // Under the lanes, which sit beside their labels (on the right in Arabic).
-        var times = new Grid { Margin = L.IsArabic ? new Thickness(0, 4, 54, 0) : new Thickness(54, 4, 0, 0), FlowDirection = FlowDirection.LeftToRight };
+        var times = new Grid { Margin = L.IsRightToLeft ? new Thickness(0, 4, 54, 0) : new Thickness(54, 4, 0, 0), FlowDirection = FlowDirection.LeftToRight };
         _start.Style = _end.Style = (Style)FindResource("Petal.Mono");
         _end.HorizontalAlignment = HorizontalAlignment.Right;
         times.Children.Add(_start);

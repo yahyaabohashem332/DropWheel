@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- For System.Drawing, which File Explorer's thumbnail reader uses; its global usings would clash with WPF. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -18,8 +20,15 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
+  <!-- File Explorer's thumbnail reader, built for .NET Framework 4.8 in the app, tested here as source. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Petal.Shell\EmbeddedPreview.cs" Link="Shell\EmbeddedPreview.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

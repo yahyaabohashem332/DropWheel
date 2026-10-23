@@ -81,7 +81,22 @@ internal sealed class CommandPalette : Window
 
     public static void Dispose() => _hotkey?.Dispose();
 
+    /// <summary>Whether the shortcut is Petal's now (false when another program has it, or there is none).</summary>
+    public static bool ShortcutHeld => _hotkey?.Current is not null;
+
     private static void OnShortcut() => _ = ToggleAsync(GetForegroundWindow());
+
+    /// <summary>Puts words into the open palette's search; false when no palette is open.</summary>
+    public static bool SearchFor(string text)
+    {
+        if (_open is not { IsVisible: true } open)
+            return false;
+        open._query.Text = text;
+        open._query.CaretIndex = text.Length;
+        open.Activate();
+        open._query.Focus();
+        return true;
+    }
 
     /// <summary>Opens over the window in front (taking its File Explorer selection along), or closes.</summary>
     public static async Task ToggleAsync(IntPtr front, string query = "")
@@ -150,6 +165,23 @@ internal sealed class CommandPalette : Window
         top.Children.Add(icon);
         _context = new TextBlock { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 16, 0) };
         _context.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        // Say it instead of typing: the words land in the search.
+        var mic = new Border { Background = Brushes.Transparent, Cursor = Cursors.Hand, Padding = new Thickness(8), Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, Child = ToolWindowIcon("mic", 18) };
+        mic.ToolTip = L.T("Say a command");
+        System.Windows.Automation.AutomationProperties.SetName(mic, L.T("Say a command"));
+        mic.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            var target = _ctx.Target;
+            Words.VoiceCommand.Toggle(target, text =>
+            {
+                // The palette may have closed while listening: a new one opens with the words.
+                if (!SearchFor(text))
+                    _ = ToggleAsync(target, text);
+            });
+        };
+        DockPanel.SetDock(mic, Dock.Right);
+        top.Children.Add(mic);
         DockPanel.SetDock(_context, Dock.Right);
         top.Children.Add(_context);
         top.Children.Add(field);
@@ -290,6 +322,7 @@ internal sealed class CommandPalette : Window
             ("stats", "Your Statistics", "chart", _ => Stats.StatsWindow.ShowSingle()),
             ("duplicates", "Find Duplicates", "copy", _ => Tools.Windows.DuplicatesWindow.ChooseAndShow()),
             ("practice", "Practice", "target", _ => Onboarding.PracticeWindow.ShowSingle()),
+            ("health", "Petal Health", "heart", _ => Settings.HealthWindow.ShowSingle()),
             ("ask", "Ask Petal", "ask", c => { if (c.Files.Count > 0) Tools.Windows.AskWindow.Show(c.Files, controller.Jobs, c.At); else Tools.Windows.AskWindow.ChooseAndShow(controller.Jobs); }),
         })
         {

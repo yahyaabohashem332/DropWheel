@@ -258,10 +258,4 @@ public sealed class TranscribeWindow : ToolWindow
         })).ToList();
         _ = _jobs.RunAsync("Transcribing", "Transcribed", work, _at);
     }
-
-    /// <summary>Maps a step's 0–1 onto a part of the whole job.</summary>
-    private sealed class ScaledProgress(IProgress<double> inner, double from, double to) : IProgress<double>
-    {
-        public void Report(double value) => inner.Report(from + (to - from) * Math.Clamp(value, 0, 1));
-    }
 }

@@ -57,7 +57,7 @@ public static class ImageMetadata
             progress?.Report(1);
         }, cancellationToken);
 
-    /// <summary>Batch "Remove All" (the only metadata action Tangerine offers for several files).</summary>
+    /// <summary>Batch "Remove All" (the only metadata action Petal offers for several files).</summary>
     public static Task<IReadOnlyList<ImageBatchResult>> RemoveAllBatchAsync(IReadOnlyList<ImageJobItem> items,
         IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>
         ToolSupport.RunBatchAsync(items, i => (i.InputPath, i.OutputPath),

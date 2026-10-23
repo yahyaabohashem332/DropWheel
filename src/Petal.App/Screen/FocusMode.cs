@@ -260,11 +260,7 @@ internal sealed class FocusPill : Window
         row.Children.Add(new StripButton("x", "End the session", () => FocusMode.End(early: true), null, 28));
         var strip = ScreenUi.Strip(row, 18);
         strip.Margin = new Thickness(10);
-        strip.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.OriginalSource is not StripButton)
-                DragMove();
-        };
+        ScreenUi.DragFromBackground(this, strip);
         Content = strip;
         Tick(FocusMode.Left);
         SourceInitialized += (_, _) =>

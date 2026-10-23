@@ -34,6 +34,9 @@ internal static class Dictation
 
     public static bool IsListening => _listener is not null;
 
+    /// <summary>Whether the shortcut is Petal's now (false when another program has it, or there is none).</summary>
+    public static bool ShortcutHeld => _hotkey?.Current is not null;
+
     /// <summary>Registers the dictation shortcut from the settings; false when another app owns it.</summary>
     public static bool RegisterShortcut()
     {
@@ -58,6 +61,9 @@ internal static class Dictation
             _ = FinishAsync();
             return;
         }
+        // One microphone, one listener: a voice command is being heard.
+        if (VoiceCommand.IsListening)
+            return;
         if (Listener.ReadyModel() is null)
         {
             DictationSetupWindow.ShowSingle();
@@ -158,7 +164,7 @@ internal sealed class DictationPill : Window
     public event Action? Stop;
     public event Action? Cancel;
 
-    public DictationPill(IntPtr target)
+    public DictationPill(IntPtr target, string stopTip = "Stop and type it")
     {
         WindowStyle = WindowStyle.None;
         AllowsTransparency = true;
@@ -180,7 +186,7 @@ internal sealed class DictationPill : Window
         _meter = new Border { Width = 0, Height = 5, CornerRadius = new CornerRadius(2.5), Background = Brushes.White, HorizontalAlignment = HorizontalAlignment.Left };
         track.Child = _meter;
         _status = new TextBlock { Foreground = Brushes.White, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0), MinWidth = 140 };
-        _buttons.Children.Add(new StripButton("check", "Stop and type it", () => Stop?.Invoke(), null, 30) { Accent = Theme.Current.Accent });
+        _buttons.Children.Add(new StripButton("check", stopTip, () => Stop?.Invoke(), null, 30) { Accent = Theme.Current.Accent });
         _buttons.Children.Add(new StripButton("x", "Cancel (Esc)", () => Cancel?.Invoke(), null, 30));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Children = { mic, track, _status, _buttons } };
         var strip = ScreenUi.Strip(row, 22);

@@ -28,9 +28,12 @@ Convert (Shift)
 • Documents: PDF, Word, Excel, PowerPoint, OpenDocument, Markdown, HTML, e-books and subtitles.
 
 Tools (Ctrl)
-• 53 tools: compress, resize and rotate, crop, watermark, redact, edit and annotate photos, collages,
+• 59 tools: compress, resize and rotate, crop, watermark, redact, edit and annotate photos, collages,
   remove or replace a background, erase objects, upscale, copy text from a picture, QR codes,
-  searchable PDFs, PDF passwords, page numbers and signatures, trim and split audio and video, and more.
+  searchable PDFs, PDF passwords, page numbers and signatures, trim and split audio and video, remove
+  pauses, animated captions, vertical video for Reels and Shorts, tables from pictures to Excel, compare
+  two versions of a document, describe a picture, and more.
+• Rest on a petal to see how big the result will be, or chain petals into one run with Space.
 • AI that stays on your PC: transcribe speech, read text aloud with natural voices, remove noise,
   separate vocals from music, translate English to Arabic.
 • Ask Petal: say what you want, in English or Arabic ("make them 1080 px WEBP and zip them") and Petal
@@ -59,6 +62,11 @@ Work faster
 • Screen recordings that zoom in where you click, with a smooth pointer and a clean background.
 • Private screenshots with e-mails, phone and card numbers already covered.
 • Send files to another PC on the same network, and share wheels as a line of text.
+• Record Steps: a step-by-step guide with pictures, made while you work, saved as PDF, Word or a web page.
+• Your webcam in a round bubble on screen recordings, and live regions of other windows kept on top.
+• Quick Look: press Space on a file in File Explorer to see it at once.
+• Ask Your Files: questions answered from your own documents by AI on this PC, with the sources.
+• Voice commands, a Stream Deck plugin, and a health check that fixes what it finds.
 
 Folders work too
 • Drop a folder to convert everything inside into a copy beside it, or organize it by kind or month,
@@ -73,7 +81,7 @@ Made for every day
 • Statistics of files handled and space saved, kept on this PC only.
 • Back up everything to one file and carry it to another PC.
 • A command line for terminals and scripts: petal convert, petal compress, petal ask…
-• Fully in English and Arabic, right to left included.
+• In English, Arabic, Turkish, Persian, Urdu, Indonesian, French and Spanish, right to left included.
 
 Private by design
 Everything runs on your PC. Petal has no account, no ads and no tracking, and never uploads your files.
@@ -81,26 +89,34 @@ AI models download once, the first time a tool needs them, from their authors' p
 
 ## What's new in this version
 
+Petal 1.8:
+• See what a petal makes before you drop, and chain petals into one run.
+• Quick Look with Space in File Explorer, and thumbnails for Photoshop, Illustrator and InDesign files.
+• Record Steps guides, a webcam bubble in recordings, live regions, voice commands.
+• Remove pauses, animated captions, vertical video, tables from pictures, compare files, describe pictures.
+• Ask your files questions, answered on this PC. Stream Deck plugin and Petal Health.
+• Now in Turkish, Persian, Urdu, Indonesian, French and Spanish too.
+
 Petal 1.7:
-• A command palette (Ctrl+Win+K): any action, app, file, clip or sum in a few letters, Arabic too.
-• Live captions of any sound, translated into Arabic, and meeting notes with a summary and action items.
-• Polished screen recordings: zoom on clicks, a smooth pointer, a background and rounded corners.
+• A command palette (Ctrl+Win+K): any action, app, file or sum in a few letters.
+• Live captions of any sound, and meeting notes with a summary and action items.
+• Polished recordings: zoom on clicks, a smooth pointer, a background.
 • Snippets that type themselves in any app, window workspaces, and focus sessions.
-• Private screenshots, rename by what's inside, similar shots that keep the sharpest, send to another PC.
+• Private screenshots, rename by what's inside, keep the sharpest of similar shots, send to another PC.
 • A gallery of ready-made wheels, and wheels shared as a line of text.
 
 Petal 1.6:
-• Draw on the screen, whiteboards, zoom, a magnifier, a spotlight, clicks and keys on screen, and a timer.
-• Screen recording to MP4 with sound, scrolling screenshots, text from the screen, pinned screenshots, a colour picker and a ruler.
-• Text in any app: fix the keyboard layout, translate, change case, remove diacritics, calculate, summarize and rewrite on this PC.
+• Draw on the screen, whiteboards, zoom, a magnifier, a spotlight and a timer.
+• Screen recording with sound, scrolling screenshots, text from the screen, a colour picker and a ruler.
+• Text in any app: fix the keyboard layout, translate, change case, summarize and rewrite on this PC.
 • Dictation in any app with Ctrl+Win+J, and Ask Petal out loud.
-• Clipboard history, window arranging, sticky notes, your usual petal per file type, and a calculator in the wheel.
+• Clipboard history, window arranging, sticky notes and a calculator in the wheel.
 
 ## Product features (one per line, up to 20)
 
 A wheel under your cursor while you drag: tap Shift, Ctrl or Alt, drop on a petal
 342 conversion paths across pictures, video, audio, PDFs, Office documents, e-books and subtitles
-53 tools: compress, resize, crop, watermark, redact, remove backgrounds, erase objects, upscale
+59 tools: compress, resize, crop, remove backgrounds, captions, vertical video, compare files
 Runs on your PC: nothing is uploaded, no account, no subscription
 Local AI: transcribe speech, read aloud, remove noise, separate vocals, translate to Arabic
 Ask Petal: describe what you want in English or Arabic and Petal builds the steps
@@ -114,7 +130,7 @@ Send files to your phone and scan documents with it over Wi-Fi
 Recipes and watched folders that convert new files as they arrive
 History that can put files back
 Seven accents, glass, solid or monochrome wheels, animations and sounds
-Fully in English and Arabic, right to left included
+Eight languages: English, Arabic, Turkish, Persian, Urdu, Indonesian, French, Spanish
 Statistics of files handled and space saved, kept on this PC only
 Back up everything to one file and carry it to another PC
 A command line for terminals and scripts
@@ -132,7 +148,7 @@ drag and drop
 ## Screenshot captions
 
 1. Drag a file, tap Shift, drop it on a format.
-2. 53 tools on the Ctrl wheel, from compress to remove background.
+2. 59 tools on the Ctrl wheel, from compress to remove background.
 3. Share, send to your phone, rename and more on the Alt wheel.
 4. Wheels without files: quick Windows switches, one shortcut away.
 5. A wheel for the app in front, with its own shortcuts.

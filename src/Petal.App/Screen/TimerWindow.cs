@@ -74,11 +74,7 @@ internal sealed class TimerWindow : Window
         _panel.Margin = new Thickness(16);
         _panel.LayoutTransform = _size;
         Content = _panel;
-        _panel.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.OriginalSource is not TextBox && e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        };
+        ScreenUi.DragFromBackground(this, _panel);
         _tick.Tick += (_, _) => Update();
         Closed += (_, _) => _tick.Stop();
         Setup();

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -35,7 +36,11 @@ public sealed record UpdateManifest
     public Uri? InstallerUri { get; init; }
 }
 
-public sealed class UpdateException(string message, Exception? inner = null) : Exception(message, inner);
+public sealed class UpdateException(string message, Exception? inner = null) : Exception(message, inner)
+{
+    /// <summary>The feed wasn't there or couldn't be reached (as opposed to a feed that was there and wrong).</summary>
+    public bool Unreachable { get; init; }
+}
 
 /// <summary>
 /// Checks a feed for a newer Petal and fetches its installer. Feeds and installers must come over
@@ -80,8 +85,33 @@ public static class Updates
         }
     }
 
+    /// <summary>
+    /// The feed for this PC's processor: on ARM64 an "update.json" feed has an "update-arm64.json" beside it for the
+    /// ARM64 build. Other feeds are used as they are.
+    /// </summary>
+    public static string? ArmFeed(string feed, Architecture processor) =>
+        processor == Architecture.Arm64 && feed.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? feed[..^5] + "-arm64.json" : null;
+
     /// <summary>The newer release the feed offers, or null when this one is current.</summary>
     public static async Task<UpdateManifest?> CheckAsync(string feed, Version current, HttpClient http, CancellationToken cancellationToken = default)
+    {
+        // An ARM64 PC takes the ARM64 build when the feed has one; the x64 build also runs there, so it is the fallback.
+        if (ArmFeed(feed, RuntimeInformation.ProcessArchitecture) is { } arm)
+        {
+            try
+            {
+                return await CheckOneAsync(arm, current, http, cancellationToken).ConfigureAwait(false);
+            }
+            catch (UpdateException ex) when (ex.Unreachable)
+            {
+                // No ARM64 feed beside this one: the x64 build, which Windows also runs on ARM64. A feed that is
+                // there but unsigned or broken is never passed over for another.
+            }
+        }
+        return await CheckOneAsync(feed, current, http, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<UpdateManifest?> CheckOneAsync(string feed, Version current, HttpClient http, CancellationToken cancellationToken)
     {
         var feedUri = Address(feed);
         string json;
@@ -93,7 +123,7 @@ public static class Updates
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or UnauthorizedAccessException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
         {
-            throw new UpdateException("The update feed couldn't be reached.", ex);
+            throw new UpdateException("The update feed couldn't be reached.", ex) { Unreachable = true };
         }
 
         UpdateManifest manifest;

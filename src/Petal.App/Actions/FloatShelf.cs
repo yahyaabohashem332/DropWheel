@@ -122,11 +122,7 @@ public sealed class FloatShelf : Window
         _title.Foreground = Palette.Brush(p.Text);
         _title.VerticalAlignment = VerticalAlignment.Center;
         header.Children.Add(_title);
-        header.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        };
+        Screen.ScreenUi.DragFromBackground(this, header);
         header.Background = Brushes.Transparent;
         header.Cursor = Cursors.SizeAll;
 

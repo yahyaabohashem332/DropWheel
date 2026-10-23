@@ -209,5 +209,6 @@ public static partial class Icons
         ["caseLower"] = "M4,12 A3,3 0 1 0 10,12 A3,3 0 1 0 4,12 Z M 10 9 v 6 M14,12 A3,3 0 1 0 20,12 A3,3 0 1 0 14,12 Z M 14 7 v 8",
         ["heading"] = "M 6 12 h 12 M 6 20 V 4 M 18 20 V 4",
         ["pilcrow"] = "M 13 4 v 16 M 17 4 v 16 M 19 4 H 9.5 a 4.5 4.5 0 0 0 0 9 H 13",
+        ["fileDiff"] = "M 15 2 H 6 a 2 2 0 0 0 -2 2 v 16 a 2 2 0 0 0 2 2 h 12 a 2 2 0 0 0 2 -2 V 7 Z M 9 10 h 6 M 12 13 V 7 M 9 17 h 6",
     };
 }

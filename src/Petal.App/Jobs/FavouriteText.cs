@@ -49,7 +49,7 @@ public static class FavouriteText
     /// Between the parts of a description. In Arabic a right-to-left mark keeps "WEBP" and "1600"
     /// from joining into one Latin run that would read backwards.
     /// </summary>
-    public static string Separator => L.IsArabic ? "\u200F · " : " · ";
+    public static string Separator => L.IsRightToLeft ? "\u200F · " : " · ";
 
     /// <summary>The settings in words: "WEBP · 1600 px · quality 80".</summary>
     public static string Describe(Favourite f)

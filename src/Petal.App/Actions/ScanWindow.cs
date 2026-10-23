@@ -180,8 +180,8 @@ public sealed class ScanWindow : ToolWindow
 
     private static ScanPageText PageText() => new()
     {
-        Language = L.IsArabic ? "ar" : "en",
-        RightToLeft = L.IsArabic,
+        Language = L.Code,
+        RightToLeft = L.IsRightToLeft,
         Title = L.T("Scan to {0}"),
         Hint = L.T("Photograph each page. Petal straightens it and saves them as one PDF on the PC."),
         Take = L.T("Take a photo of a page"),

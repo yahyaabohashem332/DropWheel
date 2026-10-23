@@ -220,6 +220,7 @@ public sealed partial class SettingsWindow
         zone.Changed += v => { _s.CancelZone = v; Save(); };
         panel.Children.Add(Row("Cancel zone", zone, 150, 0));
         panel.Children.Add(Text("Letting go this close to the middle cancels. A larger zone forgives a drop that ends too soon.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Switch("Show what a petal makes", "Rest on a petal and the centre says how large the result will be, or shows the cut-out before Remove Background.", _s.PetalPreviews, v => _s.PetalPreviews = v));
         panel.Children.Add(Switch("Grow under the pointer", "The petal you point at swells a little towards you.", _s.GrowPetal, v => _s.GrowPetal = v));
         panel.Children.Add(Switch("Number keys", "1 to 9 choose a petal when the wheel is open for the keyboard; their numbers show around it.", _s.ShowNumberKeys, v => _s.ShowNumberKeys = v));
         panel.Children.Add(Switch("Mouse wheel switches wheels", "Turn the mouse wheel to go from Convert to Tools to Actions while you drag, or to the next wheel without files.", _s.ScrollSwitchesWheels, v => _s.ScrollSwitchesWheels = v));

@@ -53,6 +53,9 @@ public sealed partial class WheelWindow : Window
     private readonly DispatcherTimer _probeTimer = new() { Interval = TimeSpan.FromMilliseconds(140) };
     private readonly DispatcherTimer _releaseTimer = new() { Interval = TimeSpan.FromMilliseconds(450) };
     private readonly DispatcherTimer _dwellTimer = new() { Interval = TimeSpan.FromMilliseconds(420) };
+    // A short rest on a petal before its result is worked out, so passing over petals costs nothing.
+    private readonly DispatcherTimer _previewTimer = new() { Interval = TimeSpan.FromMilliseconds(220) };
+    private CancellationTokenSource? _previewCancel;
     private readonly DragDropHelper _dragHelper = new();
     private readonly List<PetalVisual> _visuals = [];
     private readonly List<PetalLabel> _petalLayouts = [];
@@ -71,6 +74,8 @@ public sealed partial class WheelWindow : Window
     private bool _sessionIgnored;
     private WheelMode _mode;
     private IReadOnlyList<string>? _files;
+    // Files read from a drag that had none on disk (Outlook, a browser): kept only if dropped on a petal.
+    private IReadOnlyList<string>? _staged;
 
     /// <summary>The files the wheel is open for (empty for the wheels without files).</summary>
     public IReadOnlyList<string> CurrentFiles => _files ?? [];
@@ -114,6 +119,7 @@ public sealed partial class WheelWindow : Window
         _probeTimer.Tick += OnProbeTick;
         _releaseTimer.Tick += (_, _) => CloseWheel();
         _dwellTimer.Tick += OnDwell;
+        _previewTimer.Tick += OnPreviewTick;
         Theme.Changed += () => Dispatcher.BeginInvoke(() => _palette = PaletteFor(_options));
     }
 
@@ -121,6 +127,9 @@ public sealed partial class WheelWindow : Window
 
     /// <summary>Supplies the petals for the dragged files in a mode.</summary>
     public Func<WheelMode, IReadOnlyList<string>, WheelContent>? ContentProvider { get; set; }
+
+    /// <summary>What a file wheel's petal will make, for the centre while the pointer rests on it.</summary>
+    public Func<WheelItem, IReadOnlyList<string>, CancellationToken, Task<PetalPreview?>>? PreviewProvider { get; set; }
 
     /// <summary>Text for the centre of the wheel, e.g. "2.4 MB" or "3 files · 8 MB".</summary>
     public Func<IReadOnlyList<string>, string>? HubTextProvider { get; set; }
@@ -140,6 +149,9 @@ public sealed partial class WheelWindow : Window
     public event Action<WheelItem, IReadOnlyList<string>, ScreenPoint>? ItemDropped;
 
     public bool IsOpen => _open;
+
+    /// <summary>Open for dragged files (not still finding out, not the wheels without files).</summary>
+    public bool ShowsFiles => _open && _files is not null && _pages is null;
 
     /// <summary>Show the "Shift Convert · Ctrl Tools · Alt Actions" strip above the ring.</summary>
     public bool ShowHints { get; set; } = true;
@@ -512,6 +524,12 @@ public sealed partial class WheelWindow : Window
             case Key.Back when _groups.Count > 0:
                 CloseGroup();
                 break;
+            case Key.Back when _chain.Count > 0 && _pages is null:
+                RemoveStep();
+                break;
+            case Key.OemPlus or Key.Add when _pages is null && !e.IsRepeat:
+                AddStep();
+                break;
             case Key.Escape:
                 CloseWheel();
                 break;
@@ -604,8 +622,15 @@ public sealed partial class WheelWindow : Window
                     or Petal.Core.Actions.FileActionId.Move or Petal.Core.Actions.FileActionId.Terminal or Petal.Core.Actions.FileActionId.OpenWith
                     or Petal.Core.Actions.FileActionId.OpenInCode
             };
+        var chain = _chain.ToList();
         CloseWheel(returnFocus: !opensWindow);
-        Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, at));
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+        {
+            if (chain.Count > 0)
+                ChainDropped?.Invoke(chain, item, files, at);
+            else
+                ItemDropped?.Invoke(item, files, at);
+        });
     }
 
     /// <summary>Opens a group's petals in place of the wheel's; the centre (or Backspace) goes back.</summary>
@@ -692,6 +717,13 @@ public sealed partial class WheelWindow : Window
         _probeTimer.Stop();
         _releaseTimer.Stop();
         _dwellTimer.Stop();
+        CancelPreview();
+        _chain.Clear();
+        if (_staged is { } staged)
+        {
+            _staged = null;
+            Shell.VirtualDrop.Forget(staged);
+        }
         if (!_open)
             return;
         _open = false;
@@ -757,6 +789,13 @@ public sealed partial class WheelWindow : Window
         if (_files is null)
         {
             var files = FilesOf(e);
+            // An attachment, a picture from a browser, a file from a chat: read now, while the drag can still give it.
+            if (files is null && Shell.VirtualDrop.Offers(e.Data) && Shell.VirtualDrop.Read(e.Data) is { } read)
+            {
+                files = read;
+                _staged = read;
+                Log.Info($"wheel: read {read.Count} item(s) from a drag without files");
+            }
             if (files is null)
             {
                 // Text, links or anything else that is not a file: get out of the way for this drag.
@@ -830,6 +869,10 @@ public sealed partial class WheelWindow : Window
         }
         Sound.Drop();
         Chose?.Invoke(page, item);
+        // Read files are the petal's now: they move to Downloads instead of being forgotten with the wheel.
+        var staged = _staged;
+        _staged = null;
+        var chain = _chain.ToList();
 
         // Let the petal stay lit for a couple of frames, then vanish instantly. Only then run the
         // action: opening a tool window can keep the UI thread busy, and the wheel must not linger.
@@ -839,7 +882,28 @@ public sealed partial class WheelWindow : Window
         {
             close.Stop();
             CloseWheel();
-            Dispatcher.BeginInvoke(DispatcherPriority.Background, () => ItemDropped?.Invoke(item, files, drop));
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+            {
+                var kept = files;
+                if (staged is not null)
+                {
+                    try
+                    {
+                        kept = Shell.VirtualDrop.Keep(staged);
+                    }
+                    catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+                    {
+                        Log.Error(ex, "Keeping the files of a drag");
+                        return;
+                    }
+                }
+                if (kept.Count == 0)
+                    return;
+                if (chain.Count > 0)
+                    ChainDropped?.Invoke(chain, item, kept, drop);
+                else
+                    ItemDropped?.Invoke(item, kept, drop);
+            });
         };
         close.Start();
     }
@@ -905,11 +969,14 @@ public sealed partial class WheelWindow : Window
         if (index is { } now && now < _visuals.Count)
             _visuals[now].Grow(true, _options);
 
+        CancelPreview();
         if (index is { } i2 && _content is not null && i2 < _content.Items.Count)
         {
             var item = _content.Items[i2];
             _lastHubLabel = HubTitle(item);
-            SetHub(_lastHubLabel, Subtitle(item), animate: IsVisible);
+            SetHub(_lastHubLabel, _chain.Count > 0 && !item.IsGroup && item.Unavailable is null ? L.F("Step {0}", _chain.Count + 1) : Subtitle(item), animate: IsVisible);
+            if (_open && _chain.Count == 0 && _pages is null && _files is not null && PreviewProvider is not null && !item.IsGroup && item.Unavailable is null && PresentationSource.FromVisual(_root) is not null)
+                _previewTimer.Start();
             Sound.Tick();
             if (data is not null)
                 DragDropHelper.SetDescription(data, item.IsGroup || item.Unavailable is not null && item.Blocked ? null : Description(item), null);
@@ -921,6 +988,48 @@ public sealed partial class WheelWindow : Window
             // Back in the middle: the centre says what the wheel is about again.
             if (previous is not null && index is null && _content is not null)
                 ShowDefaultHub(animate: IsVisible);
+        }
+    }
+
+    private void CancelPreview()
+    {
+        _previewTimer.Stop();
+        _previewCancel?.Cancel();
+        _previewCancel = null;
+        if (_pages is null && _hubPicture.Visibility == Visibility.Visible)
+            _hubPicture.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>The pointer has rested on a petal: work out what it makes, and show it if the pointer is still there.</summary>
+    private async void OnPreviewTick(object? sender, EventArgs e)
+    {
+        _previewTimer.Stop();
+        if (_highlight is not { } index || _content is not { } content || index >= content.Items.Count || _files is not { } files || PreviewProvider is not { } provider)
+            return;
+        var item = content.Items[index];
+        var cancel = new CancellationTokenSource();
+        _previewCancel = cancel;
+        PetalPreview? preview;
+        try
+        {
+            preview = await Task.Run(() => provider(item, files, cancel.Token), cancel.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Previewing a petal");
+            return;
+        }
+        if (cancel.IsCancellationRequested || preview is null || !_open || _highlight != index || !ReferenceEquals(_content, content))
+            return;
+        SetHub(_lastHubLabel, preview.Text, animate: IsVisible);
+        if (preview.Picture is { } picture)
+        {
+            _hubPicture.Fill = new ImageBrush(picture) { Stretch = Stretch.Uniform };
+            _hubPicture.Visibility = Visibility.Visible;
         }
     }
 
@@ -1039,7 +1148,7 @@ public sealed partial class WheelWindow : Window
         if (_pages is { } pages)
             _content = pages[_page].Content();
         else if (ContentProvider is not null)
-            _content = ContentProvider(_mode, _files);
+            _content = ContentProvider(_mode, ContentFiles(_files));
         else
             return;
         _groups.Clear();
@@ -1171,6 +1280,11 @@ public sealed partial class WheelWindow : Window
             return;
         }
         if (_files is null) return;
+        if (_chain.Count > 0)
+        {
+            SetHub(ChainTitle(), ChainHint(), animate);
+            return;
+        }
         SetHub(HubTextProvider?.Invoke(_files) ?? "", HubSubtitleProvider?.Invoke(_files) ?? (_files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items")), animate);
     }
 
@@ -1211,9 +1325,9 @@ public sealed partial class WheelWindow : Window
         bool hasIcon = withIcon && (item.Icon is not null || item.Picture is not null);
         // Icons only, when names are hidden: what has an icon shows it larger and alone.
         bool iconOnly = hasIcon && !_options.ShowNames;
-        double size = withIcon ? (L.IsArabic ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5);
+        double size = withIcon ? (L.IsRightToLeft ? (count > 8 ? 10 : 10.5) : count > 8 ? 8 : 8.5) : (count > 9 ? 11.5 : count > 7 ? 12.5 : 13.5);
         // Baseline to baseline; under an icon the lines sit close, as a caption.
-        double step = withIcon ? (L.IsArabic ? 13 : 9.5) : size * 1.3;
+        double step = withIcon ? (L.IsRightToLeft ? 13 : 9.5) : size * 1.3;
         double iconSize = iconOnly ? (count > 8 ? 22 : 26) : count > 8 ? 16 : 18;
         var brush = Palette.Brush(p.Text);
         IconInk? iconInk = null;
@@ -1266,7 +1380,7 @@ public sealed partial class WheelWindow : Window
             CreateFonts();
 
         var p = _palette;
-        var fit = HubLayout.Fit(title, subtitle, _hubTitleFont!, _hubSubtitleFont!, L.IsArabic);
+        var fit = HubLayout.Fit(title, subtitle, _hubTitleFont!, _hubSubtitleFont!, L.IsRightToLeft);
         foreach (var row in fit.Rows)
         {
             var font = row.IsTitle ? _hubTitleFont! : _hubSubtitleFont!;

@@ -112,7 +112,13 @@ internal static class LiveCaptions
         }, null, 500, 500);
     }
 
-    private static bool NeedsArabic(string show) => show is "arabic" or "both";
+    /// <summary>
+    /// Captions put into Arabic: chosen, or "both" in Arabic or English. In Petal's other languages "both"
+    /// shows what was said and its English, which needs no other model.
+    /// </summary>
+    private static bool NeedsArabic(string show) => show == "arabic" || show == "both" && BothMeansArabic;
+
+    private static bool BothMeansArabic => Localization.L.Code is "ar" or "en";
 
     private static bool Listen(bool microphone)
     {
@@ -191,6 +197,8 @@ internal static class LiveCaptions
         var heard = await transcriber.TranscribeAsync(piece);
         if (heard.Text.Length == 0)
             return ("", null);
+        if (show == "both" && !BothMeansArabic)
+            show = "english";
         switch (show)
         {
             case "original":
@@ -322,11 +330,7 @@ internal sealed class CaptionWindow : Window
             Cursor = Cursors.SizeAll,
             Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 3, Opacity = 0.4 },
         };
-        card.MouseLeftButtonDown += (_, e) =>
-        {
-            if (e.OriginalSource is not StripButton)
-                DragMove();
-        };
+        ScreenUi.DragFromBackground(this, card);
         MouseEnter += (_, _) => _buttons.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(120)));
         MouseLeave += (_, _) => _buttons.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(250)));
         Content = card;

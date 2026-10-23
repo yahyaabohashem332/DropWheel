@@ -61,6 +61,14 @@ public partial class LocalizationTests
         ";addr", ";thx", "14 Harbour Road, Bristol BS1 5TT", "Thanks so much, {cursor}. Best wishes.", "Office PC", "Sara's laptop", "Study",
         "[00:00] Morning all, let's start with the launch date.\n[00:06] The translation isn't finished yet.", "We'll move the launch to next Thursday.",
         "Petal clipboard", "Petal screen recording", "Clipboard Viewer Ignore", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Windows.UI.Core.CoreWindow", "WPF / C#",
+        // 1.8: thread names, keycaps, UI Automation control kinds the step words are chosen by, a date pattern, a format name,
+        // the support report (kept in English for whoever reads it), polite words a spoken command drops, and a font sample's letters.
+        "Petal camera recording", "Petal steps", "Esc", "Insert", "Home", "Page Up", "Page Down", "ControlType.",
+        "menu item", "tab item", "check box", "radio button", "Hyperlink", "Edit", "combo box", "list item", "tree item", "data item",
+        "d MMMM", "Markdown", "ERROR", "[ok]", "[note]", "(left out)", "(unreadable)", "Remote", "Destinations",
+        "please", "petal", "Aa Bb Cc", "1.4 GB", "212 GB", "C:", "Notepad", "yyyyMMdd-HHmmss",
+        // Languages named to the AI model in English, in the instruction it reads.
+        "Turkish", "Persian", "Urdu", "Indonesian", "French", "Spanish", "0123456789 !?&@ ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     };
 
     private static readonly Regex Literal = MakeLiteral();

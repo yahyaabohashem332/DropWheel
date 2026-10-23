@@ -11,6 +11,21 @@ internal static class PaletteSources
     {
         CommandPalette.Sources.Add(Snippets);
         CommandPalette.Sources.Add(Workspaces);
+        CommandPalette.Sources.Add(Questions);
+    }
+
+    /// <summary>A question typed or said: answered from what the indexed documents say.</summary>
+    private static IEnumerable<PaletteItem> Questions(string query, PaletteContext context)
+    {
+        if (!SettingsStore.Current.SearchEnabled || !Petal.Recipes.Search.FileQuestions.LooksLikeQuestion(query))
+            yield break;
+        var question = query.Trim();
+        yield return new PaletteItem("ask-files", L.T("Ask Your Files"), question, "fileSearch", _ =>
+        {
+            Search.SearchWindow.ShowSingle(question, ask: true);
+            return Task.CompletedTask;
+        })
+        { Kind = L.T("Question"), Score = 400 };
     }
 
     private static IEnumerable<PaletteItem> Snippets(string query, PaletteContext context)

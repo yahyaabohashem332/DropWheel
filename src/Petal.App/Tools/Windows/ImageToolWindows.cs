@@ -171,9 +171,9 @@ public sealed class RedactPhotoWindow : ToolWindow
     private readonly RedactionCanvas _canvas = new();
     private readonly Segmented<RedactionStyle> _style;
     private readonly ColorWell _color = new(Colors.Black);
-    private readonly Button _faces = new() { Content = L.T("Faces") };
-    private readonly Button _text = new() { Content = L.T("Text"), Margin = new Thickness(8, 0, 0, 0) };
-    private readonly Button _private = new() { Content = L.T("Private details"), Margin = new Thickness(8, 0, 0, 0) };
+    private readonly Button _faces = new() { Content = L.T("Faces"), Margin = new Thickness(0, 2, 8, 2) };
+    private readonly Button _text = new() { Content = L.T("Text"), Margin = new Thickness(0, 2, 0, 2) };
+    private readonly Button _private = new() { Content = L.T("Private details"), Margin = new Thickness(0, 2, 8, 2) };
     private readonly TextBlock _status = new();
 
     public RedactPhotoWindow(ToolInfo tool, string file, JobRunner jobs, ScreenPoint at) : base(tool.Name, 420)
@@ -193,7 +193,8 @@ public sealed class RedactPhotoWindow : ToolWindow
         styleRow.Children.Add(_color);
         Body.Children.Add(Row("Style", styleRow, 80, 14));
 
-        var detect = new StackPanel { Orientation = Orientation.Horizontal, Children = { _private, _faces, _text } };
+        // Wraps when the three names are long in the language Petal speaks.
+        var detect = new WrapPanel { Children = { _private, _faces, _text } };
         _faces.Click += async (_, _) => await DetectAsync(faces: true);
         _text.Click += async (_, _) => await DetectAsync(faces: false);
         _private.Click += async (_, _) => await DetectPrivateAsync();

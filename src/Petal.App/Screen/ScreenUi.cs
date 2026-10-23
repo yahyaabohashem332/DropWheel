@@ -87,6 +87,42 @@ internal class MonitorWindow : Window
 /// <summary>The look shared by the screen tools: floating dark-glass strips of round buttons.</summary>
 internal static class ScreenUi
 {
+    /// <summary>
+    /// Lets the window be moved by pressing on the empty parts of <paramref name="area"/>. A press on
+    /// anything that can be clicked or typed in (a button, a chip with the hand pointer, a text box, a
+    /// slider) is left to it: moving the window there would swallow the click.
+    /// </summary>
+    public static void DragFromBackground(Window window, UIElement area)
+    {
+        area.MouseLeftButtonDown += (_, e) =>
+        {
+            if (e.ButtonState != MouseButtonState.Pressed || e.ClickCount > 1 || IsClickable(e.OriginalSource as DependencyObject, area))
+                return;
+            try
+            {
+                window.DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // The button was already up: there is nothing to move.
+            }
+        };
+    }
+
+    /// <summary>Whether a press on <paramref name="hit"/> belongs to something clickable between it and <paramref name="area"/>.</summary>
+    internal static bool IsClickable(DependencyObject? hit, UIElement area)
+    {
+        for (var d = hit; d is not null && !ReferenceEquals(d, area); d = d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+        {
+            if (d is System.Windows.Controls.Primitives.ButtonBase or System.Windows.Controls.Primitives.TextBoxBase or PasswordBox or StripButton or Slider
+                or ComboBox or System.Windows.Controls.Primitives.ScrollBar or System.Windows.Controls.Primitives.Thumb or ListBoxItem)
+                return true;
+            if (d is FrameworkElement { Cursor: { } cursor } && (cursor == Cursors.Hand || cursor == Cursors.IBeam))
+                return true;
+        }
+        return false;
+    }
+
     public static readonly Color Ink = Color.FromRgb(0x1C, 0x1C, 0x22);
 
     /// <summary>A rounded strip that floats over the screen.</summary>

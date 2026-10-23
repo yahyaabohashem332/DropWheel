@@ -42,7 +42,7 @@ public static class RecipeText
 
     /// <summary>The whole recipe: "Remove Background → Resize to 1080 px → WEBP".</summary>
     public static string Describe(Recipe recipe) =>
-        recipe.Steps.Count == 0 ? L.T("No steps yet") : string.Join(L.IsArabic ? " ← " : " → ", recipe.Steps.Select(Describe));
+        recipe.Steps.Count == 0 ? L.T("No steps yet") : string.Join(L.IsRightToLeft ? " ← " : " → ", recipe.Steps.Select(Describe));
 
     /// <summary>What a recipe can start from, for the editor's hint.</summary>
     public static string Accepts(Recipe recipe)

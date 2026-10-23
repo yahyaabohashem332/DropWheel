@@ -264,6 +264,32 @@ public sealed class SearchIndex : IDisposable
     }
 
     /// <summary>
+    /// The files whose words match the most of <paramref name="terms"/> (any of them, best first), with the
+    /// words stored for each: for answering a question from what the files say.
+    /// </summary>
+    public IReadOnlyList<(string Path, string Body)> Mentions(IReadOnlyList<string> terms, int limit)
+    {
+        var words = terms.Select(Words).SelectMany(t => t.Split(' ', StringSplitOptions.RemoveEmptyEntries)).Distinct().Take(16).ToList();
+        if (words.Count == 0)
+            return [];
+        lock (_gate)
+        {
+            using var command = _db.CreateCommand();
+            command.CommandText = """
+                SELECT f.path, words.body FROM words JOIN files f ON f.id = words.rowid
+                WHERE words MATCH $match AND length(words.body) > 0 ORDER BY bm25(words, 2.0, 1.0) LIMIT $limit
+                """;
+            command.Parameters.AddWithValue("$match", string.Join(" OR ", words.Select(t => $"\"{t}\"*")));
+            command.Parameters.AddWithValue("$limit", limit);
+            using var reader = command.ExecuteReader();
+            var found = new List<(string, string)>();
+            while (reader.Read())
+                found.Add((reader.GetString(0), reader.GetString(1)));
+            return found.Where(f => File.Exists(f.Item1)).ToList();
+        }
+    }
+
+    /// <summary>
     /// Pictures and videos closest in meaning: above CLIP's chance level, and near the best match
     /// (a search for "cats" shows the cats, not every picture).
     /// </summary>

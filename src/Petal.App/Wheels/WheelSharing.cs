@@ -141,7 +141,7 @@ public static class WheelGallery
                 K("DARK", "Dark Mode", "moon", "Ctrl+Shift+L"), K("BACK", "Back", "chevronLeft", "Ctrl+["), K("FORWARD", "Forward", "chevronRight", "Ctrl+]"))),
         new("Outlook", "New mail, reply, reply all, forward, mail and calendar, a new appointment, search and send/receive.", "bell",
             () => App("Outlook", ["outlook", "olk"], K("NEW", "New Mail", "plus", "Ctrl+N"), K("REPLY", "Reply", "undo", "Ctrl+R"), K("REPLY ALL", "Reply All", "users", "Ctrl+Shift+R"),
-                K("FORWARD", "Forward", "arrowRight", "Ctrl+F"), K("MAIL", "Mail", "bell", "Ctrl+1"), K("CALENDAR", "Calendar", "history", "Ctrl+2"),
+                K("FWD", "Forward the Mail", "arrowRight", "Ctrl+F"), K("MAIL", "Mail", "bell", "Ctrl+1"), K("CALENDAR", "Calendar", "history", "Ctrl+2"),
                 K("MEETING", "New Appointment", "plus", "Ctrl+Shift+A"), K("SEARCH", "Search", "search", "Ctrl+E"), K("SYNC", "Send/Receive", "refresh", "F9"))),
     ];
 }

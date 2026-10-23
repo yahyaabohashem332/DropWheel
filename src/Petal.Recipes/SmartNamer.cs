@@ -130,7 +130,7 @@ public static partial class SmartNamer
     }
 
     /// <summary>Safe for a file name: no characters Windows refuses, no quotes, at most 60 characters.</summary>
-    internal static string? Tidy(string? name)
+    public static string? Tidy(string? name)
     {
         if (name is null)
             return null;

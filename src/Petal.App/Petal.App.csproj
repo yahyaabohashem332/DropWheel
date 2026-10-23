@@ -10,9 +10,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\Petal.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>x64;ARM64</Platforms>
+    <!-- x64 unless a build asks for ARM64 (tools\scripts\build.ps1 -Arch arm64). -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <PlatformTarget Condition="'$(RuntimeIdentifier)' == 'win-arm64'">ARM64</PlatformTarget>
+    <PlatformTarget Condition="'$(RuntimeIdentifier)' != 'win-arm64'">x64</PlatformTarget>
     <SelfContained>false</SelfContained>
   </PropertyGroup>
 
@@ -27,15 +29,32 @@
     <ProjectReference Include="..\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\Petal.Engines.Files\Petal.Engines.Files.csproj" />
     <ProjectReference Include="..\Petal.Recipes\Petal.Recipes.csproj" />
+    <!-- Explorer's thumbnail handler: built for .NET Framework 4.8 and shipped beside Petal, never referenced. -->
+    <ProjectReference Include="..\Petal.Shell\Petal.Shell.csproj" ReferenceOutputAssembly="false" Private="false" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;PlatformTarget" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="3.3.0" />
+    <PackageReference Include="Microsoft.AI.DirectML" Version="1.15.4" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <!--
+    DirectML ships beside Petal, for the processor it is built for (only the app knows that: its libraries
+    are built for any). Without it Windows 10 loads its own DirectML 1.0, too old for ONNX Runtime.
+  -->
+  <PropertyGroup>
+    <DirectMLArch Condition="'$(RuntimeIdentifier)' == 'win-arm64'">arm64</DirectMLArch>
+    <DirectMLArch Condition="'$(RuntimeIdentifier)' != 'win-arm64'">x64</DirectMLArch>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(PkgMicrosoft_AI_DirectML)\bin\$(DirectMLArch)-win\DirectML.dll" Link="DirectML.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\**\*.png" />
     <Content Include="Assets\Petal.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The interface's other languages (Arabic's is in the code), read when chosen. -->
+    <EmbeddedResource Include="Localization\Languages\*.json" />
   </ItemGroup>
 
   <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->
@@ -49,5 +68,13 @@
   <ItemGroup Condition="Exists('..\..\tools\bin\models')">
     <None Include="..\..\tools\bin\models\**\*" LinkBase="tools\models" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
+
+  <!-- Petal.Shell.dll goes in a "shell" folder of its own, next to the app and its published copy. -->
+  <Target Name="CopyShellHandler" AfterTargets="Build">
+    <Copy SourceFiles="..\Petal.Shell\bin\$(Configuration)\net48\Petal.Shell.dll" DestinationFolder="$(OutDir)shell" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PublishShellHandler" AfterTargets="Publish">
+    <Copy SourceFiles="..\Petal.Shell\bin\$(Configuration)\net48\Petal.Shell.dll" DestinationFolder="$(PublishDir)shell" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

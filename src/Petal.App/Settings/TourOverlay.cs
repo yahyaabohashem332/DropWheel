@@ -118,7 +118,7 @@ internal sealed class TourOverlay(Window owner, ScrollViewer scroll, IReadOnlyLi
         protected override Size ArrangeOverride(Size finalSize)
         {
             var size = _bubble.DesiredSize;
-            double x = L.IsArabic ? 12 : AdornedElement.RenderSize.Width - size.Width - 12;
+            double x = L.IsRightToLeft ? 12 : AdornedElement.RenderSize.Width - size.Width - 12;
             _bubble.Arrange(new Rect(new Point(Math.Max(0, x), 10), size));
             return finalSize;
         }

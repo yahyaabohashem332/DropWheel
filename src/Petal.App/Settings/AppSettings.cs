@@ -45,6 +45,9 @@ public sealed class AppSettings
     /// <summary>Open on the wheel used last, with the petal chosen last lit up for the keyboard.</summary>
     public bool RememberLastPetal { get; set; } = true;
 
+    /// <summary>The centre says what a petal will make (its size, a cut-out) while the pointer rests on it.</summary>
+    public bool PetalPreviews { get; set; } = true;
+
     /// <summary>Petals the user gave a colour, by their key ("tool:Compress", "format:webp"), as "#RRGGBB".</summary>
     public Dictionary<string, string> PetalColours { get; set; } = [];
 
@@ -134,6 +137,12 @@ public sealed class AppSettings
     public bool PolishLargeCursor { get; set; } = true;
     public bool PolishClickRings { get; set; } = true;
 
+    /// <summary>Recordings show the webcam in a round bubble; where it sits (its middle, across and down the area) and how big (of the area's shorter side).</summary>
+    public bool RecordCamera { get; set; }
+    public double RecordCameraX { get; set; } = 0.86;
+    public double RecordCameraY { get; set; } = 0.80;
+    public double RecordCameraSize { get; set; } = 0.24;
+
     /// <summary>Dictation: the shortcut, the language spoken ("auto" to tell), and the accuracy chosen.</summary>
     public string DictationShortcut { get; set; } = "Ctrl+Win+J";
     public string DictationLanguage { get; set; } = "auto";
@@ -149,6 +158,9 @@ public sealed class AppSettings
     /// <summary>The command palette's shortcut.</summary>
     public string PaletteShortcut { get; set; } = "Ctrl+Win+K";
 
+    /// <summary>Voice commands: say what you want and the command palette opens with it.</summary>
+    public string VoiceShortcut { get; set; } = "Ctrl+Win+M";
+
     /// <summary>Live captions: from the PC's sound ("system") or the microphone ("mic"); shown as "both", "arabic", "original" or "english"; the language spoken.</summary>
     public string CaptionsSource { get; set; } = "system";
     public string CaptionsShow { get; set; } = "both";
@@ -161,6 +173,15 @@ public sealed class AppSettings
 
     /// <summary>Snippets: abbreviations that become longer text as they are typed.</summary>
     public bool SnippetsOn { get; set; } = true;
+
+    /// <summary>Space shows the file selected in File Explorer or on the desktop.</summary>
+    public bool QuickLook { get; set; } = true;
+
+    /// <summary>File Explorer shows thumbnails of Photoshop, Illustrator, EPS, InDesign and Krita files.</summary>
+    public bool ExplorerThumbnails { get; set; } = true;
+
+    /// <summary>Other programs of this user (Stream Deck, AutoHotkey, scripts, the command line) can run Petal's petals.</summary>
+    public bool LocalApi { get; set; } = true;
     public List<Petal.Core.Text.Snippet> Snippets { get; set; } = Petal.Core.Text.Snippets.Starters();
 
     /// <summary>Other PCs with Petal may send files here (it asks each time); the id other PCs know this one by.</summary>

@@ -33,11 +33,19 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // "--lang ar|en" forces a language (used for design snapshots).
+        // "--lang ar|en|tr|…" forces a language (used for design snapshots).
         int langArg = Array.IndexOf(e.Args, "--lang");
         if (langArg >= 0 && langArg + 1 < e.Args.Length)
-            L.Initialize(e.Args[langArg + 1] == "ar" ? UiLanguage.Arabic : UiLanguage.English);
+            L.Initialize(L.FromCode(e.Args[langArg + 1]));
         string[] args = langArg >= 0 ? e.Args.Where((_, i) => i != langArg && i != langArg + 1).ToArray() : e.Args;
+
+        // The uninstaller: File Explorer's thumbnails for design files come out, and nothing else happens.
+        if (args.Length >= 1 && args[0] == "--unregister-shell")
+        {
+            Shell.ExplorerThumbnails.Apply(false);
+            Shutdown();
+            return;
+        }
 
         if (args.Length >= 3 && args[0] == "--snapshot-tools")
         {
@@ -118,6 +126,7 @@ public partial class App : Application
 
         _controller = new PetalController(converters, Dispatcher);
         _controller.Start();
+        ApplyLocalApi(settings.LocalApi);
         Search.SearchService.Start(converters);
 
         CreateTray();
@@ -147,7 +156,17 @@ public partial class App : Application
         Commands.PaletteSources.Register();
         if (!Commands.CommandPalette.RegisterShortcut())
             Log.Info($"{settings.PaletteShortcut} is already used by another program");
+        if (!Words.VoiceCommand.RegisterShortcut())
+            Log.Info($"{settings.VoiceShortcut} is already used by another program");
         Words.TextExpander.Start();
+        _ = Task.Run(Shell.VirtualDrop.Tidy);
+        var thumbnails = settings.ExplorerThumbnails;
+        _ = Task.Run(() => Shell.ExplorerThumbnails.Apply(thumbnails));
+        Shell.QuickLook.Start(Dispatcher, (files, at) =>
+        {
+            Controller.OpenWheelNow(files, at);
+            return true;
+        });
         _ = Actions.PcDrop.ApplyAsync(settings.ReceiveFromPcs);
         if (command is not null)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
@@ -214,9 +233,28 @@ public partial class App : Application
         ContextMenuRegistration.Apply(s.ExplorerContextMenu);
         Words.Dictation.RegisterShortcut();
         Commands.CommandPalette.RegisterShortcut();
+        Words.VoiceCommand.RegisterShortcut();
         _ = Actions.PcDrop.ApplyAsync(s.ReceiveFromPcs);
+        ApplyLocalApi(s.LocalApi);
         Jobs.History.Reload();
         BuildTrayMenu();
+    }
+
+    private Shell.LocalApi? _api;
+
+    /// <summary>Starts or stops answering other programs, as the setting says.</summary>
+    private void ApplyLocalApi(bool on)
+    {
+        if (on && _api is null && _controller is not null)
+        {
+            _api = new Shell.LocalApi(_controller, Dispatcher);
+            _api.Listen();
+        }
+        else if (!on && _api is not null)
+        {
+            _api.Dispose();
+            _api = null;
+        }
     }
 
     private void CreateTray()
@@ -284,13 +322,15 @@ public partial class App : Application
         captionsItem.Click += (_, _) => Words.LiveCaptions.Toggle();
         var meetingItem = new MenuItem { Header = L.T(Words.MeetingRecorder.IsRecording ? "Stop the Meeting Notes" : "Meeting Notes") };
         meetingItem.Click += (_, _) => Words.MeetingRecorder.Toggle();
+        var stepsItem = new MenuItem { Header = L.T(Screen.StepRecorder.IsRecording ? "Finish the Guide" : "Record Steps") };
+        stepsItem.Click += (_, _) => Screen.StepRecorder.Toggle();
         var focusItem = new MenuItem { Header = L.T(Screen.FocusMode.IsOn ? "End the Focus Session" : "Focus…") };
         focusItem.Click += (_, _) => Screen.FocusMode.Toggle();
         var screenMenu = new MenuItem { Header = L.T("Screen & Text") };
         foreach (var item in new[] { snipItem, recordItem, drawItem, textItem, clipsItem, noteItem, timerItem })
             screenMenu.Items.Add(item);
         var workMenu = new MenuItem { Header = L.T("Work") };
-        foreach (var item in new[] { captionsItem, meetingItem, focusItem })
+        foreach (var item in new[] { captionsItem, meetingItem, stepsItem, focusItem })
             workMenu.Items.Add(item);
         var paletteItem = new MenuItem { Header = L.T("Command Palette") };
         paletteItem.Click += (_, _) => _ = Commands.CommandPalette.ToggleAsync(IntPtr.Zero);
@@ -315,6 +355,9 @@ public partial class App : Application
         menu.Items.Add(screenMenu);
         menu.Items.Add(workMenu);
         menu.Items.Add(statsItem);
+        var healthItem = new MenuItem { Header = L.T("Petal Health…") };
+        healthItem.Click += (_, _) => Settings.HealthWindow.ShowSingle();
+        menu.Items.Add(healthItem);
         menu.Items.Add(new Separator());
         menu.Items.Add(howItem);
         menu.Items.Add(practiceItem);
@@ -403,6 +446,8 @@ public partial class App : Application
         Notes.StickyNotes.Save();
         Words.Dictation.Dispose();
         Commands.CommandPalette.Dispose();
+        Words.VoiceCommand.Dispose();
+        _api?.Dispose();
         if (Words.LiveCaptions.IsOn)
             Words.LiveCaptions.Stop();
         Screen.FocusMode.End(early: true);

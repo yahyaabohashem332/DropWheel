@@ -72,7 +72,7 @@ internal static partial class PdfToXlsx
     }
 
     /// <summary>Column bands: the union of overlapping segment extents of rows that have several segments.</summary>
-    private static List<(double Left, double Right)> Columns(List<PdfRow> rows)
+    internal static List<(double Left, double Right)> Columns(List<PdfRow> rows)
     {
         var spans = rows.Where(r => r.Segments.Count >= 2).SelectMany(r => r.Segments).Select(s => (s.Left, s.Right)).OrderBy(s => s.Left).ToList();
         var columns = new List<(double Left, double Right)>();
@@ -86,7 +86,7 @@ internal static partial class PdfToXlsx
         return columns;
     }
 
-    private static int ColumnFor(List<(double Left, double Right)> columns, PdfLine seg)
+    internal static int ColumnFor(List<(double Left, double Right)> columns, PdfLine seg)
     {
         if (columns.Count == 0)
             return 0;

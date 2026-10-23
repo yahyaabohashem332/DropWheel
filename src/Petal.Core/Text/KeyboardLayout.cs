@@ -42,6 +42,13 @@ public static class KeyboardLayout
         return arabic > latin;
     }
 
+    /// <summary>
+    /// Arabic itself, not Persian or Urdu, which share its script: Arabic letters, and none of the letters
+    /// only those two use (پ چ ژ گ ک ی ٹ ڈ ڑ ں ے ہ).
+    /// </summary>
+    public static bool LooksArabicLanguage(string text) =>
+        LooksArabic(text) && !text.Any(c => c is 'پ' or 'چ' or 'ژ' or 'گ' or 'ک' or 'ی' or 'ٹ' or 'ڈ' or 'ڑ' or 'ں' or 'ے' or 'ہ' or 'ۓ');
+
     /// <summary>Turns the text the other way round: Arabic letters into the English keys under them, or back.</summary>
     public static string Fix(string text) => LooksArabic(text) ? ToEnglish(text) : ToArabic(text);
 

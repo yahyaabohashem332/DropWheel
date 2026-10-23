@@ -123,6 +123,15 @@ public class UpdateTests : IDisposable
         Assert.Contains("reached", (await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(Path.Combine(_dir, "none.json"), new Version(1, 0), _http))).Message);
     }
 
+    [Fact]
+    public void An_arm64_pc_looks_for_the_arm64_feed_first()
+    {
+        Assert.Equal("https://example.com/petal/update-arm64.json", Updates.ArmFeed("https://example.com/petal/update.json", System.Runtime.InteropServices.Architecture.Arm64));
+        Assert.Null(Updates.ArmFeed("https://example.com/petal/update.json", System.Runtime.InteropServices.Architecture.X64));
+        // A feed that isn't a .json file is used as it is.
+        Assert.Null(Updates.ArmFeed(@"\\server\share\petal", System.Runtime.InteropServices.Architecture.Arm64));
+    }
+
     private sealed class SynchronousProgress(Action<double> report) : IProgress<double>
     {
         public void Report(double value) => report(value);

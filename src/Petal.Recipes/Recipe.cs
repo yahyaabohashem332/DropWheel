@@ -134,7 +134,7 @@ public sealed class Recipe
     };
 
     /// <summary>The format a file has after a step.</summary>
-    internal static FileFormat After(RecipeStep step, FileFormat format) => step.Kind switch
+    public static FileFormat After(RecipeStep step, FileFormat format) => step.Kind switch
     {
         RecipeStepKind.Convert when step.Format is { } id && Formats.FromId(id) is { } target => target,
         RecipeStepKind.Searchable => Formats.Pdf,

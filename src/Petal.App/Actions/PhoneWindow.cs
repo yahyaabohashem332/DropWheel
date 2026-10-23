@@ -236,7 +236,7 @@ public sealed class PhoneWindow : ToolWindow
     }
 
     /// <summary>The Downloads folder, wherever the user moved it.</summary>
-    private static string DownloadsFolder()
+    internal static string DownloadsFolder()
     {
         try
         {
@@ -258,8 +258,8 @@ public sealed class PhoneWindow : ToolWindow
 
     private static SharePageText PageText() => new()
     {
-        Language = L.IsArabic ? "ar" : "en",
-        RightToLeft = L.IsArabic,
+        Language = L.Code,
+        RightToLeft = L.IsRightToLeft,
         Title = L.T("Files from {0}"),
         Subtitle = L.T("Tap a file to save it on this phone."),
         Folder = L.T("Folder · downloads as ZIP"),

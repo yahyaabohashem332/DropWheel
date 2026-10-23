@@ -15,7 +15,7 @@ public sealed record MetadataEntry(string Id, string Group, string Key, string N
 /// <summary>A position in decimal degrees (south and west negative); altitude in metres.</summary>
 public sealed record GpsLocation(double Latitude, double Longitude, double? Altitude = null);
 
-/// <summary>The fields Tangerine highlights for photos: location, camera, author.</summary>
+/// <summary>The fields Petal highlights for photos: location, camera, author.</summary>
 public sealed record MetadataSummary(
     GpsLocation? Location,
     string? CameraMake,

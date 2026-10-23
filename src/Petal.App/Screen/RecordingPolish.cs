@@ -11,6 +11,11 @@ namespace Petal.App.Screen;
 /// <summary>How a recording is polished: what sits behind it, how far the camera goes in, the pointer's size, click rings.</summary>
 internal sealed record PolishOptions(string Background, double Zoom, double CursorScale, bool ClickRings)
 {
+    /// <summary>Not polished: the recording as it was (its own pointer drawn in), only with the camera added.</summary>
+    public static readonly PolishOptions Plain = new("none", 1, 1, false) { IsPlain = true };
+
+    public bool IsPlain { get; private init; }
+
     public static PolishOptions FromSettings()
     {
         var s = SettingsStore.Current;
@@ -44,9 +49,8 @@ internal static class RecordingPolish
         var background = PolishOptions.Backgrounds.FirstOrDefault(b => b.Key == options.Background);
         bool framed = background.Key is not null and not "none";
         canvas.Clear(SKColors.Black);
+        var (content, scale) = Content(width, height, options);
         float pad = framed ? MathF.Round(Math.Min(width, height) * 0.06f) : 0;
-        float scale = framed ? Math.Min((width - 2 * pad) / width, (height - 2 * pad) / height) : 1;
-        var content = SKRect.Create((width - width * scale) / 2, (height - height * scale) / 2, width * scale, height * scale);
         float radius = framed ? Math.Min(width, height) * 0.022f : 0;
         if (framed)
         {
@@ -78,6 +82,36 @@ internal static class RecordingPolish
         if (camera.CursorVisible)
             DrawPointer(canvas, (float)camera.CursorX, (float)camera.CursorY, (float)options.CursorScale * Math.Max(1, height / 900f));
         canvas.Restore();
+    }
+
+    /// <summary>Where the recording sits in the finished frame, and how much smaller it is drawn there.</summary>
+    public static (SKRect Content, float Scale) Content(int width, int height, PolishOptions options)
+    {
+        bool framed = options.Background != "none" && PolishOptions.Backgrounds.Any(b => b.Key == options.Background);
+        float pad = framed ? MathF.Round(Math.Min(width, height) * 0.06f) : 0;
+        float scale = framed ? Math.Min((width - 2 * pad) / width, (height - 2 * pad) / height) : 1;
+        return (SKRect.Create((width - width * scale) / 2, (height - height * scale) / 2, width * scale, height * scale), scale);
+    }
+
+    /// <summary>
+    /// The camera in its round bubble, where it was over the recording (<paramref name="place"/>, in the
+    /// recording's pixels), kept whole inside the recording. It doesn't zoom with the screen.
+    /// </summary>
+    public static void DrawBubble(SKCanvas canvas, SKImage face, BubbleSample place, int width, int height, PolishOptions options)
+    {
+        var (content, scale) = Content(width, height, options);
+        float d = (float)Math.Min(place.Diameter, Math.Min(width, height)) * scale;
+        float r = d / 2;
+        float cx = content.Left + Math.Clamp((float)place.X * scale, r, Math.Max(r, content.Width - r));
+        float cy = content.Top + Math.Clamp((float)place.Y * scale, r, Math.Max(r, content.Height - r));
+        using (var shadow = new SKPaint { IsAntialias = true, Color = new SKColor(0, 0, 0, 100), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, Math.Max(2, d * 0.04f)) })
+            canvas.DrawCircle(cx, cy + d * 0.02f, r, shadow);
+        canvas.Save();
+        canvas.ClipRoundRect(new SKRoundRect(SKRect.Create(cx - r, cy - r, d, d), r, r), SKClipOperation.Intersect, antialias: true);
+        canvas.DrawImage(face, SKRect.Create(cx - r, cy - r, d, d), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
+        canvas.Restore();
+        using var ring = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, Color = SKColors.White.WithAlpha(235), StrokeWidth = Math.Max(2, d * 0.018f) };
+        canvas.DrawCircle(cx, cy, r - ring.StrokeWidth / 2, ring);
     }
 
     private static void DrawRings(SKCanvas canvas, double time, IReadOnlyList<ClickSample> clicks, float worldScale)
@@ -129,18 +163,30 @@ internal static class RecordingPolish
     }
 
     /// <summary>
-    /// Reads every frame of <paramref name="input"/>, draws it polished, and writes <paramref name="output"/>
-    /// with the input's sound. False when FFmpeg fails (the caller keeps the raw recording then).
+    /// Reads every frame of <paramref name="input"/>, draws it polished (or, with <see cref="PolishOptions.Plain"/>,
+    /// as it was) with the camera's bubble when there is one, and writes <paramref name="output"/> with the
+    /// input's sound. False when FFmpeg fails (the caller keeps the raw recording then).
     /// </summary>
     public static async Task<bool> RenderAsync(string input, string output, int width, int height, double fps,
-        IReadOnlyList<CursorSample> cursor, IReadOnlyList<ClickSample> clicks, PolishOptions options, IProgress<double>? progress, CancellationToken cancellationToken)
+        IReadOnlyList<CursorSample> cursor, IReadOnlyList<ClickSample> clicks, PolishOptions options, IProgress<double>? progress, CancellationToken cancellationToken,
+        CameraOverlay? webcam = null)
     {
-        if (ToolLocator.Ffmpeg is not { } ffmpeg || cursor.Count == 0)
+        if (ToolLocator.Ffmpeg is not { } ffmpeg || (cursor.Count == 0 && !options.IsPlain))
             return false;
-        var camera = CameraPath.Build(fps, width, height, cursor, clicks, options.Zoom);
+        // Plain: the camera stays still on the whole picture and the recording's own pointer is kept.
+        var camera = options.IsPlain
+            ? Enumerable.Repeat(new CameraFrame(1, width / 2.0, height / 2.0, 0, 0, false), Math.Max(1, cursor.Count)).ToList()
+            : CameraPath.Build(fps, width, height, cursor, clicks, options.Zoom);
         var decode = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (var a in new[] { "-v", "error", "-i", input, "-f", "rawvideo", "-pix_fmt", "bgra", "-" })
             decode.ArgumentList.Add(a);
+        ProcessStartInfo? faces = null;
+        if (webcam is not null)
+        {
+            faces = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+            foreach (var a in new[] { "-v", "error", "-i", webcam.Video, "-f", "rawvideo", "-pix_fmt", "bgra", "-s", $"{webcam.Side}x{webcam.Side}", "-" })
+                faces.ArgumentList.Add(a);
+        }
         var encode = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardError = true };
         foreach (var a in new[]
         {
@@ -151,10 +197,13 @@ internal static class RecordingPolish
             encode.ArgumentList.Add(a);
         using var reader = Process.Start(decode);
         using var writer = Process.Start(encode);
+        using var faceReader = faces is null ? null : Process.Start(faces);
         if (reader is null || writer is null)
             return false;
         _ = reader.StandardError.ReadToEndAsync(cancellationToken);
         _ = writer.StandardError.ReadToEndAsync(cancellationToken);
+        if (faceReader is not null)
+            _ = faceReader.StandardError.ReadToEndAsync(cancellationToken);
         try
         {
             await Task.Run(() =>
@@ -167,9 +216,16 @@ internal static class RecordingPolish
                 using var target = new SKBitmap(info);
                 using var canvas = new SKCanvas(target);
                 var gc = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                // The camera's frames, one for each of the screen's; when they run out the last one stays.
+                int faceSide = webcam?.Side ?? 1;
+                var faceInfo = new SKImageInfo(faceSide, faceSide, SKColorType.Bgra8888, SKAlphaType.Opaque);
+                var face = new byte[faceSide * faceSide * 4];
+                var faceGc = GCHandle.Alloc(face, GCHandleType.Pinned);
+                bool hasFace = false, faceEnded = faceReader is null;
                 try
                 {
                     using var pixmap = new SKPixmap(info, gc.AddrOfPinnedObject(), width * 4);
+                    using var facePixmap = new SKPixmap(faceInfo, faceGc.AddrOfPinnedObject(), faceSide * 4);
                     int frame = 0;
                     while (ReadFull(source, buffer))
                     {
@@ -182,6 +238,18 @@ internal static class RecordingPolish
                             var cam = camera[Math.Min(frame, camera.Count - 1)];
                             Compose(canvas, image, width, height, cam, frame / fps, clicks, options);
                         }
+                        if (!faceEnded)
+                        {
+                            if (ReadFull(faceReader!.StandardOutput.BaseStream, face))
+                                hasFace = true;
+                            else
+                                faceEnded = true;
+                        }
+                        if (hasFace && webcam is not null)
+                        {
+                            using var faceImage = SKImage.FromPixels(facePixmap);
+                            DrawBubble(canvas, faceImage, webcam.At(frame / fps), width, height, options);
+                        }
                         canvas.Flush();
                         var bytes = target.GetPixelSpan();
                         sink.Write(bytes);
@@ -193,17 +261,20 @@ internal static class RecordingPolish
                 finally
                 {
                     gc.Free();
+                    faceGc.Free();
                     sink.Close();
                 }
             }, cancellationToken);
             await writer.WaitForExitAsync(cancellationToken);
             await reader.WaitForExitAsync(cancellationToken);
+            if (faceReader is { HasExited: false })
+                faceReader.Kill();
             return writer.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0;
         }
         catch (Exception ex) when (ex is IOException or OperationCanceledException or InvalidOperationException)
         {
-            foreach (var p in new[] { reader, writer })
-                try { if (!p.HasExited) p.Kill(); } catch (InvalidOperationException) { }
+            foreach (var p in new[] { reader, writer, faceReader })
+                try { if (p is { HasExited: false }) p.Kill(); } catch (InvalidOperationException) { }
             return false;
         }
     }

@@ -129,14 +129,17 @@ public sealed class JobRunner(ConverterRegistry converters)
     }
 
     /// <summary>A recipe over the files, as one job: its steps can combine them (a ZIP, one PDF).</summary>
-    public Task RunRecipeAsync(IReadOnlyList<string> files, Petal.Recipes.Recipe recipe, ScreenPoint at, string? outputDirectory = null)
+    /// <returns>What the recipe made; nothing when it failed or was cancelled.</returns>
+    public async Task<IReadOnlyList<string>> RunRecipeAsync(IReadOnlyList<string> files, Petal.Recipes.Recipe recipe, ScreenPoint at, string? outputDirectory = null)
     {
         var settings = SettingsStore.Current;
         var runner = new Petal.Recipes.RecipeRunner(Converters, settings.Conversion);
         var label = files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
-        var work = new WorkItem(files[0], label, (progress, ct) =>
-            runner.RunAsync(recipe, files, outputDirectory ?? (files.Count > 0 ? settings.OutputDirectoryFor(files[0]) : null), progress, ct));
-        return RunAsync(L.F("Running {0}", recipe.Name), L.F("{0}: done", recipe.Name), [work], at);
+        IReadOnlyList<string> made = [];
+        var work = new WorkItem(files[0], label, async (progress, ct) =>
+            made = await runner.RunAsync(recipe, files, outputDirectory ?? (files.Count > 0 ? settings.OutputDirectoryFor(files[0]) : null), progress, ct));
+        await RunAsync(L.F("Running {0}", recipe.Name), L.F("{0}: done", recipe.Name), [work], at);
+        return made;
     }
 
     /// <summary>

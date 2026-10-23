@@ -74,7 +74,7 @@ public sealed class AskWindow : ToolWindow
         Body.Children.Add(Text(FileLabel(files), "Petal.Section"));
         Body.Children.Add(Text("Say what to do with them, in your own words.", "Petal.Caption").WithMarginT(4));
 
-        _request.FlowDirection = L.IsArabic ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        _request.FlowDirection = L.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         _request.KeyDown += (_, e) =>
         {
             if (e.Key == Key.Enter)

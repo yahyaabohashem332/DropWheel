@@ -49,7 +49,7 @@ public abstract class SingleImageWindow : ToolWindow
         if (extension is not null)
             output = Path.ChangeExtension(output, extension);
         var quality = Petal.App.Settings.SettingsStore.Current.Conversion.ImageQuality;
-        _ = Jobs.RunAsync(L.F("Saving {0}", L.IsArabic ? L.T(Tool.Name) : Tool.Name.ToLowerInvariant()), Tool.Name, [new WorkItem(File, Path.GetFileName(File), (progress, ct) =>
+        _ = Jobs.RunAsync(L.F("Saving {0}", L.Code == "en" ? Tool.Name.ToLowerInvariant() : L.T(Tool.Name)), Tool.Name, [new WorkItem(File, Path.GetFileName(File), (progress, ct) =>
         {
             progress.Report(0.3);
             ImageLoader.Save(image, output, quality);

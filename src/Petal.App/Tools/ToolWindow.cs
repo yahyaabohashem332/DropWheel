@@ -94,8 +94,10 @@ public abstract class ToolWindow : Window
         DockPanel.SetDock(ResetButton, Dock.Left);
         _footerNote.Style = (Style)Application.Current.FindResource("Petal.Caption");
         _footerNote.VerticalAlignment = VerticalAlignment.Center;
+        // Up to two lines (a sentence is often longer in other languages), then "…" with the whole note as a tooltip.
         _footerNote.TextTrimming = TextTrimming.CharacterEllipsis;
-        _footerNote.TextWrapping = TextWrapping.NoWrap;
+        _footerNote.TextWrapping = TextWrapping.Wrap;
+        _footerNote.MaxHeight = 34;
         _footerNote.Margin = new Thickness(2, 0, 12, 0);
         _footer.Children.Add(PrimaryButton);
         _footer.Children.Add(ResetButton);
@@ -136,7 +138,11 @@ public abstract class ToolWindow : Window
     protected string FooterNote
     {
         get => _footerNote.Text;
-        set => _footerNote.Text = L.T(value);
+        set
+        {
+            _footerNote.Text = L.T(value);
+            _footerNote.ToolTip = string.IsNullOrEmpty(value) ? null : _footerNote.Text;
+        }
     }
 
     private void OnThemeChanged() => Dispatcher.BeginInvoke(ApplyTheme);
@@ -219,6 +225,9 @@ public abstract class ToolWindow : Window
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(labelWidth) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         var l = Text(label, "Petal.Label");
+        // A label longer in some language than its column wraps instead of running under the control.
+        l.TextWrapping = TextWrapping.Wrap;
+        l.Margin = new Thickness(0, 0, 8, 0);
         grid.Children.Add(l);
         Grid.SetColumn(control, 1);
         if (control is FrameworkElement fe && fe.HorizontalAlignment == HorizontalAlignment.Stretch && control is not System.Windows.Controls.Slider)

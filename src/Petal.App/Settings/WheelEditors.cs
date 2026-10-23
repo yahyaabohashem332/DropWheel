@@ -117,6 +117,7 @@ internal sealed class EntryList : StackPanel
             title.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
             words.Children.Add(title);
             var detail = new TextBlock { Text = Describe(entry, item), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis };
+            detail.ToolTip = detail.Text;
             detail.SetResourceReference(TextBlock.ForegroundProperty, item.Unavailable is null ? "Petal.TextSecondary" : "Petal.Danger");
             words.Children.Add(detail);
             Grid.SetColumn(words, 1);
@@ -665,13 +666,16 @@ internal sealed class PetalPickerWindow : ToolWindow
         words.Children.Add(title);
         if (description.Length > 0)
         {
-            var detail = new TextBlock { Text = L.T(description), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis };
+            // Wrapped, so a long description is read whole rather than cut at the list's edge.
+            var detail = new TextBlock { Text = L.T(description), FontSize = 12, TextWrapping = TextWrapping.Wrap };
             detail.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
             words.Children.Add(detail);
         }
+        DockPanel.SetDock(image, Dock.Left);
         var button = new Button
         {
-            Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { image, words } },
+            // A dock panel gives the words the row's width (a horizontal stack panel would give them no limit).
+            Content = new DockPanel { Children = { image, words } },
             Style = (Style)FindResource("Petal.SubtleButton"),
             HorizontalContentAlignment = HorizontalAlignment.Left,
             HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -807,6 +811,7 @@ internal sealed class PetalColoursWindow : ToolWindow
                 DockPanel.SetDock(picker, Dock.Right);
                 row.Children.Add(picker);
                 var name = new TextBlock { Text = L.T(item.Name), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+                name.ToolTip = name.Text;
                 name.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
                 row.Children.Add(name);
                 _list.Children.Add(row);

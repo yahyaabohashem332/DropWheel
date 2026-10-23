@@ -205,6 +205,11 @@ public static class WheelActions
         {
             Run = async c => { await Task.Delay(180); Screen.PinnedShot.Start(Open(c)); },
         },
+        new("screen.live", "LIVE", "Live Region", "appWindow", "Part of another window (a call, a stream, a build) kept on top and live, moving as it moves there.", "Screen")
+        {
+            Note = () => Screen.LiveRegion.Count > 0 ? Localization.L.P(Screen.LiveRegion.Count, "{0} open", "{0} open") : null,
+            Run = async c => { await Task.Delay(180); Screen.LiveRegion.Start(); },
+        },
         new("screen.private", "PRIVATE SHOT", "Private Screenshot", "eyeOff", "A screenshot with e-mail addresses, phone numbers, card numbers and passwords already covered, to share safely.", "Screen")
         {
             Run = async c =>
@@ -368,6 +373,11 @@ public static class WheelActions
         {
             State = () => Words.LiveCaptions.IsOn,
             Run = Do(Words.LiveCaptions.Toggle),
+        },
+        new("steps.record", "STEPS", "Record Steps", "clipboardList", "A step-by-step guide made while you work: each click with a picture and its words, to save as PDF, Word or a web page.", "Work")
+        {
+            State = () => Screen.StepRecorder.IsRecording,
+            Run = Do(Screen.StepRecorder.Toggle),
         },
         new("workspace.save", "SAVE LAYOUT", "Save Workspace", "plus", "Keep the apps open now and where their windows are, to open them all together later.", "Work")
         {

@@ -267,7 +267,7 @@ public sealed class FileDetailsWindow : ToolWindow
             var details = await Task.Run(() => Read(_file));
             Show(details);
             // The right-to-left mark keeps "(IDML)" at the end of the Arabic kind, before the Latin application name.
-            _status.Text = L.T(details.Kind) + (details.Application is { Length: > 0 } app ? (L.IsArabic ? "\u200F" : "") + " · " + app : "");
+            _status.Text = L.T(details.Kind) + (details.Application is { Length: > 0 } app ? (L.IsRightToLeft ? "\u200F" : "") + " · " + app : "");
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

@@ -7,18 +7,25 @@
 .PARAMETER Notes
   What's new, shown in Petal's update window.
 
+.PARAMETER Arch
+  x64 (the default) or arm64: Petal for ARM64 PCs, its own ZIP, Setup and update feed
+  (update-arm64.json). FFmpeg and ExifTool stay x64 programs, which Windows 11 runs on ARM64.
+
 .EXAMPLE
   pwsh tools\scripts\build.ps1
 #>
 param(
     [string]$Version = '1.0.0',
     [string]$Notes = '',
+    [ValidateSet('x64', 'arm64')]
+    [string]$Arch = 'x64',
     [switch]$SkipTests
 )
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $dist = Join-Path $root 'dist'
-$publish = Join-Path $dist 'Petal'
+$publish = Join-Path $dist ($(if ($Arch -eq 'arm64') { 'Petal-arm64' } else { 'Petal' }))
+$rid = "win-$Arch"
 
 & (Join-Path $PSScriptRoot 'fetch-tools.ps1')
 
@@ -28,7 +35,7 @@ if (-not $SkipTests) {
 }
 
 if (Test-Path $publish) { Remove-Item $publish -Recurse -Force }
-dotnet publish (Join-Path $root 'src\Petal.App\Petal.App.csproj') -c Release -r win-x64 --self-contained true `
+dotnet publish (Join-Path $root 'src\Petal.App\Petal.App.csproj') -c Release -r $rid --self-contained true `
     -p:PublishReadyToRun=true -p:Version=$Version -p:DebugType=none -o $publish --nologo --disable-build-servers
 if ($LASTEXITCODE -ne 0) { throw 'Publish failed' }
 
@@ -38,7 +45,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Publish failed' }
 # fresh copies may still be held open by a virus scan.
 $cliStage = Join-Path $dist 'cli-staging'
 if (Test-Path $cliStage) { Remove-Item $cliStage -Recurse -Force }
-dotnet publish (Join-Path $root 'src\Petal.Cli\Petal.Cli.csproj') -c Release -r win-x64 --self-contained true `
+dotnet publish (Join-Path $root 'src\Petal.Cli\Petal.Cli.csproj') -c Release -r $rid --self-contained true `
     -p:PublishReadyToRun=true -p:Version=$Version -p:DebugType=none -o $cliStage --nologo --disable-build-servers
 if ($LASTEXITCODE -ne 0) { throw 'Publishing the command line failed' }
 Get-ChildItem $cliStage -Recurse -File | ForEach-Object {
@@ -51,12 +58,21 @@ Get-ChildItem $cliStage -Recurse -File | ForEach-Object {
 Remove-Item $cliStage -Recurse -Force
 Move-Item (Join-Path $publish 'petal-cli.exe') (Join-Path $publish 'Petal.com') -Force
 
-# Whisper.net brings its native libraries for every platform; Petal runs on Windows x64 only.
+# Whisper.net brings its native libraries for every platform; only this build's processor stays.
+# Its graphics-card (Vulkan) build exists for x64 only, so ARM64 transcribes on the processor.
+$foreign = if ($Arch -eq 'arm64') { '^(linux|macos|osx|win-x64|win-x86|vulkan)' } else { '^(linux|macos|osx|win-arm64|win-x86)' }
 Get-ChildItem (Join-Path $publish 'runtimes') -Directory -Recurse -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -match '^(linux|macos|osx|win-arm64|win-x86)' } |
-    Remove-Item -Recurse -Force
-& (Join-Path $publish 'Petal.com') version
-if ($LASTEXITCODE -ne 0) { throw 'The command line does not start' }
+    Where-Object { $_.Name -match $foreign } |
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+# Debug symbols that packages bring along (SkiaSharp's alone is 85 MB) are no use to anyone running Petal.
+Get-ChildItem $publish -Recurse -Filter *.pdb | Remove-Item -Force
+# So is DirectML's debug layer, which its package copies beside DirectML.dll.
+Remove-Item (Join-Path $publish 'DirectML.Debug.dll') -Force -ErrorAction SilentlyContinue
+# The command line runs here only when it is built for this PC's processor.
+if ($Arch -eq 'x64') {
+    & (Join-Path $publish 'Petal.com') version
+    if ($LASTEXITCODE -ne 0) { throw 'The command line does not start' }
+}
 
 # Licences of everything we ship.
 $licences = Join-Path $publish 'licenses'
@@ -71,7 +87,22 @@ if ($directml) { Copy-Item (Join-Path $directml.FullName 'LICENSE.txt') (Join-Pa
 & (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -version | Select-Object -First 2 | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
 Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.md')
 
-$zip = Join-Path $dist "Petal-$Version-win-x64.zip"
+# The Stream Deck plugin as Stream Deck installs it: its folder in a ZIP named .streamDeckPlugin, with
+# Petal's version. Settings opens it from here.
+$deckStage = Join-Path $dist 'streamdeck-staging'
+if (Test-Path $deckStage) { Remove-Item $deckStage -Recurse -Force }
+New-Item -ItemType Directory -Force $deckStage | Out-Null
+Copy-Item (Join-Path $root 'tools\streamdeck\com.petal.app.sdPlugin') $deckStage -Recurse
+$deckManifest = Join-Path $deckStage 'com.petal.app.sdPlugin\manifest.json'
+(Get-Content $deckManifest -Raw) -replace '"Version": "\d+\.\d+\.\d+\.\d+"', "`"Version`": `"$Version.0`"" | Set-Content $deckManifest -Encoding utf8NoBOM
+$integrations = Join-Path $publish 'integrations'
+New-Item -ItemType Directory -Force $integrations | Out-Null
+$deckZip = Join-Path $dist 'Petal.streamDeckPlugin.zip'
+Compress-Archive -Path (Join-Path $deckStage 'com.petal.app.sdPlugin') -DestinationPath $deckZip -Force
+Move-Item $deckZip (Join-Path $integrations 'Petal.streamDeckPlugin') -Force
+Remove-Item $deckStage -Recurse -Force
+
+$zip = Join-Path $dist "Petal-$Version-win-$Arch.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $zip -CompressionLevel Optimal
 Write-Host "Portable build: $zip"
@@ -79,15 +110,16 @@ Write-Host "Portable build: $zip"
 $iscc = @("${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe", "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |
     Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($iscc) {
-    & $iscc "/DAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$dist" (Join-Path $root 'installer\Petal.iss')
+    & $iscc "/DAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$dist" "/DArch=$Arch" (Join-Path $root 'installer\Petal.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
-    $setup = Join-Path $dist "Petal-Setup-$Version.exe"
+    $setupName = if ($Arch -eq 'arm64') { "Petal-Setup-$Version-arm64.exe" } else { "Petal-Setup-$Version.exe" }
+    $setup = Join-Path $dist $setupName
     Write-Host "Installer: $setup"
 
     # The update feed: host update.json next to the installer (the url is relative to it).
     $manifest = [ordered]@{
         version = $Version
-        url = "Petal-Setup-$Version.exe"
+        url = $setupName
         sha256 = (Get-FileHash $setup -Algorithm SHA256).Hash
         size = (Get-Item $setup).Length
         notes = $Notes
@@ -103,8 +135,9 @@ if ($iscc) {
     $signature = $ecdsa.SignData([System.Text.Encoding]::UTF8.GetBytes($signed), [System.Security.Cryptography.HashAlgorithmName]::SHA256,
         [System.Security.Cryptography.DSASignatureFormat]::IeeeP1363FixedFieldConcatenation)
     $manifest.signature = [Convert]::ToBase64String($signature)
-    $manifest | ConvertTo-Json | Set-Content (Join-Path $dist 'update.json') -Encoding utf8
-    Write-Host "Update feed: $(Join-Path $dist 'update.json')"
+    $feed = Join-Path $dist ($(if ($Arch -eq 'arm64') { 'update-arm64.json' } else { 'update.json' }))
+    $manifest | ConvertTo-Json | Set-Content $feed -Encoding utf8
+    Write-Host "Update feed: $feed"
 } else {
     Write-Host 'Inno Setup not found; skipped Setup.exe (winget install JRSoftware.InnoSetup).'
 }

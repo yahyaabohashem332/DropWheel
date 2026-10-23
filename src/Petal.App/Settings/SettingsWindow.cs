@@ -282,9 +282,15 @@ public sealed partial class SettingsWindow : ToolWindow
     private UIElement AppearanceSection()
     {
         var panel = new StackPanel();
-        var language = Segments([(UiLanguage.System, "Automatic"), (UiLanguage.English, "English"), (UiLanguage.Arabic, "العربية")], _s.Language);
-        language.Changed += l =>
+        // Each language by its own name, so anyone can find theirs.
+        var language = Choice(new[] { (UiLanguage.System, L.T("Automatic")) }.Concat(L.Languages.Select(l => (l.Language, l.Name))), _s.Language);
+        language.MinWidth = 220;
+        language.HorizontalAlignment = HorizontalAlignment.Left;
+        language.SelectionChanged += (_, _) =>
         {
+            var l = ValueOf<UiLanguage>(language);
+            if (l == _s.Language)
+                return;
             _s.Language = l;
             Save();
             // Rebuild this window in the new language and direction, where it was.

@@ -65,7 +65,7 @@ public static class MeetingNotes
     /// </summary>
     public static async Task<string> SummarizeAsync(string transcript, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        bool arabic = KeyboardLayout.LooksArabic(transcript);
+        bool arabic = KeyboardLayout.LooksArabicLanguage(transcript);
         var parts = Chunks(transcript, AskPetal.MaxWritingText - 500);
         string material;
         if (parts.Count == 1)

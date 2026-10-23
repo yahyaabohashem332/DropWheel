@@ -26,6 +26,9 @@ public sealed class GlobalInputHook : IDisposable
     private Thread? _thread;
     private uint _threadId;
     private IntPtr _mouseHook, _keyboardHook;
+
+    /// <summary>Both hooks are in place: the wheel can see drags and key taps.</summary>
+    public bool IsRunning => _mouseHook != IntPtr.Zero && _keyboardHook != IntPtr.Zero;
     private LowLevelProc? _mouseProc, _keyboardProc;
     private readonly ManualResetEventSlim _started = new();
 
@@ -60,6 +63,18 @@ public sealed class GlobalInputHook : IDisposable
 
     /// <summary>The mouse wheel turned (up is positive); returns true to keep the turn from the app under the pointer.</summary>
     public Func<int, bool>? WheelTurned { get; set; }
+
+    private volatile Func<int, bool, bool>[] _keyFilters = [];
+
+    /// <summary>
+    /// Adds a filter that sees each key (its code, and whether it went down) before anything else and
+    /// keeps it from the app in front by returning true. Filters run on the hook's thread and must be quick.
+    /// </summary>
+    public void AddKeyFilter(Func<int, bool, bool> filter)
+    {
+        lock (this)
+            _keyFilters = [.. _keyFilters, filter];
+    }
 
     public void Start()
     {
@@ -147,6 +162,14 @@ public sealed class GlobalInputHook : IDisposable
             var up = message is WM_KEYUP or WM_SYSKEYUP;
             try
             {
+                if ((down || up) && (data.flags & 0x10) == 0)
+                {
+                    foreach (var filter in _keyFilters)
+                    {
+                        if (filter((int)data.vkCode, down))
+                            return new IntPtr(1);
+                    }
+                }
                 if (down || up)
                     KeyChanged?.Invoke((int)data.vkCode, down);
                 if (down)

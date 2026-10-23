@@ -55,6 +55,12 @@ public enum ToolId
     ContactSheet,
     FolderReport,
     GatherFiles,
+    RemovePauses,
+    AnimatedCaptions,
+    Reframe,
+    TableFromImage,
+    CompareFiles,
+    DescribePicture,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

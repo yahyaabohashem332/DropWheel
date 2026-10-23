@@ -94,30 +94,9 @@ internal static partial class TextExpander
         }
     }
 
-    private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
+    private static bool Down(int vk) => KeyText.Down(vk);
 
-    /// <summary>The character a key makes in the keyboard language of the window in front.</summary>
-    private static string? CharOf(int vk, int scan, IntPtr front, bool altGr)
-    {
-        var state = new byte[256];
-        if (Down(0x10))
-            state[0x10] = 0x80;
-        if ((GetKeyState(0x14) & 1) != 0)
-            state[0x14] = 0x01;
-        if (altGr)
-        {
-            state[0x11] = 0x80;
-            state[0x12] = 0x80;
-        }
-        var layout = ScreenNative.GetKeyboardLayout(GetWindowThreadProcessId(front, out _));
-        var buffer = new char[8];
-        // 4: don't disturb a dead key the app is in the middle of.
-        int n = ToUnicodeEx((uint)vk, (uint)scan, state, buffer, buffer.Length, 4, layout);
-        if (n <= 0)
-            return null;
-        var text = new string(buffer, 0, n);
-        return text.Any(char.IsControl) ? null : text;
-    }
+    private static string? CharOf(int vk, int scan, IntPtr front, bool altGr) => KeyText.Of(vk, scan, front, altGr);
 
     private static async Task ExpandAsync(SnippetMatch match, IntPtr front)
     {
@@ -143,12 +122,6 @@ internal static partial class TextExpander
             return;
         await Wheels.KeySender.ReplaceTypedAsync(target, 0, text.Text, text.CursorBack);
     }
-
-    [LibraryImport("user32.dll")]
-    private static partial short GetKeyState(int key);
-
-    [LibraryImport("user32.dll", EntryPoint = "ToUnicodeEx", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial int ToUnicodeEx(uint vk, uint scan, [In] byte[] state, [Out] char[] buffer, int size, uint flags, IntPtr layout);
 
     [LibraryImport("user32.dll")]
     private static partial uint GetWindowThreadProcessId(IntPtr hWnd, out int processId);

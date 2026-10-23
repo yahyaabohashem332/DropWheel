@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Petal",
+  "UUID": "com.petal.app",
+  "Version": "1.8.0.0",
+  "Author": "Petal",
+  "Description": "Keys for Petal: run any of its petals (a screenshot, the timer, dark mode, captions…), open one of its wheels, or the command palette. Petal must be running, with \"Let other programs run petals\" on in its Settings.",
+  "Icon": "imgs/plugin",
+  "Category": "Petal",
+  "CategoryIcon": "imgs/category",
+  "CodePath": "bin/plugin.js",
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "disabled"
+  },
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.4"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Actions": [
+    {
+      "UUID": "com.petal.app.do",
+      "Name": "Run a Petal",
+      "Icon": "imgs/action-do",
+      "Tooltip": "Runs one of Petal's petals: a screenshot, the timer, dark mode, live captions and more.",
+      "PropertyInspectorPath": "ui/petal.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/key-do", "TitleAlignment": "bottom" }]
+    },
+    {
+      "UUID": "com.petal.app.wheel",
+      "Name": "Open a Wheel",
+      "Icon": "imgs/action-wheel",
+      "Tooltip": "Opens one of Petal's wheels under the pointer.",
+      "PropertyInspectorPath": "ui/petal.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/key-wheel", "TitleAlignment": "bottom" }]
+    },
+    {
+      "UUID": "com.petal.app.commands",
+      "Name": "Command Palette",
+      "Icon": "imgs/action-commands",
+      "Tooltip": "Opens Petal's command palette, optionally with words already typed.",
+      "PropertyInspectorPath": "ui/petal.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/key-commands", "TitleAlignment": "bottom" }]
+    }
+  ]
+}

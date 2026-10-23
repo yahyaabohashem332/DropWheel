@@ -41,6 +41,36 @@ public sealed class GestureController : IDisposable
         _hook.SideButtonDown = OnSideButton;
         _hook.SideButtonUp = button => Trigger(button);
         _hook.WheelTurned = OnWheelTurned;
+        _hook.AddKeyFilter(OnKey);
+    }
+
+    private const int VK_SPACE = 0x20;
+    private const int VK_BACK = 0x08;
+    private bool _spaceDown;
+
+    /// <summary>
+    /// While a dragged file's wheel is open, Space makes the petal under the pointer a step and Backspace
+    /// takes the last one back; both are kept from the app below, which is busy with the drag anyway.
+    /// </summary>
+    private bool OnKey(int vk, bool down)
+    {
+        if (vk is not (VK_SPACE or VK_BACK) || !_dragging || !_wheelRequested || !_wheel.ShowsFiles)
+        {
+            if (vk == VK_SPACE && !down)
+                _spaceDown = false;
+            return false;
+        }
+        if (vk == VK_SPACE)
+        {
+            if (down && !_spaceDown)
+                _ui.BeginInvoke(DispatcherPriority.Send, _wheel.AddStep);
+            _spaceDown = down;
+        }
+        else if (down)
+        {
+            _ui.BeginInvoke(DispatcherPriority.Send, _wheel.RemoveStep);
+        }
+        return true;
     }
 
     /// <summary>The side button chosen in Settings went down, at this point.</summary>
