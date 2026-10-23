@@ -78,7 +78,7 @@ internal static class TextActions
                     break;
                 }
                 SelectedText.TrySet(answer.Text);
-                c.Host.Card(c.At, "= " + answer.Text + (answer.Unit.Length > 0 ? " " + answer.Unit : ""), L.T("Copied"), true);
+                c.Host.Card(c.At, "= " + answer.Shown, L.T("Copied"), true);
                 break;
             }
             case "text.translate":

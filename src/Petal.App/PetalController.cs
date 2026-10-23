@@ -249,6 +249,25 @@ public sealed class PetalController : IDisposable, IWheelHost
     /// <summary>Runs a file wheel's petal on files as a drop on it would, for the command palette.</summary>
     internal void RunOnFiles(WheelItem item, IReadOnlyList<string> files, ScreenPoint at) => OnItemDropped(item, files, at);
 
+    /// <summary>
+    /// A tool or file action started from the Tools Guide on files chosen there: run as a drop on its petal when the
+    /// tools wheel would offer it for them; otherwise the reason it can't take them.
+    /// </summary>
+    internal string? TryOnFiles(WheelItem item, IReadOnlyList<string> files, ScreenPoint at)
+    {
+        if (item.Payload is ToolInfo tool)
+        {
+            static IEnumerable<WheelItem> All(IEnumerable<WheelItem> items) => items.SelectMany(i => i.Children is { } c ? All(c) : [i]);
+            bool fits = Look(files) is { } folder
+                ? All(FolderDrop.Tools(folder, _ => true, "", "").Items).Any(i => i.Payload is ToolInfo t && t.Id == tool.Id)
+                : FormatsOf(files) is { Count: > 0 } formats && ToolRegistry.ToolsFor(formats).Any(t => t.Id == tool.Id);
+            if (!fits)
+                return L.F("{0} doesn't work on these files.", L.T(tool.Name));
+        }
+        OnItemDropped(Availability.Of(item), files, at);
+        return null;
+    }
+
     private WheelContent BuildContent(WheelMode mode, IReadOnlyList<string> files) => Usual(Coloured(Content(mode, files)), mode, files);
 
     /// <summary>The petal usually chosen for this kind of file gets its star and says so.</summary>

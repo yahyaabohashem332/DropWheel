@@ -57,7 +57,8 @@ public static class WorkToolSetup
     {
         var ordered = files.OrderBy(File.GetLastWriteTimeUtc).ToList();
         string before = ordered[0], after = ordered[1];
-        var output = Petal.Core.Jobs.OutputNaming.Unique(Path.GetDirectoryName(after) ?? Path.GetTempPath(),
+        // Beside the newer file, or in the folder Settings › Results names.
+        var output = Petal.Core.Jobs.OutputNaming.Unique(Petal.Core.Jobs.OutputNaming.DirectoryFor(after),
             $"{Path.GetFileNameWithoutExtension(before)} vs {Path.GetFileNameWithoutExtension(after)}", "html");
         ComparisonResult? result = null;
         await jobs.RunAsync("Comparing", "Compared", [new WorkItem(after, $"{Path.GetFileName(before)} · {Path.GetFileName(after)}", async (progress, ct) =>

@@ -176,12 +176,23 @@ public sealed class RedactPhotoWindow : ToolWindow
     private readonly Button _private = new() { Content = L.T("Private details"), Margin = new Thickness(0, 2, 8, 2) };
     private readonly TextBlock _status = new();
 
+    /// <summary>
+    /// A private screenshot: the file is the uncovered picture in Petal's temporary folder, deleted when the
+    /// window closes; the covered copy goes to Pictures\Screenshots and onto the clipboard.
+    /// </summary>
+    public bool PrivateShot { get; init; }
+
     public RedactPhotoWindow(ToolInfo tool, string file, JobRunner jobs, ScreenPoint at) : base(tool.Name, 420)
     {
         _tool = tool;
         _file = file;
         _jobs = jobs;
         _at = at;
+        Closed += (_, _) =>
+        {
+            if (PrivateShot && !_saving)
+                Wheels.Screenshots.ForgetTemporary(_file);
+        };
         Body.Children.Add(PreviewPanel(_canvas, 320));
 
         _style = Segments([(RedactionStyle.Solid, "Solid"), (RedactionStyle.Blur, "Blur")], RedactionStyle.Solid);
@@ -302,6 +313,13 @@ public sealed class RedactPhotoWindow : ToolWindow
         uint argb = 0xFF000000u | ((uint)c.R << 16) | ((uint)c.G << 8) | c.B;
         var regions = _canvas.Boxes.Select(b => new RedactionRegion(
             new PixelRect((int)b.Rect.X, (int)b.Rect.Y, (int)Math.Max(1, b.Rect.Width), (int)Math.Max(1, b.Rect.Height)), _style.Value, argb)).ToList();
+        if (PrivateShot)
+        {
+            _saving = true;
+            Close();
+            _ = SavePrivateAsync(regions);
+            return;
+        }
         var output = OutputNaming.ForTool(_file, _tool);
         Close();
         _ = _jobs.RunAsync("Redacting", "Redacted", [new WorkItem(_file, Path.GetFileName(_file), async (p, ct) =>
@@ -309,6 +327,29 @@ public sealed class RedactPhotoWindow : ToolWindow
             await ImageRedactor.RedactAsync(_file, output, regions, p, ct);
             return (IReadOnlyList<string>)[output];
         })], _at);
+    }
+
+    private bool _saving;
+
+    /// <summary>The covered copy into Pictures\Screenshots and onto the clipboard; the uncovered picture is deleted.</summary>
+    private async Task SavePrivateAsync(IReadOnlyList<RedactionRegion> regions)
+    {
+        try
+        {
+            Directory.CreateDirectory(Wheels.Screenshots.Folder);
+            var output = OutputNaming.ForTool(_file, _tool, outputDirectory: Wheels.Screenshots.Folder);
+            await ImageRedactor.RedactAsync(_file, output, regions, null, CancellationToken.None);
+            Wheels.Screenshots.KeepFile(output, "Private screenshot saved and copied");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or ImageMagick.MagickException)
+        {
+            Log.Error(ex, "Saving a private screenshot");
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("The screenshot couldn't be saved"), ex.Message);
+        }
+        finally
+        {
+            Wheels.Screenshots.ForgetTemporary(_file);
+        }
     }
 }
 

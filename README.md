@@ -143,6 +143,19 @@ workspaces, timer, a new note), a Work submenu in the tray, and Settings › Wor
   Illustrator, Premiere Pro, Blender, Notion, Outlook), and any wheel shared as one line of text
   (`PETAL-WHEEL:…`) or a `.petalwheel` file, imported with a summary of what it holds.
 
+**The Tools Guide (1.8.2).** Every tool, file action and action of the wheels without files explained —
+what it does, how to use it, three examples and what it works on — in all eight languages
+(tray › Tools Guide…, the Settings header, the command palette, or a GUIDE petal).
+
+* **Say what you want to do** — "a countdown", "make this PDF smaller", "أريد أداة تقوم بمهمة العداد":
+  the closest tools come at once, and Enter asks the AI model on this PC, which answers from the guide
+  only, names the tools as links and says when Petal has no tool for it. Every entry has **Try It**
+  (an action runs; a tool asks for its files first) and a question box of its own.
+* **In the wheel** — opened by the shortcut or a click, a petal's name in the centre has a small **!**
+  under it: click it (or press F1) and its explanation opens beside the wheel, following the petal you
+  point at, with a link to the guide.
+* After setup with "Start Petal" ticked, Petal's window opens, with a card saying the version installed.
+
 **More power on the wheel, and Petal in Windows (1.8).**
 
 * **See what a petal makes** — rest on a petal and the centre says how big the result will be ("About
@@ -371,8 +384,8 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.8.1.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
-French or Spanish), or `Petal-Setup-1.8.1-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
+Run `dist\Petal-Setup-1.8.2.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
+French or Spanish), or `Petal-Setup-1.8.2-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.

@@ -136,6 +136,7 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             return;
         var destination = dialog.FolderName;
         var moved = new List<string>();
+        var renames = new List<Jobs.RenamedPath>();
         foreach (var path in paths)
         {
             var target = Path.Combine(destination, Path.GetFileName(path));
@@ -147,7 +148,11 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
                 else
                     FileSystem.MoveFile(path, target, UIOption.AllDialogs, UICancelOption.DoNothing);
                 if (File.Exists(target) || Directory.Exists(target))
+                {
                     moved.Add(target);
+                    if (!File.Exists(path) && !Directory.Exists(path))
+                        renames.Add(new Jobs.RenamedPath(path, target));
+                }
             }
             catch (Exception ex)
             {
@@ -156,6 +161,8 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
         }
         if (moved.Count > 0)
         {
+            // History keeps it, as it does for a folder petal: undo puts the files back.
+            Jobs.History.Add(L.F("Moved to {0}", Path.GetFileName(destination.TrimEnd('\\'))), paths, [], renames);
             var card = HudCard.ShowAt(at, "Moved", "");
             card.Succeed(moved.Count == 1 ? L.T("Moved") : L.P(moved.Count, "Moved {0} item", "Moved {0} items"), Path.GetFileName(destination), () => ExplorerSelection.Reveal(moved));
         }

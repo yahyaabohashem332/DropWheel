@@ -30,7 +30,7 @@ public sealed class RemovePausesWindow : MediaToolWindow
         Body.Children.Add(Text("Cuts out the silent stretches of a talk, a lesson or a screen recording, picture and sound together.", "Petal.Caption").WithMarginT(4));
         _quiet = Segments([(-45.0, "Very quiet"), (-35.0, "Quiet"), (-28.0, "Noisy")], -35.0);
         _shortest = Segments([(0.4, "0.4 s"), (0.6, "0.6 s"), (1.0, "1 s"), (2.0, "2 s")], 0.6);
-        _keep = Segments([(0.08, "A little"), (0.15, "Some"), (0.3, "More")], 0.15);
+        _keep = Segments([(0.08, "A little"), (0.15, "Some"), (0.3, L.T("More", "amount"))], 0.15);
         Body.Children.Add(Row("A pause is", _quiet, 150, 14));
         Body.Children.Add(Row("At least", _shortest, 150, 10));
         Body.Children.Add(Row("Kept at each cut", _keep, 150, 10));
@@ -99,7 +99,8 @@ public sealed class RemovePausesWindow : MediaToolWindow
         {
             var output = OutputNaming.ForTool(file, Tool);
             var cut = await PauseRemover.RemoveAsync(file, output, options, p, ct);
-            return cut.OutputPath is { } made ? [made] : [];
+            // Nothing to cut makes no file: the card says so rather than "Pauses removed".
+            return cut.OutputPath is { } made ? [made] : throw new InvalidOperationException("No pauses this long were found.");
         });
     }
 }

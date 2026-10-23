@@ -80,7 +80,7 @@ public sealed partial class WheelWindow
         if (o.HidesHint)
             FadeHint(true, animate && Animated);
         Sound.Tick();
-        SetHub(L.T(item.Name), L.T("Choose one around it"), animate: IsVisible);
+        SetHub(L.T(item.Name), L.T("Choose one around it"), animate: IsVisible, about: item);
         if (keyboard)
             SetOrbitHighlight(0, null);
         Run(animate);
@@ -108,7 +108,7 @@ public sealed partial class WheelWindow
         _leaving.Add(o);
         // The centre goes back to the group petal, which stays lit.
         if (_highlight is { } h && _content is not null && h < _content.Items.Count)
-            SetHub(HubTitle(_content.Items[h]), Subtitle(_content.Items[h]), animate: IsVisible);
+            SetHub(HubTitle(_content.Items[h]), Subtitle(_content.Items[h]), animate: IsVisible, about: _content.Items[h]);
         Run(animate);
     }
 
@@ -307,14 +307,14 @@ public sealed partial class WheelWindow
         if (index is { } k && k < o.Bubbles.Count)
         {
             var item = o.Bubbles[k].Item;
-            SetHub(HubTitle(item), Subtitle(item), animate: IsVisible);
+            SetHub(HubTitle(item), Subtitle(item), animate: IsVisible, about: item);
             Sound.Tick();
             if (data is not null)
                 DragDropHelper.SetDescription(data, item.IsGroup || item.Unavailable is not null && item.Blocked ? null : Description(item), null);
         }
         else
         {
-            SetHub(L.T(o.Item.Name), L.T("Choose one around it"), animate: IsVisible);
+            SetHub(L.T(o.Item.Name), L.T("Choose one around it"), animate: IsVisible, about: o.Item);
             if (data is not null)
                 DragDropHelper.SetDescription(data, null);
         }

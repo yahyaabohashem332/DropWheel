@@ -172,6 +172,15 @@ public partial class App : Application
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
             Onboarding.WelcomeWindow.ShowSingle();
+        else if (e.Args.Contains("--installed"))
+            // Started by the setup after an update: the main window, and a word on where Petal lives.
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
+            {
+                ShowSettings();
+                Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(
+                    L.F("Petal {0} is installed", UpdateService.Current.ToString(3)),
+                    L.T("It waits in the notification area, by the clock."), null);
+            });
         _ = UpdateService.CheckInBackgroundAsync();
         if (Shell.Packaged.IsPackaged)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () =>
@@ -295,6 +304,8 @@ public partial class App : Application
         historyItem.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
         var howItem = new MenuItem { Header = L.T("How it works") };
         howItem.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
+        var guideItem = new MenuItem { Header = L.T("Tools Guide…") };
+        guideItem.Click += (_, _) => Guide.GuideWindow.ShowSingle();
         var practiceItem = new MenuItem { Header = L.T("Practice…") };
         practiceItem.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
         var statsItem = new MenuItem { Header = L.T("Your Statistics…") };
@@ -360,6 +371,7 @@ public partial class App : Application
         menu.Items.Add(healthItem);
         menu.Items.Add(new Separator());
         menu.Items.Add(howItem);
+        menu.Items.Add(guideItem);
         menu.Items.Add(practiceItem);
         menu.Items.Add(updatesItem);
         menu.Items.Add(pause);

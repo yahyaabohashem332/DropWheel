@@ -220,6 +220,9 @@ internal static class DesignSnapshots
             ("quicklook", () => QuickLook(file("landscape.jpg"))),
             ("quicklookpdf", () => QuickLook(file("album.pdf"))),
             ("quicklooktext", () => QuickLook(file("weekend.srt"))),
+            ("guide", () => Guide.GuideWindow.ForSnapshot("do:draw.timer", null)),
+            // A request in the language Petal speaks: the word for a countdown in it.
+            ("guidesearch", () => Guide.GuideWindow.ForSnapshot(null, Localization.L.IsArabic ? "أريد أداة تقوم بمهمة العداد" : Guide.GuideBook.Name("do:draw.timer"))),
         ];
     }
 
@@ -250,6 +253,7 @@ internal static class DesignSnapshots
     [
         ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
         ("savedshot", () => Hud.HudCard.SavedForSnapshot("Screenshot saved and copied", Path.Combine(Wheels.Screenshots.Folder, "Screenshot 2026-10-23 09.41.12.png"))),
+        ("guidecard", () => Guide.GuideCard.ForSnapshot("tool:Compress")),
         ("savedrecording", () => Hud.HudCard.SavedForSnapshot("Recording saved", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Recording 2026-10-23 09.42.30.mp4"), Localization.L.T("The camera couldn't be added; the recording is saved without it."))),
         ("timer", Private<Screen.TimerWindow>),
         ("timerrunning", () => Screen.TimerWindow.ForSnapshot(TimeSpan.FromMinutes(5))),

@@ -83,7 +83,7 @@ public sealed partial class WheelWindow
             return;
         }
         var answer = Calculator.Evaluate(sum);
-        var shown = answer is null ? "…" : "= " + answer.Text + (answer.Unit.Length > 0 ? " " + answer.Unit : "");
+        var shown = answer is null ? "…" : "= " + answer.Shown;
         // A left-to-right mark keeps "12% of 340" in its order inside an Arabic centre.
         var written = LeftToRight + sum;
         SetHub(LeftToRight + shown, answer is null ? written : written + " · " + L.T("Enter copies"), false);

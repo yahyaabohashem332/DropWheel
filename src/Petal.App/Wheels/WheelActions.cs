@@ -217,9 +217,10 @@ public static class WheelActions
                 await Task.Delay(180);
                 Screenshots.ChooseArea((picture, middle) =>
                 {
-                    var path = Screenshots.Save(picture);
+                    // The uncovered picture waits in Petal's temporary folder; only the covered copy is kept.
+                    var path = Screenshots.SaveTemporary(picture);
                     var controller = App.Current.Controller;
-                    new Tools.Windows.RedactPhotoWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.RedactPhoto), path, controller.Jobs, middle).ShowNear(middle);
+                    new Tools.Windows.RedactPhotoWindow(Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.RedactPhoto), path, controller.Jobs, middle) { PrivateShot = true }.ShowNear(middle);
                 });
             },
         },
@@ -326,6 +327,8 @@ public static class WheelActions
             {
                 if (Screen.WindowArranger.CycleOpacity(c.Target) is { } percent)
                     c.Host.Card(c.At, Localization.L.F("{0}% solid", percent), "", true);
+                else
+                    c.Host.Card(c.At, Localization.L.T("No window to arrange"), Localization.L.T("Open the wheel over an app's window."), false);
                 return Task.CompletedTask;
             },
         },
@@ -435,6 +438,14 @@ public static class WheelActions
         new("petal.search", "SEARCH", "Search by Meaning", "search", "Find files by what they are about.", "Petal") { Run = c => { c.Host.Command("search", c.At); return Task.CompletedTask; } },
         new("petal.scan", "SCAN", "Scan with Phone", "scanLine", "Scan pages with a phone into a searchable PDF.", "Petal") { Run = c => { c.Host.Command("scan", c.At); return Task.CompletedTask; } },
         new("petal.qr", "QR", "Create QR Code", "qr", "A QR code for text, a link or Wi-Fi.", "Petal") { Run = c => { c.Host.Command("qr", c.At); return Task.CompletedTask; } },
+        new("petal.guide", "GUIDE", "Tools Guide", "book", "Every tool explained with examples; say what you want to do and Petal finds the tool.", "Petal")
+        {
+            Run = _ =>
+            {
+                Guide.GuideWindow.ShowSingle();
+                return Task.CompletedTask;
+            },
+        },
         new("petal.stats", "STATS", "Your Statistics", "chart", "What Petal has done for you.", "Petal") { Run = c => { c.Host.Command("stats", c.At); return Task.CompletedTask; } },
         new("petal.settings", "PETAL", "Petal Settings", "sparkles", "Open Petal's settings.", "Petal") { Run = c => { c.Host.Command("settings", c.At); return Task.CompletedTask; } },
         new("petal.pause", "PAUSE", "Pause Petal", "pause", "Ignore key taps while dragging until you turn it back on.", "Petal")

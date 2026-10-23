@@ -141,9 +141,14 @@ internal static class StepRecorder
 
     public static void Start()
     {
-        // The last recording's pictures are still being finished: one at a time.
-        if (IsRecording || _worker is { IsAlive: true } || GlobalInputHook.Current is not { } hook)
+        if (IsRecording || GlobalInputHook.Current is not { } hook)
             return;
+        // The last recording's pictures are still being finished: one at a time, and say so.
+        if (_worker is { IsAlive: true })
+        {
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("The last guide is still being finished"), L.T("Try again in a few seconds."));
+            return;
+        }
         lock (Steps)
             Steps.Clear();
         Typed.Clear();

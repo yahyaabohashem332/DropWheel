@@ -179,10 +179,11 @@ public static class Rings
             }
             case EntryKind.Workspaces:
             {
-                var children = SettingsStore.Current.Workspaces
+                // The seven saved last, and always the petal that saves another.
+                var children = SettingsStore.Current.Workspaces.TakeLast(7)
                     .Select(w => new WheelItem(w.Name.ToUpperInvariant(), w.Name, "layoutGrid", w) { Note = "Open and arrange", Picture = WorkspacePicture(w) })
                     .Append(Item(new WheelEntry { Kind = EntryKind.Action, Action = "workspace.save" }))
-                    .Take(8).ToList();
+                    .ToList();
                 return new WheelItem(e.Label ?? L.T("WORKSPACES"), e.Name ?? "Workspaces", e.Icon ?? "layoutGrid", e) { Tint = tint, Children = children };
             }
             case EntryKind.RunningApps:

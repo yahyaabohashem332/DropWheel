@@ -192,7 +192,9 @@ public sealed class TranscribeWindow : ToolWindow
         bool arabic = _into.Value == "ar";
         _translator.Visibility = arabic && !_translator.IsReady ? Visibility.Visible : Visibility.Collapsed;
         PrimaryButton.IsEnabled = _model.IsReady && (!arabic || _translator.IsReady);
-        FooterNote = _files.Count == 1 ? Path.GetFileNameWithoutExtension(_files[0]) + (_saveAs.Value == "txt" ? ".txt" : ".srt") : L.P(_files.Count, "{0} file", "{0} files");
+        var stem = _files.Count == 1 ? Path.GetFileNameWithoutExtension(_files[0]) : "";
+        FooterNote = _files.Count != 1 ? L.P(_files.Count, "{0} file", "{0} files")
+            : _saveAs.Value switch { "txt" => stem + ".txt", "both" => stem + ".srt · " + stem + ".txt", _ => stem + ".srt" };
     }
 
     private void Apply()

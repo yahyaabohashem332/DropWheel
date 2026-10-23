@@ -13,9 +13,10 @@ public static partial class AskPetal
 
     /// <summary>
     /// Free writing with the same model, on this PC: a summary, a rewrite or a translation of a text,
-    /// following <paramref name="instruction"/>. Returns the model's answer only.
+    /// following <paramref name="instruction"/>. Returns the model's answer only. A <paramref name="temperature"/> of 0
+    /// gives the same answer every time, for answers that must only repeat what they were given.
     /// </summary>
-    public static async Task<string> WriteAsync(string instruction, string text, int maxTokens = 700, CancellationToken cancellationToken = default)
+    public static async Task<string> WriteAsync(string instruction, string text, int maxTokens = 700, CancellationToken cancellationToken = default, double temperature = 0.2)
     {
         var folder = RuntimeFolder();
         var model = ModelStore.Find(ModelCatalog.Qwen) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
@@ -40,7 +41,7 @@ public static partial class AskPetal
                 StandardOutputEncoding = Encoding.UTF8,
             };
             int threads = Math.Clamp(Environment.ProcessorCount - 1, 1, 8);
-            foreach (var arg in new[] { "-m", model, "-f", prompt, "-n", maxTokens.ToString(CultureInfo.InvariantCulture), "--temp", "0.2", "--repeat-penalty", "1.1",
+            foreach (var arg in new[] { "-m", model, "-f", prompt, "-n", maxTokens.ToString(CultureInfo.InvariantCulture), "--temp", temperature.ToString("0.##", CultureInfo.InvariantCulture), "--repeat-penalty", "1.1",
                          "-no-cnv", "--no-display-prompt", "-c", "8192", "-t", threads.ToString(CultureInfo.InvariantCulture) })
                 start.ArgumentList.Add(arg);
             using var process = Process.Start(start) ?? throw new InvalidOperationException("The AI model didn't start.");

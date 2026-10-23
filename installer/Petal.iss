@@ -102,7 +102,8 @@ Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal\command"; ValueType:
 Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Tasks: path; Check: NeedsAddPath(ExpandConstant('{app}'))
 
 [Run]
-Filename: "{app}\Petal.exe"; Description: "{cm:StartNow}"; Flags: nowait postinstall skipifsilent
+; "--installed": Petal shows its window, so it is plain that it is installed and running.
+Filename: "{app}\Petal.exe"; Parameters: "--installed"; Description: "{cm:StartNow}"; Flags: nowait postinstall skipifsilent
 ; Updates install silently from inside Petal: start it again afterwards.
 Filename: "{app}\Petal.exe"; Parameters: "--background"; Flags: nowait; Check: WizardSilent
 

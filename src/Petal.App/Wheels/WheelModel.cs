@@ -35,7 +35,7 @@ public enum ScriptShell
     Cmd,
 }
 
-/// <summary>What a script is given to work on, as the PETAL_INPUT variable and on its standard input.</summary>
+/// <summary>What a script is given to work on: the PETAL_INPUT variable and the file PETAL_INPUT_FILE names.</summary>
 public enum ScriptInput
 {
     None,

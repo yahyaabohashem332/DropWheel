@@ -57,6 +57,19 @@ public static class L
     /// <summary>"en", "ar", "tr", "fa", "ur", "id", "fr" or "es".</summary>
     public static string Code => _code;
 
+    /// <summary>The language's name in English ("Persian"), for what the AI model is told.</summary>
+    public static string EnglishName => _code switch
+    {
+        "ar" => "Arabic",
+        "tr" => "Turkish",
+        "fa" => "Persian",
+        "ur" => "Urdu",
+        "id" => "Indonesian",
+        "fr" => "French",
+        "es" => "Spanish",
+        _ => "English",
+    };
+
     /// <summary>Arabic itself: for what Petal writes in Arabic (names of files, translations), not for layout.</summary>
     public static bool IsArabic => _code == "ar";
 

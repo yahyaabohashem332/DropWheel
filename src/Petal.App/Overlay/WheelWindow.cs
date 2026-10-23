@@ -46,6 +46,12 @@ public sealed partial class WheelWindow : Window
     private readonly Path _hubShape = new();
     private readonly RectangleGeometry _hubOutline = new();
     private readonly Canvas _hubText = new();
+    // The mark under a petal's name in the centre: its explanation, beside the wheel (also F1).
+    private readonly Canvas _infoMark = new();
+    private readonly ScaleTransform _infoScale = new();
+    private const double InfoRadius = 8;
+    private Point _infoAt;
+    private WheelItem? _hubAbout;
     private readonly List<(InkText Line, bool IsTitle)> _hubLines = [];
     private readonly Border _hint = new();
     private readonly Border _emptyCard = new();
@@ -407,6 +413,7 @@ public sealed partial class WheelWindow : Window
         if (!_interactive || _content is null || _calc is not null) return;
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
+        HoverInfoMark(OverInfoMark(v));
         if (_orbit is { } o)
         {
             // Among the bubbles, or on the way to them from their petal: the orbit stays.
@@ -443,6 +450,11 @@ public sealed partial class WheelWindow : Window
         if (!_interactive || _content is null) return;
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
+        if (OverInfoMark(v))
+        {
+            OpenGuideCard();
+            return;
+        }
         if (_orbit is { } o)
         {
             if (OrbitBubbleAt(v) is { } k)
@@ -505,6 +517,12 @@ public sealed partial class WheelWindow : Window
             return;
         if (OrbitKey(key, e.IsRepeat))
         {
+            e.Handled = true;
+            return;
+        }
+        if (key == Key.F1 && !e.IsRepeat && _hubAbout is not null)
+        {
+            OpenGuideCard();
             e.Handled = true;
             return;
         }
@@ -714,6 +732,7 @@ public sealed partial class WheelWindow : Window
 
     private void CloseWheel(bool returnFocus = true)
     {
+        Guide.GuideCard.CloseCard();
         _probeTimer.Stop();
         _releaseTimer.Stop();
         _dwellTimer.Stop();
@@ -974,7 +993,7 @@ public sealed partial class WheelWindow : Window
         {
             var item = _content.Items[i2];
             _lastHubLabel = HubTitle(item);
-            SetHub(_lastHubLabel, _chain.Count > 0 && !item.IsGroup && item.Unavailable is null ? L.F("Step {0}", _chain.Count + 1) : Subtitle(item), animate: IsVisible);
+            SetHub(_lastHubLabel, _chain.Count > 0 && !item.IsGroup && item.Unavailable is null ? L.F("Step {0}", _chain.Count + 1) : Subtitle(item), animate: IsVisible, about: item);
             if (_open && _chain.Count == 0 && _pages is null && _files is not null && PreviewProvider is not null && !item.IsGroup && item.Unavailable is null && PresentationSource.FromVisual(_root) is not null)
                 _previewTimer.Start();
             Sound.Tick();
@@ -1025,7 +1044,7 @@ public sealed partial class WheelWindow : Window
         }
         if (cancel.IsCancellationRequested || preview is null || !_open || _highlight != index || !ReferenceEquals(_content, content))
             return;
-        SetHub(_lastHubLabel, preview.Text, animate: IsVisible);
+        SetHub(_lastHubLabel, preview.Text, animate: IsVisible, about: item);
         if (preview.Picture is { } picture)
         {
             _hubPicture.Fill = new ImageBrush(picture) { Stretch = Stretch.Uniform };
@@ -1369,13 +1388,16 @@ public sealed partial class WheelWindow : Window
     /// Sets the centre's name and what it is. The lines and their outline come from <see cref="HubLayout"/>;
     /// while the wheel is on screen the outline glides between a pill and a disc as names change.
     /// </summary>
-    private void SetHub(string title, string subtitle, bool animate)
+    private void SetHub(string title, string subtitle, bool animate, WheelItem? about = null)
     {
         _hubText.Children.Clear();
         _hubLines.Clear();
         _hubShape.Visibility = string.IsNullOrEmpty(title) ? Visibility.Hidden : Visibility.Visible;
         if (string.IsNullOrEmpty(title))
+        {
+            ShowInfoMark(null, 0);
             return;
+        }
         if (_hubTitleFont is null)
             CreateFonts();
 
@@ -1392,6 +1414,7 @@ public sealed partial class WheelWindow : Window
 
         var outline = new Rect(-fit.HalfWidth, -fit.HalfHeight, 2 * fit.HalfWidth, 2 * fit.HalfHeight);
         double radius = Math.Min(fit.HalfWidth, fit.HalfHeight);
+        ShowInfoMark(about, fit.HalfHeight);
         if (animate)
         {
             var duration = TimeSpan.FromMilliseconds(140);
@@ -1411,6 +1434,88 @@ public sealed partial class WheelWindow : Window
             _hubText.Opacity = 1;
         }
     }
+
+    // ---------- the mark under a petal's name ----------
+
+    /// <summary>A small round mark with "!": the petal's explanation, from the guide.</summary>
+    private void BuildInfoMark()
+    {
+        _infoMark.IsHitTestVisible = false;
+        _infoMark.Visibility = Visibility.Collapsed;
+        _infoMark.RenderTransform = _infoScale;
+        _infoMark.Children.Add(new Ellipse { Width = 2 * InfoRadius, Height = 2 * InfoRadius });
+        var bang = new Path
+        {
+            Data = Geometry.Parse($"M {InfoRadius},{InfoRadius - 4.6} L {InfoRadius},{InfoRadius + 1.2}"),
+            StrokeThickness = 2,
+            StrokeStartLineCap = PenLineCap.Round,
+            StrokeEndLineCap = PenLineCap.Round,
+        };
+        _infoMark.Children.Add(bang);
+        var dot = new Ellipse { Width = 2.4, Height = 2.4 };
+        Canvas.SetLeft(dot, InfoRadius - 1.2);
+        Canvas.SetTop(dot, InfoRadius + 3.1);
+        _infoMark.Children.Add(dot);
+        System.Windows.Automation.AutomationProperties.SetName(_infoMark, L.T("What it does (F1)"));
+    }
+
+    /// <summary>The mark for the petal the centre now names (when the guide has it and the wheel is clicked, not dragged), at the foot of the name.</summary>
+    private void ShowInfoMark(WheelItem? about, double halfHeight)
+    {
+        var key = about is not null && _interactive ? Guide.GuideBook.KeyFor(about) : null;
+        _hubAbout = key is null ? null : about;
+        if (key is null)
+        {
+            _infoMark.Visibility = Visibility.Collapsed;
+            return;
+        }
+        var p = _palette;
+        ((Ellipse)_infoMark.Children[0]).Fill = Palette.Brush(about!.Tint ?? p.Accent);
+        var mark = Palette.Brush(Readable(about.Tint ?? p.Accent, p));
+        ((Path)_infoMark.Children[1]).Stroke = mark;
+        ((Ellipse)_infoMark.Children[2]).Fill = mark;
+        // On the centre's rim, under the name and clear of the petals; a short name's pill lets it sit just below.
+        double y = Math.Min(Math.Max(halfHeight + InfoRadius - 2, 24), WheelGeometry.HubRadius - 2.5);
+        _infoAt = new Point(0, y);
+        Canvas.SetLeft(_infoMark, -InfoRadius);
+        Canvas.SetTop(_infoMark, y - InfoRadius);
+        _infoScale.CenterX = _infoScale.CenterY = InfoRadius;
+        _infoMark.Visibility = Visibility.Visible;
+        if (Guide.GuideCard.IsOpen)
+            Guide.GuideCard.Follow(key, HubTitle(about), OwnText(about));
+    }
+
+    private bool OverInfoMark(Vector v) =>
+        _infoMark.Visibility == Visibility.Visible && (v - new Vector(_infoAt.X, _infoAt.Y)).Length <= InfoRadius + 5;
+
+    private void HoverInfoMark(bool over)
+    {
+        double to = over ? 1.2 : 1;
+        if (Math.Abs(_infoScale.ScaleX - to) > 0.01)
+        {
+            _infoScale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(to, 120));
+            _infoScale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(to, 120));
+        }
+        Cursor = over ? Cursors.Hand : null;
+    }
+
+    /// <summary>The explanation of the petal the centre names, beside the wheel; the wheel keeps the keyboard.</summary>
+    private void OpenGuideCard()
+    {
+        if (_hubAbout is not { } item || Guide.GuideBook.KeyFor(item) is not { } key)
+            return;
+        GetWindowRect(_hwnd, out var r);
+        Guide.GuideCard.Show(key, HubTitle(item), OwnText(item), new Int32Rect(r.Left, r.Top, r.Width, r.Height));
+        Sound.Tick();
+    }
+
+    /// <summary>What this one petal does, over the guide's general words: a format's conversion, a favourite's or recipe's steps.</summary>
+    private static string? OwnText(WheelItem item) => item.Payload switch
+    {
+        Petal.Core.Formats.FileFormat => item.Note is { Length: > 0 } note ? item.Name + " · " + L.T(note) : item.Name,
+        Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe or Petal.Recipes.CustomPetal => item.Name,
+        _ => null,
+    };
 
     private void UpdateHint()
     {
@@ -1639,6 +1744,8 @@ public sealed partial class WheelWindow : Window
         _hubText.IsHitTestVisible = false;
         _ring.Children.Add(_hubShape);
         _ring.Children.Add(_hubText);
+        BuildInfoMark();
+        _ring.Children.Add(_infoMark);
 
         _hint.CornerRadius = new CornerRadius(12);
         _hint.Padding = new Thickness(8, 5, 10, 5);

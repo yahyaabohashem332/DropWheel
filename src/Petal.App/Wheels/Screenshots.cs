@@ -56,6 +56,43 @@ internal static class Screenshots
         return path;
     }
 
+    /// <summary>Where a picture waits until it has been covered (a private screenshot): Petal's temporary folder.</summary>
+    private static string TemporaryFolder => System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Petal", "Private");
+
+    /// <summary>Saves a picture with a screenshot's name, but in Petal's temporary folder, and returns its path.</summary>
+    public static string SaveTemporary(BitmapSource picture)
+    {
+        Directory.CreateDirectory(TemporaryFolder);
+        var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
+        var path = Petal.Core.Jobs.OutputNaming.Unique(TemporaryFolder, $"Screenshot {stamp}", "png");
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(picture));
+        using (var stream = File.Create(path))
+            encoder.Save(stream);
+        return path;
+    }
+
+    /// <summary>Deletes a picture saved by <see cref="SaveTemporary"/> (nothing else).</summary>
+    public static void ForgetTemporary(string path)
+    {
+        if (!string.Equals(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)), System.IO.Path.GetFullPath(TemporaryFolder), StringComparison.OrdinalIgnoreCase))
+            return;
+        try { File.Delete(path); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>A saved picture put on the clipboard, with the card that says where it is.</summary>
+    public static void KeepFile(string path, string title)
+    {
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.UriSource = new Uri(path);
+        image.EndInit();
+        image.Freeze();
+        bool copied = Copy(image);
+        Hud.HudCard.ShowSaved(copied ? title : "Screenshot saved", path, copied ? null : L.T("The clipboard is busy, so it wasn't copied."));
+    }
+
     /// <summary>
     /// A screenshot taken to keep: saved, put on the Windows clipboard at once (to paste anywhere, as
     /// Win+Shift+S does), and a card says where it is with buttons to show it or open it. Returns its path.

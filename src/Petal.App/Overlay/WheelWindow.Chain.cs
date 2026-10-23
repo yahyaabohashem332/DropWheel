@@ -44,7 +44,7 @@ public sealed partial class WheelWindow
             : L.T("This can't be a step");
         if (why is not null)
         {
-            SetHub(HubTitle(item), why, animate: IsVisible);
+            SetHub(HubTitle(item), why, animate: IsVisible, about: item);
             return;
         }
         _chain.Add(item);

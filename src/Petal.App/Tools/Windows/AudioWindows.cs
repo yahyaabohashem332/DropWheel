@@ -232,7 +232,7 @@ public sealed class AudioChannelsWindow : AudioToolWindow
 {
     private readonly WaveformView _left = new();
     private readonly WaveformView _right = new();
-    private readonly Segmented<AudioChannelMode> _mode = Segments([(AudioChannelMode.Mono, "Mono"), (AudioChannelMode.Stereo, "Stereo")], AudioChannelMode.Stereo);
+    private readonly Segmented<AudioChannelMode> _mode = Segments([(AudioChannelMode.Mono, L.T("Mono", "audio")), (AudioChannelMode.Stereo, "Stereo")], AudioChannelMode.Stereo);
     private readonly LabeledSlider _leftVolume = Slider(0, 200, 100, v => $"{v:0}%", 1);
     private readonly LabeledSlider _rightVolume = Slider(0, 200, 100, v => $"{v:0}%", 1);
     private readonly PcmPlayer _output = new();
@@ -476,6 +476,8 @@ public sealed class BleepWindow : AudioToolWindow
         if (Player.IsPlaying) { Player.Stop(); return; }
         var ranges = _bleeps.Ranges.Select(r => (r.Start, r.End)).ToList();
         int rate = Player.Audio?.SampleRate ?? 44100, channels = Math.Max(1, Player.Channels);
+        // As loud as the saved file's tone.
+        double volume = new Petal.Engines.Media.BleepOptions([]).ToneVolume;
         Player.Transform = withBleeps ? (buffer, offset, count, startSeconds) =>
         {
             // Replace marked ranges with a 1 kHz tone, as the saved file will have.
@@ -483,7 +485,7 @@ public sealed class BleepWindow : AudioToolWindow
             {
                 double t = startSeconds + (double)i / channels / rate;
                 if (!ranges.Any(r => t >= r.Start && t <= r.End)) continue;
-                float tone = (float)(Math.Sin(2 * Math.PI * 1000 * t) * 0.35);
+                float tone = (float)(Math.Sin(2 * Math.PI * 1000 * t) * volume);
                 for (int c = 0; c < channels && offset + i + c < buffer.Length; c++)
                     buffer[offset + i + c] = tone;
             }

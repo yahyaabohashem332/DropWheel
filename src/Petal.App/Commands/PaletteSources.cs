@@ -12,6 +12,22 @@ internal static class PaletteSources
         CommandPalette.Sources.Add(Snippets);
         CommandPalette.Sources.Add(Workspaces);
         CommandPalette.Sources.Add(Questions);
+        CommandPalette.Sources.Add(GuideRequests);
+    }
+
+    /// <summary>Something to do, in any words: the Tools Guide finds the tool for it (high up when it reads like a request).</summary>
+    private static IEnumerable<PaletteItem> GuideRequests(string query, PaletteContext context)
+    {
+        var request = query.Trim();
+        if (request.Length < 3 || Guide.GuideSearch.Find(request, 1).Count == 0)
+            yield break;
+        bool asking = Petal.Recipes.Search.FileQuestions.LooksLikeQuestion(request) || request.Split(' ').Length >= 3;
+        yield return new PaletteItem("ask-guide", L.T("Ask the Tools Guide"), request, "book", _ =>
+        {
+            Guide.GuideWindow.ShowSingle(request: request);
+            return Task.CompletedTask;
+        })
+        { Kind = L.T("Tools Guide"), Score = asking ? 380 : 60 };
     }
 
     /// <summary>A question typed or said: answered from what the indexed documents say.</summary>

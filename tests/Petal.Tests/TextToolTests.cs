@@ -83,6 +83,9 @@ public sealed class TextToolTests
         Assert.NotNull(result);
         Assert.Equal(answer, result.Value, 3);
         Assert.Equal(unit, result.Unit);
+        // Shown with its unit once ("3.11 mi", never "3.11 mi mi").
+        Assert.EndsWith(" " + unit, result.Shown);
+        Assert.False(result.Shown.EndsWith(" " + unit + " " + unit, StringComparison.Ordinal), result.Shown);
     }
 
     [Theory]

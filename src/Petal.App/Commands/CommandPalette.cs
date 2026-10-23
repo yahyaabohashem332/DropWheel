@@ -356,7 +356,7 @@ internal sealed class CommandPalette : Window
             yield break;
         if (Calculator.Evaluate(query) is { } answer)
         {
-            var shown = answer.Text + (answer.Unit.Length > 0 ? " " + answer.Unit : "");
+            var shown = answer.Shown;
             yield return new PaletteItem("calc", "= " + shown, L.T("Enter copies the answer"), "calculator", _ =>
             {
                 Words.SelectedText.TrySet(answer.Text);

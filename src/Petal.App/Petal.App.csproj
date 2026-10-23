@@ -55,6 +55,7 @@
     <Content Include="Assets\Petal.ico" CopyToOutputDirectory="PreserveNewest" />
     <!-- The interface's other languages (Arabic's is in the code), read when chosen. -->
     <EmbeddedResource Include="Localization\Languages\*.json" />
+    <EmbeddedResource Include="Guide\Entries\*.json" />
   </ItemGroup>
 
   <!-- Helper programs shipped with Petal: tools\bin is filled by tools\scripts\fetch-tools.ps1 and copied next to the exe. -->

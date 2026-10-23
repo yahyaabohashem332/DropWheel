@@ -4,7 +4,11 @@ using System.Text;
 namespace Petal.Core.Text;
 
 /// <summary>An answer: the number, how to read it, and the unit it is in (empty for a plain number).</summary>
-public sealed record Calculation(double Value, string Text, string Unit);
+public sealed record Calculation(double Value, string Text, string Unit)
+{
+    /// <summary>The answer with its unit once ("3.11 mi"): a conversion's text already ends with it.</summary>
+    public string Shown => Unit.Length == 0 || Text.EndsWith(" " + Unit, StringComparison.Ordinal) ? Text : Text + " " + Unit;
+}
 
 /// <summary>
 /// Sums and conversions typed the way people write them, in English or Arabic: "12% of 340", "(3+4)*2^3",

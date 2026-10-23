@@ -128,7 +128,10 @@ public sealed partial class SettingsWindow : ToolWindow
         var tour = new Button { Content = L.T("Take the Tour"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
         tour.SetResourceReference(ForegroundProperty, "Petal.Accent");
         tour.Click += (_, _) => StartTour();
-        text.Children.Add(new WrapPanel { Orientation = Orientation.Horizontal, Children = { how, practice, tour, qr, history } });
+        var guide = new Button { Content = L.T("Tools Guide"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
+        guide.SetResourceReference(ForegroundProperty, "Petal.Accent");
+        guide.Click += (_, _) => Guide.GuideWindow.ShowSingle();
+        text.Children.Add(new WrapPanel { Orientation = Orientation.Horizontal, Children = { how, guide, practice, tour, qr, history } });
         grid.Children.Add(text);
         return grid;
     }
