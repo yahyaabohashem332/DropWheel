@@ -104,7 +104,9 @@ Remove-Item $deckStage -Recurse -Force
 
 $zip = Join-Path $dist "Petal-$Version-win-$Arch.zip"
 if (Test-Path $zip) { Remove-Item $zip }
-Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $zip -CompressionLevel Optimal
+# .NET's own zip rather than Compress-Archive, which is slow and twice stopped dead half way through the ARM64 build.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($publish, $zip, [System.IO.Compression.CompressionLevel]::Optimal, $false)
 Write-Host "Portable build: $zip"
 
 $iscc = @("${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe", "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |

@@ -74,6 +74,8 @@ internal static class LiveCaptions
         var settings = SettingsStore.Current;
         if (NeedsArabic(settings.CaptionsShow) && !Translator.IsReady)
             ModelDownloadWindow.Show("Arabic Captions", "The captions are translated into Arabic by a translation model on this PC. Until it is here, they show what was said.", Translator.Models);
+        else if (NeedsEnglish(settings))
+            ModelDownloadWindow.Show("English Captions", "Arabic speech is put into English by a translation model on this PC. Until it is here, Whisper translates it, not as well.", Translator.EnglishModels);
         _window = new CaptionWindow();
         _window.Show();
         _stop = new CancellationTokenSource();
@@ -117,7 +119,7 @@ internal static class LiveCaptions
         StreamingTranscriber engine;
         try
         {
-            engine = new StreamingTranscriber(ModelStore.Find(model)!, language);
+            engine = new StreamingTranscriber(ModelStore.Find(model)!, language, translatingModelPath: SpeechLanguages.TranslatingModel());
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -278,8 +280,9 @@ internal static class LiveCaptions
 
     /// <summary>
     /// Words in the language wanted, or null when they are in it already or the model for it isn't here. Arabic
-    /// comes from English; other languages are put into English by Whisper from the sentence's own sound first
-    /// (only a finished one: the sentence being said waits until it is finished).
+    /// comes from English; Arabic speech goes into English with Opus-MT, from its words (far better than Whisper's
+    /// own translation, and quick enough for the sentence being said); other languages are put into English by
+    /// Whisper from the sentence's own sound (only a finished one: the sentence being said waits until it is finished).
     /// </summary>
     private static async Task<string?> TranslateAsync(StreamingTranscriber engine, string target, string text, string language, StreamSentence? sentence, CancellationToken stop)
     {
@@ -287,6 +290,11 @@ internal static class LiveCaptions
         bool englishAlready = language == "en";
         if (target == "ar" && (arabicAlready || !Translator.IsReady) || target == "en" && englishAlready)
             return null;
+        if (target == "en" && arabicAlready && Translator.EnglishReady)
+        {
+            var arabic = text;
+            return await Task.Run(() => Translator.ToEnglish(arabic, quick: sentence is null), stop);
+        }
         string? english = englishAlready ? text : sentence is null ? null : await engine.ToEnglishAsync(sentence, stop);
         if (string.IsNullOrWhiteSpace(english))
             return null;
@@ -303,6 +311,10 @@ internal static class LiveCaptions
     private static bool NeedsArabic(string show) => show == "arabic" || show == "both" && BothMeansArabic;
 
     private static bool BothMeansArabic => Localization.L.Code is "ar" or "en";
+
+    /// <summary>English captions of what may be Arabic speech, without the translation model that does it best.</summary>
+    private static bool NeedsEnglish(AppSettings settings) =>
+        settings.CaptionsShow == "english" && settings.CaptionsLanguage is "ar" or "auto" or "" && !Translator.EnglishReady;
 
     /// <summary>The language the captions are translated into ("ar", "en"), or null for what was said only.</summary>
     internal static string? Target(string show) => show switch
@@ -469,6 +481,8 @@ internal static class LiveCaptions
         SettingsStore.Save();
         if (NeedsArabic(settings.CaptionsShow) && !Translator.IsReady)
             ModelDownloadWindow.Show("Arabic Captions", "The captions are translated into Arabic by a translation model on this PC. Until it is here, they show what was said.", Translator.Models);
+        else if (NeedsEnglish(settings))
+            ModelDownloadWindow.Show("English Captions", "Arabic speech is put into English by a translation model on this PC. Until it is here, Whisper translates it, not as well.", Translator.EnglishModels);
         _window?.ClearTranslation();
         _window?.Refresh();
         if (Interlocked.Exchange(ref _partialWanted, 1) == 0)

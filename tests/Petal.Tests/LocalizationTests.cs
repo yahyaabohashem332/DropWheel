@@ -69,6 +69,8 @@ public partial class LocalizationTests
         "please", "petal", "Aa Bb Cc", "1.4 GB", "212 GB", "C:", "Notepad", "yyyyMMdd-HHmmss",
         // Languages named to the AI model in English, in the instruction it reads.
         "Turkish", "Persian", "Urdu", "Indonesian", "French", "Spanish", "0123456789 !?&@ ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        // 1.8.4: a progress card's sample line in the design snapshots.
+        "lesson.mp4 · 37%",
     };
 
     private static readonly Regex Literal = MakeLiteral();

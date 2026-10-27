@@ -16,7 +16,9 @@ namespace Petal.App.Hud;
 
 /// <summary>
 /// The little progress card that springs out of the drop point: "Converting to MP3 ·
-/// sample.wav · 42%", then "1 of 1 saved". Clicking a finished card reveals the result.
+/// sample.wav · 42%", then "1 of 1 saved". Clicking a finished card reveals the result. While the
+/// work goes on it can be dragged anywhere, or sent to the taskbar, where its button shows the
+/// progress and brings it back.
 /// </summary>
 public sealed class HudCard : Window
 {
@@ -38,6 +40,7 @@ public sealed class HudCard : Window
     private readonly Border _fill = new();
     private readonly Grid _bar = new();
     private readonly Border _closeButton = new();
+    private readonly Border _taskbarButton = new();
     private readonly Grid _badge = new();
     private readonly TranslateTransform _indeterminateShift = new();
     private readonly DispatcherTimer _dismissTimer = new();
@@ -47,6 +50,10 @@ public sealed class HudCard : Window
     private Palette _palette = Theme.Current;
     private readonly double _height, _width;
     private readonly string? _savedPath;
+    // While the card is on the taskbar: its button there, and the progress it shows.
+    private TaskbarStandIn? _standIn;
+    private double? _fraction;
+    private bool _wasOnTaskbar;
 
     public event Action? CancelRequested;
 
@@ -143,6 +150,17 @@ public sealed class HudCard : Window
         return card;
     }
 
+    /// <summary>For design snapshots: a card part way through its work, built but not shown.</summary>
+    internal static HudCard ProgressForSnapshot(string title, string subtitle, double fraction)
+    {
+        var card = new HudCard();
+        card._title.Text = Localization.L.T(title);
+        card._subtitle.Text = subtitle;
+        card._indeterminate = false;
+        card._fill.Width = Math.Max(4, (CardWidth - 64) * fraction);
+        return card;
+    }
+
     private static ScreenPoint SavedCornerPoint()
     {
         var (_, work, scale) = MonitorAt(new POINT(0, 0));
@@ -196,6 +214,7 @@ public sealed class HudCard : Window
     {
         _title.Text = Localization.L.T(title);
         _subtitle.Text = Localization.L.T(subtitle);
+        _standIn?.Show(_title.Text, _subtitle.Text, _fraction);
     }
 
     /// <summary>Progress from 0 to 1, or null when unknown (shows a sweeping bar).</summary>
@@ -203,6 +222,8 @@ public sealed class HudCard : Window
     {
         if (_finished)
             return;
+        _fraction = fraction is { } f ? Math.Clamp(f, 0, 1) : null;
+        _standIn?.Show(_title.Text, _subtitle.Text, _fraction);
         if (fraction is null)
         {
             if (!_indeterminate)
@@ -235,6 +256,7 @@ public sealed class HudCard : Window
 
     public void Succeed(string title, string subtitle, Action? onClick)
     {
+        FromTaskbar();
         _finished = true;
         SetText(title, subtitle);
         _indeterminateShift.BeginAnimation(TranslateTransform.XProperty, null);
@@ -243,19 +265,22 @@ public sealed class HudCard : Window
         ShowBadge(success: true);
         OnClick = onClick;
         _card.Cursor = onClick is null ? Cursors.Arrow : Cursors.Hand;
-        DismissAfter(TimeSpan.FromSeconds(2.6));
+        // Back from the taskbar, nobody watched it finish: it stays longer.
+        DismissAfter(TimeSpan.FromSeconds(_wasOnTaskbar ? 8 : 2.6));
     }
 
     public void Fail(string title, string subtitle)
     {
+        FromTaskbar();
         _finished = true;
+        _card.Cursor = Cursors.Arrow;
         SetText(title, subtitle);
         _indeterminateShift.BeginAnimation(TranslateTransform.XProperty, null);
         _bar.Visibility = Visibility.Collapsed;
         _subtitle.TextWrapping = TextWrapping.Wrap;
         _subtitle.MaxHeight = 34;
         ShowBadge(success: false);
-        DismissAfter(TimeSpan.FromSeconds(6));
+        DismissAfter(TimeSpan.FromSeconds(_wasOnTaskbar ? 10 : 6));
     }
 
     private void DismissAfter(TimeSpan delay)
@@ -268,6 +293,7 @@ public sealed class HudCard : Window
     public void Dismiss()
     {
         _dismissTimer.Stop();
+        CloseStandIn();
         var fade = Motion.To(0, 160, Motion.Standard);
         fade.Completed += (_, _) =>
         {
@@ -291,6 +317,7 @@ public sealed class HudCard : Window
         _badge.Children.Add(icon);
         _badge.Visibility = Visibility.Visible;
         _closeButton.Visibility = Visibility.Collapsed;
+        _taskbarButton.Visibility = Visibility.Collapsed;
         _badge.RenderTransformOrigin = new Point(0.5, 0.5);
         var s = new ScaleTransform(0.3, 0.3);
         _badge.RenderTransform = s;
@@ -322,6 +349,28 @@ public sealed class HudCard : Window
         };
         _card.MouseEnter += (_, _) => { if (_finished) _dismissTimer.Stop(); };
         _card.MouseLeave += (_, _) => { if (_finished) DismissAfter(TimeSpan.FromSeconds(1.4)); };
+        // Dragged anywhere, out of the way of what it covers (a finished card that opens its result is clicked instead).
+        if (_savedPath is null)
+            _card.Cursor = Cursors.SizeAll;
+        _card.MouseLeftButtonDown += (_, e) =>
+        {
+            if (e.ClickCount > 1 || _finished && OnClick is not null || Screen.ScreenUi.IsClickable(e.OriginalSource as DependencyObject, _card))
+                return;
+            try
+            {
+                DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // The button was already up: there is nothing to move.
+                return;
+            }
+            if (GetWindowRect(_hwnd, out var moved))
+            {
+                _screenX = moved.Left;
+                _screenY = moved.Top;
+            }
+        };
         root.Children.Add(_card);
 
         var layout = new Grid { Margin = new Thickness(16, 14, 18, 14) };
@@ -349,6 +398,29 @@ public sealed class HudCard : Window
             CancelRequested?.Invoke();
         };
         layout.Children.Add(_closeButton);
+
+        // Under it, to the taskbar: the work goes on, and the card is out of the way until it is done.
+        _taskbarButton.Width = _taskbarButton.Height = 22;
+        _taskbarButton.CornerRadius = new CornerRadius(11);
+        _taskbarButton.Background = Palette.Brush(p.Control);
+        _taskbarButton.VerticalAlignment = VerticalAlignment.Top;
+        _taskbarButton.HorizontalAlignment = HorizontalAlignment.Left;
+        _taskbarButton.Margin = new Thickness(0, 30, 0, 0);
+        _taskbarButton.Cursor = Cursors.Hand;
+        _taskbarButton.ToolTip = Localization.L.T("Move to the taskbar");
+        System.Windows.Automation.AutomationProperties.SetName(_taskbarButton, Localization.L.T("Move to the taskbar"));
+        var minus = Icons.Create("minus", 12, Palette.Brush(p.TextSecondary), 2.4);
+        minus.HorizontalAlignment = HorizontalAlignment.Center;
+        minus.VerticalAlignment = VerticalAlignment.Center;
+        _taskbarButton.Child = minus;
+        _taskbarButton.MouseEnter += (_, _) => _taskbarButton.Background = Palette.Brush(p.ControlHover);
+        _taskbarButton.MouseLeave += (_, _) => _taskbarButton.Background = Palette.Brush(p.Control);
+        _taskbarButton.MouseLeftButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            ToTaskbar();
+        };
+        layout.Children.Add(_taskbarButton);
 
         _badge.Width = _badge.Height = 22;
         _badge.VerticalAlignment = VerticalAlignment.Top;
@@ -387,6 +459,7 @@ public sealed class HudCard : Window
         if (_savedPath is { } path)
         {
             _closeButton.Visibility = Visibility.Collapsed;
+            _taskbarButton.Visibility = Visibility.Collapsed;
             _subtitle.TextTrimming = TextTrimming.CharacterEllipsis;
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 9, 0, 0) };
             buttons.Children.Add(CardButton("folderOpen", "Show in Folder", () => Shell.ExplorerSelection.Reveal([path])));
@@ -400,6 +473,99 @@ public sealed class HudCard : Window
         layout.Children.Add(text);
 
         return root;
+    }
+
+    /// <summary>The card leaves the screen for a button on the taskbar, which shows the progress; the work goes on.</summary>
+    internal void ToTaskbar()
+    {
+        if (_finished || _standIn is not null)
+            return;
+        _standIn = new TaskbarStandIn(this);
+        _standIn.Show(_title.Text, _subtitle.Text, _fraction);
+        _wasOnTaskbar = true;
+        Open.Remove(this);
+        Hide();
+    }
+
+    /// <summary>Back where it was from the taskbar: its button was clicked, or the work is done.</summary>
+    private void FromTaskbar()
+    {
+        if (_standIn is null)
+            return;
+        CloseStandIn();
+        ShowAgain();
+    }
+
+    private void ShowAgain()
+    {
+        if (IsVisible)
+            return;
+        Show();
+        SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        if (!Open.Contains(this))
+            Open.Add(this);
+        _card.BeginAnimation(OpacityProperty, Motion.To(1, 120, Motion.Standard, from: 0));
+        _scale.BeginAnimation(ScaleTransform.ScaleXProperty, Motion.To(1, 320, Motion.Pop, from: 0.7));
+        _scale.BeginAnimation(ScaleTransform.ScaleYProperty, Motion.To(1, 320, Motion.Pop, from: 0.7));
+    }
+
+    /// <summary>Its button on the taskbar while it is there (for tests).</summary>
+    internal Window? TaskbarStandInWindow => _standIn;
+
+    private void CloseStandIn()
+    {
+        var standIn = _standIn;
+        _standIn = null;
+        standIn?.Close();
+    }
+
+    /// <summary>
+    /// A card's button on the taskbar: the card's words as its name, and the progress filling it as the work goes
+    /// on. A window of its own that stays minimized and is never seen; restoring it (a click on the button, or
+    /// Close in its menu) brings the card back.
+    /// </summary>
+    private sealed class TaskbarStandIn : Window
+    {
+        private readonly HudCard _card;
+
+        public TaskbarStandIn(HudCard card)
+        {
+            _card = card;
+            WindowStyle = WindowStyle.None;
+            AllowsTransparency = true;
+            Background = Brushes.Transparent;
+            Opacity = 0;
+            ResizeMode = ResizeMode.CanMinimize;
+            ShowActivated = false;
+            ShowInTaskbar = true;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = Top = -32000;
+            Width = Height = 1;
+            WindowState = WindowState.Minimized;
+            TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo();
+            // The card comes back after the event, not inside it (this window is closed on the way).
+            StateChanged += (_, _) =>
+            {
+                if (WindowState != WindowState.Minimized && ReferenceEquals(_card._standIn, this))
+                    _card.Dispatcher.BeginInvoke(_card.FromTaskbar);
+            };
+            Closed += (_, _) =>
+            {
+                if (!ReferenceEquals(_card._standIn, this))
+                    return;
+                _card._standIn = null;
+                _card.Dispatcher.BeginInvoke(_card.ShowAgain);
+            };
+        }
+
+        public void Show(string title, string subtitle, double? fraction)
+        {
+            Title = subtitle.Length > 0 ? title + " · " + subtitle : title;
+            TaskbarItemInfo.ProgressState = fraction is null ? System.Windows.Shell.TaskbarItemProgressState.Indeterminate : System.Windows.Shell.TaskbarItemProgressState.Normal;
+            TaskbarItemInfo.ProgressValue = fraction ?? 0;
+            if (!IsVisible)
+                Show();
+        }
     }
 
     /// <summary>A small pill on a saved file's card; it acts on release, and the card goes.</summary>

@@ -201,6 +201,7 @@ internal static class DesignSnapshots
             // 1.8
             ("removepauses", () => new Tools.Windows.RemovePausesWindow(T(Petal.Core.Tools.ToolId.RemovePauses), video, jobs, at)),
             ("animatedcaptions", () => new Tools.Windows.AnimatedCaptionsWindow(T(Petal.Core.Tools.ToolId.AnimatedCaptions), video, jobs, at)),
+            ("animatedcaptionsenglish", () => new Tools.Windows.AnimatedCaptionsWindow(T(Petal.Core.Tools.ToolId.AnimatedCaptions), video, jobs, at) { WordsIn = "en" }),
             ("vertical", () => new Tools.Windows.ReframeWindow(T(Petal.Core.Tools.ToolId.Reframe), video, jobs, at)),
             ("describe", () => new Tools.Windows.DescribePictureWindow(T(Petal.Core.Tools.ToolId.DescribePicture), file("landscape.jpg"))),
             ("health", () => Settings.HealthWindow.ForSnapshot(
@@ -252,6 +253,7 @@ internal static class DesignSnapshots
     private static IEnumerable<(string Name, Func<Window> Create)> FloatingCases() =>
     [
         ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
+        ("progresscard", () => Hud.HudCard.ProgressForSnapshot("Adding captions", "lesson.mp4 · 37%", 0.37)),
         ("savedshot", () => Hud.HudCard.SavedForSnapshot("Screenshot saved and copied", Path.Combine(Wheels.Screenshots.Folder, "Screenshot 2026-10-23 09.41.12.png"))),
         ("guidecard", () => Guide.GuideCard.ForSnapshot("tool:Compress")),
         ("savedrecording", () => Hud.HudCard.SavedForSnapshot("Recording saved", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Recording 2026-10-23 09.42.30.mp4"), Localization.L.T("The camera couldn't be added; the recording is saved without it."))),

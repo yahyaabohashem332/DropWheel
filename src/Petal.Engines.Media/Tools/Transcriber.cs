@@ -77,28 +77,69 @@ public static class Transcriber
         "ar", "en", "fr", "de", "es", "it", "pt", "nl", "tr", "fa", "ur", "hi", "ru", "uk", "pl", "sv", "id", "ms", "zh", "ja", "ko", "he",
     ];
 
+    /// <summary>
+    /// Whether a model can put speech into English itself. large-v3 turbo was trained to write what is said only:
+    /// asked to translate, it writes the language spoken or nonsense (as do the distilled models).
+    /// </summary>
+    public static bool CanTranslate(string modelPath)
+    {
+        var name = Path.GetFileName(modelPath).ToLowerInvariant();
+        return !name.Contains("turbo") && !name.Contains("distil");
+    }
+
+    /// <summary>A file's sound as Whisper listens to it: 16 kHz mono.</summary>
+    public static async Task<float[]> ReadSpeechAsync(string input, CancellationToken cancellationToken = default)
+    {
+        var pcm = await MediaPreview.DecodePcmAsync(input, new PcmDecodeOptions(16000, 1), cancellationToken).ConfigureAwait(false);
+        if (pcm.Samples.Length < 16000 / 2)
+            throw new MediaException("This file has no sound to transcribe.");
+        return pcm.Samples;
+    }
+
+    /// <summary>The language spoken in the first half minute ("ar", "en"…), or null when Whisper can't tell.</summary>
+    public static async Task<string?> DetectLanguageAsync(float[] samples, string modelPath, CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(modelPath))
+            throw new FileNotFoundException("The speech model isn't downloaded yet.", modelPath);
+        return await Task.Run(() =>
+        {
+            using var factory = WhisperFactory.FromPath(modelPath);
+            using var processor = factory.CreateBuilder().WithLanguage("auto").Build();
+            var start = samples.AsSpan(0, Math.Min(samples.Length, 30 * 16000));
+            var (language, probability) = processor.DetectLanguageWithProbability(start);
+            return string.IsNullOrEmpty(language) || probability < 0.2f ? null : language;
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
     public static async Task<Transcript> TranscribeAsync(string input, TranscribeOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!File.Exists(options.ModelPath))
             throw new FileNotFoundException("The speech model isn't downloaded yet.", options.ModelPath);
-        // Whisper listens to 16 kHz mono.
-        var pcm = await MediaPreview.DecodePcmAsync(input, new PcmDecodeOptions(16000, 1), cancellationToken).ConfigureAwait(false);
-        if (pcm.Samples.Length < 16000 / 2)
-            throw new MediaException("This file has no sound to transcribe.");
+        var samples = await ReadSpeechAsync(input, cancellationToken).ConfigureAwait(false);
         progress?.Report(0.05);
+        return await TranscribeAsync(samples, options, progress is null ? null : new Scaled(progress, 0.05, 1), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Speech already read (16 kHz mono) written down, or put into English.</summary>
+    public static async Task<Transcript> TranscribeAsync(float[] samples, TranscribeOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(options.ModelPath))
+            throw new FileNotFoundException("The speech model isn't downloaded yet.", options.ModelPath);
+        if (options.TranslateToEnglish && !CanTranslate(options.ModelPath))
+            throw new InvalidOperationException("This speech model can't translate; another one puts the words into English.");
 
         return await Task.Run(async () =>
         {
             using var factory = WhisperFactory.FromPath(options.ModelPath);
             var builder = factory.CreateBuilder()
                 .WithLanguage(string.IsNullOrEmpty(options.Language) ? "auto" : options.Language)
-                .WithProgressHandler(percent => progress?.Report(0.05 + 0.95 * Math.Clamp(percent, 0, 100) / 100.0));
+                .WithProgressHandler(percent => progress?.Report(Math.Clamp(percent, 0, 100) / 100.0));
             if (options.TranslateToEnglish)
                 builder = builder.WithTranslate();
             await using var processor = builder.Build();
             var segments = new List<TranscriptSegment>();
             string language = options.Language;
-            await foreach (var segment in processor.ProcessAsync(pcm.Samples, cancellationToken).ConfigureAwait(false))
+            await foreach (var segment in processor.ProcessAsync(samples, cancellationToken).ConfigureAwait(false))
             {
                 segments.Add(new TranscriptSegment(segment.Start, segment.End, segment.Text.Trim()));
                 if (!string.IsNullOrEmpty(segment.Language))
@@ -146,6 +187,12 @@ public static class Transcriber
             args.AddRange(["-movflags", "+faststart"]);
         await Ffmpeg.EncodeAsync(args, output, target.Muxer, info.DurationSeconds, new SafeProgress(progress), cancellationToken).ConfigureAwait(false);
         return output;
+    }
+
+    /// <summary>Progress of a part of the work, as a share of the whole.</summary>
+    private sealed class Scaled(IProgress<double> inner, double from, double to) : IProgress<double>
+    {
+        public void Report(double value) => inner.Report(from + (to - from) * value);
     }
 
     /// <summary>Three-letter language codes for the subtitle track (what players show).</summary>

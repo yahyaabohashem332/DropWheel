@@ -24,6 +24,23 @@ public sealed class TranslatorTests(ITestOutputHelper output)
         }
     }
 
+    [Fact]
+    public void Arabic_comes_out_in_English()
+    {
+        if (Folder is null || !File.Exists(Path.Combine(Folder, ModelCatalog.OpusArEnDecoder.FileName)))
+            return;
+        var english = With(() => Translator.ToEnglish(["مرحباً بكم في درس اليوم عن تاريخ العلوم.", "", "الساعات الأولى استخدمت الماء."]));
+        output.WriteLine(string.Join(" | ", english));
+        Assert.Contains("history", english[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("science", english[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("", english[1]);
+        Assert.Contains("water", english[2], StringComparison.OrdinalIgnoreCase);
+        // No language mark first: this model only writes English.
+        var ids = With(() => Translator.EncodeArabic("مرحبا"));
+        Assert.Equal(0, ids[^1]);
+        Assert.True(ids.Length >= 2);
+    }
+
     [Theory]
     // Reference ids from SentencePiece itself (Python) with the model's vocabulary, ">>ara<<" first and </s> last.
     [InlineData("Welcome back to the channel, everyone.", new long[] { 11320, 503, 9, 3, 17773, 5, 3458, 2 })]

@@ -84,3 +84,4 @@ before the download:
 | HT Demucs | MIT | https://huggingface.co/timcsy/demucs-web-onnx |
 | LaMa | Apache-2.0 | https://huggingface.co/Carve/LaMa-ONNX |
 | Opus-MT English to Arabic (Helsinki-NLP) | Apache-2.0 (ONNX export); CC-BY-4.0 training data | https://huggingface.co/Xenova/opus-mt-en-ar |
+| Opus-MT Arabic to English (Helsinki-NLP) | Apache-2.0 (ONNX export); CC-BY-4.0 training data | https://huggingface.co/Xenova/opus-mt-ar-en |

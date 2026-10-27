@@ -42,4 +42,11 @@ public sealed class StreamingTranscriberTests
 
     [Fact]
     public void A_model_of_unknown_shape_has_no_aligned_times() => Assert.Null(StreamingTranscriber.Heads("my-model.bin"));
+
+    [Theory]
+    [InlineData("ggml-base-q5_1.bin", true)]
+    [InlineData("ggml-small-q5_1.bin", true)]
+    [InlineData("ggml-large-v3-turbo-q5_0.bin", false)]
+    [InlineData("ggml-distil-large-v3.bin", false)]
+    public void Only_models_trained_to_translate_are_asked_to(string file, bool can) => Assert.Equal(can, Transcriber.CanTranslate(file));
 }

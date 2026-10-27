@@ -7,6 +7,7 @@ using Petal.Engines.Media;
 namespace Petal.Tests;
 
 /// <summary>Live captions and meeting notes: cutting speech at pauses, resampling, and Whisper on a stream.</summary>
+[Collection("Timing")]
 public sealed class LiveSpeechTests
 {
     private static float[] Tone(double seconds, double amplitude, int rate = SpeechChunker.Rate) =>
@@ -128,6 +129,8 @@ public sealed class LiveSpeechTests
         if (samples is null)
             return;
         using var engine = new StreamingTranscriber(model, "en");
+        // As the captions do before they listen: the graphics card prepares its work on the first pass.
+        await engine.WarmUpAsync(CancellationToken.None);
         var clock = Stopwatch.StartNew();
         double firstWords = -1;
         var sentences = new List<StreamSentence>();

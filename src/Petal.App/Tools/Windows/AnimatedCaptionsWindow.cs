@@ -14,13 +14,14 @@ using Petal.Core.Jobs;
 using Petal.Core.Models;
 using Petal.Core.Tools;
 using Petal.Engines.Media;
+using Petal.Recipes.Translation;
 
 namespace Petal.App.Tools.Windows;
 
 /// <summary>
 /// Animated Captions: the words of a video burned into it, a few at a time, the word being said lit up,
-/// as on short videos. In the language spoken, in English, or in Arabic. A frame of the video shows how
-/// they will look.
+/// as on short videos. In the language spoken, in English, or in Arabic (see <see cref="SpeechText"/> for
+/// how each is had). A frame of the video shows how they will look.
 /// </summary>
 public sealed class AnimatedCaptionsWindow : ToolWindow
 {
@@ -37,7 +38,8 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
     private readonly ModelPanel _model;
     private readonly ComboBox _language;
     private readonly Segmented<string> _into;
-    private readonly ModelPanel _translator = new(Petal.Recipes.Translation.Translator.Models);
+    // What the words in another language need besides the speech model (translation models).
+    private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.Models);
     private readonly Segmented<CaptionStyle> _style;
     private readonly Segmented<CaptionPlace> _place;
     private readonly Segmented<double> _size;
@@ -96,12 +98,13 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         var languages = new List<(string, string)> { ("auto", "Detect automatically") };
         languages.AddRange(Transcriber.Languages.Select(code => (code, NativeName(code))));
         _language = Choice(languages, "auto");
+        _language.SelectionChanged += (_, _) => Sync();
         Body.Children.Add(Row("Spoken in", _language, 110, 10));
         _into = Segments([("spoken", "As spoken"), ("en", "In English"), ("ar", "In Arabic")], "spoken");
         Body.Children.Add(Row("Words in", _into, 110, 10));
-        Body.Children.Add(_translator);
+        Body.Children.Add(_helpers);
         _into.Changed += _ => Sync();
-        _translator.Ready += Sync;
+        _helpers.Ready += Sync;
         foreach (var changed in new Action<Action>[] { a => _style.Changed += _ => a(), a => _place.Changed += _ => a(), a => _size.Changed += _ => a(), a => _into.Changed += _ => a() })
             changed(ShowSample);
 
@@ -173,11 +176,22 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         }
     }
 
+    /// <summary>The language the words are wanted in ("spoken", "en", "ar"), as if chosen (for snapshots).</summary>
+    internal string WordsIn
+    {
+        set => _into.Value = value;
+    }
+
     private void Sync()
     {
-        bool arabic = _into.Value == "ar";
-        _translator.Visibility = arabic && !_translator.IsReady ? Visibility.Visible : Visibility.Collapsed;
-        PrimaryButton.IsEnabled = _model.IsReady && (!arabic || _translator.IsReady);
+        if (_into is null)
+            return;
+        var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
+        if (needed.Count > 0)
+            _helpers.Models = needed;
+        bool ready = needed.All(ModelStore.IsAvailable);
+        _helpers.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
+        PrimaryButton.IsEnabled = _model.IsReady && ready;
         FooterNote = _files.Count == 1 ? Path.GetFileName(_files[0]) : L.P(_files.Count, "{0} video", "{0} videos");
     }
 
@@ -186,21 +200,15 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         var modelPath = ModelStore.Find(_model.Model);
         if (modelPath is null)
             return;
-        string into = _into.Value;
-        var transcribe = new TranscribeOptions(modelPath, ValueOf<string>(_language), into is "en" or "ar");
+        var speech = new SpeechTextOptions(modelPath, ValueOf<string>(_language), SpeechLanguages.Into(_into.Value), SpeechLanguages.TranslatingModel());
         var options = new AnimatedCaptionOptions(_style.Value, _place.Value, _size.Value, _highlight) { Settings = SettingsStore.Current.Conversion };
         var tool = _tool;
         Close();
         var work = _files.Select(file => new WorkItem(file, Path.GetFileName(file), async (p, ct) =>
         {
-            var transcript = await Transcriber.TranscribeAsync(file, transcribe, new ScaledProgress(p, 0, into == "ar" ? 0.5 : 0.6), ct);
+            var transcript = await SpeechText.TranscribeAsync(file, speech, new ScaledProgress(p, 0, 0.6), ct);
             if (transcript.IsEmpty)
                 throw new InvalidOperationException(L.T("No speech was found in this file."));
-            if (into == "ar")
-            {
-                var arabic = await Task.Run(() => Petal.Recipes.Translation.Translator.ToArabic(transcript.Segments.Select(s => s.Text).ToList(), new ScaledProgress(p, 0.5, 0.6), ct), ct);
-                transcript = new Transcript(transcript.Segments.Select((s, i) => s with { Text = arabic[i] }).ToList(), "ar");
-            }
             var output = OutputNaming.ForTool(file, tool);
             await AnimatedCaptions.BurnAsync(file, transcript.Segments, output, options, new ScaledProgress(p, 0.6, 1), ct);
             return (IReadOnlyList<string>)[output];

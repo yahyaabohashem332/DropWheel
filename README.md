@@ -83,8 +83,8 @@ wheel:
   **magnifier** that follows the pointer, a **spotlight**, **show clicks and keys** for recordings, and a
   **timer** or stopwatch on top of everything ("7", "1:30", "90s", "1h 15m").
 * **Text** — on the text selected in any app: **fix keyboard layout** (ؤشف → cat, hgsghl → السلام, and
-  the keyboard switches), **translate** (English to Arabic with the translation model; Arabic to
-  English with the AI model), UPPERCASE, lowercase, Title and Sentence case, remove diacritics, swap
+  the keyboard switches), **translate** (English to Arabic and Arabic to English with the translation
+  models, a sentence at a time; the AI model when they aren't downloaded), UPPERCASE, lowercase, Title and Sentence case, remove diacritics, swap
   digits (١٢٣ ↔ 123), tidy spaces, count words, **calculate** (sums, percentages, functions and unit
   conversions in English or Arabic, answer copied), **summarize** and **rewrite** with the local AI
   model, and **dictate**.
@@ -142,6 +142,26 @@ workspaces, timer, a new note), a Work submenu in the tray, and Settings › Wor
 * **Wheel gallery and sharing** — ten ready-made wheels (Student, Presenter, Writer, Developer, Figma,
   Illustrator, Premiere Pro, Blender, Notion, Outlook), and any wheel shared as one line of text
   (`PETAL-WHEEL:…`) or a `.petalwheel` file, imported with a summary of what it holds.
+
+**English from Arabic speech, and a progress card that steps aside (1.8.4).**
+
+* **Accurate never asked to translate** — Whisper large-v3 turbo, the Accurate model, was trained to
+  write what is said only: asked for English, it wrote garbled words in several languages. Now English
+  from Arabic speech is written in Arabic with the model chosen, then translated by Opus-MT Arabic →
+  English (Helsinki-NLP, 114 MB once), sentence by sentence; other languages go into English with
+  Whisper's own translation by a model trained for it (Balanced or Fast). Measured on 30 FLEURS
+  recordings of Arabic speech against their human English translations (BLEU, higher is better):
+  Accurate's own translation 0.0, Balanced's 6.4, Fast's 2.3; Balanced + Opus-MT 25.1, Accurate +
+  Opus-MT **35.6** (the AI model in its place: 20.6). Accurate also writes the Arabic itself best:
+  3.9% of the letters wrong, against 9.0% for Balanced and 19.6% for Fast.
+* **Arabic stays Arabic** — In Arabic used to go through English (Arabic → English → Arabic). The
+  language spoken is told first (from the first half minute), and speech already in the language
+  wanted is written as spoken. Transcribe, Animated Captions and Live Captions share this route
+  (`SpeechText`); their windows ask for exactly the translation model the choice needs.
+* **Text, too** — Translate turns Arabic into English with Opus-MT when it is here (else the AI model).
+* **The progress card** — drag it anywhere, or send it to the taskbar with its new button: a taskbar
+  button shows the work's name and fills with its progress, and a click on it brings the card back.
+  When the work is done the card comes back by itself, and stays longer.
 
 **Near-live captions (1.8.3).** Live captions were rebuilt so the words keep pace with a video or a
 lesson instead of coming a sentence late, and never stop.
@@ -313,8 +333,9 @@ is not exported. Changes made to `settings.json` by hand are picked up at once.
   a white or coloured background, optionally cropped to the subject. The 224 MB model downloads once,
   from the tool window.
 * **Transcribe** — Whisper (Fast · Balanced · Accurate, the last one strong in Arabic) turns speech
-  in audio or video into subtitles (.srt) and/or text, in the spoken language or translated into
-  English, and can add them to the video as a track or burned into the picture (Arabic shaped and
+  in audio or video into subtitles (.srt) and/or text, in the spoken language, in English or in Arabic
+  (Arabic speech stays as it was said; Arabic into English and English into Arabic through Opus-MT,
+  other languages into English by Whisper itself), and can add them to the video as a track or burned into the picture (Arabic shaped and
   right to left). Uses the graphics card through Vulkan when it can.
 * **AI enlargement** in Resize — Real-ESRGAN (bundled, 4.5 MB) adds detail when a picture is made
   larger, on the graphics card through DirectML, else on the processor.
@@ -336,7 +357,7 @@ is not exported. Changes made to `settings.json` by hand are picked up at once.
   Transcribe can write Arabic subtitles for speech in any language.
 
 Each model downloads once from its tool window (sizes: natural voices 85 MB each, Ask Petal 1.1 GB,
-search 227 MB, noise 27 MB, vocals 181 MB, eraser 208 MB, translation 114 MB) and is checked against
+search 227 MB, noise 27 MB, vocals 181 MB, eraser 208 MB, translation 114 MB each way) and is checked against
 a pinned SHA-256.
 
 **Adobe files** — no Adobe application needed:
@@ -408,8 +429,8 @@ everywhere. The right-click menu entry and the notification-area menu follow the
 
 ## Install
 
-Run `dist\Petal-Setup-1.8.3.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
-French or Spanish), or `Petal-Setup-1.8.3-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
+Run `dist\Petal-Setup-1.8.4.exe` (per-user, no admin rights; the setup in English, Arabic, Turkish,
+French or Spanish), or `Petal-Setup-1.8.4-arm64.exe` on ARM64 PCs with Windows 11 (built but not yet tried on ARM hardware). It includes
 .NET, FFmpeg, ExifTool and the enlargement model, so nothing else is needed; the other AI models
 download from their tool windows when first used. Setup can also add the `petal`
 command to PATH. A portable ZIP and `update.json` (for an update feed) are built next to it.
