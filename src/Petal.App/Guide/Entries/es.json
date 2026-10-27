@@ -2526,6 +2526,32 @@
    "ajustes de windows"
   ]
  },
+ "do:screen.circle": {
+  "category": "screen",
+  "summary": "Rodea lo que sea en la pantalla (una frase, un número, una fecha, una imagen, un código QR) y la rueda se abre con lo que se puede hacer con ello, todo en este PC.",
+  "details": "Pulsa Ctrl+Win+C y la pantalla se queda quieta, con un borde luminoso. Rodea lo que sea, garabatea sobre una palabra, traza una línea a lo largo de una frase o haz clic en un párrafo o una imagen; el puntero ilumina el párrafo que tomaría un clic. DropWheel lee lo que tomaste (con el reconocimiento de texto integrado en Windows; también códigos QR y de barras) y la rueda se abre sobre ello. Para las palabras: COPIAR TEXTO, TRADUCIR (la traducción se coloca sobre el original, párrafo a párrafo, con sus propios colores, y Original para comparar), EXPLICAR, PREGUNTAR (un cuadro de pregunta que sigue la conversación), RESUMEN, BUSCAR, LEER, y TABLA o EXCEL cuando las palabras están en filas y columnas. Primero va lo que contiene el texto: ABRIR ENLACE, CORREO, LLAMAR, CALENDARIO para una fecha (un archivo de evento que abre cualquier calendario), TU HORA para una hora dada en otra zona, CONVERTIR para unidades (kilómetros y millas, kilos y libras, °C y °F, pies y pulgadas, feddanes), DIVISA al cambio de hoy, RESULTADO para un cálculo, COLOR para un código de color. Para una imagen: DESCRIBIR, PREGUNTAR, COPIAR IMAGEN, GUARDAR, RECORTAR (el sujeto, con bordes transparentes), ANCLAR, COLORES y UTILIDADES para todas las conversiones. El centro de la rueda ya muestra la respuesta cuando la hay: una conversión, un resultado, la hora donde estás. Explicar, preguntar y describir usan los modelos de IA de este PC, que se descargan una vez; solo DIVISA se conecta a internet, y solo cuando la eliges, para traer el cambio de hoy. Esc o un clic derecho devuelve la pantalla.",
+  "how": "Pulsa Ctrl+Win+C (o pulsa Ctrl+Win+Z sin nada seleccionado y elige RODEAR en la rueda Pantalla), rodea lo que quieras y elige un pétalo. El atajo se cambia en Configuración › Pantalla y texto.",
+  "examples": [
+   "Rodea un precio en dólares para verlo en tu moneda al cambio de hoy.",
+   "Rodea un párrafo en otro idioma y léelo traducido en su sitio, sobre el original.",
+   "Rodea la hora de una reunión escrita en otra zona horaria y añádela a tu calendario en tu propia hora."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "rodear para buscar",
+   "rodea lo que sea",
+   "traducir la pantalla",
+   "traducción en el sitio",
+   "explicar",
+   "preguntar sobre la pantalla",
+   "conversor de divisas",
+   "conversor de unidades",
+   "zona horaria",
+   "añadir al calendario",
+   "código qr",
+   "describir una imagen"
+  ]
+ },
  "do:screen.area": {
   "category": "screen",
   "summary": "Hace una captura de la parte de la pantalla sobre la que arrastras y luego abre la rueda de conversiones con ella.",

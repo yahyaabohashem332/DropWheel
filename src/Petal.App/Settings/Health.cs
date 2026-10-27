@@ -83,8 +83,9 @@ public static class Health
         Check(s.PaletteShortcut, Commands.CommandPalette.ShortcutHeld);
         Check(s.DictationShortcut, Words.Dictation.ShortcutHeld);
         Check(s.VoiceShortcut, Words.VoiceCommand.ShortcutHeld);
+        Check(s.CircleShortcut, Screen.CircleWindow.ShortcutHeld);
         return taken.Count == 0
-            ? new HealthCheck("Shortcuts", HealthState.Good, L.T("Every shortcut works"), string.Join(" · ", new[] { s.QuickShortcut, s.PaletteShortcut, s.DictationShortcut, s.VoiceShortcut }.Where(k => !string.IsNullOrWhiteSpace(k))))
+            ? new HealthCheck("Shortcuts", HealthState.Good, L.T("Every shortcut works"), string.Join(" · ", new[] { s.QuickShortcut, s.PaletteShortcut, s.DictationShortcut, s.VoiceShortcut, s.CircleShortcut }.Where(k => !string.IsNullOrWhiteSpace(k))))
             : new HealthCheck("Shortcuts", HealthState.Problem, L.F("Another program has {0}", string.Join(", ", taken)),
                 L.T("Choose another shortcut in Settings, or close the program that uses it."), L.T("Open Settings"), () => App.Current.ShowSettings());
     }
@@ -257,7 +258,7 @@ public static class Health
             L.T(s.LocalApi ? "Other programs can run petals" : "Other programs can't run petals"),
             L.T(Actions.PcDrop.Receiving ? "Receiving files from other PCs" : "Not receiving files from other PCs"),
         };
-        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("DropWheel goes online only to download a model you ask for, or to look for updates when an address is set."));
+        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("DropWheel goes online only to download a model you ask for, to look for updates when an address is set, or to fetch today's exchange rates when you convert a currency."));
     }
 
     private static string Tail(string path, int bytes)

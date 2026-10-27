@@ -128,6 +128,7 @@ public static class GuideBook
             Petal.Recipes.CustomPetal => "kind:petal",
             WheelGroup => "kind:group",
             RunningWindow => "kind:windows",
+            Screen.CircleChoice => "do:screen.circle",
             Clips.ClipItem => "kind:clips",
             Screen.Workspace => "kind:workspaces",
             FolderDestination => "kind:destination",

@@ -2449,6 +2449,34 @@
    "open settings"
   ]
  },
+ "do:screen.circle": {
+  "category": "screen",
+  "summary": "Circle anything on the screen (a sentence, a number, a date, a picture, a QR code) and the wheel opens with what can be done with it, all on this PC.",
+  "details": "Press Ctrl+Win+C and the screen stands still, with a glowing edge. Circle anything, scribble over a word, run a line along a sentence, or click a paragraph or a picture: the pointer lights up the paragraph a click would take. DropWheel reads what you took (with the text recognition built into Windows; QR codes and barcodes too) and the wheel opens on it. For words: COPY TEXT, TRANSLATE (the translation is laid over the original, paragraph by paragraph, in its own colours, with Original to compare), EXPLAIN, ASK (a question box that keeps the conversation going), SUMMARY, SEARCH, READ ALOUD, and TABLE or EXCEL when the words stand in rows and columns. What the text holds comes first: OPEN LINK, EMAIL, CALL, CALENDAR for a date (an event file any calendar opens), YOUR TIME for a time given in another zone, CONVERT for units (kilometres and miles, kilos and pounds, °C and °F, feet and inches, feddans), CURRENCY at today's rates, RESULT for a sum, COLOUR for a colour code. For a picture: DESCRIBE, ASK, COPY PICTURE, SAVE, CUT OUT (the subject, with see-through edges), PIN, COLOURS, and TOOLS for every conversion. The middle of the wheel already shows the answer when there is one: a conversion, a sum, the time where you are. Explaining, asking and describing use the AI models on this PC, downloaded once; only CURRENCY goes online, and only when you choose it, to fetch today's rates. Esc or a right-click puts the screen back.",
+  "how": "Press Ctrl+Win+C (or press Ctrl+Win+Z with nothing selected and choose CIRCLE on the Screen wheel), circle what you want, then choose a petal. The shortcut can be changed in Settings › Screen & Text.",
+  "examples": [
+   "Circle a price in dollars to see it in your own currency at today's rate.",
+   "Circle a paragraph in another language and read it translated in place, over the original.",
+   "Circle a meeting time given in another time zone and add it to your calendar in your own time."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "circle to search",
+   "circle anything",
+   "click to do",
+   "google lens",
+   "translate the screen",
+   "translate in place",
+   "explain",
+   "ask about the screen",
+   "currency converter",
+   "unit converter",
+   "time zone converter",
+   "add to calendar",
+   "qr code",
+   "describe a picture"
+  ]
+ },
  "do:screen.area": {
   "category": "screen",
   "summary": "Takes a screenshot of the part of the screen you drag over, then opens the conversion wheel on it.",

@@ -134,6 +134,31 @@ public sealed class PetalController : IDisposable, IWheelHost
         _wheel.OpenRings(pages, start, at);
     }
 
+    /// <summary>
+    /// The wheel for something circled on the screen (Circle Anything): one page of its own petals, at a point.
+    /// <paramref name="dismissed"/> runs when it goes away with none of them chosen.
+    /// </summary>
+    public void OpenCircleWheel(RingPage page, ScreenPoint at, Action dismissed)
+    {
+        _wheel.OpenRings([page], 0, at);
+        bool chosen = false;
+        void OnChose(string key, WheelItem item)
+        {
+            if (key == "ring:" + page.Key)
+                chosen = true;
+        }
+        void OnClosed()
+        {
+            _wheel.Chose -= OnChose;
+            _wheel.Closed -= OnClosed;
+            if (!chosen)
+                dismissed();
+        }
+        // After opening: closing a wheel that was already open isn't this one's going.
+        _wheel.Chose += OnChose;
+        _wheel.Closed += OnClosed;
+    }
+
     private readonly List<string> _pendingFiles = [];
     private DispatcherTimer? _pendingTimer;
     private ScreenPoint _pendingAt;

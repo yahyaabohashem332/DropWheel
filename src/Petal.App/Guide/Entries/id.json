@@ -2577,6 +2577,32 @@
    "buka pengaturan"
   ]
  },
+ "do:screen.circle": {
+  "category": "screen",
+  "summary": "Lingkari apa saja di layar (kalimat, angka, tanggal, gambar, kode QR) dan roda terbuka dengan hal yang bisa dilakukan dengannya, semuanya di PC ini.",
+  "details": "Tekan Ctrl+Win+C dan layar berhenti dengan tepi yang bercahaya. Lingkari apa saja, coret sebuah kata, tarik garis sepanjang kalimat, atau klik paragraf atau gambar; penunjuk menyorot paragraf yang akan diambil oleh klik. DropWheel membaca yang Anda ambil (dengan pengenalan teks bawaan Windows; kode QR dan barcode juga) lalu roda terbuka di atasnya. Untuk kata-kata: SALIN TEKS, TERJEMAH (terjemahannya diletakkan di atas teks asli, paragraf demi paragraf, dengan warnanya sendiri, dan Asli untuk membandingkan), JELASKAN, TANYA (kotak pertanyaan yang melanjutkan percakapan), RINGKASAN, CARI, BACAKAN, serta TABEL atau EXCEL bila kata-katanya tersusun dalam baris dan kolom. Yang dikandung teks muncul lebih dulu: BUKA TAUTAN, EMAIL, TELEPON, KALENDER untuk tanggal (file acara yang dibuka kalender mana pun), WAKTU ANDA untuk jam yang ditulis di zona waktu lain, KONVERSI untuk satuan (kilometer dan mil, kilo dan pon, °C dan °F, kaki dan inci, feddan), MATA UANG dengan kurs hari ini, HASIL untuk hitungan, WARNA untuk kode warna. Untuk gambar: DESKRIPSI, TANYA, SALIN GAMBAR, SIMPAN, PISAHKAN (objeknya, dengan tepi transparan), SEMATKAN, AMBIL WARNA, dan ALAT untuk setiap konversi. Bagian tengah roda langsung menampilkan jawabannya bila ada: hasil konversi, hasil hitungan, jam di tempat Anda. Menjelaskan, bertanya, dan mendeskripsikan memakai model AI di PC ini yang diunduh sekali; hanya MATA UANG yang tersambung ke internet, dan hanya saat Anda memilihnya, untuk mengambil kurs hari ini. Esc atau klik kanan mengembalikan layar.",
+  "how": "Tekan Ctrl+Win+C (atau tekan Ctrl+Win+Z tanpa ada yang dipilih lalu pilih LINGKARI di roda Layar), lingkari yang Anda inginkan, lalu pilih kelopak. Pintasannya bisa diubah di Pengaturan › Layar & Teks.",
+  "examples": [
+   "Lingkari harga dalam dolar untuk melihatnya dalam mata uang Anda dengan kurs hari ini.",
+   "Lingkari paragraf berbahasa lain dan baca terjemahannya langsung di tempatnya, di atas teks asli.",
+   "Lingkari jam rapat yang ditulis di zona waktu lain dan tambahkan ke kalender Anda dalam waktu Anda sendiri."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "lingkari apa saja",
+   "lingkari untuk mencari",
+   "terjemahkan layar",
+   "terjemahan di tempat",
+   "jelaskan",
+   "tanya tentang layar",
+   "konversi mata uang",
+   "konversi satuan",
+   "zona waktu",
+   "tambahkan ke kalender",
+   "kode qr",
+   "deskripsikan gambar"
+  ]
+ },
  "do:screen.area": {
   "category": "screen",
   "summary": "Mengambil cuplikan layar dari bagian layar yang Anda seret, lalu membuka roda konversi untuknya.",

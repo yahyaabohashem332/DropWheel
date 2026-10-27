@@ -158,6 +158,9 @@ public sealed class AppSettings
     /// <summary>The command palette's shortcut.</summary>
     public string PaletteShortcut { get; set; } = "Ctrl+Win+K";
 
+    /// <summary>Circle Anything's shortcut: the screen stands still to circle something on it.</summary>
+    public string CircleShortcut { get; set; } = "Ctrl+Win+C";
+
     /// <summary>Voice commands: say what you want and the command palette opens with it.</summary>
     public string VoiceShortcut { get; set; } = "Ctrl+Win+M";
 

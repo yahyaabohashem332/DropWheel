@@ -24,7 +24,14 @@ public static class PictureDescriber
     /// Describes a picture. <paramref name="picture"/> must be a PNG or JPEG the model can open; callers make
     /// one from any other format first.
     /// </summary>
-    public static async Task<string> DescribeAsync(string picture, bool detailed, CancellationToken cancellationToken = default)
+    public static Task<string> DescribeAsync(string picture, bool detailed, CancellationToken cancellationToken = default) =>
+        RunAsync(picture, Prompt(detailed), detailed ? 260 : 90, cancellationToken);
+
+    /// <summary>A question about a picture (in English, which is what the model reads), answered in English in a few sentences.</summary>
+    public static Task<string> AskAsync(string picture, string question, CancellationToken cancellationToken = default) =>
+        RunAsync(picture, question.Trim() + " Answer briefly.", 200, cancellationToken);
+
+    private static async Task<string> RunAsync(string picture, string prompt, int tokens, CancellationToken cancellationToken)
     {
         var folder = AskPetal.RuntimeFolder();
         var program = Path.Combine(folder, "llama-mtmd-cli.exe");
@@ -44,8 +51,8 @@ public static class PictureDescriber
         int threads = Math.Clamp(Environment.ProcessorCount - 1, 1, 8);
         foreach (var arg in new[]
         {
-            "-m", model, "--mmproj", projector, "--image", picture, "-p", Prompt(detailed),
-            "-n", detailed ? "260" : "90", "--temp", "0.1", "-t", threads.ToString(CultureInfo.InvariantCulture),
+            "-m", model, "--mmproj", projector, "--image", picture, "-p", prompt,
+            "-n", tokens.ToString(CultureInfo.InvariantCulture), "--temp", "0.1", "-t", threads.ToString(CultureInfo.InvariantCulture),
         })
             start.ArgumentList.Add(arg);
         using var process = Process.Start(start) ?? throw new InvalidOperationException("The AI model didn't start.");

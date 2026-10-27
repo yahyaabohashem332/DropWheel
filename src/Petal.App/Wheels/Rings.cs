@@ -283,6 +283,9 @@ public static class EntryRunner
                     if (!await Clips.ClipboardHistory.PasteAsync(clip, target))
                         host.Card(at, L.T("On the clipboard"), L.T("Paste it with Ctrl+V."), true);
                     return;
+                case Screen.CircleChoice choice:
+                    await choice.Run();
+                    return;
                 case WheelEntry entry:
                     await RunAsync(entry, item, at, target, host);
                     return;

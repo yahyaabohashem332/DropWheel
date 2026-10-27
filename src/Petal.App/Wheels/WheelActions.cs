@@ -168,6 +168,10 @@ public static class WheelActions
         new("system.settings", "SETTINGS", "Windows Settings", "settings", "Open Windows Settings.", "Windows") { Run = Do(() => SystemToggles.Open("ms-settings:")) },
 
         // ---------- the screen ----------
+        new("screen.circle", "CIRCLE", "Circle Anything", "lasso", "Circle anything on the screen (a sentence, a number, a picture, a QR code) and the wheel opens with what can be done with it.", "Screen")
+        {
+            Run = async _ => { await Task.Delay(180); Screen.CircleWindow.Toggle(); },
+        },
         new("screen.area", "SNIP", "Screenshot an Area", "screenshot", "Drag over part of the screen; the conversion wheel opens on the picture.", "Screen")
         {
             Run = async c =>

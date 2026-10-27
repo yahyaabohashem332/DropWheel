@@ -14,7 +14,7 @@ public sealed record Calculation(double Value, string Text, string Unit)
 /// Sums and conversions typed the way people write them, in English or Arabic: "12% of 340", "(3+4)*2^3",
 /// "sqrt 2", "5 km in mi", "٧٠ كغ بالرطل", "98.6 f to c", "1.5 GB in MB". Arabic-Indic digits work too.
 /// </summary>
-public static class Calculator
+public static partial class Calculator
 {
     private sealed record Unit(string Name, string Kind, double Factor, double Offset = 0);
 
@@ -44,8 +44,11 @@ public static class Calculator
         (["m2", "m²", "sq m", "square metre", "square meter", "متر مربع"], new("m²", "area", 1)),
         (["km2", "km²", "sq km", "square kilometre", "square kilometer", "كيلومتر مربع"], new("km²", "area", 1e6)),
         (["ha", "hectare", "hectares", "هكتار"], new("ha", "area", 1e4)),
-        (["acre", "acres", "فدان"], new("acre", "area", 4046.8564224)),
+        (["acre", "acres", "أكر"], new("acre", "area", 4046.8564224)),
+        // The feddan of Egypt and Sudan: 4,200.83 m², a little more than an acre.
+        (["feddan", "feddans", "فدان", "أفدنة"], new("feddan", "area", 4200.83)),
         (["ft2", "ft²", "sq ft", "square foot", "square feet", "قدم مربع"], new("ft²", "area", 0.09290304)),
+        (["mi2", "mi²", "sq mi", "square mile", "square miles", "ميل مربع"], new("mi²", "area", 2589988.110336)),
         (["m/s", "مت/ث"], new("m/s", "speed", 1)),
         (["km/h", "kmh", "kph", "كم/س", "كم/ساعة"], new("km/h", "speed", 1 / 3.6)),
         (["mph", "ميل/س"], new("mph", "speed", 0.44704)),

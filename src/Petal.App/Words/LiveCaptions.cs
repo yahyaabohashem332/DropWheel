@@ -724,25 +724,37 @@ internal sealed class ModelDownloadWindow : ToolWindow
 {
     private static ModelDownloadWindow? _open;
 
-    public static void Show(string title, string why, IReadOnlyList<ModelInfo> models)
+    /// <param name="over">A window that stays on top of everything (Circle Anything's still screen): this one goes over it.</param>
+    /// <param name="ready">Called once the models are all here.</param>
+    public static void Show(string title, string why, IReadOnlyList<ModelInfo> models, Window? over = null, Action? ready = null)
     {
         if (_open is not null)
         {
             _open.Activate();
             return;
         }
-        _open = new ModelDownloadWindow(title, why, models);
+        _open = new ModelDownloadWindow(title, why, models, ready);
         _open.Closed += (_, _) => _open = null;
         _open.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        if (over is not null)
+        {
+            _open.Owner = over;
+            _open.Topmost = true;
+            _open.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        }
         _open.Show();
     }
 
-    private ModelDownloadWindow(string title, string why, IReadOnlyList<ModelInfo> models) : base(title, 420)
+    private ModelDownloadWindow(string title, string why, IReadOnlyList<ModelInfo> models, Action? ready) : base(title, 420)
     {
         Body.Children.Add(Text(why, "Petal.Body"));
         var panel = new ModelPanel(models);
         Body.Children.Add(panel);
-        panel.Ready += () => FooterNote = "Ready";
+        panel.Ready += () =>
+        {
+            FooterNote = "Ready";
+            ready?.Invoke();
+        };
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
     }

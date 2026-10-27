@@ -49,6 +49,7 @@ public class WheelTextTests(ITestOutputHelper output)
             .Concat(FileActionRegistry.All.Select(a => a.WheelTitle))
             .Concat(Petal.App.Wheels.WheelActions.All.Select(a => a.Label))
             .Concat(["PAUSE", "MORE"])
+            .Concat(Petal.App.Screen.CircleChoices.Labels)
             .Concat(Entries().Select(e => e.Label).OfType<string>())
             .Select(n => arabic ? Arabic(n) : n);
 

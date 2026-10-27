@@ -2558,6 +2558,32 @@
    "bilgisayar ayarları"
   ]
  },
+ "do:screen.circle": {
+  "category": "screen",
+  "summary": "Ekrandaki herhangi bir şeyi (bir cümle, bir sayı, bir tarih, bir resim, bir QR kod) daire içine alın; çark, onunla yapılabileceklerle açılır, hepsi bu bilgisayarda.",
+  "details": "Ctrl+Win+C'ye basın, ekran parlayan bir kenarla durur. Herhangi bir şeyi daire içine alın, bir kelimenin üzerini karalayın, bir cümlenin boyunca çizgi çekin ya da bir paragrafa veya resme tıklayın; işaretçi, tıklamanın alacağı paragrafı aydınlatır. DropWheel aldığınızı okur (Windows'un yerleşik metin tanımasıyla; QR kodları ve barkodları da) ve çark onun üzerinde açılır. Sözcükler için: METNİ KOPYALA, ÇEVİR (çeviri, özgün metnin üzerine paragraf paragraf ve kendi renkleriyle yerleştirilir; karşılaştırmak için Orijinal), AÇIKLA, SOR (sohbeti sürdüren bir soru kutusu), ÖZET, ARA, SESLİ OKU ve sözcükler satır ve sütunlarda durduğunda TABLO veya EXCEL. Önce metnin içerdikleri gelir: BAĞLANTI, E-POSTA, TELEFON, tarih için TAKVİM (her takvimin açtığı bir etkinlik dosyası), başka bir saat diliminde verilmiş saat için SAATİNİZ, birimler için DÖNÜŞTÜR (kilometre ve mil, kilo ve pound, °C ve °F, fit ve inç, feddan), bugünkü kurlarla DÖVİZ, bir işlem için SONUÇ, bir renk kodu için RENK. Bir resim için: BETİMLE, SOR, RESMİ KOPYALA, KAYDET, DEKUPE (saydam kenarlı nesne), SABİTLE, RENKLER ve tüm dönüştürmeler için ARAÇLAR. Bir yanıt olduğunda çarkın ortası onu hemen gösterir: bir dönüşüm, bir sonuç, sizdeki saat. Açıklama, soru ve betimleme bu bilgisayardaki, bir kez indirilen yapay zekâ modellerini kullanır; yalnızca DÖVİZ internete bağlanır ve yalnızca onu seçtiğinizde, bugünkü kurları almak için. Esc ya da sağ tık ekranı geri getirir.",
+  "how": "Ctrl+Win+C'ye basın (ya da hiçbir şey seçili değilken Ctrl+Win+Z'ye basıp Ekran çarkında DAİRE'yi seçin), istediğinizi daire içine alın, sonra bir yaprak seçin. Kısayol Ayarlar › Ekran ve Metin bölümünden değiştirilebilir.",
+  "examples": [
+   "Dolar cinsinden bir fiyatı daire içine alın, bugünkü kurla kendi para biriminizde görün.",
+   "Başka bir dildeki bir paragrafı daire içine alın, özgün metnin üzerinde yerinde çevrilmiş olarak okuyun.",
+   "Başka bir saat diliminde yazılmış bir toplantı saatini daire içine alın ve kendi saatinizle takviminize ekleyin."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "daire içine al",
+   "her şeyi daire içine al",
+   "ekranı çevir",
+   "yerinde çeviri",
+   "açıkla",
+   "ekran hakkında sor",
+   "döviz çevirici",
+   "birim çevirici",
+   "saat dilimi",
+   "takvime ekle",
+   "qr kod",
+   "resmi betimle"
+  ]
+ },
  "do:screen.area": {
   "category": "screen",
   "summary": "Ekranın üzerinde sürüklediğin kısmının ekran görüntüsünü alır, sonra onun için dönüştürme çarkını açar.",

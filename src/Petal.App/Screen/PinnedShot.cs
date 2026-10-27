@@ -34,6 +34,9 @@ internal sealed class PinnedShot : Window
     public static void Start(Action<string, ScreenPoint>? openFiles) =>
         Wheels.Screenshots.ChooseArea("Drag over the area to pin on top · Esc cancels", false, (picture, area) => new PinnedShot(picture, area, openFiles).Show());
 
+    /// <summary>Pins a piece of the screen already taken (Circle Anything's), right where it was.</summary>
+    public static void Pin(BitmapSource picture, RECT area, Action<string, ScreenPoint>? openFiles) => new PinnedShot(picture, area, openFiles).Show();
+
     /// <summary>Takes every pinned picture off the screen.</summary>
     public static void CloseAll()
     {

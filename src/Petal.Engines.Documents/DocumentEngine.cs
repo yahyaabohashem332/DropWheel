@@ -68,21 +68,41 @@ public static class DocumentEngine
     /// </summary>
     public static async Task<string> ReadTextAsync(byte[] bgra, int width, int height, CancellationToken cancellationToken = default)
     {
+        var words = await ReadWordsAsync(bgra, width, height, cancellationToken).ConfigureAwait(false);
+        // In reading order: Windows gives an Arabic line's words from the left.
+        return ReadingOrder.Text(words);
+    }
+
+    /// <summary>
+    /// The words in a picture of the screen (BGRA pixels), each with its box in the picture's own pixels and the line it
+    /// belongs to, in the order Windows reads them. Short pictures are read at twice their size, very large ones at the
+    /// largest size Windows reads; the boxes are given back at the picture's size either way. With <paramref name="everyLanguage"/>,
+    /// every installed language reads it and each line is kept from the one that read it best (for screens that mix scripts).
+    /// </summary>
+    public static async Task<IReadOnlyList<PictureWord>> ReadWordsAsync(byte[] bgra, int width, int height, CancellationToken cancellationToken = default, bool everyLanguage = false)
+    {
         using var bitmap = new SkiaSharp.SKBitmap(new SkiaSharp.SKImageInfo(width, height, SkiaSharp.SKColorType.Bgra8888, SkiaSharp.SKAlphaType.Premul));
         System.Runtime.InteropServices.Marshal.Copy(bgra, 0, bitmap.GetPixels(), Math.Min(bgra.Length, width * height * 4));
         SkiaSharp.SKBitmap? larger = null;
+        double scale = 1;
         int max = OcrService.MaxImageDimension;
         if (Math.Max(width, height) * 2 <= max && height < 900)
+        {
             larger = bitmap.Resize(new SkiaSharp.SKImageInfo(width * 2, height * 2, bitmap.ColorType, bitmap.AlphaType), new SkiaSharp.SKSamplingOptions(SkiaSharp.SKCubicResampler.Mitchell));
+            scale = 2;
+        }
         else if (Math.Max(width, height) > max)
         {
             double s = (double)max / Math.Max(width, height);
             larger = bitmap.Resize(new SkiaSharp.SKImageInfo((int)(width * s), (int)(height * s), bitmap.ColorType, bitmap.AlphaType), new SkiaSharp.SKSamplingOptions(SkiaSharp.SKCubicResampler.Mitchell));
+            scale = (double)larger.Width / width;
         }
         try
         {
-            var words = await OcrService.RecognizeAsync(larger ?? bitmap, null, cancellationToken).ConfigureAwait(false);
-            return string.Join(Environment.NewLine, words.GroupBy(w => w.Line).OrderBy(g => g.Key).Select(g => string.Join(" ", g.Select(w => w.Text))));
+            var words = everyLanguage
+                ? await OcrService.RecognizeEveryLanguageAsync(larger ?? bitmap, cancellationToken).ConfigureAwait(false)
+                : await OcrService.RecognizeAsync(larger ?? bitmap, null, cancellationToken).ConfigureAwait(false);
+            return words.Select(w => new PictureWord(w.Text, w.X / scale, w.Y / scale, w.Width / scale, w.Height / scale, w.Line)).ToList();
         }
         finally
         {

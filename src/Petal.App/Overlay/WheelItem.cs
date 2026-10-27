@@ -65,6 +65,7 @@ public sealed record WheelItem(string Label, string Name, string? Icon, object P
         Clips.ClipItem c => "clip:" + c.Id,
         Screen.Workspace w => "workspace:" + w.Id,
         Wheels.FolderDestination d => "folder:" + d.Id,
+        Screen.CircleChoice c => "circle:" + c.Id,
         _ => "other:" + payload,
     };
 

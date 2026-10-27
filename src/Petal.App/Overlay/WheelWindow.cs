@@ -187,6 +187,9 @@ public sealed partial class WheelWindow : Window
     /// <summary>A petal that can't run was chosen: say why at this point.</summary>
     public event Action<WheelItem, ScreenPoint>? UnavailableChosen;
 
+    /// <summary>The wheel went away, whether a petal was chosen (<see cref="Chose"/> came first then) or not.</summary>
+    public event Action? Closed;
+
     /// <summary>The page shown now, for memory and statistics.</summary>
     public string PageKey => _pages is { } pages ? "ring:" + pages[_page].Key : "files:" + _mode;
 
@@ -772,6 +775,7 @@ public sealed partial class WheelWindow : Window
         _hint.BeginAnimation(OpacityProperty, null);
         Park();
         Sound.Cool();
+        Closed?.Invoke();
     }
 
     // ---------- drag and drop ----------

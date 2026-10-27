@@ -2492,6 +2492,32 @@
    "réglages"
   ]
  },
+ "do:screen.circle": {
+  "category": "screen",
+  "summary": "Entourez n'importe quoi à l'écran (une phrase, un nombre, une date, une image, un code QR) et la roue s'ouvre avec ce que l'on peut en faire, le tout sur ce PC.",
+  "details": "Appuyez sur Ctrl+Win+C et l'écran se fige, avec un bord lumineux. Entourez n'importe quoi, griffonnez sur un mot, tracez une ligne le long d'une phrase, ou cliquez sur un paragraphe ou une image ; le pointeur éclaire le paragraphe qu'un clic prendrait. DropWheel lit ce que vous avez pris (avec la reconnaissance de texte intégrée à Windows ; les codes QR et codes-barres aussi) et la roue s'ouvre dessus. Pour les mots : COPIER TEXTE, TRADUIRE (la traduction est posée sur l'original, paragraphe par paragraphe, dans ses propres couleurs, avec Original pour comparer), EXPLIQUER, DEMANDER (une zone de question qui poursuit la conversation), RÉSUMÉ, RECHERCHE, LIRE, et TABLEAU ou EXCEL quand les mots sont en lignes et en colonnes. Ce que le texte contient vient d'abord : OUVRIR LIEN, E-MAIL, APPELER, CALENDRIER pour une date (un fichier d'événement que tout calendrier ouvre), VOTRE HEURE pour une heure donnée dans un autre fuseau, CONVERTIR pour les unités (kilomètres et miles, kilos et livres, °C et °F, pieds et pouces, feddans), DEVISE aux taux du jour, RÉSULTAT pour un calcul, COULEUR pour un code couleur. Pour une image : DÉCRIRE, DEMANDER, COPIER IMAGE, ENREG., DÉTOURER (le sujet, aux bords transparents), ÉPINGLER, COULEURS, et OUTILS pour toutes les conversions. Le centre de la roue montre déjà la réponse quand il y en a une : une conversion, un résultat, l'heure chez vous. Expliquer, demander et décrire utilisent les modèles d'IA de ce PC, téléchargés une seule fois ; seule DEVISE va en ligne, et seulement quand vous la choisissez, pour chercher les taux du jour. Échap ou un clic droit rend l'écran.",
+  "how": "Appuyez sur Ctrl+Win+C (ou appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez ENTOURER sur la roue Écran), entourez ce que vous voulez, puis choisissez un pétale. Le raccourci se change dans Paramètres › Écran et texte.",
+  "examples": [
+   "Entourez un prix en dollars pour le voir dans votre devise au taux du jour.",
+   "Entourez un paragraphe dans une autre langue et lisez-le traduit sur place, par-dessus l'original.",
+   "Entourez l'heure d'une réunion donnée dans un autre fuseau horaire et ajoutez-la à votre calendrier à votre heure."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "entourer pour chercher",
+   "entourer n'importe quoi",
+   "traduire l'écran",
+   "traduction sur place",
+   "expliquer",
+   "question sur l'écran",
+   "convertisseur de devises",
+   "convertisseur d'unités",
+   "fuseau horaire",
+   "ajouter au calendrier",
+   "code qr",
+   "décrire une image"
+  ]
+ },
  "do:screen.area": {
   "category": "screen",
   "summary": "Fait une capture de la partie de l'écran sur laquelle vous faites glisser, puis ouvre la roue des conversions dessus.",

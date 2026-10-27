@@ -10,6 +10,18 @@ namespace Petal.Engines.Documents.Ocr;
 /// <summary>A recognised word in pixel coordinates of the bitmap it was read from.</summary>
 internal readonly record struct OcrWordBox(string Text, double X, double Y, double Width, double Height, int Line);
 
+/// <summary>A word read from a picture: its text, its box in the picture's pixels, and the line it is on (lines counted as Windows read them).</summary>
+public sealed record PictureWord(string Text, double X, double Y, double Width, double Height, int Line)
+{
+    public double Right => X + Width;
+
+    public double Bottom => Y + Height;
+
+    public double CentreX => X + Width / 2;
+
+    public double CentreY => Y + Height / 2;
+}
+
 /// <summary>Local text recognition with the OCR engine built into Windows. Nothing leaves the machine.</summary>
 internal static class OcrService
 {
@@ -82,6 +94,58 @@ internal static class OcrService
                 break;
         }
         return best;
+    }
+
+    /// <summary>
+    /// Every installed language reads the bitmap, and each line is kept from the language that read it best: on a screen
+    /// with Arabic and English (and Turkish) side by side, every line comes out in its own script. A line is scored by
+    /// its clean letters, a little more when the reader's script is the line's, and a little more for the user's own
+    /// language when two readings tie.
+    /// </summary>
+    public static async Task<IReadOnlyList<OcrWordBox>> RecognizeEveryLanguageAsync(SKBitmap bitmap, CancellationToken cancellationToken)
+    {
+        using var soft = ToSoftwareBitmap(bitmap);
+        var engines = CreateEngines(null);
+        var candidates = new List<(List<OcrWordBox> Words, double Left, double Top, double Right, double Bottom, double Score)>();
+        int lineIndex = 0;
+        for (int e = 0; e < engines.Count; e++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var engine = engines[e];
+            bool arabicReader = engine.RecognizerLanguage.LanguageTag.Split('-')[0] is "ar" or "fa" or "ur" or "ps";
+            var result = await engine.RecognizeAsync(soft).AsTask(cancellationToken).ConfigureAwait(false);
+            foreach (var line in result.Lines)
+            {
+                var words = line.Words.Select(w => new OcrWordBox(w.Text, w.BoundingRect.X, w.BoundingRect.Y, w.BoundingRect.Width, w.BoundingRect.Height, lineIndex)).ToList();
+                lineIndex++;
+                if (words.Count == 0)
+                    continue;
+                var text = string.Concat(words.Select(w => w.Text));
+                int letters = text.Count(char.IsLetterOrDigit);
+                double quality = (double)letters / Math.Max(1, text.Length);
+                int arabic = ReadingOrder.Arabic(text), latin = ReadingOrder.Latin(text);
+                double score = letters * quality * quality;
+                if (arabicReader == arabic > latin)
+                    score *= 1.15;
+                if (e == 0)
+                    score *= 1.05;
+                candidates.Add((words, words.Min(w => w.X), words.Min(w => w.Y), words.Max(w => w.X + w.Width), words.Max(w => w.Y + w.Height), score));
+            }
+        }
+        // The best readings first; a line that mostly covers one already kept is the same line read worse.
+        var kept = new List<(List<OcrWordBox> Words, double Left, double Top, double Right, double Bottom, double Score)>();
+        foreach (var c in candidates.OrderByDescending(c => c.Score))
+        {
+            double area = (c.Right - c.Left) * (c.Bottom - c.Top);
+            bool same = kept.Any(k =>
+            {
+                double w = Math.Min(k.Right, c.Right) - Math.Max(k.Left, c.Left), h = Math.Min(k.Bottom, c.Bottom) - Math.Max(k.Top, c.Top);
+                return w > 0 && h > 0 && w * h > 0.5 * Math.Min(area, (k.Right - k.Left) * (k.Bottom - k.Top));
+            });
+            if (!same)
+                kept.Add(c);
+        }
+        return kept.SelectMany(k => k.Words).ToList();
     }
 
     private static List<OcrEngine> CreateEngines(IReadOnlyList<string>? languages)

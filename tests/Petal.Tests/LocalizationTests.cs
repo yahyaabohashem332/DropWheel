@@ -18,7 +18,7 @@ public partial class LocalizationTests
     // Strings in the app's sources that are not interface text, or read the same in Arabic.
     private static readonly HashSet<string> NotTranslated = new(StringComparer.Ordinal)
     {
-        "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",
+        "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "do:screen.circle", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",
         "Segoe UI Variable Display, Segoe UI", "Segoe UI Variable Text, Segoe UI", "Cascadia Mono, Consolas",
         "Shift", "Ctrl", "Alt", "Win", "⇧ Shift", "Shift ⇧", "Windows ⊞", "English",
         "FFmpeg", "Microsoft Office", "4K (2160p)", "Full HD (1080p)", "HD (720p)", "SD (480p)",
@@ -28,7 +28,7 @@ public partial class LocalizationTests
         // Font names, a template part, a unit and a file-name suffix (file names stay in English).
         "Segoe UI", "Segoe Script", "Segoe Print", "Ink Free", "Cell", "pt", "PNG · SVG", "Unlocked",
         // Date and time patterns, and a sample installer name in the design snapshots.
-        "HH:mm", "yyyy-MM-dd", "DropWheel-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
+        "HH:mm", "yyyy-MM-dd", "ddd d MMM", "ddd d MMM yyyy", "d MMM, HH:mm", "DropWheel-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
         // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Petal warm-up", "Microsoft",
         // The culture the wheel measures its text in, as WPF text blocks do by default.
@@ -71,6 +71,8 @@ public partial class LocalizationTests
         "Turkish", "Persian", "Urdu", "Indonesian", "French", "Spanish", "0123456789 !?&@ ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         // 1.8.4: a progress card's sample line in the design snapshots.
         "lesson.mp4 · 37%",
+        // 1.10: the sample page Circle Anything is drawn over in the design snapshots, its made-up explanation, and what its checks write when nothing was read.
+        "A quiet lake town for the weekend", "Two hours from the city, the old harbour has cafés, boat trips and a market", "every Saturday morning. The trail around the lake is easy and shaded, and", "the views at sunset are worth the walk.", "Rooms from $1,299 a week · the hotel is 3.5 km from the station", "Live Q&A on Nov 5, 2026 at 3:00 PM PST · call +1 415 555 0134", "Theme colour: #7C5CFC", "Scan for the app", "The harbour at dusk", "A short travel note: a small lake town two hours from the city, with an old harbour, cafés, boat trips and a Saturday market. The walk round the lake is easy and shady, best at sunset.", "(not read)", "(nothing)",
     };
 
     private static readonly Regex Literal = MakeLiteral();

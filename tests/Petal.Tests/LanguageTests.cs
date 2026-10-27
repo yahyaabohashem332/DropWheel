@@ -77,6 +77,7 @@ public sealed partial class LanguageTests
             .Concat(FileActionRegistry.All.Select(a => a.WheelTitle))
             .Concat(Petal.App.Wheels.WheelActions.All.Select(a => a.Label))
             .Concat(["PAUSE", "MORE"])
+            .Concat(Petal.App.Screen.CircleChoices.Labels)
             .Concat(ReadyMadeLabels())
             .Distinct()
             .Select(t => table.TryGetValue(t, out var x) ? x.Split('|')[^1] : t)

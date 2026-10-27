@@ -81,6 +81,10 @@ public static partial class PictureTables
     /// <summary>Rows and columns from recognised words and where they are.</summary>
     internal static PictureTable FromWords(IReadOnlyList<OcrWordBox> words) => Arrange(words).Table;
 
+    /// <summary>Rows and columns from words already read off a picture, without reading it again.</summary>
+    public static PictureTable FromWords(IReadOnlyList<PictureWord> words) =>
+        FromWords(words.Select(w => new OcrWordBox(w.Text, w.X, w.Y, w.Width, w.Height, w.Line)).ToList());
+
     private static Layout Arrange(IReadOnlyList<OcrWordBox> words)
     {
         if (words.Count == 0)

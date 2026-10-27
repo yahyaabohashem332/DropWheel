@@ -82,6 +82,172 @@ internal static class DesignSnapshots
         }
     }
 
+    /// <summary>
+    /// "Petal.exe --snapshot-circle &lt;folder&gt; &lt;test data folder&gt;": Circle Anything over a sample page, in each state
+    /// (the pointer over a paragraph, reading, the wheel, the cards, a translation laid over the words), light and dark.
+    /// Today's rates come from a file written here, so nothing goes online.
+    /// </summary>
+    public static async Task RunCircleAsync(string[] args)
+    {
+        var output = args[1];
+        var data = args[2];
+        Directory.CreateDirectory(output);
+        var rates = Path.Combine(output, "rates.json");
+        var feed = new { result = "success", time_last_update_unix = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            rates = new Dictionary<string, double> { ["USD"] = 1, ["SAR"] = 3.75, ["EUR"] = 0.92, ["GBP"] = 0.79, ["AED"] = 3.6725, ["EGP"] = 48.6, ["TRY"] = 41.8 } };
+        File.WriteAllText(rates, System.Text.Json.JsonSerializer.Serialize(feed));
+        Petal.Recipes.ExchangeRateService.CacheFile = rates;
+        var still = CircleSample(Path.Combine(data, "landscape.jpg"));
+        Save(still, Path.Combine(output, "sample.png"));
+        File.WriteAllText(Path.Combine(output, "ocr.txt"), "Windows reads: " + string.Join(", ", Petal.Engines.Documents.DocumentEngine.OcrLanguages));
+        var controller = new PetalController(EngineSetup.CreateConverters(), Application.Current.Dispatcher);
+        var wheel = controller.CreateWheelForSnapshots();
+        static List<Point> Loop(double cx, double cy, double rx, double ry) =>
+            Enumerable.Range(0, 49).Select(i => new Point(cx + rx * Math.Cos(2 * Math.PI * i / 48), cy + ry * Math.Sin(2 * Math.PI * i / 48))).ToList();
+        foreach (var dark in new[] { false, true })
+        {
+            Theme.Configure(dark ? ThemePreference.Dark : ThemePreference.Light, false);
+            string Name(string name) => Path.Combine(output, $"{(dark ? "dark" : "light")}-circle-{name}.png");
+            var window = Screen.CircleWindow.ForSnapshot(still);
+            window.Show();
+            try
+            {
+                await window.SnapshotReadyAsync();
+                window.SnapshotHover(new Point(320, 222));
+                Save(window.SnapshotImage(), Name("hover"));
+
+                // A loop round the line with a price and a distance: reading, then the wheel on it, then its cards.
+                var loop = Loop(420, 323, 370, 30);
+                var reading = window.SnapshotStrokeAsync(loop);
+                Save(window.SnapshotImage(), Name("reading"));
+                await reading;
+                var shot = window.SnapshotImage();
+                Save(shot, Name("selected"));
+                Save(WheelOver(wheel, shot, window.SnapshotPage(), loop[^1]), Name("wheel-money"));
+                await window.SnapshotRunAsync("money");
+                Save(window.SnapshotImage(), Name("money"));
+                await window.SnapshotRunAsync("convert");
+                Save(window.SnapshotImage(), Name("convert"));
+
+                // A click on the paragraph, translated where it is.
+                await window.SnapshotStrokeAsync([new Point(320, 222)]);
+                window.SnapshotTranslation(["على بُعد ساعتين من المدينة، في الميناء القديم مقاهٍ ورحلات بالقوارب وسوق كل صباح سبت. الممر حول البحيرة سهل ومظلّل، ومناظر الغروب تستحق المشي."]);
+                Save(window.SnapshotImage(), Name("translate"));
+                window.SnapshotAnswer("sparkles", "Explanation", "A short travel note: a small lake town two hours from the city, with an old harbour, cafés, boat trips and a Saturday market. The walk round the lake is easy and shady, best at sunset.", ask: false);
+                Save(window.SnapshotImage(), Name("explain"));
+
+                // The date with its zone: the wheel, and the time where the reader is.
+                var date = Loop(420, 365, 370, 30);
+                await window.SnapshotStrokeAsync(date);
+                shot = window.SnapshotImage();
+                Save(WheelOver(wheel, shot, window.SnapshotPage(), date[^1]), Name("wheel-date"));
+                await window.SnapshotRunAsync("time");
+                Save(window.SnapshotImage(), Name("time"));
+
+                // A colour code, and the Arabic paragraph.
+                await window.SnapshotStrokeAsync(Loop(240, 407, 190, 26));
+                await window.SnapshotRunAsync("colour");
+                Save(window.SnapshotImage(), Name("colour"));
+                await window.SnapshotStrokeAsync([new Point(600, 484)]);
+                shot = window.SnapshotImage();
+                Save(shot, Name("arabic"));
+                File.WriteAllText(Path.Combine(output, "arabic-words.txt"), window.SnapshotWords() + Environment.NewLine + "screen:" + Environment.NewLine + window.SnapshotScreenWords(460, 510));
+                if (window.HasContent)
+                    Save(WheelOver(wheel, shot, window.SnapshotPage(), new Point(600, 484)), Name("wheel-arabic"));
+                window.SnapshotAnswer("ask", "Ask About It", "", ask: true);
+                Save(window.SnapshotImage(), Name("ask"));
+
+                // A QR code: what it says comes first.
+                await window.SnapshotStrokeAsync(Loop(180, 655, 120, 115));
+                shot = window.SnapshotImage();
+                if (window.HasContent)
+                    Save(WheelOver(wheel, shot, window.SnapshotPage(), new Point(180, 655)), Name("wheel-qr"));
+
+                // A click on the photo: the picture's petals, and its colours.
+                await window.SnapshotStrokeAsync([new Point(1250, 210)]);
+                shot = window.SnapshotImage();
+                Save(shot, Name("picture"));
+                if (window.HasContent)
+                {
+                    Save(WheelOver(wheel, shot, window.SnapshotPage(), new Point(1250, 210)), Name("wheel-picture"));
+                    await window.SnapshotRunAsync("colours");
+                    Save(window.SnapshotImage(), Name("colours"));
+                }
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+    }
+
+    /// <summary>The wheel drawn over the part of a snapshot round <paramref name="at"/>, as it opens there.</summary>
+    private static BitmapSource WheelOver(WheelWindow wheel, BitmapSource shot, RingPage page, Point at)
+    {
+        int side = (int)WheelWindow.Side;
+        int x = Math.Clamp((int)at.X - side / 2, 0, shot.PixelWidth - side), y = Math.Clamp((int)at.Y - side / 2, 0, shot.PixelHeight - side);
+        var behind = new CroppedBitmap(shot, new Int32Rect(x, y, side, side));
+        behind.Freeze();
+        return wheel.Snapshot([], WheelMode.Conversions, null, behind, pages: [page], page: 0, keyboard: true);
+    }
+
+    /// <summary>A page as a browser shows it: a heading, a paragraph, a price and a distance, a date with its zone, a colour, Arabic, and a photo.</summary>
+    private static BitmapSource CircleSample(string photo)
+    {
+        const int width = 1600, height = 900;
+        var visual = new DrawingVisual();
+        var culture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        using (var dc = visual.RenderOpen())
+        {
+            void Write(string text, double x, double y, double size, Color colour, bool bold = false, bool rtl = false, double maxWidth = 0)
+            {
+                var face = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
+                var formatted = new FormattedText(text, rtl ? System.Globalization.CultureInfo.GetCultureInfo("ar") : culture, rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight, face, size, new SolidColorBrush(colour), 1);
+                if (maxWidth > 0)
+                    formatted.MaxTextWidth = maxWidth;
+                dc.DrawText(formatted, new Point(x, y));
+            }
+            dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0xF6, 0xF6, 0xF9)), null, new Rect(0, 0, width, height));
+            dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0xE4, 0xE4, 0xEA)), null, new Rect(0, 0, width, 58));
+            dc.DrawRoundedRectangle(Brushes.White, null, new Rect(120, 13, 900, 32), 16, 16);
+            Write("https://dropwheel.app/stories/lake-town", 142, 19, 15, Color.FromRgb(0x55, 0x55, 0x60));
+            Write("A quiet lake town for the weekend", 80, 108, 36, Color.FromRgb(0x14, 0x14, 0x1A), bold: true);
+            string[] paragraph =
+            [
+                "Two hours from the city, the old harbour has cafés, boat trips and a market",
+                "every Saturday morning. The trail around the lake is easy and shaded, and",
+                "the views at sunset are worth the walk.",
+            ];
+            for (int i = 0; i < paragraph.Length; i++)
+                Write(paragraph[i], 80, 185 + i * 32, 21, Color.FromRgb(0x33, 0x33, 0x3C));
+            Write("Rooms from $1,299 a week · the hotel is 3.5 km from the station", 80, 310, 21, Color.FromRgb(0x1A, 0x1A, 0x22));
+            Write("Live Q&A on Nov 5, 2026 at 3:00 PM PST · call +1 415 555 0134", 80, 352, 21, Color.FromRgb(0x1A, 0x1A, 0x22));
+            Write("Theme colour: #7C5CFC", 80, 394, 21, Color.FromRgb(0x7C, 0x5C, 0xFC));
+            Write("يقع الفندق على ضفاف البحيرة، وتبدأ الرحلات اليومية من الساعة التاسعة صباحًا، وتنتهي قبل الغروب بقليل.", 80, 470, 22, Color.FromRgb(0x1A, 0x1A, 0x22), rtl: true, maxWidth: 820);
+            // A QR code, as pages print them.
+            var modules = Petal.Engines.Imaging.QrGenerator.Encode("https://dropwheel.app");
+            int n = modules.GetLength(0);
+            dc.DrawRectangle(Brushes.White, null, new Rect(80, 560, (n + 8) * 5, (n + 8) * 5));
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                    if (modules[y, x])
+                        dc.DrawRectangle(Brushes.Black, null, new Rect(80 + (x + 4) * 5, 560 + (y + 4) * 5, 5, 5));
+            Write("Scan for the app", 80 + (n + 8) * 5 + 16, 560 + (n + 8) * 5 / 2 - 12, 18, Color.FromRgb(0x44, 0x44, 0x4C));
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(Path.GetFullPath(photo));
+            image.EndInit();
+            dc.DrawRoundedRectangle(new ImageBrush(image) { Stretch = Stretch.UniformToFill }, null, new Rect(980, 108, 540, 340), 10, 10);
+            Write("The harbour at dusk", 980, 458, 15, Color.FromRgb(0x70, 0x70, 0x78));
+        }
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        var bgra = new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0);
+        bgra.Freeze();
+        return bgra;
+    }
+
     /// <summary>Tool windows added later register here so the snapshot run covers them.</summary>
     private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at)
     {

@@ -16,7 +16,11 @@ public sealed partial class SettingsWindow
     {
         var panel = new StackPanel();
 
-        panel.Children.Add(Text("Dictation", "Petal.Label"));
+        panel.Children.Add(Text("Circle Anything", "Petal.Label"));
+        panel.Children.Add(Text("Press the shortcut, then circle anything on the screen (a sentence, a number, a picture, a QR code): the wheel opens with what can be done with it. Everything happens on this PC.", "Petal.Caption").WithMargin(0, 4, 0, 0));
+        panel.Children.Add(ShortcutRow(() => _s.CircleShortcut, v => _s.CircleShortcut = v, Screen.CircleWindow.RegisterShortcut, "Ctrl+Win+C"));
+
+        panel.Children.Add(Text("Dictation", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(ShortcutRow(() => _s.DictationShortcut, v => _s.DictationShortcut = v, Words.Dictation.RegisterShortcut, "Ctrl+Win+J"));
         var accuracy = Segments([("Fast", "Fast"), ("Balanced", "Balanced"), ("Accurate", "Accurate")], _s.DictationAccuracy);
         accuracy.Changed += v =>
