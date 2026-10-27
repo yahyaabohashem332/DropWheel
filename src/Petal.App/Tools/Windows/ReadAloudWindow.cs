@@ -136,7 +136,7 @@ public sealed class ReadAloudWindow : ToolWindow
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             Log.Error(ex, "Reading a document's text to speak it");
-            _summary.Text = L.T("Petal couldn't read the text of this document.");
+            _summary.Text = L.T("DropWheel couldn't read the text of this document.");
         }
         Sync();
     }

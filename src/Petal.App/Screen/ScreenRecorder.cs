@@ -46,7 +46,7 @@ internal static class ScreenRecorder
         }
         if (ToolLocator.Ffmpeg is null)
         {
-            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Can't record"), L.T("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in Petal's tools folder."));
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Can't record"), L.T("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in DropWheel's tools folder."));
             return;
         }
         Wheels.Screenshots.ChooseArea("Drag over the area to record · Enter records the whole screen · Esc cancels", true, (_, area) =>

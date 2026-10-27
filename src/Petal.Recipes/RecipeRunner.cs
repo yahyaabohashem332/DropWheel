@@ -71,7 +71,7 @@ public sealed class RecipeRunner(ConverterRegistry converters, ConversionSetting
 
     private async Task<IReadOnlyList<string>> PerFileAsync(RecipeStep step, string input, string dir, long allBytes, IProgress<double>? progress, CancellationToken ct)
     {
-        var format = Formats.FromPath(input) ?? throw new InvalidOperationException($"{Path.GetFileName(input)}: Petal doesn't know this kind of file.");
+        var format = Formats.FromPath(input) ?? throw new InvalidOperationException($"{Path.GetFileName(input)}: DropWheel doesn't know this kind of file.");
         var stem = Formats.BaseName(input);
         string Output(string extension) => OutputNaming.Unique(dir, stem, extension);
         switch (step.Kind)
@@ -79,7 +79,7 @@ public sealed class RecipeRunner(ConverterRegistry converters, ConversionSetting
             case RecipeStepKind.Convert:
             {
                 var favourite = new Favourite { Format = step.Format ?? "", LongestSide = step.LongestSide, Quality = step.Quality };
-                var target = favourite.Target ?? throw new InvalidOperationException($"\"{step.Format}\" isn't a format Petal can write.");
+                var target = favourite.Target ?? throw new InvalidOperationException($"\"{step.Format}\" isn't a format DropWheel can write.");
                 var converter = favourite.ConverterFor(format, converters)
                     ?? throw new InvalidOperationException($"{format.Label} can't be converted to {target.Label}.");
                 var result = await converter.ConvertAsync(new ConversionJob(input, format, target, Output(target.WriteExtension), favourite.Apply(defaults)), progress, ct);

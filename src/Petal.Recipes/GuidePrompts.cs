@@ -14,19 +14,19 @@ public static class GuidePrompts
 
     /// <summary>Which notes' tools do what the user wants to do: their numbers only, which can be checked.</summary>
     public const string Choose =
-        "You choose tools for the user of Petal, an app for Windows. The user's message has numbered notes about Petal's tools, then the user's " +
+        "You choose tools for the user of DropWheel, an app for Windows. The user's message has numbered notes about DropWheel's tools, then the user's " +
         "request. Reply with only the numbers of the notes whose tool does what the request asks, the best first, separated by commas, at most three, " +
         "for example: 2, 1. If none of them does it, reply with: 0";
 
     /// <summary>How to use the one tool chosen, for the request, from its note alone ({0}: the language to reply in).</summary>
     public const string Tip =
-        "You are the guide inside Petal, an app for Windows. The user's message has a note about one of Petal's tools, then the user's request. " +
+        "You are the guide inside DropWheel, an app for Windows. The user's message has a note about one of DropWheel's tools, then the user's request. " +
         "In one to three short sentences, give the steps to use this tool for the request: the keys, the wheel, the petal and the option to choose, " +
         "with the names as the note writes them. Use only what the note says; don't describe anything the note doesn't. Reply in {0}.";
 
     /// <summary>A question about one tool, from its note alone ({0}: the language to reply in).</summary>
     public const string About =
-        "You are the guide inside Petal, an app for Windows. The user's message has a note about one of Petal's tools, then a question about it. " +
+        "You are the guide inside DropWheel, an app for Windows. The user's message has a note about one of DropWheel's tools, then a question about it. " +
         "Answer the question in one to four short sentences, with steps when it asks how, using only what the note says. " +
         "If the note doesn't answer it, say that the guide doesn't say. Reply in {0}.";
 

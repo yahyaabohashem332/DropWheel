@@ -27,11 +27,14 @@ public enum WatchAction
 
 /// <summary>
 /// An automation: files that arrive in a folder are converted as they land. Results always go to a
-/// "Petal" folder inside the watched one, which is never watched itself, so a rule can't feed itself.
+/// "DropWheel" folder inside the watched one, which is never watched itself, so a rule can't feed itself.
 /// </summary>
 public sealed class WatchRule
 {
-    public const string OutputFolderName = "Petal";
+    public const string OutputFolderName = "DropWheel";
+
+    /// <summary>Where results went before the app was called DropWheel; never watched either.</summary>
+    public const string PreviousOutputFolderName = "Petal";
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -90,7 +93,7 @@ public sealed class WatchRule
         // Sorting looks only at what lands in the folder itself, never at the folders it sorts into.
         if ((!IncludeSubfolders || Action == WatchAction.Organize) && !string.Equals(Path.TrimEndingDirectorySeparator(dir), root, StringComparison.OrdinalIgnoreCase))
             return false;
-        if (IsInside(dir, Path.Combine(root, OutputFolderName)))
+        if (IsInside(dir, Path.Combine(root, OutputFolderName)) || IsInside(dir, Path.Combine(root, PreviousOutputFolderName)))
             return false;
         if (IsUnfinished(Path.GetFileName(full)))
             return false;

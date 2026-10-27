@@ -129,7 +129,7 @@
  "tool:ResizeImage": {
   "category": "pictures",
   "summary": "Membuat gambar lebih besar atau lebih kecil, memutarnya seperempat putaran, dan membaliknya, untuk satu gambar atau seluruh pilihan.",
-  "details": "Ubah Ukuran & Putar menawarkan Pertahankan, Persen (awalnya 50%, dari 5% sampai 200%), Lebar, Tinggi, atau Paskan, yang menjaga gambar tetap di dalam lebar dan tinggi yang Anda ketik; proporsi selalu dipertahankan. Izinkan memperbesar gambar membuat Lebar, Tinggi, dan Paskan bisa melebihi ukuran asli, dan saat gambar menjadi lebih besar, Perbesar dengan AI untuk detail lebih tajam memakai model Real-ESRGAN yang disertakan bersama Petal (gambar hingga sekitar 4 megapiksel). Putar ke kiri, Putar ke kanan, Balik horizontal, dan Balik vertikal ada di bawah Putar; satu gambar menampilkan pratinjau langsung dengan ukuran sebelum dan sesudah. Simpan menulis setiap hasil di samping file aslinya sebagai 'nama Resized' dalam format yang sama.",
+  "details": "Ubah Ukuran & Putar menawarkan Pertahankan, Persen (awalnya 50%, dari 5% sampai 200%), Lebar, Tinggi, atau Paskan, yang menjaga gambar tetap di dalam lebar dan tinggi yang Anda ketik; proporsi selalu dipertahankan. Izinkan memperbesar gambar membuat Lebar, Tinggi, dan Paskan bisa melebihi ukuran asli, dan saat gambar menjadi lebih besar, Perbesar dengan AI untuk detail lebih tajam memakai model Real-ESRGAN yang disertakan bersama DropWheel (gambar hingga sekitar 4 megapiksel). Putar ke kiri, Putar ke kanan, Balik horizontal, dan Balik vertikal ada di bawah Putar; satu gambar menampilkan pratinjau langsung dengan ukuran sebelum dan sesudah. Simpan menulis setiap hasil di samping file aslinya sebagai 'nama Resized' dalam format yang sama.",
   "how": "Seret satu gambar atau lebih, ketuk Ctrl, lalu lepaskan di UKURAN; pilih ukuran dan putaran jika perlu, lalu pilih Simpan.",
   "worksOn": "Gambar; satu dengan pratinjau langsung, atau banyak dengan setelan yang sama. Juga gambar di dalam folder yang dilepas.",
   "examples": [
@@ -155,7 +155,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Menaruh teks atau logo Anda pada gambar, pada setiap frame video, atau pada setiap halaman PDF.",
-  "details": "Tambah Tanda Air punya dua jenis: Teks (termasuk bahasa Arab; awalnya '© tahun') dengan Warna (awalnya putih), atau Gambar, yaitu logo yang Anda pilih. Ukuran dari 5% sampai 90% (awalnya 30%) dan Opasitas dari 10% sampai 100% (awalnya 60%). Posisi adalah salah satu dari sembilan titik (awalnya kanan bawah), atau centang Ulangi ke samping untuk menutupi seluruh gambar. Pratinjau menampilkan file pertama, dan Petal mengingat tanda air terakhir Anda untuk lain kali. Setiap hasil disimpan di samping file aslinya sebagai 'nama Watermarked'.",
+  "details": "Tambah Tanda Air punya dua jenis: Teks (termasuk bahasa Arab; awalnya '© tahun') dengan Warna (awalnya putih), atau Gambar, yaitu logo yang Anda pilih. Ukuran dari 5% sampai 90% (awalnya 30%) dan Opasitas dari 10% sampai 100% (awalnya 60%). Posisi adalah salah satu dari sembilan titik (awalnya kanan bawah), atau centang Ulangi ke samping untuk menutupi seluruh gambar. Pratinjau menampilkan file pertama, dan DropWheel mengingat tanda air terakhir Anda untuk lain kali. Setiap hasil disimpan di samping file aslinya sebagai 'nama Watermarked'.",
   "how": "Seret file, ketuk Ctrl, lalu lepaskan di TANDA AIR; atur teks atau gambar, ukuran, dan posisinya, lalu pilih Tambah Tanda Air.",
   "worksOn": "Gambar, video (bukan GIF), dan PDF; satu file atau banyak. Juga file di dalam folder yang dilepas.",
   "examples": [
@@ -280,7 +280,7 @@
  "tool:SlimPhotoshop": {
   "category": "pictures",
   "summary": "Memperkecil file Photoshop dengan menghapus daftar tersembunyi berisi setiap file yang pernah ditempel, tanpa menyentuh lapisan.",
-  "details": "Hapus Riwayat Photoshop langsung berjalan, tanpa jendela. Photoshop terus menambahkan daftar tersembunyi berisi setiap file yang pernah ditempel atau ditempatkan ke dalam dokumen (document ancestors-nya), yang bisa membuat PSD berkali-kali lipat lebih besar daripada gambarnya. Petal menyimpan salinan tanpa daftar itu di samping file asli sebagai 'nama Slim'; lapisan dan piksel tidak diubah. Kartu memberi tahu seberapa jauh file-file itu menjadi lebih kecil.",
+  "details": "Hapus Riwayat Photoshop langsung berjalan, tanpa jendela. Photoshop terus menambahkan daftar tersembunyi berisi setiap file yang pernah ditempel atau ditempatkan ke dalam dokumen (document ancestors-nya), yang bisa membuat PSD berkali-kali lipat lebih besar daripada gambarnya. DropWheel menyimpan salinan tanpa daftar itu di samping file asli sebagai 'nama Slim'; lapisan dan piksel tidak diubah. Kartu memberi tahu seberapa jauh file-file itu menjadi lebih kecil.",
   "how": "Seret satu file PSD atau lebih, ketuk Ctrl, lalu lepaskan di RIWAYAT; salinan yang lebih ramping muncul di sampingnya.",
   "worksOn": "File Photoshop (PSD, PSB); satu atau banyak. Juga file PSD di dalam folder yang dilepas.",
   "examples": [
@@ -1468,7 +1468,7 @@
  "action:Ask": {
   "category": "files",
   "summary": "Melakukan apa yang Anda minta pada file, dengan kata-kata Anda sendiri dalam bahasa Inggris atau Arab, setelah menunjukkan langkah-langkahnya.",
-  "details": "Tanya Petal membuka kotak tempat Anda mengetik (atau mengucapkan, dengan tombol mikrofon) apa yang harus dilakukan, misalnya 'make them 1080 px WEBP and zip them' atau 'put them in one searchable PDF'. Petal mencantumkan langkah-langkah yang dipahaminya di bawah 'Petal akan:' dan memberi peringatan jika langkah-langkah itu tidak cocok dengan filenya; tidak ada yang dijalankan sampai Anda menekan Jalankan. Permintaan umum dipahami tanpa model, dan dengan model AI (Qwen2.5 1.5B, sekitar 1,1 GB, diunduh sekali dari jendela) permintaan dengan susunan kata bebas juga dipahami, semuanya di PC ini. Simpan sebagai Resep… menyimpan langkah-langkahnya sebagai kelopak di roda alat, dan hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya.",
+  "details": "Tanya DropWheel membuka kotak tempat Anda mengetik (atau mengucapkan, dengan tombol mikrofon) apa yang harus dilakukan, misalnya 'make them 1080 px WEBP and zip them' atau 'put them in one searchable PDF'. DropWheel mencantumkan langkah-langkah yang dipahaminya di bawah 'DropWheel akan:' dan memberi peringatan jika langkah-langkah itu tidak cocok dengan filenya; tidak ada yang dijalankan sampai Anda menekan Jalankan. Permintaan umum dipahami tanpa model, dan dengan model AI (Qwen2.5 1.5B, sekitar 1,1 GB, diunduh sekali dari jendela) permintaan dengan susunan kata bebas juga dipahami, semuanya di PC ini. Simpan sebagai Resep… menyimpan langkah-langkahnya sebagai kelopak di roda alat, dan hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya.",
   "how": "Seret file, ketuk Alt, lalu lepaskan di TANYA; ketik apa yang Anda inginkan, tekan Tanya, periksa langkah-langkahnya, lalu tekan Jalankan.",
   "worksOn": "File; satu atau banyak.",
   "examples": [
@@ -1493,7 +1493,7 @@
  "action:Share": {
   "category": "files",
   "summary": "Membuka jendela berbagi Windows untuk mengirim file dengan Berbagi di sekitar, Mail, Teams, atau aplikasi lain.",
-  "details": "Bagikan menyerahkan file dan folder yang dilepas ke jendela berbagi bawaan Windows, jendela yang sama yang dipakai aplikasi lain. Dari sana Anda bisa mengirimnya dengan Berbagi di sekitar ke PC di dekat Anda, atau ke aplikasi apa pun yang menawarkan fitur berbagi, seperti Mail atau Teams. Petal sendiri tidak mengunggah apa pun; apa yang terjadi selanjutnya tergantung pada aplikasi yang Anda pilih.",
+  "details": "Bagikan menyerahkan file dan folder yang dilepas ke jendela berbagi bawaan Windows, jendela yang sama yang dipakai aplikasi lain. Dari sana Anda bisa mengirimnya dengan Berbagi di sekitar ke PC di dekat Anda, atau ke aplikasi apa pun yang menawarkan fitur berbagi, seperti Mail atau Teams. DropWheel sendiri tidak mengunggah apa pun; apa yang terjadi selanjutnya tergantung pada aplikasi yang Anda pilih.",
   "how": "Seret file, ketuk Alt, lalu lepaskan di BAGIKAN, lalu pilih tujuan pengiriman di jendela berbagi Windows.",
   "worksOn": "File dan folder; satu atau banyak.",
   "examples": [
@@ -1518,7 +1518,7 @@
  "action:Phone": {
   "category": "files",
   "summary": "Menampilkan kode QR agar ponsel di Wi-Fi yang sama bisa menyimpan file, tanpa ada yang lewat internet.",
-  "details": "Kirim ke Ponsel menjalankan halaman berbagi kecil di PC ini dan menampilkan kode QR serta alamatnya. Pindai dengan kamera ponsel: halaman itu mencantumkan file untuk diketuk dan disimpan, folder diunduh sebagai ZIP, dan 'Unduh semuanya sebagai ZIP' mengambil semuanya. Aktifkan 'Izinkan ponsel mengirim file ke PC ini' dan ponsel bisa mengirim file balik, yang disimpan di Unduhan. Jika foto atau video merekam lokasi pengambilannya, Bagikan Tanpa Lokasi menawarkan salinan bersih sebagai gantinya; berbagi berhenti saat Anda menekan Hentikan Berbagi, menutup jendela, atau setelah 15 menit tanpa aktivitas. Jika Windows bertanya, izinkan Petal di jaringan pribadi; di jaringan yang diatur ke Publik, ponsel tidak bisa menjangkau PC.",
+  "details": "Kirim ke Ponsel menjalankan halaman berbagi kecil di PC ini dan menampilkan kode QR serta alamatnya. Pindai dengan kamera ponsel: halaman itu mencantumkan file untuk diketuk dan disimpan, folder diunduh sebagai ZIP, dan 'Unduh semuanya sebagai ZIP' mengambil semuanya. Aktifkan 'Izinkan ponsel mengirim file ke PC ini' dan ponsel bisa mengirim file balik, yang disimpan di Unduhan. Jika foto atau video merekam lokasi pengambilannya, Bagikan Tanpa Lokasi menawarkan salinan bersih sebagai gantinya; berbagi berhenti saat Anda menekan Hentikan Berbagi, menutup jendela, atau setelah 15 menit tanpa aktivitas. Jika Windows bertanya, izinkan DropWheel di jaringan pribadi; di jaringan yang diatur ke Publik, ponsel tidak bisa menjangkau PC.",
   "how": "Seret file, ketuk Alt, lalu lepaskan di KE PONSEL, lalu pindai kode QR dengan kamera ponsel.",
   "worksOn": "File dan folder; satu atau banyak.",
   "examples": [
@@ -1542,8 +1542,8 @@
  },
  "action:SendToPc": {
   "category": "files",
-  "summary": "Mengirim file dan folder langsung ke PC lain yang menjalankan Petal di jaringan yang sama, yang bertanya dulu sebelum menyimpan.",
-  "details": "Kirim ke PC mencari PC di jaringan Anda tempat Petal sedang menerima dan mencantumkannya menurut nama; Lihat Lagi mencari sekali lagi. Pilih salah satu dan PC itu menampilkan siapa yang ingin mengirim, berapa banyak file, dan seberapa besar, dengan Terima dan Tolak (otomatis menolak setelah dua menit). File yang diterima disimpan di folder Petal di dalam Unduhan pada PC itu, dan sebuah kartu di sini memberi tahu saat file terkirim, ditolak, atau tidak bisa sampai. PC lain harus mengaktifkan 'Izinkan PC lain mengirimi saya file' di Pengaturan › Kerja & Berbagi, karena penerimaan nonaktif sampai saat itu; tidak ada yang lewat internet.",
+  "summary": "Mengirim file dan folder langsung ke PC lain yang menjalankan DropWheel di jaringan yang sama, yang bertanya dulu sebelum menyimpan.",
+  "details": "Kirim ke PC mencari PC di jaringan Anda tempat DropWheel sedang menerima dan mencantumkannya menurut nama; Lihat Lagi mencari sekali lagi. Pilih salah satu dan PC itu menampilkan siapa yang ingin mengirim, berapa banyak file, dan seberapa besar, dengan Terima dan Tolak (otomatis menolak setelah dua menit). File yang diterima disimpan di folder DropWheel di dalam Unduhan pada PC itu, dan sebuah kartu di sini memberi tahu saat file terkirim, ditolak, atau tidak bisa sampai. PC lain harus mengaktifkan 'Izinkan PC lain mengirimi saya file' di Pengaturan › Kerja & Berbagi, karena penerimaan nonaktif sampai saat itu; tidak ada yang lewat internet.",
   "how": "Seret file, ketuk Alt, buka LAINNYA, lalu lepaskan di KE PC; kemudian pilih PC tujuan.",
   "worksOn": "File dan folder; satu atau banyak.",
   "examples": [
@@ -1641,7 +1641,7 @@
  "action:Move": {
   "category": "files",
   "summary": "Memindahkan file asli ke folder yang Anda pilih.",
-  "details": "Pindahkan membuka pemilih folder yang dimulai di folder file itu sendiri. Pilih tujuannya dan file asli dipindahkan ke sana dengan mesin penyalinan bawaan Windows, sehingga jendela kemajuan dan pertanyaannya tentang nama yang sudah ada muncul seperti biasa. Sebuah kartu lalu memberi tahu berapa item yang dipindahkan; klik untuk melihatnya di File Explorer. Riwayat Petal menyimpan pemindahan itu, sehingga Anda bisa mengembalikan file dari sana.",
+  "details": "Pindahkan membuka pemilih folder yang dimulai di folder file itu sendiri. Pilih tujuannya dan file asli dipindahkan ke sana dengan mesin penyalinan bawaan Windows, sehingga jendela kemajuan dan pertanyaannya tentang nama yang sudah ada muncul seperti biasa. Sebuah kartu lalu memberi tahu berapa item yang dipindahkan; klik untuk melihatnya di File Explorer. Riwayat DropWheel menyimpan pemindahan itu, sehingga Anda bisa mengembalikan file dari sana.",
   "how": "Seret file, ketuk Alt, lalu lepaskan di PINDAHKAN, lalu pilih foldernya.",
   "worksOn": "File dan folder; satu atau banyak.",
   "examples": [
@@ -1906,7 +1906,7 @@
  "kind:recipe": {
   "category": "general",
   "summary": "Menjalankan beberapa langkah pada file sebagai satu kelopak, seperti hapus latar belakang, ubah ukuran, simpan sebagai WEBP, lalu zip.",
-  "details": "Resep dibuat di Pengaturan › Resep dengan Resep Baru…: beri nama lalu tambahkan langkah dari Konversi, Ubah Ukuran, Putar, Kompres, Hapus Latar Belakang, Tambah Tanda Air, Bersihkan untuk Dibagikan, Ganti Nama, Kompres ke ZIP, Gabungkan menjadi satu PDF, dan Jadikan Bisa Dicari. Langkah-langkah berjalan berurutan, masing-masing pada hasil langkah sebelumnya, dan setiap langkah memiliki setelannya sendiri, seperti format dan ukuran, aplikasi tujuan kompresi, teks dan posisi tanda air, atau pola nama. Dengan 'Tampilkan di roda alat' aktif, resep muncul pertama di roda Ctrl setiap kali cocok dengan filenya. Hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya; Simpan sebagai Resep… di Tanya Petal juga membuat resep, dan baris perintah menjalankannya dengan petal run.",
+  "details": "Resep dibuat di Pengaturan › Resep dengan Resep Baru…: beri nama lalu tambahkan langkah dari Konversi, Ubah Ukuran, Putar, Kompres, Hapus Latar Belakang, Tambah Tanda Air, Bersihkan untuk Dibagikan, Ganti Nama, Kompres ke ZIP, Gabungkan menjadi satu PDF, dan Jadikan Bisa Dicari. Langkah-langkah berjalan berurutan, masing-masing pada hasil langkah sebelumnya, dan setiap langkah memiliki setelannya sendiri, seperti format dan ukuran, aplikasi tujuan kompresi, teks dan posisi tanda air, atau pola nama. Dengan 'Tampilkan di roda alat' aktif, resep muncul pertama di roda Ctrl setiap kali cocok dengan filenya. Hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya; Simpan sebagai Resep… di Tanya DropWheel juga membuat resep, dan baris perintah menjalankannya dengan petal run.",
   "how": "Buat di Pengaturan › Resep, lalu seret file, ketuk Ctrl, dan lepaskan di kelopak resep tersebut.",
   "worksOn": "Apa pun yang diterima langkah pertamanya: gambar untuk Ubah Ukuran, Putar, atau Hapus Latar Belakang, banyak jenis untuk Konversi atau Kompres; satu atau banyak file.",
   "examples": [
@@ -1931,7 +1931,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Menjalankan program Anda sendiri pada file yang dilepas, yang dijelaskan oleh file kecil di folder kelopak.",
-  "details": "Kelopak buatan Anda sendiri adalah file JSON kecil di %APPDATA%\\Petal\\petals; Pengaturan › Kelopak Anda berisi Tambah dari File…, Mulai dari Contoh (checksum SHA-256 dengan certutil milik Windows), dan Buka Folder Kelopak. Sebuah file memberi kelopak nama (dan nama Arab), ikon, file apa yang diterimanya (ekstensi, atau image, video, audio, pdf, document, atau any), programnya, argumennya dengan {input}, {output}, {name}, {ext}, {folder}, atau {inputs}, nama hasilnya, dan apakah dijalankan sekali per file. Kelopak muncul di roda Ctrl untuk file yang diterimanya, bahkan jenis yang tidak dikenal Petal. Petal menampilkan perintah persisnya sebelum dijalankan pertama kali dan lagi setiap kali file itu berubah, dan menjalankan program secara langsung, tidak pernah melalui shell.",
+  "details": "Kelopak buatan Anda sendiri adalah file JSON kecil di %APPDATA%\\Petal\\petals; Pengaturan › Kelopak Anda berisi Tambah dari File…, Mulai dari Contoh (checksum SHA-256 dengan certutil milik Windows), dan Buka Folder Kelopak. Sebuah file memberi kelopak nama (dan nama Arab), ikon, file apa yang diterimanya (ekstensi, atau image, video, audio, pdf, document, atau any), programnya, argumennya dengan {input}, {output}, {name}, {ext}, {folder}, atau {inputs}, nama hasilnya, dan apakah dijalankan sekali per file. Kelopak muncul di roda Ctrl untuk file yang diterimanya, bahkan jenis yang tidak dikenal DropWheel. DropWheel menampilkan perintah persisnya sebelum dijalankan pertama kali dan lagi setiap kali file itu berubah, dan menjalankan program secara langsung, tidak pernah melalui shell.",
   "how": "Tambahkan file di Pengaturan › Kelopak Anda, lalu seret file yang cocok, ketuk Ctrl, dan lepaskan di kelopaknya.",
   "worksOn": "File yang disebutkan dalam daftar 'accepts'-nya; satu atau banyak.",
   "examples": [
@@ -1978,7 +1978,7 @@
  "kind:keys": {
   "category": "general",
   "summary": "Menekan pintasan keyboard, atau serangkaian pintasan, di aplikasi yang sedang berada di depan.",
-  "details": "Kelopak tombol berisi pintasan seperti Ctrl+Shift+T, atau beberapa tekanan berturut-turut (Ctrl+K Ctrl+S); di Pengaturan › Roda, Anda mengklik kotak Tombol lalu menekannya. Tombol hanya dikirim ke jendela yang berada di depan saat roda dibuka, setelah jendela itu kembali ke depan, dan bagian tengah menampilkannya saat Anda menahan penunjuk di atas kelopak. Roda siap pakai Petal untuk browser, File Explorer, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack, dan Discord terdiri dari kelopak seperti ini dan tampil pertama saat aplikasinya berada di depan. Jika jendela itu sudah ditutup, sebuah kartu memberi tahu bahwa tombol tidak ditekan.",
+  "details": "Kelopak tombol berisi pintasan seperti Ctrl+Shift+T, atau beberapa tekanan berturut-turut (Ctrl+K Ctrl+S); di Pengaturan › Roda, Anda mengklik kotak Tombol lalu menekannya. Tombol hanya dikirim ke jendela yang berada di depan saat roda dibuka, setelah jendela itu kembali ke depan, dan bagian tengah menampilkannya saat Anda menahan penunjuk di atas kelopak. Roda siap pakai DropWheel untuk browser, File Explorer, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack, dan Discord terdiri dari kelopak seperti ini dan tampil pertama saat aplikasinya berada di depan. Jika jendela itu sudah ditutup, sebuah kartu memberi tahu bahwa tombol tidak ditekan.",
   "how": "Di aplikasi yang Anda inginkan, tekan Ctrl+Win+Z tanpa ada yang dipilih, lalu pilih kelopaknya.",
   "worksOn": "",
   "examples": [
@@ -2073,7 +2073,7 @@
  "kind:group": {
   "category": "general",
   "summary": "Berisi kelopak-kelopaknya sendiri yang melayang keluar di sekelilingnya sebagai gelembung kaca, seperti Lainnya.",
-  "details": "Kelopak grup membuka kelopak-kelopaknya pada orbit gelembung kaca tepat di luar cincin, mengarah menjauhi tepi layar, sementara bagian cincin lainnya mundur. Arahkan penunjuk ke kelopak itu, klik, atau tahan di atasnya sambil menyeret, lalu pilih sebuah gelembung; tombol panah, Enter, dan 1 sampai 9 berfungsi pada gelembung, dan Esc, grup itu lagi, atau bagian tengah akan memasukkannya kembali. Grup buatan Anda sendiri berisi hingga delapan kelopak dan dibuat di Pengaturan › Roda; grup Lainnya milik Petal sendiri berisi kelopak tambahan dari roda Cepat dan Atur, dari roda alat jika berisi lebih dari dua belas, dan tindakan yang tidak ditempatkan di roda tindakan.",
+  "details": "Kelopak grup membuka kelopak-kelopaknya pada orbit gelembung kaca tepat di luar cincin, mengarah menjauhi tepi layar, sementara bagian cincin lainnya mundur. Arahkan penunjuk ke kelopak itu, klik, atau tahan di atasnya sambil menyeret, lalu pilih sebuah gelembung; tombol panah, Enter, dan 1 sampai 9 berfungsi pada gelembung, dan Esc, grup itu lagi, atau bagian tengah akan memasukkannya kembali. Grup buatan Anda sendiri berisi hingga delapan kelopak dan dibuat di Pengaturan › Roda; grup Lainnya milik DropWheel sendiri berisi kelopak tambahan dari roda Cepat dan Atur, dari roda alat jika berisi lebih dari dua belas, dan tindakan yang tidak ditempatkan di roda tindakan.",
   "how": "Tahan penunjuk di atas atau klik kelopak grup (misalnya LAINNYA), lalu pilih salah satu gelembungnya.",
   "worksOn": "",
   "examples": [
@@ -2119,7 +2119,7 @@
  "kind:clips": {
   "category": "general",
   "summary": "Menampilkan hal-hal terakhir yang Anda salin sebagai kelopak yang menempelkannya ke aplikasi di depan.",
-  "details": "Kelopak Klip Terbaru (KLIP) menampilkan delapan klip terakhir, yang disematkan lebih dulu: teks, gambar, atau file, masing-masing sebuah kelopak yang menempelkannya di tempat Anda bekerja; di roda Papan Klip, klip-klipnya langsung berada di cincin. Jika sebuah klip tidak bisa ditempel, klip itu tetap di papan klip untuk Ctrl+V. Klip berasal dari riwayat papan klip Petal (cari, sematkan, hapus), yang sakelarnya ada di Pengaturan › Layar & Teks; salinan pribadi seperti kata sandi tidak pernah disimpan, dan riwayat diingat setelah Petal ditutup hanya jika Anda memintanya. Jika belum ada yang disalin, kelopaknya redup.",
+  "details": "Kelopak Klip Terbaru (KLIP) menampilkan delapan klip terakhir, yang disematkan lebih dulu: teks, gambar, atau file, masing-masing sebuah kelopak yang menempelkannya di tempat Anda bekerja; di roda Papan Klip, klip-klipnya langsung berada di cincin. Jika sebuah klip tidak bisa ditempel, klip itu tetap di papan klip untuk Ctrl+V. Klip berasal dari riwayat papan klip DropWheel (cari, sematkan, hapus), yang sakelarnya ada di Pengaturan › Layar & Teks; salinan pribadi seperti kata sandi tidak pernah disimpan, dan riwayat diingat setelah DropWheel ditutup hanya jika Anda memintanya. Jika belum ada yang disalin, kelopaknya redup.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, pergi ke roda Papan Klip, lalu pilih sebuah klip.",
   "worksOn": "",
   "examples": [
@@ -2167,7 +2167,7 @@
  "do:system.darkmode": {
   "category": "system",
   "summary": "Mengalihkan Windows dan aplikasi Anda antara mode terang dan gelap dengan satu kelopak.",
-  "details": "Mode Gelap mengubah dua sakelar yang sama dengan Pengaturan Windows untuk warna: mode untuk aplikasi dan mode untuk Windows itu sendiri, sekaligus. Petal memberi tahu setiap jendela yang terbuka bahwa pengaturan berubah, seperti yang dilakukan Pengaturan, sehingga aplikasi yang mengikuti tema Windows langsung berubah. Kelopak menampilkan apakah mode gelap sedang aktif, dibaca dari Windows, sehingga tetap benar meskipun Anda mengubahnya di tempat lain. Pilih lagi untuk kembali ke mode terang.",
+  "details": "Mode Gelap mengubah dua sakelar yang sama dengan Pengaturan Windows untuk warna: mode untuk aplikasi dan mode untuk Windows itu sendiri, sekaligus. DropWheel memberi tahu setiap jendela yang terbuka bahwa pengaturan berubah, seperti yang dilakukan Pengaturan, sehingga aplikasi yang mengikuti tema Windows langsung berubah. Kelopak menampilkan apakah mode gelap sedang aktif, dibaca dari Windows, sehingga tetap benar meskipun Anda mengubahnya di tempat lain. Pilih lagi untuk kembali ke mode terang.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih dan pilih MODE GELAP di roda Cepat. Anda juga bisa mengetik 'mode gelap' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -2242,7 +2242,7 @@
  "do:system.awake": {
   "category": "system",
   "summary": "Mencegah PC dan layar masuk ke mode tidur sampai Anda mematikannya.",
-  "details": "Tetap Terjaga meminta Windows untuk tetap menyalakan PC dan layar, sehingga pengatur waktu tidur dan pengatur waktu layar mati tidak berjalan. Fitur ini tetap aktif sampai Anda memilih kelopaknya lagi atau Petal ditutup. Kelopak menampilkan apakah fitur ini aktif. Pengaturan daya Anda tidak diubah; mematikannya membuat pengatur waktu normal bekerja lagi.",
+  "details": "Tetap Terjaga meminta Windows untuk tetap menyalakan PC dan layar, sehingga pengatur waktu tidur dan pengatur waktu layar mati tidak berjalan. Fitur ini tetap aktif sampai Anda memilih kelopaknya lagi atau DropWheel ditutup. Kelopak menampilkan apakah fitur ini aktif. Pengaturan daya Anda tidak diubah; mematikannya membuat pengatur waktu normal bekerja lagi.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih dan pilih TERJAGA di roda Cepat.",
   "worksOn": "",
   "examples": [
@@ -2436,7 +2436,7 @@
  "do:system.clearclipboard": {
   "category": "clipboard",
   "summary": "Mengosongkan papan klip Windows sehingga apa yang Anda salin tidak bisa ditempel lagi.",
-  "details": "Kosongkan Papan Klip melupakan apa pun yang sedang disalin saat ini: teks, gambar, atau file. Sebuah kartu mengonfirmasi Papan klip dikosongkan. Ini tidak menyentuh riwayat papan klip Petal; Hapus Riwayat Papan Klip di roda-roda yang melakukannya. Gunakan setelah menyalin kata sandi atau detail pribadi lainnya.",
+  "details": "Kosongkan Papan Klip melupakan apa pun yang sedang disalin saat ini: teks, gambar, atau file. Sebuah kartu mengonfirmasi Papan klip dikosongkan. Ini tidak menyentuh riwayat papan klip DropWheel; Hapus Riwayat Papan Klip di roda-roda yang melakukannya. Gunakan setelah menyalin kata sandi atau detail pribadi lainnya.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, buka LAINNYA di roda Cepat, lalu pilih KOSONGKAN.",
   "worksOn": "",
   "examples": [
@@ -2555,8 +2555,8 @@
  "do:system.settings": {
   "category": "system",
   "summary": "Membuka aplikasi Pengaturan Windows.",
-  "details": "Pengaturan Windows membuka aplikasi Pengaturan di halaman berandanya, sama seperti Win+I. Dari sana Anda bisa mengubah layar, suara, jaringan, aplikasi, dan semua hal lain yang ditawarkan Windows. Kelopak ini awalnya tidak ada di roda mana pun: tambahkan ke salah satu roda Anda di Pengaturan Petal di bawah Roda, atau temukan di palet perintah.",
-  "how": "Tekan Ctrl+Win+K, ketik 'pengaturan windows' lalu tekan Enter, atau tambahkan kelopak SETELAN ke roda di Pengaturan Petal di bawah Roda.",
+  "details": "Pengaturan Windows membuka aplikasi Pengaturan di halaman berandanya, sama seperti Win+I. Dari sana Anda bisa mengubah layar, suara, jaringan, aplikasi, dan semua hal lain yang ditawarkan Windows. Kelopak ini awalnya tidak ada di roda mana pun: tambahkan ke salah satu roda Anda di Pengaturan DropWheel di bawah Roda, atau temukan di palet perintah.",
+  "how": "Tekan Ctrl+Win+K, ketik 'pengaturan windows' lalu tekan Enter, atau tambahkan kelopak SETELAN ke roda di Pengaturan DropWheel di bawah Roda.",
   "worksOn": "",
   "examples": [
    "Mengubah resolusi layar untuk proyektor: buka Pengaturan Windows dan masuk ke Layar.",
@@ -2654,8 +2654,8 @@
  },
  "do:screen.scroll": {
   "category": "screen",
-  "summary": "Mengambil satu cuplikan layar panjang dari seluruh halaman yang panjang: Petal menggulirnya dan menyambung apa yang dilihatnya.",
-  "details": "Seret di atas bagian jendela yang bisa digulir, seperti halaman web atau chat; Petal menaruh penunjuk di sana, menggulir ke bawah sendiri, dan menyambung setiap potongan baru menjadi satu gambar, dengan header dan footer yang menempel ditampilkan sekali saja. Proses berhenti di akhir halaman, saat Anda menekan Esc, atau saat Anda menggerakkan mouse, dan gambarnya bisa setinggi hingga 30.000 piksel. Jika halaman berubah saat digulir, bagian yang sudah didapat disimpan dan kartu memberitahukannya. Gambar disimpan di folder Cuplikan Layar di dalam Gambar dan disalin ke papan klip, sebuah kartu menampilkan lokasinya dengan Tampilkan di folder dan Buka, dan roda konversi terbuka untuk gambar itu.",
+  "summary": "Mengambil satu cuplikan layar panjang dari seluruh halaman yang panjang: DropWheel menggulirnya dan menyambung apa yang dilihatnya.",
+  "details": "Seret di atas bagian jendela yang bisa digulir, seperti halaman web atau chat; DropWheel menaruh penunjuk di sana, menggulir ke bawah sendiri, dan menyambung setiap potongan baru menjadi satu gambar, dengan header dan footer yang menempel ditampilkan sekali saja. Proses berhenti di akhir halaman, saat Anda menekan Esc, atau saat Anda menggerakkan mouse, dan gambarnya bisa setinggi hingga 30.000 piksel. Jika halaman berubah saat digulir, bagian yang sudah didapat disimpan dan kartu memberitahukannya. Gambar disimpan di folder Cuplikan Layar di dalam Gambar dan disalin ke papan klip, sebuah kartu menampilkan lokasinya dengan Tampilkan di folder dan Buka, dan roda konversi terbuka untuk gambar itu.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, pilih LAYAR GULIR di roda Layar, lalu seret di atas bagian jendela yang bisa digulir.",
   "worksOn": "",
   "examples": [
@@ -2729,7 +2729,7 @@
   "category": "screen",
   "summary": "Menjaga sebagian jendela lain tetap tampil langsung dan di atas segalanya, berubah saat jendela aslinya berubah.",
   "details": "Seret di atas sebagian jendela aplikasi, seperti panggilan video, siaran langsung, atau bilah kemajuan, dan sebuah jendela kecil menampilkan bagian itu secara langsung di atas semua jendela lain. Windows yang menggambarnya, jadi tidak ada yang disalin atau direkam dan hampir tidak memakan sumber daya. Anda bisa mengubah ukurannya dan bentuknya tetap terjaga; bilah atasnya menampilkan nama jendela dengan Tembus pandang (tiga tingkat) dan Tutup, dan Esc juga menutupnya. Jendela ini menutup sendiri saat jendela sumbernya ditutup. Hingga 6 area langsung bisa dibuka, dan desktop serta taskbar tidak bisa dipakai.",
-  "how": "Kelopak ini awalnya tidak ada di roda: tekan Ctrl+Win+K dan ketik 'area langsung', atau tambahkan LANGSUNG ke roda di Pengaturan Petal di bawah Roda, lalu seret di atas sebagian jendela.",
+  "how": "Kelopak ini awalnya tidak ada di roda: tekan Ctrl+Win+K dan ketik 'area langsung', atau tambahkan LANGSUNG ke roda di Pengaturan DropWheel di bawah Roda, lalu seret di atas sebagian jendela.",
   "worksOn": "",
   "examples": [
    "Pantau pojok skor siaran sepak bola selagi Anda bekerja di Excel.",
@@ -2752,7 +2752,7 @@
  "do:screen.private": {
   "category": "screen",
   "summary": "Mengambil cuplikan layar dengan alamat email, nomor telepon, nomor kartu, dan kata sandi yang sudah ditutupi, agar aman dibagikan.",
-  "details": "Seret di atas sebuah area; gambar menunggu di folder sementara Petal dan terbuka di jendela Samarkan Foto, yang langsung mencari detail pribadi dan menutupi masing-masing dengan kotak: alamat email, nomor telepon, nomor kartu, IBAN, alamat IP, dan kata sandi. Anda juga bisa menekan Wajah atau Teks untuk menutupinya, menyeret di gambar untuk menutupi area lain, memindahkan atau mengubah ukuran kotak, atau menghapusnya dengan Delete. Gaya bisa Solid, dengan warna pilihan Anda, atau Buram. Simpan Salinan yang Disamarkan hanya menyimpan salinan yang sudah ditutupi, dengan nama seperti 'Screenshot 2026-10-21 16.40.05 Redacted.png', di folder Cuplikan Layar di dalam Gambar, menaruhnya di papan klip, dan menunjukkan lokasinya; gambar yang belum ditutupi dihapus, dan menutup jendela tanpa menyimpan tidak menyisakan apa pun.",
+  "details": "Seret di atas sebuah area; gambar menunggu di folder sementara DropWheel dan terbuka di jendela Samarkan Foto, yang langsung mencari detail pribadi dan menutupi masing-masing dengan kotak: alamat email, nomor telepon, nomor kartu, IBAN, alamat IP, dan kata sandi. Anda juga bisa menekan Wajah atau Teks untuk menutupinya, menyeret di gambar untuk menutupi area lain, memindahkan atau mengubah ukuran kotak, atau menghapusnya dengan Delete. Gaya bisa Solid, dengan warna pilihan Anda, atau Buram. Simpan Salinan yang Disamarkan hanya menyimpan salinan yang sudah ditutupi, dengan nama seperti 'Screenshot 2026-10-21 16.40.05 Redacted.png', di folder Cuplikan Layar di dalam Gambar, menaruhnya di papan klip, dan menunjukkan lokasinya; gambar yang belum ditutupi dihapus, dan menutup jendela tanpa menyimpan tidak menyisakan apa pun.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, pilih PRIVAT di roda Layar, seret di atas areanya, periksa kotak-kotaknya, lalu tekan Simpan Salinan yang Disamarkan.",
   "worksOn": "",
   "examples": [
@@ -2970,7 +2970,7 @@
  "do:draw.clicks": {
   "category": "draw",
   "summary": "Menampilkan lingkaran di tempat Anda mengklik dan pintasan yang Anda tekan, untuk rekaman dan presentasi.",
-  "details": "Tampilkan Klik dan Tombol menggambar lingkaran di setiap klik: kuning tua untuk tombol kiri, biru untuk kanan, dan hijau untuk tengah. Pintasan dengan Ctrl, Alt, atau Win, dan tombol seperti F5 atau Esc, muncul dalam label bulat di bagian bawah layar, seperti Ctrl + C. Ketikan biasa tidak ditampilkan kecuali Anda mengaktifkan Tampilkan setiap tombol di Pengaturan Petal di bawah Layar & Teks, jadi kata sandi tidak pernah muncul secara bawaan. Klik diteruskan, dan memilih TAMPIL KLIK lagi mematikannya.",
+  "details": "Tampilkan Klik dan Tombol menggambar lingkaran di setiap klik: kuning tua untuk tombol kiri, biru untuk kanan, dan hijau untuk tengah. Pintasan dengan Ctrl, Alt, atau Win, dan tombol seperti F5 atau Esc, muncul dalam label bulat di bagian bawah layar, seperti Ctrl + C. Ketikan biasa tidak ditampilkan kecuali Anda mengaktifkan Tampilkan setiap tombol di Pengaturan DropWheel di bawah Layar & Teks, jadi kata sandi tidak pernah muncul secara bawaan. Klik diteruskan, dan memilih TAMPIL KLIK lagi mematikannya.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, tekan Tab sampai roda Gambar & Presentasi tampil, lalu pilih TAMPIL KLIK.",
   "worksOn": "",
   "examples": [
@@ -3187,7 +3187,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Membuka kotak pencarian tempat Anda mengetik apa yang Anda inginkan: tindakan apa pun, kelopak untuk file yang dipilih, aplikasi, file, atau hitungan.",
-  "details": "Palet Perintah terbuka di atas jendela di depan dan menemukan sesuatu saat Anda mengetik, dalam bahasa Inggris atau Arab: setiap tindakan dari setiap roda, setiap roda itu sendiri, setiap kelopak untuk file yang dipilih di File Explorer, jendela-jendela Petal, aplikasi di PC, apa yang baru-baru ini Anda salin, file yang ditemukan oleh Cari Berdasarkan Makna, cuplikan teks, dan ruang kerja. Ketik hitungan atau konversi satuan seperti 12% of 340 atau 5 km in mi dan Enter menyalin jawabannya. Gunakan tombol panah untuk memilih, Enter untuk menjalankan, Ctrl+Enter untuk tindakan lain (seperti membuka folder sebuah file), dan Esc untuk menutup. Tombol mikrofon memungkinkan Anda mengucapkan perintah sebagai gantinya. Jika tidak ada yang cocok, palet menawarkan pencarian di web.",
+  "details": "Palet Perintah terbuka di atas jendela di depan dan menemukan sesuatu saat Anda mengetik, dalam bahasa Inggris atau Arab: setiap tindakan dari setiap roda, setiap roda itu sendiri, setiap kelopak untuk file yang dipilih di File Explorer, jendela-jendela DropWheel, aplikasi di PC, apa yang baru-baru ini Anda salin, file yang ditemukan oleh Cari Berdasarkan Makna, cuplikan teks, dan ruang kerja. Ketik hitungan atau konversi satuan seperti 12% of 340 atau 5 km in mi dan Enter menyalin jawabannya. Gunakan tombol panah untuk memilih, Enter untuk menjalankan, Ctrl+Enter untuk tindakan lain (seperti membuka folder sebuah file), dan Esc untuk menutup. Tombol mikrofon memungkinkan Anda mengucapkan perintah sebagai gantinya. Jika tidak ada yang cocok, palet menawarkan pencarian di web.",
   "how": "Tekan Ctrl+Win+K, pilih PERINTAH di roda Kerja, atau pilih Palet Perintah di menu baki sistem.",
   "worksOn": "File yang dipilih di File Explorer, jika ada, untuk menawarkan kelopaknya; jika tidak ada, tidak ada apa pun.",
   "examples": [
@@ -3212,7 +3212,7 @@
  "do:petal.clipboard": {
   "category": "clipboard",
   "summary": "Membuka roda untuk apa yang Anda salin: file, cuplikan layar, atau teks; tautan yang disalin menjadi kode QR.",
-  "details": "Roda Papan Klip melihat isi papan klip: file yang disalin membuka roda konversi untuknya, atau roda tindakan jika ada folder di antaranya. Gambar yang disalin disimpan sebagai 'Clipboard 2026-10-21 16.40.05.png' di folder Cuplikan Layar di dalam Gambar, dan teks yang disalin sebagai file .txt di folder Petal di dalam Dokumen, lalu roda konversi terbuka untuk file itu. Satu tautan yang disalin (alamat web, mailto, atau tel) membuka Buat Kode QR dengan tautan yang sudah terisi. Jika papan klip kosong, kelopaknya diredupkan dan menampilkan Papan klip kosong.",
+  "details": "Roda Papan Klip melihat isi papan klip: file yang disalin membuka roda konversi untuknya, atau roda tindakan jika ada folder di antaranya. Gambar yang disalin disimpan sebagai 'Clipboard 2026-10-21 16.40.05.png' di folder Cuplikan Layar di dalam Gambar, dan teks yang disalin sebagai file .txt di folder DropWheel di dalam Dokumen, lalu roda konversi terbuka untuk file itu. Satu tautan yang disalin (alamat web, mailto, atau tel) membuka Buat Kode QR dengan tautan yang sudah terisi. Jika papan klip kosong, kelopaknya diredupkan dan menampilkan Papan klip kosong.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih dan pilih PAPAN KLIP di roda Cepat atau roda Papan Klip.",
   "worksOn": "Apa yang ada di papan klip: file atau folder yang disalin, gambar, teks, atau tautan.",
   "examples": [
@@ -3235,9 +3235,9 @@
  },
  "do:petal.history": {
   "category": "petal",
-  "summary": "Menampilkan apa yang baru-baru ini dibuat Petal, agar Anda bisa menemukan hasilnya atau membatalkannya.",
-  "details": "Riwayat Petal mencantumkan konversi dan alat yang sudah selesai, yang terbaru lebih dulu, masing-masing dengan waktu kejadiannya dan nama hasilnya. Tampilkan di File Explorer membuka folder dengan hasilnya terpilih. Batalkan memindahkan hasil ke Keranjang Sampah, mengembalikan nama lama setelah penggantian nama, atau mengembalikan file dari Keranjang Sampah. Hapus Riwayat mengosongkan daftar. Riwayat tetap di PC ini, dan jika penyimpanan riwayat dinonaktifkan di Pengaturan, jendela memberitahukannya.",
-  "how": "Kelopak ini awalnya tidak ada di roda: pilih Riwayat di menu baki sistem atau di Pengaturan Petal, atau ketik 'riwayat' di palet perintah (Ctrl+Win+K).",
+  "summary": "Menampilkan apa yang baru-baru ini dibuat DropWheel, agar Anda bisa menemukan hasilnya atau membatalkannya.",
+  "details": "Riwayat DropWheel mencantumkan konversi dan alat yang sudah selesai, yang terbaru lebih dulu, masing-masing dengan waktu kejadiannya dan nama hasilnya. Tampilkan di File Explorer membuka folder dengan hasilnya terpilih. Batalkan memindahkan hasil ke Keranjang Sampah, mengembalikan nama lama setelah penggantian nama, atau mengembalikan file dari Keranjang Sampah. Hapus Riwayat mengosongkan daftar. Riwayat tetap di PC ini, dan jika penyimpanan riwayat dinonaktifkan di Pengaturan, jendela memberitahukannya.",
+  "how": "Kelopak ini awalnya tidak ada di roda: pilih Riwayat di menu baki sistem atau di Pengaturan DropWheel, atau ketik 'riwayat' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Anda mengompres video kemarin dan tidak bisa menemukannya: buka Riwayat dan pilih Tampilkan di File Explorer.",
@@ -3261,7 +3261,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Menemukan file berdasarkan isinya: kata-kata di dalamnya, namanya, atau apa yang ditampilkan foto atau video.",
-  "details": "Cari Berdasarkan Makna memungkinkan Anda mengetik hal seperti 'struk dari apotek' atau 'foto pantai' dan menemukan file yang cocok di folder Gambar, Dokumen, Desktop, Unduhan, dan Video Anda. Fitur ini nonaktif sampai Anda menekan Aktifkan; kemudian Petal membaca folder-folder itu saat PC sedang menganggur dan menyimpan indeksnya di PC ini. Menemukan foto dan video berdasarkan apa yang ditampilkannya memerlukan model gambar Petal, yang diunduh sekali. Enter membuka hasil pertama, dan Anda bisa menyeret hasil mana pun ke aplikasi lain. Saat Anda mengetik pertanyaan, Tanya File Anda menjawab dari isi dokumen Anda, beserta file sumbernya; ini memerlukan model AI, yang diunduh sekali.",
+  "details": "Cari Berdasarkan Makna memungkinkan Anda mengetik hal seperti 'struk dari apotek' atau 'foto pantai' dan menemukan file yang cocok di folder Gambar, Dokumen, Desktop, Unduhan, dan Video Anda. Fitur ini nonaktif sampai Anda menekan Aktifkan; kemudian DropWheel membaca folder-folder itu saat PC sedang menganggur dan menyimpan indeksnya di PC ini. Menemukan foto dan video berdasarkan apa yang ditampilkannya memerlukan model gambar DropWheel, yang diunduh sekali. Enter membuka hasil pertama, dan Anda bisa menyeret hasil mana pun ke aplikasi lain. Saat Anda mengetik pertanyaan, Tanya File Anda menjawab dari isi dokumen Anda, beserta file sumbernya; ini memerlukan model AI, yang diunduh sekali.",
   "how": "Kelopak ini awalnya tidak ada di roda: pilih Cari Berdasarkan Makna di menu baki sistem, atau ketik 'cari' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3285,7 +3285,7 @@
  "do:petal.scan": {
   "category": "petal",
   "summary": "Memindai halaman kertas dengan kamera ponsel Anda menjadi satu PDF yang bisa dicari di PC.",
-  "details": "Pindai dengan Ponsel menampilkan kode QR; pindai dengan kamera ponsel untuk membuka halaman kamera di browser ponsel, melalui Wi-Fi Anda tanpa ada yang lewat internet. Potret setiap halaman atau Pilih foto, seret sudut-sudutnya jika perlu, pilih Dokumen, Warna, Abu-abu, atau Hitam putih, lalu tekan Simpan sebagai PDF. Petal menemukan setiap halaman, meluruskannya di PC, dan menyimpan satu PDF yang bisa dicari di folder Scans di dalam Dokumen, atau di folder yang Anda pilih dengan Pilih…. Ponsel dan PC harus berada di jaringan yang sama, dan Windows mungkin meminta Anda mengizinkan Petal di jaringan pribadi. Berbagi berhenti saat jendela ditutup, atau setelah 20 menit tanpa aktivitas.",
+  "details": "Pindai dengan Ponsel menampilkan kode QR; pindai dengan kamera ponsel untuk membuka halaman kamera di browser ponsel, melalui Wi-Fi Anda tanpa ada yang lewat internet. Potret setiap halaman atau Pilih foto, seret sudut-sudutnya jika perlu, pilih Dokumen, Warna, Abu-abu, atau Hitam putih, lalu tekan Simpan sebagai PDF. DropWheel menemukan setiap halaman, meluruskannya di PC, dan menyimpan satu PDF yang bisa dicari di folder Scans di dalam Dokumen, atau di folder yang Anda pilih dengan Pilih…. Ponsel dan PC harus berada di jaringan yang sama, dan Windows mungkin meminta Anda mengizinkan DropWheel di jaringan pribadi. Berbagi berhenti saat jendela ditutup, atau setelah 20 menit tanpa aktivitas.",
   "how": "Kelopak ini awalnya tidak ada di roda: pilih Pindai dengan Ponsel di menu baki sistem, atau ketik 'pindai' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3333,14 +3333,14 @@
  },
  "do:petal.stats": {
   "category": "petal",
-  "summary": "Menampilkan apa yang telah dilakukan Petal untuk Anda: file diproses, ruang yang dihemat, kelopak dipakai, dan hari berturut-turut.",
+  "summary": "Menampilkan apa yang telah dilakukan DropWheel untuk Anda: file diproses, ruang yang dihemat, kelopak dipakai, dan hari berturut-turut.",
   "details": "Statistik Anda menampilkan empat angka besar: file diproses, ruang yang dihemat, kelopak dipakai, dan hari berturut-turut, beserta tanggal mulai penghitungan dan rangkaian terpanjang Anda. Di bawahnya ada kalender dua belas minggu terakhir, kelopak yang paling sering Anda pakai, dan pencapaian Anda. Semuanya dihitung hanya di PC ini dan tidak ada yang dikirim ke mana pun. Anda bisa menghapus centang Terus menghitung, dan Mulai Ulang melupakan semuanya setelah bertanya.",
   "how": "Kelopak ini awalnya tidak ada di roda: pilih Statistik Anda di menu baki sistem, atau ketik 'statistik' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Lihat berapa gigabyte yang sudah dihemat dari mengompres video ponsel Anda tahun ini.",
    "Cari tahu kelopak mana yang paling sering Anda pakai, untuk menaruhnya pertama di roda.",
-   "Periksa rangkaian hari berturut-turut Anda memakai Petal."
+   "Periksa rangkaian hari berturut-turut Anda memakai DropWheel."
   ],
   "keywords": [
    "statistik",
@@ -3357,9 +3357,9 @@
  },
  "do:petal.settings": {
   "category": "petal",
-  "summary": "Membuka jendela pengaturan Petal.",
-  "details": "Pengaturan Petal adalah jendela utama Petal, dan setiap perubahan langsung disimpan. Jendela ini memiliki bagian untuk Tombol, Roda (untuk mengubah, menambah, atau menonaktifkan roda dan kelopaknya), Tampilan, Roda (perilaku roda itu sendiri), Layar & Teks, Kerja & Berbagi, Roda Tindakan, Favorit, Resep, Otomatisasi, Kelopak Anda, Cari Berdasarkan Makna, Hasil, Kualitas, Pembantu, Statistik, Umum, Cadangan, dan Pembaruan. Roda baru yang Anda buat dimulai dengan kelopak ini di dalamnya.",
-  "how": "Pilih Pengaturan di menu baki sistem, pilih PETAL di roda tempat Anda menambahkannya, atau ketik 'pengaturan' di palet perintah (Ctrl+Win+K).",
+  "summary": "Membuka jendela pengaturan DropWheel.",
+  "details": "Pengaturan DropWheel adalah jendela utama DropWheel, dan setiap perubahan langsung disimpan. Jendela ini memiliki bagian untuk Tombol, Roda (untuk mengubah, menambah, atau menonaktifkan roda dan kelopaknya), Tampilan, Roda (perilaku roda itu sendiri), Layar & Teks, Kerja & Berbagi, Roda Tindakan, Favorit, Resep, Otomatisasi, Kelopak Anda, Cari Berdasarkan Makna, Hasil, Kualitas, Pembantu, Statistik, Umum, Cadangan, dan Pembaruan. Roda baru yang Anda buat dimulai dengan kelopak ini di dalamnya.",
+  "how": "Pilih Pengaturan di menu baki sistem, pilih DROPWHEEL di roda tempat Anda menambahkannya, atau ketik 'pengaturan' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Ganti tombol yang membuka roda konversi dari Shift ke tombol lain.",
@@ -3381,14 +3381,14 @@
  },
  "do:petal.pause": {
   "category": "petal",
-  "summary": "Menjeda Petal sehingga ketukan tombol saat menyeret tidak lagi membuka roda, sampai Anda mengaktifkannya kembali.",
-  "details": "Jeda Petal membuat Petal mengabaikan ketukan Shift, Ctrl, dan Alt saat Anda menyeret file, berguna di aplikasi yang memerlukan tombol-tombol itu di tengah penyeretan. Sebuah kartu menampilkan Petal dijeda; pilih lagi dan kartu menampilkan Petal aktif kembali. Kelopak menampilkan apakah Petal sedang dijeda, dan tooltip ikon baki sistem juga memberitahukannya. Sakelar yang sama adalah Jeda Petal di menu baki sistem.",
-  "how": "Kelopak ini awalnya tidak ada di roda: klik kanan ikon baki sistem dan pilih Jeda Petal, atau ketik 'jeda' di palet perintah (Ctrl+Win+K).",
+  "summary": "Menjeda DropWheel sehingga ketukan tombol saat menyeret tidak lagi membuka roda, sampai Anda mengaktifkannya kembali.",
+  "details": "Jeda DropWheel membuat DropWheel mengabaikan ketukan Shift, Ctrl, dan Alt saat Anda menyeret file, berguna di aplikasi yang memerlukan tombol-tombol itu di tengah penyeretan. Sebuah kartu menampilkan DropWheel dijeda; pilih lagi dan kartu menampilkan DropWheel aktif kembali. Kelopak menampilkan apakah DropWheel sedang dijeda, dan tooltip ikon baki sistem juga memberitahukannya. Sakelar yang sama adalah Jeda DropWheel di menu baki sistem.",
+  "how": "Kelopak ini awalnya tidak ada di roda: klik kanan ikon baki sistem dan pilih Jeda DropWheel, atau ketik 'jeda' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
-   "Memindahkan lapisan di Photoshop sambil menahan Shift: jeda Petal agar roda tidak muncul.",
-   "Memainkan game yang memakai Ctrl saat menyeret: jeda Petal sepanjang malam.",
-   "Menyalin file di File Explorer sambil menahan Ctrl: jeda Petal untuk bersih-bersih besar."
+   "Memindahkan lapisan di Photoshop sambil menahan Shift: jeda DropWheel agar roda tidak muncul.",
+   "Memainkan game yang memakai Ctrl saat menyeret: jeda DropWheel sepanjang malam.",
+   "Menyalin file di File Explorer sambil menahan Ctrl: jeda DropWheel untuk bersih-bersih besar."
   ],
   "keywords": [
    "jeda petal",
@@ -3406,7 +3406,7 @@
  "do:text.fixlayout": {
   "category": "text",
   "summary": "Membetulkan teks yang diketik dengan bahasa keyboard yang salah: ؤشف menjadi cat, dan hgsghl menjadi السلام.",
-  "details": "Pilih teks yang kacau di aplikasi mana pun dan pilih kelopak ini. Petal melihat ke arah mana kesalahannya: teks yang sebagian besar berupa huruf Arab menjadi tombol bahasa Inggris di bawahnya, dan huruf Inggris menjadi huruf Arab yang dimaksud (tata letak US English dan Arabic 101). Teks yang sudah diperbaiki ditempel di atas pilihan, lalu keyboard beralih ke bahasa yang Anda maksud jika kedua tata letak terpasang, sehingga Anda bisa terus mengetik. Petal mengambil pilihan dengan meminta aplikasi melalui Windows UI Automation, atau dengan menyalinnya lewat Ctrl+C, lalu mengembalikan papan klip Anda seperti semula setelahnya. Jika aplikasi di depan berubah sementara itu, hasilnya ditaruh di papan klip sebagai gantinya ('Disalin sebagai gantinya').",
+  "details": "Pilih teks yang kacau di aplikasi mana pun dan pilih kelopak ini. DropWheel melihat ke arah mana kesalahannya: teks yang sebagian besar berupa huruf Arab menjadi tombol bahasa Inggris di bawahnya, dan huruf Inggris menjadi huruf Arab yang dimaksud (tata letak US English dan Arabic 101). Teks yang sudah diperbaiki ditempel di atas pilihan, lalu keyboard beralih ke bahasa yang Anda maksud jika kedua tata letak terpasang, sehingga Anda bisa terus mengetik. DropWheel mengambil pilihan dengan meminta aplikasi melalui Windows UI Automation, atau dengan menyalinnya lewat Ctrl+C, lalu mengembalikan papan klip Anda seperti semula setelahnya. Jika aplikasi di depan berubah sementara itu, hasilnya ditaruh di papan klip sebagai gantinya ('Disalin sebagai gantinya').",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), tekan Tab sampai roda Teks tampil, lalu pilih PERBAIKI.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3429,8 +3429,8 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Menerjemahkan teks yang dipilih di PC ini, antara bahasa Arab dan Inggris ke dua arah atau ke bahasa yang dipakai Petal, untuk menggantikan pilihan atau disalin.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih TERJEMAH: jendela Terjemahkan terbuka dengan awal teks asli dan terjemahannya di kotak yang masih bisa Anda edit. Teks bahasa Arab diterjemahkan ke bahasa Inggris dan teks lainnya ke bahasa Arab; jika Petal sendiri diatur ke bahasa Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol, teks diterjemahkan ke bahasa itu sebagai gantinya (atau ke bahasa Inggris jika teksnya sudah dalam bahasa itu). Bahasa Inggris ke Arab dan Arab ke Inggris memakai model terjemahan Opus-MT (masing-masing sekitar 114 MB) kalimat demi kalimat jika sudah diunduh; jika tidak, dan untuk bahasa lain, model AI Qwen2.5 1.5B (sekitar 1,1 GB) yang menerjemahkan; jendela menawarkan unduhan pada pertama kali. Ganti Pilihan menempelkan terjemahan di atas teks asli, dan Salin menaruhnya di papan klip. Ini berjalan di PC ini; teksnya tidak dikirim ke mana pun.",
+  "summary": "Menerjemahkan teks yang dipilih di PC ini, antara bahasa Arab dan Inggris ke dua arah atau ke bahasa yang dipakai DropWheel, untuk menggantikan pilihan atau disalin.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih TERJEMAH: jendela Terjemahkan terbuka dengan awal teks asli dan terjemahannya di kotak yang masih bisa Anda edit. Teks bahasa Arab diterjemahkan ke bahasa Inggris dan teks lainnya ke bahasa Arab; jika DropWheel sendiri diatur ke bahasa Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol, teks diterjemahkan ke bahasa itu sebagai gantinya (atau ke bahasa Inggris jika teksnya sudah dalam bahasa itu). Bahasa Inggris ke Arab dan Arab ke Inggris memakai model terjemahan Opus-MT (masing-masing sekitar 114 MB) kalimat demi kalimat jika sudah diunduh; jika tidak, dan untuk bahasa lain, model AI Qwen2.5 1.5B (sekitar 1,1 GB) yang menerjemahkan; jendela menawarkan unduhan pada pertama kali. Ganti Pilihan menempelkan terjemahan di atas teks asli, dan Salin menaruhnya di papan klip. Ini berjalan di PC ini; teksnya tidak dikirim ke mana pun.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih TERJEMAH; kemudian tekan Ganti Pilihan atau Salin.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3455,7 +3455,7 @@
  "do:text.upper": {
   "category": "text",
   "summary": "Mengubah teks yang dipilih menjadi HURUF KAPITAL, langsung di tempatnya di aplikasi mana pun.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih KAPITAL; setiap huruf menjadi kapital dan teks ditempel kembali di atas pilihan. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. Petal membaca pilihan melalui Windows UI Automation, atau menyalinnya dengan Ctrl+C, lalu mengembalikan papan klip Anda setelahnya. Jika tidak ada yang berubah, sebuah kartu menampilkan 'Tidak ada yang perlu diubah'; jika tidak ada yang dipilih, kartu menampilkan 'Tidak ada teks yang dipilih'.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih KAPITAL; setiap huruf menjadi kapital dan teks ditempel kembali di atas pilihan. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. DropWheel membaca pilihan melalui Windows UI Automation, atau menyalinnya dengan Ctrl+C, lalu mengembalikan papan klip Anda setelahnya. Jika tidak ada yang berubah, sebuah kartu menampilkan 'Tidak ada yang perlu diubah'; jika tidak ada yang dipilih, kartu menampilkan 'Tidak ada teks yang dipilih'.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup HURUF, lalu pilih KAPITAL.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3477,7 +3477,7 @@
  "do:text.lower": {
   "category": "text",
   "summary": "Mengubah teks yang dipilih menjadi huruf kecil, langsung di tempatnya di aplikasi mana pun.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih KECIL; setiap huruf kapital menjadi huruf kecil dan teks ditempel kembali di atas pilihan. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. Petal membaca pilihan melalui Windows UI Automation, atau menyalinnya dengan Ctrl+C, lalu mengembalikan papan klip Anda setelahnya. Jika teksnya sudah huruf kecil semua, sebuah kartu menampilkan 'Tidak ada yang perlu diubah'.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih KECIL; setiap huruf kapital menjadi huruf kecil dan teks ditempel kembali di atas pilihan. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. DropWheel membaca pilihan melalui Windows UI Automation, atau menyalinnya dengan Ctrl+C, lalu mengembalikan papan klip Anda setelahnya. Jika teksnya sudah huruf kecil semua, sebuah kartu menampilkan 'Tidak ada yang perlu diubah'.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup HURUF, lalu pilih KECIL.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3522,7 +3522,7 @@
  "do:text.sentence": {
   "category": "text",
   "summary": "Hanya menjadikan huruf pertama setiap kalimat sebagai huruf kapital dan sisanya kecil: Huruf kapital di awal kalimat.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih KALIMAT; huruf pertama setelah titik, ! , ? , tanda tanya Arab, atau baris baru menjadi kapital, dan setiap huruf lainnya menjadi kecil. Ini cara tercepat untuk menenangkan teks yang diketik dengan huruf kapital tanpa kehilangan awal kalimat. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. Teks ditempel kembali di atas pilihan, dan Petal mengembalikan papan klip Anda setelahnya.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih KALIMAT; huruf pertama setelah titik, ! , ? , tanda tanya Arab, atau baris baru menjadi kapital, dan setiap huruf lainnya menjadi kecil. Ini cara tercepat untuk menenangkan teks yang diketik dengan huruf kapital tanpa kehilangan awal kalimat. Bahasa Arab tidak memiliki huruf kapital dan tetap seperti semula. Teks ditempel kembali di atas pilihan, dan DropWheel mengembalikan papan klip Anda setelahnya.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup HURUF, lalu pilih KALIMAT.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3616,7 +3616,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Menghitung kata, karakter, baris, dan kalimat dalam teks yang dipilih dan menampilkannya di kartu.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih HITUNG KATA; sebuah kartu menampilkan jumlah kata, lalu karakter, karakter tanpa spasi, baris, dan kalimat. Tidak ada yang diubah dalam teks. Kata bahasa Arab dan Inggris sama-sama dihitung, dan emoji dihitung sebagai satu karakter. Petal membaca pilihan melalui Windows UI Automation atau dengan menyalinnya, lalu mengembalikan papan klip Anda setelahnya.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih HITUNG KATA; sebuah kartu menampilkan jumlah kata, lalu karakter, karakter tanpa spasi, baris, dan kalimat. Tidak ada yang diubah dalam teks. Kata bahasa Arab dan Inggris sama-sama dihitung, dan emoji dihitung sebagai satu karakter. DropWheel membaca pilihan melalui Windows UI Automation atau dengan menyalinnya, lalu mengembalikan papan klip Anda setelahnya.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih HITUNG KATA.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3715,7 +3715,7 @@
  "do:text.dictate": {
   "category": "text",
   "summary": "Mengetikkan apa yang Anda ucapkan di posisi kursor, di aplikasi mana pun, dalam bahasa Arab, Inggris, dan banyak bahasa lain.",
-  "details": "Klik di tempat kata-kata harus ditulis, lalu mulai dikte: label bulat kecil di bagian bawah layar menampilkan pengukur level dan waktu selama Petal mendengarkan. Tekan pintasannya atau DIKTE lagi, atau tanda centang di label itu, untuk berhenti; Esc atau X membatalkan, dan dikte berhenti sendiri pada dua menit. Whisper menuliskan apa yang Anda ucapkan di PC ini dan Petal mengetikkannya ke aplikasi yang berada di depan; jika aplikasi itu berubah, kata-katanya ditaruh di papan klip sebagai gantinya. Pada pertama kali, jendela Dikte meminta model ucapan: Akurasi Cepat (sekitar 60 MB, bahasa Inggris yang jelas), Seimbang (sekitar 190 MB, bawaan), atau Akurat (sekitar 574 MB, terbaik untuk bahasa Arab dan aksen), serta Bahasa Deteksi otomatis (bawaan), العربية, English, atau banyak bahasa lain. Fitur ini memerlukan mikrofon dan tidak ada yang dikirim ke mana pun.",
+  "details": "Klik di tempat kata-kata harus ditulis, lalu mulai dikte: label bulat kecil di bagian bawah layar menampilkan pengukur level dan waktu selama DropWheel mendengarkan. Tekan pintasannya atau DIKTE lagi, atau tanda centang di label itu, untuk berhenti; Esc atau X membatalkan, dan dikte berhenti sendiri pada dua menit. Whisper menuliskan apa yang Anda ucapkan di PC ini dan DropWheel mengetikkannya ke aplikasi yang berada di depan; jika aplikasi itu berubah, kata-katanya ditaruh di papan klip sebagai gantinya. Pada pertama kali, jendela Dikte meminta model ucapan: Akurasi Cepat (sekitar 60 MB, bahasa Inggris yang jelas), Seimbang (sekitar 190 MB, bawaan), atau Akurat (sekitar 574 MB, terbaik untuk bahasa Arab dan aksen), serta Bahasa Deteksi otomatis (bawaan), العربية, English, atau banyak bahasa lain. Fitur ini memerlukan mikrofon dan tidak ada yang dikirim ke mana pun.",
   "how": "Tekan Ctrl+Win+J di aplikasi mana pun, atau pilih DIKTE di roda Teks atau roda Kerja (Ctrl+Win+Z tanpa ada file yang dipilih, lalu Tab); bicaralah, lalu tekan lagi untuk mengetik.",
   "worksOn": "Suara Anda, diketikkan ke aplikasi mana pun; bukan file.",
   "examples": [
@@ -3740,7 +3740,7 @@
  "do:window.left": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke separuh kiri layarnya.",
-  "details": "Pilih KIRI dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh kiri layar tempatnya berada, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
+  "details": "Pilih KIRI dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh kiri layar tempatnya berada, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KIRI.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3764,7 +3764,7 @@
  "do:window.right": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke separuh kanan layarnya.",
-  "details": "Pilih KANAN dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh kanan layar tempatnya berada, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
+  "details": "Pilih KANAN dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh kanan layar tempatnya berada, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KANAN.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3788,7 +3788,7 @@
  "do:window.top": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke separuh atas layarnya.",
-  "details": "Pilih ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh atas layarnya, selebar layar penuh. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Ini cocok untuk layar tinggi atau layar potret. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh atas layarnya, selebar layar penuh. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Ini cocok untuk layar tinggi atau layar potret. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih ATAS.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3810,7 +3810,7 @@
  "do:window.bottom": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke separuh bawah layarnya.",
-  "details": "Pilih BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh bawah layarnya, selebar layar penuh dan di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi separuh bawah layarnya, selebar layar penuh dan di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih BAWAH.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3832,7 +3832,7 @@
  "do:window.topleft": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke seperempat kiri atas layarnya.",
-  "details": "Pilih KIRI ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kiri atas layarnya. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih KIRI ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kiri atas layarnya. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KIRI ATAS.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3854,7 +3854,7 @@
  "do:window.topright": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke seperempat kanan atas layarnya.",
-  "details": "Pilih KANAN ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kanan atas layarnya. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih KANAN ATAS dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kanan atas layarnya. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KANAN ATAS.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3876,7 +3876,7 @@
  "do:window.bottomleft": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke seperempat kiri bawah layarnya.",
-  "details": "Pilih KIRI BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kiri bawah layarnya, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih KIRI BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kiri bawah layarnya, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KIRI BAWAH.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3898,7 +3898,7 @@
  "do:window.bottomright": {
   "category": "windows",
   "summary": "Menaruh jendela yang tadinya di depan ke seperempat kanan bawah layarnya.",
-  "details": "Pilih KANAN BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kanan bawah layarnya, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih KANAN BAWAH dan jendela yang berada di depan saat Anda membuka roda memenuhi seperempat kanan bawah layarnya, di atas taskbar. Jendela yang dimaksimalkan atau diminimalkan dipulihkan terlebih dahulu, dan bingkai yang terlihat dipaskan dengan tepat. Dengan kelopak seperempat lainnya, Anda bisa menampilkan empat jendela sekaligus. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih KANAN BAWAH.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -3986,7 +3986,7 @@
  "do:window.centre": {
   "category": "windows",
   "summary": "Memindahkan jendela yang tadinya di depan ke tengah layarnya, dengan ukuran tetap.",
-  "details": "Pilih TENGAH dan jendela yang berada di depan saat Anda membuka roda ditempatkan di tengah layarnya dengan ukurannya saat ini. Jendela yang dimaksimalkan dipulihkan terlebih dahulu. Jendela yang lebih besar dari sekitar 92% layar diperkecil agar muat, dan jendela yang sangat kecil (di bawah 200 kali 150 piksel) dibuat selebar 60% dan setinggi 70%. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih TENGAH dan jendela yang berada di depan saat Anda membuka roda ditempatkan di tengah layarnya dengan ukurannya saat ini. Jendela yang dimaksimalkan dipulihkan terlebih dahulu. Jendela yang lebih besar dari sekitar 92% layar diperkecil agar muat, dan jendela yang sangat kecil (di bawah 200 kali 150 piksel) dibuat selebar 60% dan setinggi 70%. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih TENGAH.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4008,7 +4008,7 @@
  "do:window.maximize": {
   "category": "windows",
   "summary": "Membuat jendela yang tadinya di depan memenuhi layarnya, atau mengembalikannya ke ukurannya.",
-  "details": "Pilih BESARKAN dan jendela yang berada di depan saat Anda membuka roda memenuhi layarnya; pilih lagi dan jendela kembali ke ukuran sebelumnya. Bagian tengah roda menampilkan apakah jendela itu sedang dimaksimalkan. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
+  "details": "Pilih BESARKAN dan jendela yang berada di depan saat Anda membuka roda memenuhi layarnya; pilih lagi dan jendela kembali ke ukuran sebelumnya. Bagian tengah roda menampilkan apakah jendela itu sedang dimaksimalkan. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, lalu pilih BESARKAN.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4052,7 +4052,7 @@
  "do:window.ontop": {
   "category": "windows",
   "summary": "Menjaga jendela yang tadinya di depan tetap di atas semua jendela lain, atau melepaskannya kembali.",
-  "details": "Pilih DI ATAS dan jendela yang berada di depan saat Anda membuka roda tetap di atas setiap jendela lain, bahkan saat Anda mengklik di tempat lain; pilih lagi dan jendela berperilaku normal. Bagian tengah roda menampilkan apakah jendela itu sedang berada di atas. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Pilih DI ATAS dan jendela yang berada di depan saat Anda membuka roda tetap di atas setiap jendela lain, bahkan saat Anda mengklik di tempat lain; pilih lagi dan jendela berperilaku normal. Bagian tengah roda menampilkan apakah jendela itu sedang berada di atas. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih DI ATAS.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4074,7 +4074,7 @@
  "do:window.seethrough": {
   "category": "windows",
   "summary": "Membuat jendela yang tadinya di depan tembus pandang selangkah demi selangkah, lalu solid lagi.",
-  "details": "Setiap kali Anda memilih TEMBUS, jendela yang berada di depan saat Anda membuka roda menjadi lebih tembus pandang: 85% solid, lalu 70%, lalu 55%, lalu solid lagi. Sebuah kartu menampilkan tingkat yang baru, dan bagian tengah roda menampilkan seberapa solid jendela itu sekarang. Anda tetap bisa mengklik dan mengetik di dalamnya seperti biasa. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan.",
+  "details": "Setiap kali Anda memilih TEMBUS, jendela yang berada di depan saat Anda membuka roda menjadi lebih tembus pandang: 85% solid, lalu 70%, lalu 55%, lalu solid lagi. Sebuah kartu menampilkan tingkat yang baru, dan bagian tengah roda menampilkan seberapa solid jendela itu sekarang. Anda tetap bisa mengklik dan mengetik di dalamnya seperti biasa. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih TEMBUS; pilih lagi untuk tingkat berikutnya.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4096,7 +4096,7 @@
  "do:window.minimize": {
   "category": "windows",
   "summary": "Menurunkan jendela yang tadinya di depan ke taskbar.",
-  "details": "Pilih KECILKAN dan jendela yang berada di depan saat Anda membuka roda turun ke taskbar, tempat Anda bisa mengkliknya untuk memunculkannya kembali. Aplikasi tetap berjalan selama berada di sana. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
+  "details": "Pilih KECILKAN dan jendela yang berada di depan saat Anda membuka roda turun ke taskbar, tempat Anda bisa mengkliknya untuk memunculkannya kembali. Aplikasi tetap berjalan selama berada di sana. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih KECILKAN.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4118,7 +4118,7 @@
  "do:window.close": {
   "category": "windows",
   "summary": "Menutup jendela yang tadinya di depan, seperti tombol X miliknya.",
-  "details": "Pilih TUTUP dan Petal meminta jendela yang berada di depan saat Anda membuka roda untuk menutup, persis seperti mengklik X-nya. Aplikasi tetap bisa meminta Anda menyimpan pekerjaan terlebih dahulu, jadi tidak ada yang hilang tanpa bertanya. Jendela milik Petal sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
+  "details": "Pilih TUTUP dan DropWheel meminta jendela yang berada di depan saat Anda membuka roda untuk menutup, persis seperti mengklik X-nya. Aplikasi tetap bisa meminta Anda menyimpan pekerjaan terlebih dahulu, jadi tidak ada yang hilang tanpa bertanya. Jendela milik DropWheel sendiri, desktop, dan taskbar dibiarkan; jika tidak ada jendela aplikasi di depan, sebuah kartu menampilkan 'Tidak ada jendela untuk diatur'.",
   "how": "Klik jendela aplikasi, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Atur, buka grup LAINNYA, lalu pilih TUTUP.",
   "worksOn": "Jendela aplikasi yang berada di depan; bukan file.",
   "examples": [
@@ -4140,7 +4140,7 @@
  "do:clipboard.history": {
   "category": "clipboard",
   "summary": "Membuka semua yang baru-baru ini Anda salin, untuk dicari, disematkan, dan ditempel lagi ke aplikasi yang sedang Anda pakai.",
-  "details": "Jendela Riwayat Papan Klip mencantumkan 30 hal terakhir yang Anda salin (teks, gambar, dan file), yang terbaru lebih dulu dengan klip yang disematkan di atas; hanya 8 gambar terakhir yang disimpan. Ketik di kotak pencarian untuk menemukan klip, gunakan tombol pin untuk menyimpannya dan tombol tempat sampah (atau Delete) untuk menghapusnya. Klik dua kali sebuah klip, tekan Enter, atau pilih Tempel, dan Petal menaruhnya di papan klip lalu menempelkannya dengan Ctrl+V ke aplikasi yang berada di depan; Hapus Semua menghapus semuanya kecuali klip yang disematkan. Salinan yang ditandai pribadi oleh pengelola kata sandi tidak pernah disimpan. Riwayat disimpan selama Petal berjalan; hanya klip yang disematkan yang diingat setelah Petal ditutup, kecuali Anda mengaktifkannya di Pengaturan › Layar & Teks.",
+  "details": "Jendela Riwayat Papan Klip mencantumkan 30 hal terakhir yang Anda salin (teks, gambar, dan file), yang terbaru lebih dulu dengan klip yang disematkan di atas; hanya 8 gambar terakhir yang disimpan. Ketik di kotak pencarian untuk menemukan klip, gunakan tombol pin untuk menyimpannya dan tombol tempat sampah (atau Delete) untuk menghapusnya. Klik dua kali sebuah klip, tekan Enter, atau pilih Tempel, dan DropWheel menaruhnya di papan klip lalu menempelkannya dengan Ctrl+V ke aplikasi yang berada di depan; Hapus Semua menghapus semuanya kecuali klip yang disematkan. Salinan yang ditandai pribadi oleh pengelola kata sandi tidak pernah disimpan. Riwayat disimpan selama DropWheel berjalan; hanya klip yang disematkan yang diingat setelah DropWheel ditutup, kecuali Anda mengaktifkannya di Pengaturan › Layar & Teks.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Papan Klip, lalu pilih RIWAYAT; klik dua kali sebuah klip untuk menempelkannya.",
   "worksOn": "Apa yang Anda salin: teks, gambar, dan file; tidak perlu file untuk membukanya.",
   "examples": [
@@ -4164,9 +4164,9 @@
  "do:clipboard.forget": {
   "category": "clipboard",
   "summary": "Menghapus riwayat papan klip dalam satu langkah, hanya menyisakan klip yang Anda sematkan.",
-  "details": "Pilih LUPAKAN dan setiap klip di riwayat papan klip Petal dihapus, kecuali yang Anda sematkan; sebuah kartu menampilkan 'Riwayat papan klip dihapus' dan 'Klip yang disematkan tetap ada'. Ini bekerja pada riwayat Petal, sedangkan Kosongkan Papan Klip (KOSONGKAN, di bawah LAINNYA pada roda Cepat) hanya melupakan apa yang ada di papan klip saat ini. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Papan klip di Pengaturan › Roda, atau jalankan Hapus Riwayat Papan Klip dari palet perintah.",
+  "details": "Pilih LUPAKAN dan setiap klip di riwayat papan klip DropWheel dihapus, kecuali yang Anda sematkan; sebuah kartu menampilkan 'Riwayat papan klip dihapus' dan 'Klip yang disematkan tetap ada'. Ini bekerja pada riwayat DropWheel, sedangkan Kosongkan Papan Klip (KOSONGKAN, di bawah LAINNYA pada roda Cepat) hanya melupakan apa yang ada di papan klip saat ini. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Papan klip di Pengaturan › Roda, atau jalankan Hapus Riwayat Papan Klip dari palet perintah.",
   "how": "Tekan Ctrl+Win+K, ketik 'Hapus Riwayat Papan Klip', lalu tekan Enter, atau tambahkan LUPAKAN ke roda di Pengaturan › Roda.",
-  "worksOn": "Riwayat papan klip Petal; bukan file.",
+  "worksOn": "Riwayat papan klip DropWheel; bukan file.",
   "examples": [
    "Anda menyalin kata sandi dan detail bank dari dokumen: hapus riwayatnya sebelum meminjamkan laptop.",
    "Sebelum berbagi layar dalam rapat, lupakan klip pribadi agar tidak terlihat di riwayat.",
@@ -4187,7 +4187,7 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Menaruh catatan tempel baru di desktop dekat penunjuk, dalam bahasa dan warna apa pun.",
-  "details": "Pilih CATATAN dan catatan tempel terbuka di dekat penunjuk, siap diketik; bahasa Arab otomatis berjalan dari kanan ke kiri. Pitanya memiliki tombol Catatan baru, Warna (kuning, hijau, biru, merah muda, ungu, abu-abu), Tetap di atas, dan Hapus catatan, dan Anda bisa menyeretnya lewat pita serta mengubah ukurannya dari sudut. Ctrl+N di sebuah catatan membuat catatan lain. Catatan tersimpan sendiri dan muncul kembali di tempatnya saat Petal dimulai; catatan berisi teks yang dihapus bisa dikembalikan dengan mengklik kartu yang muncul.",
+  "details": "Pilih CATATAN dan catatan tempel terbuka di dekat penunjuk, siap diketik; bahasa Arab otomatis berjalan dari kanan ke kiri. Pitanya memiliki tombol Catatan baru, Warna (kuning, hijau, biru, merah muda, ungu, abu-abu), Tetap di atas, dan Hapus catatan, dan Anda bisa menyeretnya lewat pita serta mengubah ukurannya dari sudut. Ctrl+N di sebuah catatan membuat catatan lain. Catatan tersimpan sendiri dan muncul kembali di tempatnya saat DropWheel dimulai; catatan berisi teks yang dihapus bisa dikembalikan dengan mengklik kartu yang muncul.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja atau Papan Klip, pilih CATATAN, lalu mulai mengetik.",
   "worksOn": "",
   "examples": [
@@ -4211,7 +4211,7 @@
  "do:notes.toggle": {
   "category": "notes",
   "summary": "Memunculkan semua catatan tempel, atau menyimpannya semua dari pandangan sementara catatan tetap tersimpan.",
-  "details": "Pilih CATATAN untuk menyembunyikan setiap catatan tempel sekaligus, dan pilih lagi untuk menampilkan semuanya di tempatnya semula. Catatan yang disembunyikan tetap tersimpan, dan Petal mengingat pilihan itu: catatan yang disembunyikan tetap tersembunyi saat Petal dimulai berikutnya. Jika Anda belum punya catatan, kelopak ini membuat catatan baru. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Catatan di Pengaturan › Roda, atau jalankan Tampilkan atau Sembunyikan Catatan dari palet perintah.",
+  "details": "Pilih CATATAN untuk menyembunyikan setiap catatan tempel sekaligus, dan pilih lagi untuk menampilkan semuanya di tempatnya semula. Catatan yang disembunyikan tetap tersimpan, dan DropWheel mengingat pilihan itu: catatan yang disembunyikan tetap tersembunyi saat DropWheel dimulai berikutnya. Jika Anda belum punya catatan, kelopak ini membuat catatan baru. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Catatan di Pengaturan › Roda, atau jalankan Tampilkan atau Sembunyikan Catatan dari palet perintah.",
   "how": "Tekan Ctrl+Win+K, ketik 'Tampilkan atau Sembunyikan Catatan', lalu tekan Enter, atau tambahkan CATATAN ke roda di Pengaturan › Roda.",
   "worksOn": "",
   "examples": [
@@ -4258,7 +4258,7 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Merekam rapat, lalu menulis transkrip, ringkasan, keputusan, dan tindak lanjut di PC ini.",
-  "details": "Pilih RAPAT dan Petal merekam suara PC sekaligus mikrofon Anda; label bulat di bagian atas menampilkan waktu, dengan tanda centang untuk berhenti dan menulis catatan serta X untuk membatalkan, dan label itu tidak ikut terlihat saat rapat berbagi layar. Saat Anda berhenti, Whisper menulis transkrip beserta waktunya, dan jika model AI (sekitar 1,1 GB) ada di PC, model itu menambahkan bagian Summary, Decisions, dan Action items. Catatan (file Markdown) dan suaranya (file M4A) disimpan sebagai 'Meeting tanggal waktu' di folder Petal Meetings di dalam Dokumen, dan jendela Catatan Rapat terbuka dengan tampilan Ringkasan dan Transkrip, Salin, serta Buka Folder. Fitur ini memerlukan model ucapan dari jendela Dikte dan FFmpeg; tanpa model AI, tombol Tulis Ringkasan memungkinkan Anda menambahkan ringkasan nanti.",
+  "details": "Pilih RAPAT dan DropWheel merekam suara PC sekaligus mikrofon Anda; label bulat di bagian atas menampilkan waktu, dengan tanda centang untuk berhenti dan menulis catatan serta X untuk membatalkan, dan label itu tidak ikut terlihat saat rapat berbagi layar. Saat Anda berhenti, Whisper menulis transkrip beserta waktunya, dan jika model AI (sekitar 1,1 GB) ada di PC, model itu menambahkan bagian Summary, Decisions, dan Action items. Catatan (file Markdown) dan suaranya (file M4A) disimpan sebagai 'Meeting tanggal waktu' di folder DropWheel Meetings di dalam Dokumen, dan jendela Catatan Rapat terbuka dengan tampilan Ringkasan dan Transkrip, Salin, serta Buka Folder. Fitur ini memerlukan model ucapan dari jendela Dikte dan FFmpeg; tanpa model AI, tombol Tulis Ringkasan memungkinkan Anda menambahkan ringkasan nanti.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja, lalu pilih RAPAT; pilih lagi atau tekan tanda centang di label untuk berhenti.",
   "worksOn": "",
   "examples": [
@@ -4282,7 +4282,7 @@
  "do:work.captions": {
   "category": "work",
   "summary": "Menampilkan teks langsung untuk video, panggilan, atau pelajaran apa pun, langsung diterjemahkan ke bahasa Arab, di PC ini.",
-  "details": "Pilih CC dan bilah teks muncul di bagian bawah layar; seret ke mana saja. Petal mendengarkan suara PC (bawaan) atau mikrofon, Whisper menuliskan kata-kata saat diucapkan, dalam sekitar setengah detik (kata terbaru tampak lebih pudar sampai pasti), dan model terjemahan mengubah setiap kalimat ke bahasa Arab sambil berjalan, tanpa perlu internet. Jika PC terlalu lambat untuk model ucapan yang dipilih, model lebih cepat yang sudah diunduh mengambil alih agar teks tetap mengikuti. Arahkan penunjuk ke bilah untuk melihat tombolnya: beralih antara suara PC dan mikrofon, mengubah apa yang ditampilkan (keduanya, bahasa Arab, teks asli, atau bahasa Inggris), atau mematikan teks. Fitur ini memerlukan model ucapan dari jendela Dikte, dan model terjemahan bahasa Arab (sekitar 114 MB) ditawarkan pada pertama kali; sampai model itu tersedia, teks menampilkan apa yang diucapkan. Pilih CC lagi untuk berhenti.",
+  "details": "Pilih CC dan bilah teks muncul di bagian bawah layar; seret ke mana saja. DropWheel mendengarkan suara PC (bawaan) atau mikrofon, Whisper menuliskan kata-kata saat diucapkan, dalam sekitar setengah detik (kata terbaru tampak lebih pudar sampai pasti), dan model terjemahan mengubah setiap kalimat ke bahasa Arab sambil berjalan, tanpa perlu internet. Jika PC terlalu lambat untuk model ucapan yang dipilih, model lebih cepat yang sudah diunduh mengambil alih agar teks tetap mengikuti. Arahkan penunjuk ke bilah untuk melihat tombolnya: beralih antara suara PC dan mikrofon, mengubah apa yang ditampilkan (keduanya, bahasa Arab, teks asli, atau bahasa Inggris), atau mematikan teks. Fitur ini memerlukan model ucapan dari jendela Dikte, dan model terjemahan bahasa Arab (sekitar 114 MB) ditawarkan pada pertama kali; sampai model itu tersedia, teks menampilkan apa yang diucapkan. Pilih CC lagi untuk berhenti.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja, lalu pilih CC; pilih lagi untuk mematikan teks.",
   "worksOn": "",
   "examples": [
@@ -4306,7 +4306,7 @@
  "do:steps.record": {
   "category": "work",
   "summary": "Merekam panduan langkah demi langkah selagi Anda bekerja: setiap klik dengan gambar dan keterangannya, untuk disimpan sebagai PDF atau Word.",
-  "details": "Pilih LANGKAH dan sebuah bilah di bagian atas layar menghitung langkah selagi Anda bekerja; setiap klik, klik dua kali, klik kanan, ketikan, dan pintasan di aplikasi lain menjadi satu langkah dengan gambar jendela dan lingkaran di tempat Anda mengklik, serta keterangan seperti 'Click «Save» in Notepad'. Apa pun yang diketik di kotak kata sandi tidak pernah disimpan; langkahnya hanya bertuliskan 'Ketik kata sandi'. Tekan tanda centang untuk selesai (atau pilih LANGKAH lagi), atau X untuk membatalkan; perekaman berhenti sendiri pada 200 langkah. Jendela Panduan Langkah demi Langkah lalu memungkinkan Anda mengubah judul dan keterangan setiap langkah, memindahkan langkah ke atas atau ke bawah dan menghapusnya, lalu Simpan Panduan sebagai PDF (bawaan), Word, Halaman Web, atau Markdown ke folder Petal Guides di dalam Dokumen. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Kerja di Pengaturan › Roda, atau jalankan Rekam Langkah dari palet perintah.",
+  "details": "Pilih LANGKAH dan sebuah bilah di bagian atas layar menghitung langkah selagi Anda bekerja; setiap klik, klik dua kali, klik kanan, ketikan, dan pintasan di aplikasi lain menjadi satu langkah dengan gambar jendela dan lingkaran di tempat Anda mengklik, serta keterangan seperti 'Click «Save» in Notepad'. Apa pun yang diketik di kotak kata sandi tidak pernah disimpan; langkahnya hanya bertuliskan 'Ketik kata sandi'. Tekan tanda centang untuk selesai (atau pilih LANGKAH lagi), atau X untuk membatalkan; perekaman berhenti sendiri pada 200 langkah. Jendela Panduan Langkah demi Langkah lalu memungkinkan Anda mengubah judul dan keterangan setiap langkah, memindahkan langkah ke atas atau ke bawah dan menghapusnya, lalu Simpan Panduan sebagai PDF (bawaan), Word, Halaman Web, atau Markdown ke folder DropWheel Guides di dalam Dokumen. Kelopak ini tidak ada di roda siap pakai: tambahkan dari bagian Kerja di Pengaturan › Roda, atau jalankan Rekam Langkah dari palet perintah.",
   "how": "Tekan Ctrl+Win+K, ketik 'Rekam Langkah', lalu tekan Enter (atau tambahkan LANGKAH ke roda di Pengaturan › Roda); lakukan tugasnya, lalu tekan tanda centang di bilah.",
   "worksOn": "",
   "examples": [
@@ -4354,8 +4354,8 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Membuka Panduan Alat: setiap alat dan tindakan dijelaskan, dengan contoh, dan kotak untuk menyampaikan apa yang ingin Anda lakukan.",
-  "details": "Panduan ini mencantumkan alat Petal, tindakan file, dan tindakan roda tanpa file per bagian. Setiap entri terbuka menampilkan apa yang dilakukannya, cara memakainya, tiga contoh, dan apa yang bisa diprosesnya, dengan Coba untuk memulainya dan kotak untuk bertanya tentangnya. Ketik apa yang ingin Anda lakukan dengan kata-kata Anda sendiri di bagian atas dan alat yang paling sesuai langsung muncul; tekan Enter dan model AI di PC ini menjawab berdasarkan panduan dan menautkan alat yang disebutkannya. Model diunduh sekali, saat Anda pertama kali bertanya; tanpanya, alat yang paling sesuai tetap muncul.",
-  "how": "Buka dari menu baki sistem (Panduan Alat…), tombol Panduan Alat di bagian atas Pengaturan Petal, palet perintah (Ctrl+Win+K), atau kelopak PANDUAN yang Anda tambahkan ke roda. Di roda, tanda di bawah nama kelopak (atau F1) menampilkan penjelasan kelopak itu, dengan tautan ke panduan.",
+  "details": "Panduan ini mencantumkan alat DropWheel, tindakan file, dan tindakan roda tanpa file per bagian. Setiap entri terbuka menampilkan apa yang dilakukannya, cara memakainya, tiga contoh, dan apa yang bisa diprosesnya, dengan Coba untuk memulainya dan kotak untuk bertanya tentangnya. Ketik apa yang ingin Anda lakukan dengan kata-kata Anda sendiri di bagian atas dan alat yang paling sesuai langsung muncul; tekan Enter dan model AI di PC ini menjawab berdasarkan panduan dan menautkan alat yang disebutkannya. Model diunduh sekali, saat Anda pertama kali bertanya; tanpanya, alat yang paling sesuai tetap muncul.",
+  "how": "Buka dari menu baki sistem (Panduan Alat…), tombol Panduan Alat di bagian atas Pengaturan DropWheel, palet perintah (Ctrl+Win+K), atau kelopak PANDUAN yang Anda tambahkan ke roda. Di roda, tanda di bawah nama kelopak (atau F1) menampilkan penjelasan kelopak itu, dengan tautan ke panduan.",
   "worksOn": "",
   "examples": [
    "Anda perlu hitung mundur untuk istirahat kelas: ketik 'hitung mundur' dan Timer muncul pertama, dengan Coba untuk memulainya.",

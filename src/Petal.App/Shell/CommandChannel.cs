@@ -76,7 +76,7 @@ public sealed class CommandChannel : IDisposable
     public void Dispose() => _stop.Cancel();
 }
 
-/// <summary>Adds or removes "Petal" in File Explorer's right-click menu (per user, no admin rights).</summary>
+/// <summary>Adds or removes DropWheel's entries in File Explorer's right-click menu (per user, no admin rights).</summary>
 public static class ContextMenuRegistration
 {
     private const string FilesKey = @"Software\Classes\*\shell\Petal";
@@ -96,7 +96,7 @@ public static class ContextMenuRegistration
                 Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(FoldersKey, throwOnMissingSubKey: false);
                 return;
             }
-            foreach (var (key, label) in new[] { (FilesKey, Localization.L.T("Convert with Petal")), (FoldersKey, Localization.L.T("Petal actions")) })
+            foreach (var (key, label) in new[] { (FilesKey, Localization.L.T("Convert with DropWheel")), (FoldersKey, Localization.L.T("DropWheel actions")) })
             {
                 using var verb = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(key);
                 verb.SetValue("MUIVerb", label);

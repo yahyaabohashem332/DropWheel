@@ -155,7 +155,7 @@ public sealed class LocalApi(PetalController controller, Dispatcher ui) : IDispo
             }
 
             default:
-                return PetalApi.Error($"Petal doesn't know \"{cmd}\".");
+                return PetalApi.Error($"DropWheel doesn't know \"{cmd}\".");
         }
     }
 

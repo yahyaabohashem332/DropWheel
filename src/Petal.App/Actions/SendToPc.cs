@@ -22,7 +22,7 @@ internal static class PcDrop
 
     public static string Name => Environment.MachineName;
 
-    public static string Folder => Path.Combine(PhoneWindow.DownloadsFolder(), "Petal");
+    public static string Folder => Path.Combine(PhoneWindow.DownloadsFolder(), "DropWheel");
 
     /// <summary>Stable and random, so a PC never finds itself.</summary>
     public static string Id
@@ -105,11 +105,11 @@ internal sealed class SendToPcWindow : ToolWindow
         _paths = paths;
         var files = PetalDrop.Collect(paths);
         Body.Children.Add(Text(FileLabel(paths) + " · " + Sizes.Format(files.Sum(f => f.File.Size)), "Petal.Section"));
-        _status = Text("Looking for PCs with Petal on this network…", "Petal.Caption");
+        _status = Text("Looking for PCs with DropWheel on this network…", "Petal.Caption");
         _status.Margin = new Thickness(0, 8, 0, 8);
         Body.Children.Add(_status);
         Body.Children.Add(_pcs);
-        Body.Children.Add(Text("The other PC needs Petal with “Let other PCs send me files” on (Settings › Work & Sharing). It asks before saving anything, and the files go straight across your network.", "Petal.Caption").WithMarginT(10));
+        Body.Children.Add(Text("The other PC needs DropWheel with “Let other PCs send me files” on (Settings › Work & Sharing). It asks before saving anything, and the files go straight across your network.", "Petal.Caption").WithMarginT(10));
         ResetButton.Content = L.T("Look Again");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += async (_, _) => await SearchAsync();
@@ -122,7 +122,7 @@ internal sealed class SendToPcWindow : ToolWindow
     private async Task SearchAsync()
     {
         _pcs.Children.Clear();
-        _status.Text = L.T("Looking for PCs with Petal on this network…");
+        _status.Text = L.T("Looking for PCs with DropWheel on this network…");
         ResetButton.IsEnabled = false;
         var peers = await PetalDrop.DiscoverAsync(TimeSpan.FromSeconds(1.5), PcDrop.Id);
         ResetButton.IsEnabled = true;
@@ -132,7 +132,7 @@ internal sealed class SendToPcWindow : ToolWindow
     private void ShowPeers(IReadOnlyList<DropPeer> peers)
     {
         _pcs.Children.Clear();
-        _status.Text = peers.Count == 0 ? L.T("No PC with Petal receiving was found.") : L.T("Choose the PC to send to:");
+        _status.Text = peers.Count == 0 ? L.T("No PC with DropWheel receiving was found.") : L.T("Choose the PC to send to:");
         foreach (var peer in peers)
         {
             var target = peer;
@@ -171,7 +171,7 @@ internal sealed class SendToPcWindow : ToolWindow
                 card.Fail(L.F("{0} said no", peer.Name), L.T("Nothing was sent."));
                 break;
             case DropOutcome.Unreachable:
-                card.Fail(L.F("{0} can't be reached", peer.Name), L.T("It may have left the network, or its firewall keeps Petal out."));
+                card.Fail(L.F("{0} can't be reached", peer.Name), L.T("It may have left the network, or its firewall keeps DropWheel out."));
                 break;
             default:
                 card.Fail(L.T("Not sent"), L.T("The connection broke off. Try again."));

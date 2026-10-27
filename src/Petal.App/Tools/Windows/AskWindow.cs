@@ -53,7 +53,7 @@ public sealed class AskWindow : ToolWindow
     /// <summary>From the tray: files chosen first.</summary>
     public static void ChooseAndShow(JobRunner jobs)
     {
-        var dialog = new OpenFileDialog { Title = L.T("Ask Petal about"), Multiselect = true };
+        var dialog = new OpenFileDialog { Title = L.T("Ask DropWheel about"), Multiselect = true };
         if (dialog.ShowDialog() == true && dialog.FileNames.Length > 0)
         {
             _open?.Close();
@@ -65,7 +65,7 @@ public sealed class AskWindow : ToolWindow
         }
     }
 
-    private AskWindow(IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base("Ask Petal", 460)
+    private AskWindow(IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base("Ask DropWheel", 460)
     {
         _files = files;
         _jobs = jobs;
@@ -104,7 +104,7 @@ public sealed class AskWindow : ToolWindow
         Body.Children.Add(_thinking);
         Body.Children.Add(_plan);
 
-        _modelHint = Text("With the AI model, Petal also understands requests worded freely. It runs on this PC.", "Petal.Caption");
+        _modelHint = Text("With the AI model, DropWheel also understands requests worded freely. It runs on this PC.", "Petal.Caption");
         _modelHint.Margin = new Thickness(0, 14, 0, 0);
         _modelHint.Visibility = AskPetal.ModelReady ? Visibility.Collapsed : Visibility.Visible;
         Body.Children.Add(_modelHint);
@@ -204,7 +204,7 @@ public sealed class AskWindow : ToolWindow
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            Log.Error(ex, "Asking Petal");
+            Log.Error(ex, "Asking DropWheel");
             // The words alone, when the model can't run.
             ShowPlan(new AskAnswer(AskPetal.Understand(request, _formats), false));
         }
@@ -226,12 +226,12 @@ public sealed class AskWindow : ToolWindow
         if (_recipe is null)
         {
             _plan.Children.Add(Text(L.T(AskPetal.ModelReady
-                ? "Petal didn't find something it can do in that. Try naming the result: a format, a size, an app to send to, one PDF or a ZIP."
-                : "Petal didn't understand that yet. Try simpler words, or download the AI model below to ask any way you like."), "Petal.Body"));
+                ? "DropWheel didn't find something it can do in that. Try naming the result: a format, a size, an app to send to, one PDF or a ZIP."
+                : "DropWheel didn't understand that yet. Try simpler words, or download the AI model below to ask any way you like."), "Petal.Body"));
             Sync();
             return;
         }
-        var heading = Text("Petal will:", "Petal.Label");
+        var heading = Text("DropWheel will:", "Petal.Label");
         _plan.Children.Add(heading);
         int n = 1;
         foreach (var step in _recipe.Steps)

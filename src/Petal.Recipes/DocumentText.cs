@@ -14,7 +14,7 @@ public static class DocumentText
     public static async Task<string> ReadAsync(string path, ConverterRegistry converters, ConversionSettings settings,
         IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var format = Formats.FromPath(path) ?? throw new InvalidOperationException($"{Path.GetFileName(path)}: Petal doesn't know this kind of file.");
+        var format = Formats.FromPath(path) ?? throw new InvalidOperationException($"{Path.GetFileName(path)}: DropWheel doesn't know this kind of file.");
         if (format == Formats.Txt)
             return DocumentEngine.ReadTextFile(path);
         if (format == Formats.Psd || format == Formats.Psb)
@@ -27,7 +27,7 @@ public static class DocumentText
             format = Formats.Pdf;
         }
         var converter = converters.Find(format, Formats.Txt)
-            ?? throw new InvalidOperationException($"Petal can't read the text of {format.Label} files.");
+            ?? throw new InvalidOperationException($"DropWheel can't read the text of {format.Label} files.");
         var folder = Path.Combine(Path.GetTempPath(), "Petal", $"text-{Guid.NewGuid():N}");
         Directory.CreateDirectory(folder);
         try

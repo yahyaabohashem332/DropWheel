@@ -129,7 +129,7 @@ public static partial class SystemToggles
                 wake.Wait();
                 SetThreadExecutionState(ES_CONTINUOUS);
             })
-            { IsBackground = true, Name = "Petal keep awake" };
+            { IsBackground = true, Name = "DropWheel keep awake" };
             _wake = wake;
             _awake = thread;
             thread.Start();

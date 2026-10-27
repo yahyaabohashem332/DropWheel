@@ -121,7 +121,7 @@ public static class ArchiveIO
                 break;
             }
             default:
-                throw new NotSupportedException($"Petal can't create {format.Label} archives.");
+                throw new NotSupportedException($"DropWheel can't create {format.Label} archives.");
         }
     }
 

@@ -148,7 +148,7 @@ internal static class DesignSnapshots
             ("duplicates", () => Tools.Windows.DuplicatesWindow.ForSnapshot([file("landscape.jpg"), file("figures.png"), file("landscape.jpg"), file("figures.png")])),
             ("phone", () => Actions.PhoneWindow.ForSnapshot([file("landscape.jpg"), file("weekend.mov"), file("album.pdf")])),
             ("update", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
-                .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "Petal-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
+                .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "DropWheel-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
             ("practice", Private<Onboarding.PracticeWindow>),
             ("stats", () => { SampleStats(); return Private<Stats.StatsWindow>(); }),
             ("wheeleditor", () => new Settings.WheelEditorWindow(Settings.SettingsWindow.Clone(Wheels.WheelTemplates.Apps()[0]))),
@@ -206,7 +206,7 @@ internal static class DesignSnapshots
             ("describe", () => new Tools.Windows.DescribePictureWindow(T(Petal.Core.Tools.ToolId.DescribePicture), file("landscape.jpg"))),
             ("health", () => Settings.HealthWindow.ForSnapshot(
             [
-                new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("Petal sees drags and key taps")),
+                new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("DropWheel sees drags and key taps")),
                 new Settings.HealthCheck(Localization.L.T("Shortcuts"), Settings.HealthState.Problem, Localization.L.F("Another program has {0}", "Ctrl+Win+M"),
                     Localization.L.T("Choose another shortcut in Settings, or close the program that uses it."), Localization.L.T("Open Settings"), () => { }),
                 new Settings.HealthCheck(Localization.L.T("AI models"), Settings.HealthState.Note, Localization.L.F("{0} of {1} on this PC · {2}", 3, 9, "1.4 GB")),

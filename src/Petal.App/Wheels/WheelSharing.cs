@@ -52,12 +52,12 @@ public static class WheelSharing
                 return (null, "This wheel is too large.");
             var envelope = JsonSerializer.Deserialize<Envelope>(text, SettingsStore.Options);
             if (envelope is not { PetalWheel: 1, Wheel: { } wheel } || string.IsNullOrWhiteSpace(wheel.Name) || wheel.Items is null)
-                return (null, "This isn't a Petal wheel.");
+                return (null, "This isn't a DropWheel wheel.");
             return (Fresh(wheel), null);
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidDataException or NotSupportedException)
         {
-            return (null, "This isn't a Petal wheel.");
+            return (null, "This isn't a DropWheel wheel.");
         }
     }
 

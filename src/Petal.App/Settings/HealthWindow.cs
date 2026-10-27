@@ -36,9 +36,9 @@ internal sealed class HealthWindow : ToolWindow
         return window;
     }
 
-    private HealthWindow(bool run = true) : base("Petal Health", 600)
+    private HealthWindow(bool run = true) : base("DropWheel Health", 600)
     {
-        Body.Children.Add(Text("Petal looked itself over. Nothing is changed unless you choose a fix.", "Petal.Caption"));
+        Body.Children.Add(Text("DropWheel looked itself over. Nothing is changed unless you choose a fix.", "Petal.Caption"));
         Body.Children.Add(new ScrollViewer { Content = _list, MaxHeight = 520, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 10, 0, 0) });
         ResetButton.Content = L.T("Save a Report…");
         ResetButton.Visibility = Visibility.Visible;
@@ -60,8 +60,8 @@ internal sealed class HealthWindow : ToolWindow
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Petal Health");
-            FooterNote = "Petal couldn't finish looking";
+            Log.Error(ex, "DropWheel Health");
+            FooterNote = "DropWheel couldn't finish looking";
         }
         finally
         {

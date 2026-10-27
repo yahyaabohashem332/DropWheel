@@ -230,7 +230,7 @@ public static class ModelStore
     public static async Task<string> DownloadAsync(ModelInfo model, IProgress<double>? progress = null, CancellationToken cancellationToken = default, HttpClient? client = null)
     {
         if (model.Bundled)
-            return Find(model) ?? throw new FileNotFoundException($"{model.Name} should come with Petal but is missing. Reinstall Petal to restore it.");
+            return Find(model) ?? throw new FileNotFoundException($"{model.Name} should come with DropWheel but is missing. Reinstall DropWheel to restore it.");
         await Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -289,7 +289,7 @@ public static class ModelStore
     private static readonly Lazy<HttpClient> Shared = new(() =>
     {
         var client = new HttpClient { Timeout = TimeSpan.FromHours(2) };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Petal/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("DropWheel/1.0");
         return client;
     });
 }

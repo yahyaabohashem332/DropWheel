@@ -85,7 +85,7 @@ public static class ClipboardSource
 
     private static string SaveText(string text)
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Petal");
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel");
         Directory.CreateDirectory(folder);
         var path = Petal.Core.Jobs.OutputNaming.Unique(folder, $"Clipboard {Stamp}", "txt");
         File.WriteAllText(path, text, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));

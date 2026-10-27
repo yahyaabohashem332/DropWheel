@@ -130,7 +130,7 @@
  "tool:ResizeImage": {
   "category": "pictures",
   "summary": "Agrandit ou réduit des images, les fait pivoter d'un quart de tour et les retourne, pour une image ou toute une sélection.",
-  "details": "Redimensionner et faire pivoter propose Conserver, Pourcentage (50 % au départ, de 5 % à 200 %), Largeur, Hauteur ou Ajuster, qui fait tenir l'image dans une largeur et une hauteur que vous saisissez ; les proportions sont toujours conservées. Autoriser l'agrandissement des images permet à Largeur, Hauteur et Ajuster de dépasser la taille d'origine, et quand une image sort plus grande, Agrandir avec l'IA pour des détails plus nets utilise le modèle Real-ESRGAN fourni avec Petal (images jusqu'à environ 4 mégapixels). Faire pivoter à gauche, Faire pivoter à droite, Retourner horizontalement et Retourner verticalement se trouvent sous Rotation ; avec une seule image, un aperçu en direct montre la taille avant et après. Enregistrer écrit chaque résultat à côté de son original sous le nom « nom Resized », dans le même format.",
+  "details": "Redimensionner et faire pivoter propose Conserver, Pourcentage (50 % au départ, de 5 % à 200 %), Largeur, Hauteur ou Ajuster, qui fait tenir l'image dans une largeur et une hauteur que vous saisissez ; les proportions sont toujours conservées. Autoriser l'agrandissement des images permet à Largeur, Hauteur et Ajuster de dépasser la taille d'origine, et quand une image sort plus grande, Agrandir avec l'IA pour des détails plus nets utilise le modèle Real-ESRGAN fourni avec DropWheel (images jusqu'à environ 4 mégapixels). Faire pivoter à gauche, Faire pivoter à droite, Retourner horizontalement et Retourner verticalement se trouvent sous Rotation ; avec une seule image, un aperçu en direct montre la taille avant et après. Enregistrer écrit chaque résultat à côté de son original sous le nom « nom Resized », dans le même format.",
   "how": "Faites glisser une ou plusieurs images, appuyez sur Ctrl et déposez-les sur TAILLE ; choisissez une taille et une éventuelle rotation, puis choisissez Enregistrer.",
   "worksOn": "Des images : une avec un aperçu en direct, ou plusieurs avec les mêmes réglages. Aussi les images d'un dossier déposé.",
   "examples": [
@@ -156,7 +156,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Place votre texte ou votre logo sur des images, sur chaque image d'une vidéo ou sur chaque page d'un PDF.",
-  "details": "Ajouter un filigrane propose deux types : Texte (arabe compris ; « © année » au départ) avec une Couleur (blanc au départ), ou Image, un logo de votre choix. Taille va de 5 % à 90 % (30 % au départ) et Opacité de 10 % à 100 % (60 % au départ). Position est l'un des neuf emplacements (en bas à droite au départ), ou cochez Répéter sur toute l'image pour couvrir toute l'image. Un aperçu montre le premier fichier, et Petal mémorise votre dernier filigrane pour la fois suivante. Chaque résultat est enregistré à côté de son original sous le nom « nom Watermarked ».",
+  "details": "Ajouter un filigrane propose deux types : Texte (arabe compris ; « © année » au départ) avec une Couleur (blanc au départ), ou Image, un logo de votre choix. Taille va de 5 % à 90 % (30 % au départ) et Opacité de 10 % à 100 % (60 % au départ). Position est l'un des neuf emplacements (en bas à droite au départ), ou cochez Répéter sur toute l'image pour couvrir toute l'image. Un aperçu montre le premier fichier, et DropWheel mémorise votre dernier filigrane pour la fois suivante. Chaque résultat est enregistré à côté de son original sous le nom « nom Watermarked ».",
   "how": "Faites glisser des fichiers, appuyez sur Ctrl et déposez-les sur FILIGRANE ; réglez le texte ou l'image, la taille et la position, puis choisissez Ajouter un filigrane.",
   "worksOn": "Images, vidéos (pas les GIF) et PDF ; un fichier ou plusieurs. Aussi les fichiers d'un dossier déposé.",
   "examples": [
@@ -278,7 +278,7 @@
  "tool:SlimPhotoshop": {
   "category": "pictures",
   "summary": "Allège les fichiers Photoshop en supprimant la liste cachée de tous les fichiers jamais collés dedans, sans toucher aux calques.",
-  "details": "Supprimer l'historique Photoshop s'exécute immédiatement, sans fenêtre. Photoshop ajoute sans cesse une liste cachée de tous les fichiers jamais collés ou importés dans un document (ses « document ancestors »), ce qui peut rendre un PSD bien plus lourd que ses images. Petal enregistre une copie sans cette liste à côté de l'original sous le nom « nom Slim » ; les calques et les pixels ne sont pas modifiés. La carte indique de combien les fichiers ont diminué.",
+  "details": "Supprimer l'historique Photoshop s'exécute immédiatement, sans fenêtre. Photoshop ajoute sans cesse une liste cachée de tous les fichiers jamais collés ou importés dans un document (ses « document ancestors »), ce qui peut rendre un PSD bien plus lourd que ses images. DropWheel enregistre une copie sans cette liste à côté de l'original sous le nom « nom Slim » ; les calques et les pixels ne sont pas modifiés. La carte indique de combien les fichiers ont diminué.",
   "how": "Faites glisser un ou plusieurs fichiers PSD, appuyez sur Ctrl et déposez-les sur HISTORIQUE ; les copies allégées apparaissent à côté.",
   "worksOn": "Fichiers Photoshop (PSD, PSB) ; un ou plusieurs. Aussi les fichiers PSD d'un dossier déposé.",
   "examples": [
@@ -1427,7 +1427,7 @@
  "action:Ask": {
   "category": "files",
   "summary": "Fait ce que vous demandez avec les fichiers, avec vos propres mots en anglais ou en arabe, après vous avoir montré les étapes.",
-  "details": "Demander à Petal ouvre une zone où vous tapez (ou dites, avec le bouton du microphone) ce qu'il faut faire, par exemple « make them 1080 px WEBP and zip them » ou « put them in one searchable PDF ». Petal liste les étapes comprises sous « Petal va : » et prévient quand elles ne conviennent pas aux fichiers ; rien ne s'exécute avant que vous appuyiez sur Exécuter. Les demandes courantes sont comprises sans modèle, et avec le modèle d'IA (Qwen2.5 1.5B, environ 1,1 Go, téléchargé une seule fois depuis la fenêtre), les demandes formulées librement sont comprises aussi, le tout sur ce PC. Enregistrer comme recette… garde les étapes sous forme de pétale sur la roue des outils, et les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette.",
+  "details": "Demander à DropWheel ouvre une zone où vous tapez (ou dites, avec le bouton du microphone) ce qu'il faut faire, par exemple « make them 1080 px WEBP and zip them » ou « put them in one searchable PDF ». DropWheel liste les étapes comprises sous « DropWheel va : » et prévient quand elles ne conviennent pas aux fichiers ; rien ne s'exécute avant que vous appuyiez sur Exécuter. Les demandes courantes sont comprises sans modèle, et avec le modèle d'IA (Qwen2.5 1.5B, environ 1,1 Go, téléchargé une seule fois depuis la fenêtre), les demandes formulées librement sont comprises aussi, le tout sur ce PC. Enregistrer comme recette… garde les étapes sous forme de pétale sur la roue des outils, et les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette.",
   "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur DEMANDER ; tapez ce que vous voulez, appuyez sur Demander, vérifiez les étapes et appuyez sur Exécuter.",
   "worksOn": "Des fichiers ; un ou plusieurs.",
   "examples": [
@@ -1451,7 +1451,7 @@
  "action:Share": {
   "category": "files",
   "summary": "Ouvre la fenêtre de partage de Windows pour envoyer des fichiers avec le Partage de proximité, Courrier, Teams ou une autre application.",
-  "details": "Partager transmet les fichiers et dossiers déposés à la fenêtre de partage propre à Windows, celle qu'utilisent les applications. De là, vous pouvez les envoyer avec le Partage de proximité vers un PC proche, ou vers toute application qui propose le partage, comme Courrier ou Teams. Petal n'envoie rien lui-même en ligne ; la suite dépend de l'application choisie.",
+  "details": "Partager transmet les fichiers et dossiers déposés à la fenêtre de partage propre à Windows, celle qu'utilisent les applications. De là, vous pouvez les envoyer avec le Partage de proximité vers un PC proche, ou vers toute application qui propose le partage, comme Courrier ou Teams. DropWheel n'envoie rien lui-même en ligne ; la suite dépend de l'application choisie.",
   "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur PARTAGER, puis choisissez où les envoyer dans la fenêtre de partage de Windows.",
   "worksOn": "Fichiers et dossiers ; un ou plusieurs.",
   "examples": [
@@ -1474,7 +1474,7 @@
  "action:Phone": {
   "category": "files",
   "summary": "Affiche un code QR pour qu'un téléphone sur le même Wi-Fi enregistre les fichiers, sans rien faire passer par Internet.",
-  "details": "Envoyer vers le téléphone lance une petite page de partage sur ce PC et affiche son code QR et son adresse. Scannez-le avec l'appareil photo du téléphone : la page liste les fichiers à toucher pour les enregistrer, les dossiers se téléchargent en ZIP, et « Tout télécharger en ZIP » prend l'ensemble. Activez « Autoriser le téléphone à envoyer des fichiers à ce PC » et le téléphone peut renvoyer des fichiers, enregistrés dans Téléchargements. Quand des photos ou des vidéos enregistrent le lieu de prise de vue, Partager sans l'emplacement propose plutôt des copies nettoyées ; le partage s'arrête quand vous appuyez sur Arrêter le partage, fermez la fenêtre, ou après 15 minutes sans activité. Si Windows le demande, autorisez Petal sur les réseaux privés ; sur un réseau réglé sur Public, le téléphone ne peut pas atteindre le PC.",
+  "details": "Envoyer vers le téléphone lance une petite page de partage sur ce PC et affiche son code QR et son adresse. Scannez-le avec l'appareil photo du téléphone : la page liste les fichiers à toucher pour les enregistrer, les dossiers se téléchargent en ZIP, et « Tout télécharger en ZIP » prend l'ensemble. Activez « Autoriser le téléphone à envoyer des fichiers à ce PC » et le téléphone peut renvoyer des fichiers, enregistrés dans Téléchargements. Quand des photos ou des vidéos enregistrent le lieu de prise de vue, Partager sans l'emplacement propose plutôt des copies nettoyées ; le partage s'arrête quand vous appuyez sur Arrêter le partage, fermez la fenêtre, ou après 15 minutes sans activité. Si Windows le demande, autorisez DropWheel sur les réseaux privés ; sur un réseau réglé sur Public, le téléphone ne peut pas atteindre le PC.",
   "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur TÉLÉPHONE, puis scannez le code QR avec l'appareil photo du téléphone.",
   "worksOn": "Fichiers et dossiers ; un ou plusieurs.",
   "examples": [
@@ -1497,8 +1497,8 @@
  },
  "action:SendToPc": {
   "category": "files",
-  "summary": "Envoie des fichiers et des dossiers directement à un autre PC équipé de Petal sur le même réseau, qui demande avant d'enregistrer.",
-  "details": "Envoyer vers un PC cherche les PC de votre réseau où Petal reçoit et les liste par nom ; Chercher à nouveau relance la recherche. Choisissez-en un : ce PC indique qui veut envoyer combien de fichiers et quelle taille ils font, avec Accepter et Refuser (il refuse de lui-même au bout de deux minutes). Les fichiers acceptés sont enregistrés dans Downloads\\Petal sur ce PC, et une carte ici indique s'ils ont été envoyés, refusés, ou s'ils n'ont pas pu passer. L'autre PC doit activer « Autoriser les autres PC à m'envoyer des fichiers » dans Paramètres › Travail et partage, car la réception est désactivée jusque-là ; rien ne passe par Internet.",
+  "summary": "Envoie des fichiers et des dossiers directement à un autre PC équipé de DropWheel sur le même réseau, qui demande avant d'enregistrer.",
+  "details": "Envoyer vers un PC cherche les PC de votre réseau où DropWheel reçoit et les liste par nom ; Chercher à nouveau relance la recherche. Choisissez-en un : ce PC indique qui veut envoyer combien de fichiers et quelle taille ils font, avec Accepter et Refuser (il refuse de lui-même au bout de deux minutes). Les fichiers acceptés sont enregistrés dans Downloads\\DropWheel sur ce PC, et une carte ici indique s'ils ont été envoyés, refusés, ou s'ils n'ont pas pu passer. L'autre PC doit activer « Autoriser les autres PC à m'envoyer des fichiers » dans Paramètres › Travail et partage, car la réception est désactivée jusque-là ; rien ne passe par Internet.",
   "how": "Faites glisser les fichiers, appuyez sur Alt, ouvrez PLUS et déposez-les sur VERS PC ; choisissez ensuite le PC destinataire.",
   "worksOn": "Fichiers et dossiers ; un ou plusieurs.",
   "examples": [
@@ -1591,7 +1591,7 @@
  "action:Move": {
   "category": "files",
   "summary": "Déplace les fichiers d'origine vers un dossier de votre choix.",
-  "details": "Déplacer ouvre un sélecteur de dossier qui démarre dans le dossier des fichiers. Choisissez la destination et les originaux y sont déplacés avec le moteur de copie propre à Windows : sa fenêtre de progression et ses questions sur les noms déjà présents apparaissent donc comme d'habitude. Une carte indique ensuite combien d'éléments ont été déplacés ; cliquez dessus pour les voir dans l'Explorateur de fichiers. L'Historique de Petal garde le déplacement, pour que vous puissiez remettre les fichiers en place depuis là.",
+  "details": "Déplacer ouvre un sélecteur de dossier qui démarre dans le dossier des fichiers. Choisissez la destination et les originaux y sont déplacés avec le moteur de copie propre à Windows : sa fenêtre de progression et ses questions sur les noms déjà présents apparaissent donc comme d'habitude. Une carte indique ensuite combien d'éléments ont été déplacés ; cliquez dessus pour les voir dans l'Explorateur de fichiers. L'Historique de DropWheel garde le déplacement, pour que vous puissiez remettre les fichiers en place depuis là.",
   "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur DÉPLACER, puis choisissez le dossier.",
   "worksOn": "Fichiers et dossiers ; un ou plusieurs.",
   "examples": [
@@ -1844,7 +1844,7 @@
  "kind:recipe": {
   "category": "general",
   "summary": "Exécute plusieurs étapes sur les fichiers en un seul pétale, comme supprimer l'arrière-plan, redimensionner, enregistrer en WEBP et compresser en ZIP.",
-  "details": "Une recette se crée dans Paramètres › Recettes avec Nouvelle recette… : donnez-lui un nom et ajoutez des étapes parmi Convertir, Redimensionner, Faire pivoter, Compresser, Supprimer l'arrière-plan, Ajouter un filigrane, Nettoyer pour partager, Renommer, Compresser en ZIP, Combiner en un seul PDF et Rendre consultable. Les étapes s'exécutent dans l'ordre, chacune sur ce que la précédente a produit, et chaque étape a ses propres réglages, comme un format et une taille, une application pour laquelle compresser, le texte et la position d'un filigrane, ou un modèle de nom. Avec « L'afficher sur la roue des outils » activé, la recette apparaît en premier sur la roue Ctrl chaque fois qu'elle convient aux fichiers. Les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette ; Enregistrer comme recette… de Demander à Petal crée aussi des recettes, et la ligne de commande les exécute avec petal run.",
+  "details": "Une recette se crée dans Paramètres › Recettes avec Nouvelle recette… : donnez-lui un nom et ajoutez des étapes parmi Convertir, Redimensionner, Faire pivoter, Compresser, Supprimer l'arrière-plan, Ajouter un filigrane, Nettoyer pour partager, Renommer, Compresser en ZIP, Combiner en un seul PDF et Rendre consultable. Les étapes s'exécutent dans l'ordre, chacune sur ce que la précédente a produit, et chaque étape a ses propres réglages, comme un format et une taille, une application pour laquelle compresser, le texte et la position d'un filigrane, ou un modèle de nom. Avec « L'afficher sur la roue des outils » activé, la recette apparaît en premier sur la roue Ctrl chaque fois qu'elle convient aux fichiers. Les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette ; Enregistrer comme recette… de Demander à DropWheel crée aussi des recettes, et la ligne de commande les exécute avec petal run.",
   "how": "Créez-la dans Paramètres › Recettes, puis faites glisser des fichiers, appuyez sur Ctrl et déposez-les sur le pétale de la recette.",
   "worksOn": "Ce que prend sa première étape : des images pour Redimensionner, Faire pivoter ou Supprimer l'arrière-plan, de nombreux types pour Convertir ou Compresser ; un ou plusieurs fichiers.",
   "examples": [
@@ -1868,7 +1868,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Exécute un programme de votre choix sur les fichiers déposés, décrit par un petit fichier dans le dossier des pétales.",
-  "details": "Vos propres pétales sont de petits fichiers JSON dans %APPDATA%\\Petal\\petals ; Paramètres › Vos pétales propose Ajouter depuis un fichier…, Partir d'un exemple (sommes de contrôle SHA-256 avec certutil de Windows) et Ouvrir le dossier des pétales. Un fichier donne au pétale un nom (et un nom arabe), une icône, les fichiers qu'il accepte (des extensions, ou image, video, audio, pdf, document ou any), le programme, ses arguments avec {input}, {output}, {name}, {ext}, {folder} ou {inputs}, le nom du résultat, et s'il s'exécute une fois par fichier. Le pétale apparaît sur la roue Ctrl pour les fichiers qu'il accepte, même des types que Petal ne connaît pas. Petal affiche la commande exacte avant la première exécution et à nouveau chaque fois que le fichier change, et exécute le programme directement, jamais via un shell.",
+  "details": "Vos propres pétales sont de petits fichiers JSON dans %APPDATA%\\Petal\\petals ; Paramètres › Vos pétales propose Ajouter depuis un fichier…, Partir d'un exemple (sommes de contrôle SHA-256 avec certutil de Windows) et Ouvrir le dossier des pétales. Un fichier donne au pétale un nom (et un nom arabe), une icône, les fichiers qu'il accepte (des extensions, ou image, video, audio, pdf, document ou any), le programme, ses arguments avec {input}, {output}, {name}, {ext}, {folder} ou {inputs}, le nom du résultat, et s'il s'exécute une fois par fichier. Le pétale apparaît sur la roue Ctrl pour les fichiers qu'il accepte, même des types que DropWheel ne connaît pas. DropWheel affiche la commande exacte avant la première exécution et à nouveau chaque fois que le fichier change, et exécute le programme directement, jamais via un shell.",
   "how": "Ajoutez le fichier dans Paramètres › Vos pétales, puis faites glisser des fichiers correspondants, appuyez sur Ctrl et déposez-les sur son pétale.",
   "worksOn": "Les fichiers que nomme sa liste « accepts » ; un ou plusieurs.",
   "examples": [
@@ -1914,7 +1914,7 @@
  "kind:keys": {
   "category": "general",
   "summary": "Appuie sur un raccourci clavier, ou une suite de raccourcis, dans l'application qui était au premier plan.",
-  "details": "Un pétale de touches contient un raccourci comme Ctrl+Shift+T, ou plusieurs appuis à la suite (Ctrl+K Ctrl+S) ; dans Paramètres › Roues, vous cliquez dans la case Touches et appuyez dessus. Les touches ne vont qu'à la fenêtre qui était au premier plan à l'ouverture de la roue, une fois qu'elle est revenue au premier plan, et le centre les affiche quand vous vous arrêtez sur le pétale. Les roues toutes prêtes de Petal pour les navigateurs, l'Explorateur de fichiers, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack et Discord sont faites de tels pétales et passent en premier quand leur application est au premier plan. Si cette fenêtre a été fermée, une carte indique que les touches n'ont pas été envoyées.",
+  "details": "Un pétale de touches contient un raccourci comme Ctrl+Shift+T, ou plusieurs appuis à la suite (Ctrl+K Ctrl+S) ; dans Paramètres › Roues, vous cliquez dans la case Touches et appuyez dessus. Les touches ne vont qu'à la fenêtre qui était au premier plan à l'ouverture de la roue, une fois qu'elle est revenue au premier plan, et le centre les affiche quand vous vous arrêtez sur le pétale. Les roues toutes prêtes de DropWheel pour les navigateurs, l'Explorateur de fichiers, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack et Discord sont faites de tels pétales et passent en premier quand leur application est au premier plan. Si cette fenêtre a été fermée, une carte indique que les touches n'ont pas été envoyées.",
   "how": "Dans l'application voulue, appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez le pétale.",
   "worksOn": "",
   "examples": [
@@ -2006,7 +2006,7 @@
  "kind:group": {
   "category": "general",
   "summary": "Contient ses propres pétales, qui s'ouvrent autour de lui en bulles de verre, comme Plus.",
-  "details": "Un pétale de groupe ouvre ses pétales sur une orbite de bulles de verre juste à l'extérieur de l'anneau, tournée à l'opposé du bord de l'écran, pendant que le reste de l'anneau s'efface. Pointez-le, cliquez dessus ou maintenez au-dessus pendant un glissement, puis choisissez une bulle ; les touches fléchées, Enter et 1 à 9 fonctionnent sur les bulles, et Esc, le groupe à nouveau ou le centre les referment. Vos propres groupes contiennent jusqu'à huit pétales et se créent dans Paramètres › Roues ; les groupes Plus de Petal contiennent les pétales en trop des roues Rapide et Disposer, de la roue des outils quand elle en a plus de douze, et les actions non placées sur la roue des actions.",
+  "details": "Un pétale de groupe ouvre ses pétales sur une orbite de bulles de verre juste à l'extérieur de l'anneau, tournée à l'opposé du bord de l'écran, pendant que le reste de l'anneau s'efface. Pointez-le, cliquez dessus ou maintenez au-dessus pendant un glissement, puis choisissez une bulle ; les touches fléchées, Enter et 1 à 9 fonctionnent sur les bulles, et Esc, le groupe à nouveau ou le centre les referment. Vos propres groupes contiennent jusqu'à huit pétales et se créent dans Paramètres › Roues ; les groupes Plus de DropWheel contiennent les pétales en trop des roues Rapide et Disposer, de la roue des outils quand elle en a plus de douze, et les actions non placées sur la roue des actions.",
   "how": "Arrêtez-vous sur le pétale de groupe ou cliquez dessus (par exemple PLUS), puis choisissez l'une de ses bulles.",
   "worksOn": "",
   "examples": [
@@ -2050,7 +2050,7 @@
  "kind:clips": {
   "category": "general",
   "summary": "Affiche les derniers éléments copiés sous forme de pétales qui les collent dans l'application au premier plan.",
-  "details": "Le pétale Éléments récents (ÉLÉMENTS) affiche les huit derniers éléments copiés, les épinglés en premier : du texte, des images ou des fichiers, chacun étant un pétale qui le colle là où vous travaillez ; sur la roue Presse-papiers, les éléments sont directement sur l'anneau. Si un élément ne peut pas être collé, il reste dans le Presse-papiers pour Ctrl+V. Il provient de l'historique du Presse-papiers de Petal (rechercher, épingler, supprimer), dont les interrupteurs se trouvent dans Paramètres › Écran et texte ; les copies privées comme les mots de passe ne sont jamais conservées, et l'historique n'est mémorisé après la fermeture de Petal que si vous le demandez. Quand rien n'a encore été copié, le pétale est estompé.",
+  "details": "Le pétale Éléments récents (ÉLÉMENTS) affiche les huit derniers éléments copiés, les épinglés en premier : du texte, des images ou des fichiers, chacun étant un pétale qui le colle là où vous travaillez ; sur la roue Presse-papiers, les éléments sont directement sur l'anneau. Si un élément ne peut pas être collé, il reste dans le Presse-papiers pour Ctrl+V. Il provient de l'historique du Presse-papiers de DropWheel (rechercher, épingler, supprimer), dont les interrupteurs se trouvent dans Paramètres › Écran et texte ; les copies privées comme les mots de passe ne sont jamais conservées, et l'historique n'est mémorisé après la fermeture de DropWheel que si vous le demandez. Quand rien n'a encore été copié, le pétale est estompé.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, allez à la roue Presse-papiers et choisissez un élément.",
   "worksOn": "",
   "examples": [
@@ -2096,7 +2096,7 @@
  "do:system.darkmode": {
   "category": "system",
   "summary": "Fait passer Windows et vos applications du mode clair au mode sombre avec un seul pétale.",
-  "details": "Mode sombre change les deux mêmes interrupteurs que les Paramètres Windows pour les couleurs : le mode des applications et le mode de Windows lui-même, ensemble. Petal signale le changement à chaque fenêtre ouverte, comme le font les Paramètres, pour que les applications qui suivent le thème de Windows changent aussitôt. Le pétale indique si le mode sombre est actif en ce moment, d'après Windows, donc il est juste même si vous l'avez changé ailleurs. Choisissez-le à nouveau pour revenir au mode clair.",
+  "details": "Mode sombre change les deux mêmes interrupteurs que les Paramètres Windows pour les couleurs : le mode des applications et le mode de Windows lui-même, ensemble. DropWheel signale le changement à chaque fenêtre ouverte, comme le font les Paramètres, pour que les applications qui suivent le thème de Windows changent aussitôt. Le pétale indique si le mode sombre est actif en ce moment, d'après Windows, donc il est juste même si vous l'avez changé ailleurs. Choisissez-le à nouveau pour revenir au mode clair.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez MODE SOMBRE sur la roue Rapide. Vous pouvez aussi taper « mode sombre » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -2169,7 +2169,7 @@
  "do:system.awake": {
   "category": "system",
   "summary": "Empêche le PC et l'écran de se mettre en veille jusqu'à ce que vous le désactiviez.",
-  "details": "Rester éveillé demande à Windows de garder allumés le PC et l'écran, pour que les minuteries de mise en veille et d'extinction de l'écran ne se déclenchent pas. Il reste actif jusqu'à ce que vous choisissiez à nouveau le pétale ou que Petal se ferme. Le pétale indique s'il est actif. Vos paramètres d'alimentation ne sont pas modifiés ; le désactiver laisse les minuteries habituelles fonctionner à nouveau.",
+  "details": "Rester éveillé demande à Windows de garder allumés le PC et l'écran, pour que les minuteries de mise en veille et d'extinction de l'écran ne se déclenchent pas. Il reste actif jusqu'à ce que vous choisissiez à nouveau le pétale ou que DropWheel se ferme. Le pétale indique s'il est actif. Vos paramètres d'alimentation ne sont pas modifiés ; le désactiver laisse les minuteries habituelles fonctionner à nouveau.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez ÉVEIL sur la roue Rapide.",
   "worksOn": "",
   "examples": [
@@ -2357,7 +2357,7 @@
  "do:system.clearclipboard": {
   "category": "clipboard",
   "summary": "Vide le Presse-papiers de Windows pour que ce que vous avez copié ne puisse plus être collé.",
-  "details": "Vider le Presse-papiers oublie ce qui est copié en ce moment : du texte, une image ou des fichiers. Une carte confirme Presse-papiers vidé. Il ne touche pas à l'historique du Presse-papiers de Petal ; c'est Effacer l'historique du Presse-papiers, sur les roues, qui s'en charge. Utilisez-le après avoir copié un mot de passe ou d'autres informations privées.",
+  "details": "Vider le Presse-papiers oublie ce qui est copié en ce moment : du texte, une image ou des fichiers. Une carte confirme Presse-papiers vidé. Il ne touche pas à l'historique du Presse-papiers de DropWheel ; c'est Effacer l'historique du Presse-papiers, sur les roues, qui s'en charge. Utilisez-le après avoir copié un mot de passe ou d'autres informations privées.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, ouvrez PLUS sur la roue Rapide et choisissez EFFACER.",
   "worksOn": "",
   "examples": [
@@ -2471,8 +2471,8 @@
  "do:system.settings": {
   "category": "system",
   "summary": "Ouvre l'application Paramètres de Windows.",
-  "details": "Paramètres Windows ouvre l'application Paramètres sur sa page d'accueil, comme Win+I. De là, vous pouvez modifier l'affichage, le son, le réseau, les applications et tout ce que Windows propose. Il n'est sur aucune roue au départ : ajoutez-le à l'une de vos roues dans Paramètres de Petal, sous Roues, ou trouvez-le dans la palette de commandes.",
-  "how": "Appuyez sur Ctrl+Win+K, tapez « paramètres windows » et appuyez sur Enter, ou ajoutez le pétale PARAMÈTRES à une roue dans Paramètres de Petal, sous Roues.",
+  "details": "Paramètres Windows ouvre l'application Paramètres sur sa page d'accueil, comme Win+I. De là, vous pouvez modifier l'affichage, le son, le réseau, les applications et tout ce que Windows propose. Il n'est sur aucune roue au départ : ajoutez-le à l'une de vos roues dans Paramètres de DropWheel, sous Roues, ou trouvez-le dans la palette de commandes.",
+  "how": "Appuyez sur Ctrl+Win+K, tapez « paramètres windows » et appuyez sur Enter, ou ajoutez le pétale PARAMÈTRES à une roue dans Paramètres de DropWheel, sous Roues.",
   "worksOn": "",
   "examples": [
    "Changer la résolution de l'écran pour un projecteur : ouvrez Paramètres Windows et allez dans Affichage.",
@@ -2566,8 +2566,8 @@
  },
  "do:screen.scroll": {
   "category": "screen",
-  "summary": "Fait une seule capture haute de toute une longue page : Petal la fait défiler et assemble ce qu'il voit.",
-  "details": "Faites glisser sur la partie de la fenêtre qui défile, comme une page web ou une discussion ; Petal y place le pointeur, fait défiler vers le bas tout seul et assemble chaque nouveau morceau en une seule image, avec les en-têtes et pieds de page fixes affichés une seule fois. Il s'arrête à la fin de la page, quand vous appuyez sur Esc ou quand vous bougez la souris, et l'image peut atteindre 30 000 pixels de haut. Si la page change pendant le défilement, la partie déjà faite est gardée et la carte le signale. L'image est enregistrée dans le dossier Captures d'écran du dossier Images et copiée dans le Presse-papiers, une carte montre où, avec Afficher dans le dossier et Ouvrir, et la roue des conversions s'ouvre dessus.",
+  "summary": "Fait une seule capture haute de toute une longue page : DropWheel la fait défiler et assemble ce qu'il voit.",
+  "details": "Faites glisser sur la partie de la fenêtre qui défile, comme une page web ou une discussion ; DropWheel y place le pointeur, fait défiler vers le bas tout seul et assemble chaque nouveau morceau en une seule image, avec les en-têtes et pieds de page fixes affichés une seule fois. Il s'arrête à la fin de la page, quand vous appuyez sur Esc ou quand vous bougez la souris, et l'image peut atteindre 30 000 pixels de haut. Si la page change pendant le défilement, la partie déjà faite est gardée et la carte le signale. L'image est enregistrée dans le dossier Captures d'écran du dossier Images et copiée dans le Presse-papiers, une carte montre où, avec Afficher dans le dossier et Ouvrir, et la roue des conversions s'ouvre dessus.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, choisissez DÉFILEMENT sur la roue Écran, puis faites glisser sur la partie de la fenêtre qui défile.",
   "worksOn": "",
   "examples": [
@@ -2639,7 +2639,7 @@
   "category": "screen",
   "summary": "Garde une partie d'une autre fenêtre en direct et au-dessus de tout, qui change en même temps que l'original.",
   "details": "Faites glisser sur une partie de la fenêtre d'une application, comme un appel vidéo, un flux en direct ou une barre de progression, et une petite fenêtre affiche cette partie en direct au-dessus de toutes les autres. C'est Windows qui la dessine : rien n'est copié ni enregistré, et cela ne coûte presque rien. Vous pouvez la redimensionner et elle garde ses proportions ; sa barre du haut affiche le nom de la fenêtre avec Transparent (trois niveaux) et Fermer, et Esc la ferme aussi. Elle se ferme d'elle-même quand la fenêtre d'origine se ferme. Jusqu'à 6 zones en direct peuvent être ouvertes, et le bureau et la barre des tâches ne peuvent pas être utilisés.",
-  "how": "Il n'est sur aucune roue au départ : appuyez sur Ctrl+Win+K et tapez « zone en direct », ou ajoutez DIRECT à une roue dans Paramètres de Petal, sous Roues, puis faites glisser sur une partie d'une fenêtre.",
+  "how": "Il n'est sur aucune roue au départ : appuyez sur Ctrl+Win+K et tapez « zone en direct », ou ajoutez DIRECT à une roue dans Paramètres de DropWheel, sous Roues, puis faites glisser sur une partie d'une fenêtre.",
   "worksOn": "",
   "examples": [
    "Garder le coin du score d'un match de foot en streaming sous les yeux pendant que vous travaillez dans Excel.",
@@ -2661,7 +2661,7 @@
  "do:screen.private": {
   "category": "screen",
   "summary": "Fait une capture où les adresses e-mail, numéros de téléphone, numéros de carte et mots de passe sont déjà masqués, pour la partager sans risque.",
-  "details": "Faites glisser sur une zone ; l'image attend dans le dossier temporaire de Petal et s'ouvre dans la fenêtre Masquer dans la photo, qui recherche aussitôt les informations privées et les masque chacune sous un cadre : adresses e-mail, numéros de téléphone, numéros de carte, IBAN, adresses IP et mots de passe. Vous pouvez aussi appuyer sur Visages ou Texte pour les masquer, faire glisser sur l'image pour masquer toute autre zone, déplacer ou redimensionner un cadre, ou le retirer avec Suppr. Style peut valoir Opaque, dans la couleur de votre choix, ou Flou. Enregistrer une copie masquée n'enregistre que la copie masquée, sous un nom comme « Screenshot 2026-10-21 16.40.05 Redacted.png », dans le dossier Captures d'écran du dossier Images, la place dans le Presse-papiers et montre où elle se trouve ; l'image non masquée est supprimée, et fermer la fenêtre sans enregistrer ne garde rien.",
+  "details": "Faites glisser sur une zone ; l'image attend dans le dossier temporaire de DropWheel et s'ouvre dans la fenêtre Masquer dans la photo, qui recherche aussitôt les informations privées et les masque chacune sous un cadre : adresses e-mail, numéros de téléphone, numéros de carte, IBAN, adresses IP et mots de passe. Vous pouvez aussi appuyer sur Visages ou Texte pour les masquer, faire glisser sur l'image pour masquer toute autre zone, déplacer ou redimensionner un cadre, ou le retirer avec Suppr. Style peut valoir Opaque, dans la couleur de votre choix, ou Flou. Enregistrer une copie masquée n'enregistre que la copie masquée, sous un nom comme « Screenshot 2026-10-21 16.40.05 Redacted.png », dans le dossier Captures d'écran du dossier Images, la place dans le Presse-papiers et montre où elle se trouve ; l'image non masquée est supprimée, et fermer la fenêtre sans enregistrer ne garde rien.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, choisissez CAPTURE PRIVÉE sur la roue Écran, faites glisser sur la zone, vérifiez les cadres et appuyez sur Enregistrer une copie masquée.",
   "worksOn": "",
   "examples": [
@@ -2873,7 +2873,7 @@
  "do:draw.clicks": {
   "category": "draw",
   "summary": "Affiche des cercles là où vous cliquez et les raccourcis sur lesquels vous appuyez, pour les enregistrements et les présentations.",
-  "details": "Afficher les clics et les touches dessine un cercle à chaque clic : ambre pour le bouton gauche, bleu pour le droit et vert pour celui du milieu. Les raccourcis avec Ctrl, Alt ou Win, et les touches comme F5 ou Esc, apparaissent dans des pastilles en bas de l'écran, par exemple Ctrl + C. La frappe ordinaire n'est pas affichée sauf si vous activez Afficher toutes les touches dans Paramètres de Petal, sous Écran et texte, si bien que les mots de passe n'apparaissent jamais par défaut. Les clics passent à travers, et choisir à nouveau CLICS le désactive.",
+  "details": "Afficher les clics et les touches dessine un cercle à chaque clic : ambre pour le bouton gauche, bleu pour le droit et vert pour celui du milieu. Les raccourcis avec Ctrl, Alt ou Win, et les touches comme F5 ou Esc, apparaissent dans des pastilles en bas de l'écran, par exemple Ctrl + C. La frappe ordinaire n'est pas affichée sauf si vous activez Afficher toutes les touches dans Paramètres de DropWheel, sous Écran et texte, si bien que les mots de passe n'apparaissent jamais par défaut. Les clics passent à travers, et choisir à nouveau CLICS le désactive.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, appuyez sur Tab jusqu'à ce que la roue Dessiner et présenter s'affiche et choisissez CLICS.",
   "worksOn": "",
   "examples": [
@@ -3083,7 +3083,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Ouvre une zone de recherche où vous tapez ce que vous voulez : n'importe quelle action, un pétale pour les fichiers sélectionnés, une application, un fichier ou un calcul.",
-  "details": "La Palette de commandes s'ouvre par-dessus la fenêtre au premier plan et trouve les choses à mesure que vous tapez, en anglais ou en arabe : chaque action de chaque roue, chaque roue elle-même, chaque pétale pour les fichiers sélectionnés dans l'Explorateur de fichiers, les fenêtres de Petal, les applications du PC, ce que vous avez copié récemment, les fichiers trouvés par la Recherche par le sens, les extraits et les espaces de travail. Tapez un calcul ou une conversion d'unités comme 12% of 340 ou 5 km in mi, et Enter copie la réponse. Utilisez les touches fléchées pour choisir, Enter pour exécuter, Ctrl+Enter pour l'autre action (comme ouvrir le dossier d'un fichier) et Esc pour fermer. Le bouton du microphone vous permet de dire une commande à la place. Si rien ne correspond, elle propose de chercher sur le Web.",
+  "details": "La Palette de commandes s'ouvre par-dessus la fenêtre au premier plan et trouve les choses à mesure que vous tapez, en anglais ou en arabe : chaque action de chaque roue, chaque roue elle-même, chaque pétale pour les fichiers sélectionnés dans l'Explorateur de fichiers, les fenêtres de DropWheel, les applications du PC, ce que vous avez copié récemment, les fichiers trouvés par la Recherche par le sens, les extraits et les espaces de travail. Tapez un calcul ou une conversion d'unités comme 12% of 340 ou 5 km in mi, et Enter copie la réponse. Utilisez les touches fléchées pour choisir, Enter pour exécuter, Ctrl+Enter pour l'autre action (comme ouvrir le dossier d'un fichier) et Esc pour fermer. Le bouton du microphone vous permet de dire une commande à la place. Si rien ne correspond, elle propose de chercher sur le Web.",
   "how": "Appuyez sur Ctrl+Win+K, choisissez PALETTE sur la roue Travail, ou choisissez Palette de commandes dans le menu de la zone de notification.",
   "worksOn": "Les fichiers sélectionnés dans l'Explorateur de fichiers, s'il y en a, pour proposer leurs pétales ; sinon rien.",
   "examples": [
@@ -3107,7 +3107,7 @@
  "do:petal.clipboard": {
   "category": "clipboard",
   "summary": "Ouvre la roue pour ce que vous avez copié : des fichiers, une capture d'écran ou du texte ; un lien copié devient un code QR.",
-  "details": "Roue du Presse-papiers regarde le Presse-papiers : des fichiers copiés ouvrent la roue des conversions pour eux, ou la roue des actions si un dossier en fait partie. Une image copiée est enregistrée sous le nom « Clipboard 2026-10-21 16.40.05.png » dans le dossier Captures d'écran du dossier Images, et un texte copié dans un fichier .txt du dossier Petal du dossier Documents, puis la roue des conversions s'ouvre sur ce fichier. Un seul lien copié (une adresse web, mailto ou tel) ouvre Créer un code QR avec le lien déjà rempli. Quand le Presse-papiers est vide, le pétale est estompé et indique Le Presse-papiers est vide.",
+  "details": "Roue du Presse-papiers regarde le Presse-papiers : des fichiers copiés ouvrent la roue des conversions pour eux, ou la roue des actions si un dossier en fait partie. Une image copiée est enregistrée sous le nom « Clipboard 2026-10-21 16.40.05.png » dans le dossier Captures d'écran du dossier Images, et un texte copié dans un fichier .txt du dossier DropWheel du dossier Documents, puis la roue des conversions s'ouvre sur ce fichier. Un seul lien copié (une adresse web, mailto ou tel) ouvre Créer un code QR avec le lien déjà rempli. Quand le Presse-papiers est vide, le pétale est estompé et indique Le Presse-papiers est vide.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez COPIES sur la roue Rapide ou la roue Presse-papiers.",
   "worksOn": "Ce qui est dans le Presse-papiers : des fichiers ou dossiers copiés, une image, du texte ou un lien.",
   "examples": [
@@ -3129,9 +3129,9 @@
  },
  "do:petal.history": {
   "category": "petal",
-  "summary": "Montre ce que Petal a produit récemment, pour retrouver un résultat ou l'annuler.",
-  "details": "Historique de Petal liste les conversions et les outils terminés, du plus récent au plus ancien, chacun avec le moment où il a eu lieu et le nom du résultat. Afficher dans l'Explorateur de fichiers ouvre le dossier avec le résultat sélectionné. Annuler déplace les résultats vers la Corbeille, rétablit les anciens noms après un renommage, ou remet les fichiers en place depuis la Corbeille. Effacer l'historique vide la liste. L'historique reste sur ce PC, et si la conservation de l'historique est désactivée dans les paramètres, la fenêtre l'indique.",
-  "how": "Il n'est sur aucune roue au départ : choisissez Historique dans le menu de la zone de notification ou dans Paramètres de Petal, ou tapez « historique » dans la palette de commandes (Ctrl+Win+K).",
+  "summary": "Montre ce que DropWheel a produit récemment, pour retrouver un résultat ou l'annuler.",
+  "details": "Historique de DropWheel liste les conversions et les outils terminés, du plus récent au plus ancien, chacun avec le moment où il a eu lieu et le nom du résultat. Afficher dans l'Explorateur de fichiers ouvre le dossier avec le résultat sélectionné. Annuler déplace les résultats vers la Corbeille, rétablit les anciens noms après un renommage, ou remet les fichiers en place depuis la Corbeille. Effacer l'historique vide la liste. L'historique reste sur ce PC, et si la conservation de l'historique est désactivée dans les paramètres, la fenêtre l'indique.",
+  "how": "Il n'est sur aucune roue au départ : choisissez Historique dans le menu de la zone de notification ou dans Paramètres de DropWheel, ou tapez « historique » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Vous avez compressé une vidéo hier et ne la retrouvez pas : ouvrez l'Historique et choisissez Afficher dans l'Explorateur de fichiers.",
@@ -3154,7 +3154,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Trouve des fichiers d'après leur sujet : les mots qu'ils contiennent, leur nom, ou ce que montre une photo ou une vidéo.",
-  "details": "Recherche par le sens vous permet de taper des choses comme « ticket de la pharmacie » ou « photos de plage » et trouve les fichiers correspondants dans vos dossiers Images, Documents, Bureau, Téléchargements et Vidéos. Elle est désactivée jusqu'à ce que vous appuyiez sur Activer ; Petal lit alors ces dossiers pendant que le PC est inactif et garde l'index sur ce PC. Trouver des photos et des vidéos d'après ce qu'elles montrent nécessite les modèles d'images de Petal, téléchargés une seule fois. Enter ouvre le premier résultat, et vous pouvez faire glisser n'importe quel résultat dans une autre application. Quand vous tapez une question, Interroger vos fichiers répond à partir de ce que disent vos documents, avec les fichiers d'où vient la réponse ; cela nécessite le modèle d'IA, téléchargé une seule fois.",
+  "details": "Recherche par le sens vous permet de taper des choses comme « ticket de la pharmacie » ou « photos de plage » et trouve les fichiers correspondants dans vos dossiers Images, Documents, Bureau, Téléchargements et Vidéos. Elle est désactivée jusqu'à ce que vous appuyiez sur Activer ; DropWheel lit alors ces dossiers pendant que le PC est inactif et garde l'index sur ce PC. Trouver des photos et des vidéos d'après ce qu'elles montrent nécessite les modèles d'images de DropWheel, téléchargés une seule fois. Enter ouvre le premier résultat, et vous pouvez faire glisser n'importe quel résultat dans une autre application. Quand vous tapez une question, Interroger vos fichiers répond à partir de ce que disent vos documents, avec les fichiers d'où vient la réponse ; cela nécessite le modèle d'IA, téléchargé une seule fois.",
   "how": "Il n'est sur aucune roue au départ : choisissez Recherche par le sens dans le menu de la zone de notification, ou tapez « recherche » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3178,7 +3178,7 @@
  "do:petal.scan": {
   "category": "petal",
   "summary": "Numérise des pages papier avec l'appareil photo de votre téléphone en un seul PDF consultable sur le PC.",
-  "details": "Numériser avec le téléphone affiche un code QR ; scannez-le avec l'appareil photo du téléphone pour ouvrir une page de prise de vue dans le navigateur du téléphone, via votre Wi-Fi, sans rien faire passer par Internet. Photographiez chaque page ou utilisez Choisir des photos, faites glisser les coins si besoin, choisissez Document, Couleur, Gris ou Noir et blanc, et appuyez sur Enregistrer en PDF. Petal repère chaque page, la redresse sur le PC et enregistre un seul PDF consultable dans le dossier Scans du dossier Documents, ou dans un dossier choisi avec Choisir. Le téléphone et le PC doivent être sur le même réseau, et Windows peut vous demander d'autoriser Petal sur les réseaux privés. Le partage s'arrête quand la fenêtre se ferme, ou après 20 minutes sans activité.",
+  "details": "Numériser avec le téléphone affiche un code QR ; scannez-le avec l'appareil photo du téléphone pour ouvrir une page de prise de vue dans le navigateur du téléphone, via votre Wi-Fi, sans rien faire passer par Internet. Photographiez chaque page ou utilisez Choisir des photos, faites glisser les coins si besoin, choisissez Document, Couleur, Gris ou Noir et blanc, et appuyez sur Enregistrer en PDF. DropWheel repère chaque page, la redresse sur le PC et enregistre un seul PDF consultable dans le dossier Scans du dossier Documents, ou dans un dossier choisi avec Choisir. Le téléphone et le PC doivent être sur le même réseau, et Windows peut vous demander d'autoriser DropWheel sur les réseaux privés. Le partage s'arrête quand la fenêtre se ferme, ou après 20 minutes sans activité.",
   "how": "Il n'est sur aucune roue au départ : choisissez Numériser avec le téléphone dans le menu de la zone de notification, ou tapez « numériser » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3225,14 +3225,14 @@
  },
  "do:petal.stats": {
   "category": "petal",
-  "summary": "Montre ce que Petal a fait pour vous : fichiers traités, espace économisé, pétales utilisés et jours d'affilée.",
+  "summary": "Montre ce que DropWheel a fait pour vous : fichiers traités, espace économisé, pétales utilisés et jours d'affilée.",
   "details": "Vos statistiques affiche quatre grands nombres : fichiers traités, espace économisé, pétales utilisés et jours d'affilée, avec la date du début du comptage et votre plus longue série. En dessous se trouvent un calendrier des douze dernières semaines, les pétales que vous utilisez le plus et vos étapes franchies. Tout est compté sur ce PC uniquement et rien n'est envoyé nulle part. Vous pouvez décocher Continuer à compter, et Recommencer oublie tout après vous l'avoir demandé.",
   "how": "Il n'est sur aucune roue au départ : choisissez Vos statistiques dans le menu de la zone de notification, ou tapez « statistiques » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Voir combien de gigaoctets la compression de vos vidéos de téléphone a économisés cette année.",
    "Découvrir le pétale que vous utilisez le plus, pour le mettre en premier sur une roue.",
-   "Vérifier votre série de jours d'affilée avec Petal."
+   "Vérifier votre série de jours d'affilée avec DropWheel."
   ],
   "keywords": [
    "statistiques",
@@ -3248,9 +3248,9 @@
  },
  "do:petal.settings": {
   "category": "petal",
-  "summary": "Ouvre la fenêtre des paramètres de Petal.",
-  "details": "Paramètres de Petal est la fenêtre principale de Petal, et chaque modification est enregistrée aussitôt. Elle comporte des sections pour Touches, Roues (pour modifier, ajouter ou désactiver des roues et leurs pétales), Apparence, La roue, Écran et texte, Travail et partage, Roue des actions, Favoris, Recettes, Automatisations, Vos pétales, Recherche par le sens, Résultats, Qualité, Auxiliaires, Statistiques, Général, Sauvegarde et Mises à jour. Une nouvelle roue que vous créez commence avec ce pétale.",
-  "how": "Choisissez Paramètres dans le menu de la zone de notification, choisissez PETAL sur une roue où vous l'avez ajouté, ou tapez « paramètres » dans la palette de commandes (Ctrl+Win+K).",
+  "summary": "Ouvre la fenêtre des paramètres de DropWheel.",
+  "details": "Paramètres de DropWheel est la fenêtre principale de DropWheel, et chaque modification est enregistrée aussitôt. Elle comporte des sections pour Touches, Roues (pour modifier, ajouter ou désactiver des roues et leurs pétales), Apparence, La roue, Écran et texte, Travail et partage, Roue des actions, Favoris, Recettes, Automatisations, Vos pétales, Recherche par le sens, Résultats, Qualité, Auxiliaires, Statistiques, Général, Sauvegarde et Mises à jour. Une nouvelle roue que vous créez commence avec ce pétale.",
+  "how": "Choisissez Paramètres dans le menu de la zone de notification, choisissez DROPWHEEL sur une roue où vous l'avez ajouté, ou tapez « paramètres » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Changer la touche qui ouvre la roue des conversions, de Shift à une autre touche.",
@@ -3271,14 +3271,14 @@
  },
  "do:petal.pause": {
   "category": "petal",
-  "summary": "Met Petal en pause pour que les touches pressées pendant un glissement n'ouvrent plus la roue, jusqu'à ce que vous le réactiviez.",
-  "details": "Mettre Petal en pause fait ignorer à Petal les appuis sur Shift, Ctrl et Alt pendant que vous faites glisser des fichiers, utile dans les applications où vous avez besoin de ces touches en plein glissement. Une carte indique Petal est en pause ; choisissez-le à nouveau et la carte indique Petal est de nouveau actif. Le pétale indique si Petal est en pause, et l'info-bulle de l'icône de la zone de notification le signale aussi. Le même interrupteur se trouve dans le menu de la zone de notification, sous Mettre Petal en pause.",
-  "how": "Il n'est sur aucune roue au départ : faites un clic droit sur l'icône de la zone de notification et choisissez Mettre Petal en pause, ou tapez « pause » dans la palette de commandes (Ctrl+Win+K).",
+  "summary": "Met DropWheel en pause pour que les touches pressées pendant un glissement n'ouvrent plus la roue, jusqu'à ce que vous le réactiviez.",
+  "details": "Mettre DropWheel en pause fait ignorer à DropWheel les appuis sur Shift, Ctrl et Alt pendant que vous faites glisser des fichiers, utile dans les applications où vous avez besoin de ces touches en plein glissement. Une carte indique DropWheel est en pause ; choisissez-le à nouveau et la carte indique DropWheel est de nouveau actif. Le pétale indique si DropWheel est en pause, et l'info-bulle de l'icône de la zone de notification le signale aussi. Le même interrupteur se trouve dans le menu de la zone de notification, sous Mettre DropWheel en pause.",
+  "how": "Il n'est sur aucune roue au départ : faites un clic droit sur l'icône de la zone de notification et choisissez Mettre DropWheel en pause, ou tapez « pause » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
-   "Vous déplacez des calques dans Photoshop en maintenant Shift : mettez Petal en pause pour que la roue n'apparaisse pas.",
-   "Vous jouez à un jeu qui utilise Ctrl pendant les glissements : mettez Petal en pause pour la soirée.",
-   "Vous copiez des fichiers dans l'Explorateur de fichiers en maintenant Ctrl : mettez Petal en pause pour un grand rangement."
+   "Vous déplacez des calques dans Photoshop en maintenant Shift : mettez DropWheel en pause pour que la roue n'apparaisse pas.",
+   "Vous jouez à un jeu qui utilise Ctrl pendant les glissements : mettez DropWheel en pause pour la soirée.",
+   "Vous copiez des fichiers dans l'Explorateur de fichiers en maintenant Ctrl : mettez DropWheel en pause pour un grand rangement."
   ],
   "keywords": [
    "mettre petal en pause",
@@ -3295,7 +3295,7 @@
  "do:text.fixlayout": {
   "category": "text",
   "summary": "Remet d'aplomb un texte tapé avec la mauvaise langue de clavier : ؤشف devient cat, et hgsghl devient السلام.",
-  "details": "Sélectionnez le texte illisible dans n'importe quelle application et choisissez ce pétale. Petal voit dans quel sens l'erreur s'est produite : un texte surtout en lettres arabes devient les touches anglaises qui se trouvent dessous, et des lettres anglaises deviennent l'arabe qu'elles devaient être (dispositions anglais US et arabe 101). Le texte corrigé est collé à la place de la sélection, puis le clavier passe à la langue que vous vouliez quand les deux dispositions sont installées, pour que vous puissiez continuer à taper. Petal récupère la sélection en la demandant à l'application via Windows UI Automation, ou en la copiant avec Ctrl+C, puis remet votre Presse-papiers comme il était. Si l'application au premier plan a changé entre-temps, le résultat va dans le Presse-papiers à la place (« Copié à la place »).",
+  "details": "Sélectionnez le texte illisible dans n'importe quelle application et choisissez ce pétale. DropWheel voit dans quel sens l'erreur s'est produite : un texte surtout en lettres arabes devient les touches anglaises qui se trouvent dessous, et des lettres anglaises deviennent l'arabe qu'elles devaient être (dispositions anglais US et arabe 101). Le texte corrigé est collé à la place de la sélection, puis le clavier passe à la langue que vous vouliez quand les deux dispositions sont installées, pour que vous puissiez continuer à taper. DropWheel récupère la sélection en la demandant à l'application via Windows UI Automation, ou en la copiant avec Ctrl+C, puis remet votre Presse-papiers comme il était. Si l'application au premier plan a changé entre-temps, le résultat va dans le Presse-papiers à la place (« Copié à la place »).",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), appuyez sur Tab jusqu'à ce que la roue Texte s'affiche et choisissez CLAVIER.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3318,8 +3318,8 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Traduit le texte sélectionné sur ce PC, de l'arabe vers l'anglais et inversement, ou dans la langue de Petal, pour remplacer la sélection ou le copier.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez TRADUIRE : une fenêtre Traduire s'ouvre avec le début de l'original et la traduction dans une zone que vous pouvez encore modifier. Le texte arabe est traduit en anglais et tout autre texte en arabe ; quand Petal lui-même est réglé en turc, persan, ourdou, indonésien, français ou espagnol, le texte est traduit dans cette langue à la place (ou en anglais s'il est déjà dans cette langue). L'anglais vers l'arabe et l'arabe vers l'anglais utilisent les modèles de traduction Opus-MT (environ 114 Mo chacun) quand ils sont téléchargés, phrase par phrase ; sinon, et pour les autres langues, le modèle d'IA Qwen2.5 1.5B (environ 1,1 Go) traduit ; la fenêtre propose le téléchargement la première fois. Remplacer la sélection colle la traduction à la place du texte d'origine, et Copier la place dans le Presse-papiers. Tout se passe sur ce PC ; le texte n'est envoyé nulle part.",
+  "summary": "Traduit le texte sélectionné sur ce PC, de l'arabe vers l'anglais et inversement, ou dans la langue de DropWheel, pour remplacer la sélection ou le copier.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez TRADUIRE : une fenêtre Traduire s'ouvre avec le début de l'original et la traduction dans une zone que vous pouvez encore modifier. Le texte arabe est traduit en anglais et tout autre texte en arabe ; quand DropWheel lui-même est réglé en turc, persan, ourdou, indonésien, français ou espagnol, le texte est traduit dans cette langue à la place (ou en anglais s'il est déjà dans cette langue). L'anglais vers l'arabe et l'arabe vers l'anglais utilisent les modèles de traduction Opus-MT (environ 114 Mo chacun) quand ils sont téléchargés, phrase par phrase ; sinon, et pour les autres langues, le modèle d'IA Qwen2.5 1.5B (environ 1,1 Go) traduit ; la fenêtre propose le téléchargement la première fois. Remplacer la sélection colle la traduction à la place du texte d'origine, et Copier la place dans le Presse-papiers. Tout se passe sur ce PC ; le texte n'est envoyé nulle part.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez TRADUIRE ; appuyez ensuite sur Remplacer la sélection ou Copier.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3344,7 +3344,7 @@
  "do:text.upper": {
   "category": "text",
   "summary": "Met le texte sélectionné en MAJUSCULES, directement là où il se trouve, dans n'importe quelle application.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez MAJUSCULES ; chaque lettre devient une majuscule et le texte est recollé à la place de la sélection. L'arabe n'a pas de majuscules et reste tel quel. Petal lit la sélection via Windows UI Automation, ou la copie avec Ctrl+C, puis remet votre Presse-papiers en place. Si rien ne changerait, une carte indique « Rien à modifier » ; si rien n'est sélectionné, elle indique « Aucun texte n'est sélectionné ».",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez MAJUSCULES ; chaque lettre devient une majuscule et le texte est recollé à la place de la sélection. L'arabe n'a pas de majuscules et reste tel quel. DropWheel lit la sélection via Windows UI Automation, ou la copie avec Ctrl+C, puis remet votre Presse-papiers en place. Si rien ne changerait, une carte indique « Rien à modifier » ; si rien n'est sélectionné, elle indique « Aucun texte n'est sélectionné ».",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe CASSE et choisissez MAJUSCULES.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3366,7 +3366,7 @@
  "do:text.lower": {
   "category": "text",
   "summary": "Met le texte sélectionné en minuscules, directement là où il se trouve, dans n'importe quelle application.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez MINUSCULES ; chaque majuscule devient une minuscule et le texte est recollé à la place de la sélection. L'arabe n'a pas de majuscules et reste tel quel. Petal lit la sélection via Windows UI Automation, ou la copie avec Ctrl+C, puis remet votre Presse-papiers en place. Si le texte est déjà entièrement en minuscules, une carte indique « Rien à modifier ».",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez MINUSCULES ; chaque majuscule devient une minuscule et le texte est recollé à la place de la sélection. L'arabe n'a pas de majuscules et reste tel quel. DropWheel lit la sélection via Windows UI Automation, ou la copie avec Ctrl+C, puis remet votre Presse-papiers en place. Si le texte est déjà entièrement en minuscules, une carte indique « Rien à modifier ».",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe CASSE et choisissez MINUSCULES.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3410,7 +3410,7 @@
  "do:text.sentence": {
   "category": "text",
   "summary": "Ne met en majuscule que la première lettre de chaque phrase, le reste en minuscules : Majuscule en début de phrase.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez PHRASE ; la première lettre après un point, un ! , un ? , le point d'interrogation arabe ou un retour à la ligne devient une majuscule, et toutes les autres lettres passent en minuscules. C'est le moyen le plus rapide de calmer un texte tapé en majuscules sans perdre les débuts de phrase. L'arabe n'a pas de majuscules et reste tel quel. Le texte est recollé à la place de la sélection, et Petal remet votre Presse-papiers en place ensuite.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez PHRASE ; la première lettre après un point, un ! , un ? , le point d'interrogation arabe ou un retour à la ligne devient une majuscule, et toutes les autres lettres passent en minuscules. C'est le moyen le plus rapide de calmer un texte tapé en majuscules sans perdre les débuts de phrase. L'arabe n'a pas de majuscules et reste tel quel. Le texte est recollé à la place de la sélection, et DropWheel remet votre Presse-papiers en place ensuite.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe CASSE et choisissez PHRASE.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3501,7 +3501,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Compte les mots, caractères, lignes et phrases du texte sélectionné et les affiche sur une carte.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez COMPTER ; une carte affiche le nombre de mots, puis de caractères, de caractères sans espaces, de lignes et de phrases. Rien n'est modifié dans le texte. Les mots arabes et anglais sont tous comptés, et un emoji compte pour un caractère. Petal lit la sélection via Windows UI Automation ou en la copiant, puis remet votre Presse-papiers en place.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez COMPTER ; une carte affiche le nombre de mots, puis de caractères, de caractères sans espaces, de lignes et de phrases. Rien n'est modifié dans le texte. Les mots arabes et anglais sont tous comptés, et un emoji compte pour un caractère. DropWheel lit la sélection via Windows UI Automation ou en la copiant, puis remet votre Presse-papiers en place.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez COMPTER.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3599,7 +3599,7 @@
  "do:text.dictate": {
   "category": "text",
   "summary": "Tape ce que vous dites là où se trouve le curseur, dans n'importe quelle application, en arabe, en anglais et dans bien d'autres langues.",
-  "details": "Cliquez là où les mots doivent aller, puis lancez la dictée : une petite pastille en bas de l'écran affiche un indicateur de niveau et le temps pendant que Petal écoute. Appuyez à nouveau sur le raccourci ou sur DICTER, ou sur la coche de la pastille, pour arrêter ; Esc ou le X annule, et elle s'arrête d'elle-même au bout de deux minutes. Whisper écrit ce que vous avez dit sur ce PC et Petal le tape dans l'application qui était au premier plan ; si cette application a changé, les mots vont dans le Presse-papiers à la place. La première fois, la fenêtre Dictée demande le modèle vocal : Précision Rapide (environ 60 Mo, anglais clair), Équilibré (environ 190 Mo, par défaut) ou Précis (environ 574 Mo, le meilleur pour l'arabe et les accents), et Langue Détecter automatiquement (par défaut), العربية, English ou bien d'autres. Il faut un microphone, et rien n'est envoyé nulle part.",
+  "details": "Cliquez là où les mots doivent aller, puis lancez la dictée : une petite pastille en bas de l'écran affiche un indicateur de niveau et le temps pendant que DropWheel écoute. Appuyez à nouveau sur le raccourci ou sur DICTER, ou sur la coche de la pastille, pour arrêter ; Esc ou le X annule, et elle s'arrête d'elle-même au bout de deux minutes. Whisper écrit ce que vous avez dit sur ce PC et DropWheel le tape dans l'application qui était au premier plan ; si cette application a changé, les mots vont dans le Presse-papiers à la place. La première fois, la fenêtre Dictée demande le modèle vocal : Précision Rapide (environ 60 Mo, anglais clair), Équilibré (environ 190 Mo, par défaut) ou Précis (environ 574 Mo, le meilleur pour l'arabe et les accents), et Langue Détecter automatiquement (par défaut), العربية, English ou bien d'autres. Il faut un microphone, et rien n'est envoyé nulle part.",
   "how": "Appuyez sur Ctrl+Win+J dans n'importe quelle application, ou choisissez DICTER sur la roue Texte ou la roue Travail (Ctrl+Win+Z sans fichier sélectionné, puis Tab) ; parlez, puis appuyez à nouveau pour taper.",
   "worksOn": "Votre voix, tapée dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3624,7 +3624,7 @@
  "do:window.left": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans la moitié gauche de son écran.",
-  "details": "Choisissez GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié gauche de l'écran où elle se trouve, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
+  "details": "Choisissez GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié gauche de l'écran où elle se trouve, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez GAUCHE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3647,7 +3647,7 @@
  "do:window.right": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans la moitié droite de son écran.",
-  "details": "Choisissez DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié droite de l'écran où elle se trouve, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
+  "details": "Choisissez DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié droite de l'écran où elle se trouve, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez DROITE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3670,7 +3670,7 @@
  "do:window.top": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans la moitié supérieure de son écran.",
-  "details": "Choisissez HAUT et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié supérieure de son écran, sur toute sa largeur. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. C'est pratique sur les écrans hauts ou en mode portrait. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez HAUT et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié supérieure de son écran, sur toute sa largeur. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. C'est pratique sur les écrans hauts ou en mode portrait. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez HAUT.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3692,7 +3692,7 @@
  "do:window.bottom": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans la moitié inférieure de son écran.",
-  "details": "Choisissez BAS et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié inférieure de son écran, sur toute sa largeur et au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez BAS et la fenêtre qui était au premier plan à l'ouverture de la roue remplit la moitié inférieure de son écran, sur toute sa largeur et au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez BAS.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3714,7 +3714,7 @@
  "do:window.topleft": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans le quart supérieur gauche de son écran.",
-  "details": "Choisissez HAUT GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart supérieur gauche de son écran. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez HAUT GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart supérieur gauche de son écran. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez HAUT GAUCHE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3736,7 +3736,7 @@
  "do:window.topright": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans le quart supérieur droit de son écran.",
-  "details": "Choisissez HAUT DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart supérieur droit de son écran. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez HAUT DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart supérieur droit de son écran. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez HAUT DROITE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3758,7 +3758,7 @@
  "do:window.bottomleft": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans le quart inférieur gauche de son écran.",
-  "details": "Choisissez BAS GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart inférieur gauche de son écran, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez BAS GAUCHE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart inférieur gauche de son écran, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez BAS GAUCHE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3780,7 +3780,7 @@
  "do:window.bottomright": {
   "category": "windows",
   "summary": "Place la fenêtre qui était au premier plan dans le quart inférieur droit de son écran.",
-  "details": "Choisissez BAS DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart inférieur droit de son écran, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez BAS DROITE et la fenêtre qui était au premier plan à l'ouverture de la roue remplit le quart inférieur droit de son écran, au-dessus de la barre des tâches. Une fenêtre agrandie ou réduite est d'abord restaurée, et son cadre visible est ajusté exactement. Avec les autres pétales de quart, vous pouvez afficher quatre fenêtres à la fois. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez BAS DROITE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3868,7 +3868,7 @@
  "do:window.centre": {
   "category": "windows",
   "summary": "Déplace la fenêtre qui était au premier plan au milieu de son écran, sans changer sa taille.",
-  "details": "Choisissez CENTRER et la fenêtre qui était au premier plan à l'ouverture de la roue est placée au milieu de son écran, à sa taille actuelle. Une fenêtre agrandie est d'abord restaurée. Une fenêtre plus grande qu'environ 92 % de l'écran est réduite pour tenir, et une fenêtre très petite (moins de 200 sur 150 pixels) passe à 60 % de largeur et 70 % de hauteur. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez CENTRER et la fenêtre qui était au premier plan à l'ouverture de la roue est placée au milieu de son écran, à sa taille actuelle. Une fenêtre agrandie est d'abord restaurée. Une fenêtre plus grande qu'environ 92 % de l'écran est réduite pour tenir, et une fenêtre très petite (moins de 200 sur 150 pixels) passe à 60 % de largeur et 70 % de hauteur. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez CENTRER.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3890,7 +3890,7 @@
  "do:window.maximize": {
   "category": "windows",
   "summary": "Fait remplir son écran à la fenêtre qui était au premier plan, ou lui rend sa taille.",
-  "details": "Choisissez AGRANDIR et la fenêtre qui était au premier plan à l'ouverture de la roue remplit son écran ; choisissez-le à nouveau et elle reprend sa taille précédente. Le milieu de la roue indique si cette fenêtre est agrandie en ce moment. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
+  "details": "Choisissez AGRANDIR et la fenêtre qui était au premier plan à l'ouverture de la roue remplit son écran ; choisissez-le à nouveau et elle reprend sa taille précédente. Le milieu de la roue indique si cette fenêtre est agrandie en ce moment. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer et choisissez AGRANDIR.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3934,7 +3934,7 @@
  "do:window.ontop": {
   "category": "windows",
   "summary": "Garde la fenêtre qui était au premier plan au-dessus de toutes les autres, ou la laisse revenir à la normale.",
-  "details": "Choisissez 1ER PLAN et la fenêtre qui était au premier plan à l'ouverture de la roue reste au-dessus de toutes les autres fenêtres, même quand vous cliquez ailleurs ; choisissez-le à nouveau et elle se comporte normalement. Le milieu de la roue indique si cette fenêtre est au premier plan en ce moment. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Choisissez 1ER PLAN et la fenêtre qui était au premier plan à l'ouverture de la roue reste au-dessus de toutes les autres fenêtres, même quand vous cliquez ailleurs ; choisissez-le à nouveau et elle se comporte normalement. Le milieu de la roue indique si cette fenêtre est au premier plan en ce moment. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez 1ER PLAN.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3956,7 +3956,7 @@
  "do:window.seethrough": {
   "category": "windows",
   "summary": "Rend la fenêtre qui était au premier plan transparente cran par cran, puis de nouveau opaque.",
-  "details": "Chaque fois que vous choisissez OPACITÉ, la fenêtre qui était au premier plan à l'ouverture de la roue devient plus transparente : 85 % opaque, puis 70 %, puis 55 %, puis de nouveau opaque. Une carte affiche le nouveau niveau, et le milieu de la roue indique l'opacité actuelle de la fenêtre. Vous pouvez toujours cliquer et taper dedans comme d'habitude. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés.",
+  "details": "Chaque fois que vous choisissez OPACITÉ, la fenêtre qui était au premier plan à l'ouverture de la roue devient plus transparente : 85 % opaque, puis 70 %, puis 55 %, puis de nouveau opaque. Une carte affiche le nouveau niveau, et le milieu de la roue indique l'opacité actuelle de la fenêtre. Vous pouvez toujours cliquer et taper dedans comme d'habitude. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés.",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez OPACITÉ ; choisissez-le à nouveau pour le cran suivant.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -3978,7 +3978,7 @@
  "do:window.minimize": {
   "category": "windows",
   "summary": "Envoie la fenêtre qui était au premier plan dans la barre des tâches.",
-  "details": "Choisissez RÉDUIRE et la fenêtre qui était au premier plan à l'ouverture de la roue descend dans la barre des tâches, où vous pouvez cliquer dessus pour la faire revenir. L'application continue de fonctionner pendant ce temps. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
+  "details": "Choisissez RÉDUIRE et la fenêtre qui était au premier plan à l'ouverture de la roue descend dans la barre des tâches, où vous pouvez cliquer dessus pour la faire revenir. L'application continue de fonctionner pendant ce temps. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez RÉDUIRE.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -4000,7 +4000,7 @@
  "do:window.close": {
   "category": "windows",
   "summary": "Ferme la fenêtre qui était au premier plan, comme le ferait son propre bouton X.",
-  "details": "Choisissez FERMER et Petal demande à la fenêtre qui était au premier plan à l'ouverture de la roue de se fermer, exactement comme un clic sur son X. L'application peut toujours vous demander d'enregistrer votre travail d'abord, donc rien n'est perdu sans vous le demander. Les fenêtres de Petal, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
+  "details": "Choisissez FERMER et DropWheel demande à la fenêtre qui était au premier plan à l'ouverture de la roue de se fermer, exactement comme un clic sur son X. L'application peut toujours vous demander d'enregistrer votre travail d'abord, donc rien n'est perdu sans vous le demander. Les fenêtres de DropWheel, le bureau et la barre des tâches ne sont pas touchés ; sans fenêtre d'application au premier plan, une carte indique « Aucune fenêtre à disposer ».",
   "how": "Cliquez sur la fenêtre de l'application, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Disposer, ouvrez le groupe PLUS et choisissez FERMER.",
   "worksOn": "La fenêtre d'application au premier plan ; pas de fichiers.",
   "examples": [
@@ -4022,7 +4022,7 @@
  "do:clipboard.history": {
   "category": "clipboard",
   "summary": "Ouvre tout ce que vous avez copié récemment, pour le rechercher, l'épingler et le coller à nouveau dans l'application que vous utilisiez.",
-  "details": "La fenêtre Historique du Presse-papiers liste les 30 derniers éléments copiés (texte, images et fichiers), du plus récent au plus ancien, avec les éléments épinglés en haut ; seules les 8 dernières images sont gardées. Tapez dans la zone de recherche pour trouver un élément, utilisez le bouton d'épingle pour en garder un et le bouton corbeille (ou Suppr) pour en retirer un. Double-cliquez sur un élément, appuyez sur Enter ou choisissez Coller, et Petal le place dans le Presse-papiers et le colle avec Ctrl+V dans l'application qui était au premier plan ; Tout effacer retire tout sauf les éléments épinglés. Les copies que les gestionnaires de mots de passe marquent comme privées ne sont jamais conservées. L'historique est gardé tant que Petal fonctionne ; seuls les éléments épinglés sont mémorisés après sa fermeture, sauf si vous activez cette option dans Paramètres › Écran et texte.",
+  "details": "La fenêtre Historique du Presse-papiers liste les 30 derniers éléments copiés (texte, images et fichiers), du plus récent au plus ancien, avec les éléments épinglés en haut ; seules les 8 dernières images sont gardées. Tapez dans la zone de recherche pour trouver un élément, utilisez le bouton d'épingle pour en garder un et le bouton corbeille (ou Suppr) pour en retirer un. Double-cliquez sur un élément, appuyez sur Enter ou choisissez Coller, et DropWheel le place dans le Presse-papiers et le colle avec Ctrl+V dans l'application qui était au premier plan ; Tout effacer retire tout sauf les éléments épinglés. Les copies que les gestionnaires de mots de passe marquent comme privées ne sont jamais conservées. L'historique est gardé tant que DropWheel fonctionne ; seuls les éléments épinglés sont mémorisés après sa fermeture, sauf si vous activez cette option dans Paramètres › Écran et texte.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Presse-papiers et choisissez HISTORIQUE ; double-cliquez sur un élément pour le coller.",
   "worksOn": "Ce que vous avez copié : texte, images et fichiers ; aucun fichier n'est nécessaire pour l'ouvrir.",
   "examples": [
@@ -4045,9 +4045,9 @@
  "do:clipboard.forget": {
   "category": "clipboard",
   "summary": "Efface l'historique du Presse-papiers en un geste, en ne gardant que les éléments épinglés.",
-  "details": "Choisissez OUBLIER et tous les éléments de l'historique du Presse-papiers de Petal sont supprimés, sauf ceux que vous avez épinglés ; une carte indique « Historique du Presse-papiers effacé » et « Les éléments épinglés restent ». Il agit sur l'historique de Petal, alors que Vider le Presse-papiers (EFFACER, sous PLUS sur la roue Rapide) n'oublie que ce qui est dans le Presse-papiers en ce moment. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Presse-papiers dans Paramètres › Roues, ou lancez Effacer l'historique du Presse-papiers depuis la palette de commandes.",
+  "details": "Choisissez OUBLIER et tous les éléments de l'historique du Presse-papiers de DropWheel sont supprimés, sauf ceux que vous avez épinglés ; une carte indique « Historique du Presse-papiers effacé » et « Les éléments épinglés restent ». Il agit sur l'historique de DropWheel, alors que Vider le Presse-papiers (EFFACER, sous PLUS sur la roue Rapide) n'oublie que ce qui est dans le Presse-papiers en ce moment. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Presse-papiers dans Paramètres › Roues, ou lancez Effacer l'historique du Presse-papiers depuis la palette de commandes.",
   "how": "Appuyez sur Ctrl+Win+K, tapez « Effacer l'historique du Presse-papiers » et appuyez sur Enter, ou ajoutez OUBLIER à une roue dans Paramètres › Roues.",
-  "worksOn": "L'historique du Presse-papiers de Petal ; pas de fichiers.",
+  "worksOn": "L'historique du Presse-papiers de DropWheel ; pas de fichiers.",
   "examples": [
    "Vous avez copié des mots de passe et des coordonnées bancaires depuis un document : effacez l'historique avant de prêter votre ordinateur portable.",
    "Avant de partager votre écran en réunion, oubliez les éléments privés pour qu'ils n'apparaissent pas dans l'historique.",
@@ -4067,7 +4067,7 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Place une nouvelle note adhésive sur le bureau près du pointeur, dans n'importe quelle langue et couleur.",
-  "details": "Choisissez NOTE et une note adhésive s'ouvre près du pointeur, prête à recevoir du texte ; l'arabe s'écrit de droite à gauche tout seul. Son bandeau a des boutons pour Nouvelle note, Couleur (jaune, vert, bleu, rose, violet, gris), Garder au premier plan et Supprimer la note, et vous pouvez la déplacer par le bandeau et la redimensionner par le coin. Ctrl+N dans une note en crée une autre. Les notes s'enregistrent toutes seules et reviennent à leur place au démarrage de Petal ; une note supprimée qui contenait du texte peut être récupérée en cliquant sur la carte qui apparaît.",
+  "details": "Choisissez NOTE et une note adhésive s'ouvre près du pointeur, prête à recevoir du texte ; l'arabe s'écrit de droite à gauche tout seul. Son bandeau a des boutons pour Nouvelle note, Couleur (jaune, vert, bleu, rose, violet, gris), Garder au premier plan et Supprimer la note, et vous pouvez la déplacer par le bandeau et la redimensionner par le coin. Ctrl+N dans une note en crée une autre. Les notes s'enregistrent toutes seules et reviennent à leur place au démarrage de DropWheel ; une note supprimée qui contenait du texte peut être récupérée en cliquant sur la carte qui apparaît.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail ou Presse-papiers et choisissez NOTE, puis tapez.",
   "worksOn": "",
   "examples": [
@@ -4091,7 +4091,7 @@
  "do:notes.toggle": {
   "category": "notes",
   "summary": "Fait apparaître toutes les notes adhésives, ou les range toutes en les gardant enregistrées.",
-  "details": "Choisissez NOTES pour masquer toutes les notes adhésives d'un coup, et à nouveau pour les afficher toutes à leur place. Les notes masquées restent enregistrées, et Petal mémorise ce choix : des notes rangées restent masquées au prochain démarrage de Petal. Quand vous n'avez encore aucune note, il en crée une nouvelle. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Notes dans Paramètres › Roues, ou lancez Afficher ou masquer les notes depuis la palette de commandes.",
+  "details": "Choisissez NOTES pour masquer toutes les notes adhésives d'un coup, et à nouveau pour les afficher toutes à leur place. Les notes masquées restent enregistrées, et DropWheel mémorise ce choix : des notes rangées restent masquées au prochain démarrage de DropWheel. Quand vous n'avez encore aucune note, il en crée une nouvelle. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Notes dans Paramètres › Roues, ou lancez Afficher ou masquer les notes depuis la palette de commandes.",
   "how": "Appuyez sur Ctrl+Win+K, tapez « Afficher ou masquer les notes » et appuyez sur Enter, ou ajoutez NOTES à une roue dans Paramètres › Roues.",
   "worksOn": "",
   "examples": [
@@ -4137,7 +4137,7 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Enregistre une réunion, puis rédige la transcription, un résumé, les décisions et les tâches à faire, sur ce PC.",
-  "details": "Choisissez RÉUNION et Petal enregistre à la fois le son du PC et votre microphone ; une pastille en haut affiche le temps, avec une coche pour arrêter et rédiger les notes et un X pour annuler, et elle n'apparaît pas dans les partages d'écran de la réunion. Quand vous arrêtez, Whisper rédige la transcription avec les horaires, et si le modèle d'IA (environ 1,1 Go) est sur le PC, il ajoute des sections Résumé, Décisions et Tâches à faire. Les notes (un fichier Markdown) et le son (un fichier M4A) sont enregistrés sous le nom « Meeting date heure » dans le dossier Petal Meetings de Documents, et la fenêtre Notes de réunion s'ouvre avec les vues Résumé et Transcription, Copier et Ouvrir le dossier. Il faut un modèle vocal depuis la fenêtre Dictée, ainsi que FFmpeg ; sans le modèle d'IA, un bouton Rédiger un résumé vous permet d'ajouter le résumé plus tard.",
+  "details": "Choisissez RÉUNION et DropWheel enregistre à la fois le son du PC et votre microphone ; une pastille en haut affiche le temps, avec une coche pour arrêter et rédiger les notes et un X pour annuler, et elle n'apparaît pas dans les partages d'écran de la réunion. Quand vous arrêtez, Whisper rédige la transcription avec les horaires, et si le modèle d'IA (environ 1,1 Go) est sur le PC, il ajoute des sections Résumé, Décisions et Tâches à faire. Les notes (un fichier Markdown) et le son (un fichier M4A) sont enregistrés sous le nom « Meeting date heure » dans le dossier DropWheel Meetings de Documents, et la fenêtre Notes de réunion s'ouvre avec les vues Résumé et Transcription, Copier et Ouvrir le dossier. Il faut un modèle vocal depuis la fenêtre Dictée, ainsi que FFmpeg ; sans le modèle d'IA, un bouton Rédiger un résumé vous permet d'ajouter le résumé plus tard.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail et choisissez RÉUNION ; choisissez-le à nouveau ou appuyez sur la coche de la pastille pour arrêter.",
   "worksOn": "",
   "examples": [
@@ -4161,7 +4161,7 @@
  "do:work.captions": {
   "category": "work",
   "summary": "Affiche des sous-titres en direct pour n'importe quelle vidéo, appel ou cours, traduits en arabe au fur et à mesure, sur ce PC.",
-  "details": "Choisissez SOUS-TITRES et une barre de sous-titres apparaît en bas de l'écran ; faites-la glisser où vous voulez. Petal écoute le son du PC (par défaut) ou le microphone, Whisper écrit les mots au moment où ils sont dits, en une demi-seconde environ (les plus récents restent plus pâles jusqu'à ce qu'ils soient sûrs), et le modèle de traduction met chaque phrase en arabe au fil de l'eau, sans besoin d'Internet. Si le PC est trop lent pour le modèle vocal choisi, un modèle plus rapide déjà téléchargé prend le relais pour que les sous-titres suivent. Survolez la barre pour voir ses boutons : basculer entre le son du PC et le microphone, changer ce qui est affiché (les deux, l'arabe, l'original ou l'anglais), ou désactiver les sous-titres. Il faut un modèle vocal depuis la fenêtre Dictée, et le modèle de traduction arabe (environ 114 Mo) est proposé la première fois ; en attendant, les sous-titres montrent ce qui a été dit. Choisissez à nouveau SOUS-TITRES pour arrêter.",
+  "details": "Choisissez SOUS-TITRES et une barre de sous-titres apparaît en bas de l'écran ; faites-la glisser où vous voulez. DropWheel écoute le son du PC (par défaut) ou le microphone, Whisper écrit les mots au moment où ils sont dits, en une demi-seconde environ (les plus récents restent plus pâles jusqu'à ce qu'ils soient sûrs), et le modèle de traduction met chaque phrase en arabe au fil de l'eau, sans besoin d'Internet. Si le PC est trop lent pour le modèle vocal choisi, un modèle plus rapide déjà téléchargé prend le relais pour que les sous-titres suivent. Survolez la barre pour voir ses boutons : basculer entre le son du PC et le microphone, changer ce qui est affiché (les deux, l'arabe, l'original ou l'anglais), ou désactiver les sous-titres. Il faut un modèle vocal depuis la fenêtre Dictée, et le modèle de traduction arabe (environ 114 Mo) est proposé la première fois ; en attendant, les sous-titres montrent ce qui a été dit. Choisissez à nouveau SOUS-TITRES pour arrêter.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail et choisissez SOUS-TITRES ; choisissez-le à nouveau pour désactiver les sous-titres.",
   "worksOn": "",
   "examples": [
@@ -4185,7 +4185,7 @@
  "do:steps.record": {
   "category": "work",
   "summary": "Enregistre un guide pas à pas pendant que vous travaillez : chaque clic avec une image et sa description, à enregistrer en PDF ou en Word.",
-  "details": "Choisissez ÉTAPES et une barre en haut de l'écran compte les étapes pendant que vous travaillez ; chaque clic, double-clic, clic droit, saisie et raccourci dans d'autres applications devient une étape avec une image de la fenêtre, un cercle là où vous avez cliqué et une description comme « Cliquez sur « Enregistrer » dans Bloc-notes ». Ce qui est tapé dans une case de mot de passe n'est jamais conservé ; l'étape indique simplement « Tapez le mot de passe ». Appuyez sur la coche pour terminer (ou choisissez à nouveau ÉTAPES), ou sur X pour annuler ; l'enregistrement s'arrête de lui-même à 200 étapes. La fenêtre Guide pas à pas vous permet ensuite de changer le titre et la description de chaque étape, de déplacer les étapes vers le haut ou le bas et de les retirer, puis Enregistrer le guide en PDF (par défaut), Word, Page web ou Markdown dans le dossier Petal Guides de Documents. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Travail dans Paramètres › Roues, ou lancez Enregistrer les étapes depuis la palette de commandes.",
+  "details": "Choisissez ÉTAPES et une barre en haut de l'écran compte les étapes pendant que vous travaillez ; chaque clic, double-clic, clic droit, saisie et raccourci dans d'autres applications devient une étape avec une image de la fenêtre, un cercle là où vous avez cliqué et une description comme « Cliquez sur « Enregistrer » dans Bloc-notes ». Ce qui est tapé dans une case de mot de passe n'est jamais conservé ; l'étape indique simplement « Tapez le mot de passe ». Appuyez sur la coche pour terminer (ou choisissez à nouveau ÉTAPES), ou sur X pour annuler ; l'enregistrement s'arrête de lui-même à 200 étapes. La fenêtre Guide pas à pas vous permet ensuite de changer le titre et la description de chaque étape, de déplacer les étapes vers le haut ou le bas et de les retirer, puis Enregistrer le guide en PDF (par défaut), Word, Page web ou Markdown dans le dossier DropWheel Guides de Documents. Il n'est sur aucune roue toute prête : ajoutez-le depuis la section Travail dans Paramètres › Roues, ou lancez Enregistrer les étapes depuis la palette de commandes.",
   "how": "Appuyez sur Ctrl+Win+K, tapez « Enregistrer les étapes » et appuyez sur Enter (ou ajoutez ÉTAPES à une roue dans Paramètres › Roues) ; faites la tâche, puis appuyez sur la coche de la barre.",
   "worksOn": "",
   "examples": [
@@ -4231,8 +4231,8 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Ouvre le Guide des outils : chaque outil et chaque action expliqués, avec des exemples, et une zone pour dire ce que vous voulez faire.",
-  "details": "Le guide liste par section les outils de Petal, les actions sur les fichiers et les actions des roues sans fichiers. Chacun s'ouvre sur ce qu'il fait, comment l'utiliser, trois exemples et ce sur quoi il fonctionne, avec Essayer pour le lancer et une zone pour poser une question à son sujet. Tapez en haut ce que vous voulez faire avec vos propres mots et les outils les plus proches apparaissent aussitôt ; appuyez sur Enter et le modèle d'IA de ce PC répond à partir du guide et met un lien vers les outils qu'il cite. Le modèle se télécharge une seule fois, la première fois que vous posez une question ; sans lui, les outils les plus proches apparaissent quand même.",
-  "how": "Ouvrez-le depuis le menu de la zone de notification (Guide des outils…), le bouton Guide des outils en haut des paramètres de Petal, la palette de commandes (Ctrl+Win+K), ou un pétale GUIDE que vous ajoutez à une roue. Dans une roue, la marque sous le nom d'un pétale (ou F1) affiche l'explication de ce pétale, avec un lien vers le guide.",
+  "details": "Le guide liste par section les outils de DropWheel, les actions sur les fichiers et les actions des roues sans fichiers. Chacun s'ouvre sur ce qu'il fait, comment l'utiliser, trois exemples et ce sur quoi il fonctionne, avec Essayer pour le lancer et une zone pour poser une question à son sujet. Tapez en haut ce que vous voulez faire avec vos propres mots et les outils les plus proches apparaissent aussitôt ; appuyez sur Enter et le modèle d'IA de ce PC répond à partir du guide et met un lien vers les outils qu'il cite. Le modèle se télécharge une seule fois, la première fois que vous posez une question ; sans lui, les outils les plus proches apparaissent quand même.",
+  "how": "Ouvrez-le depuis le menu de la zone de notification (Guide des outils…), le bouton Guide des outils en haut des paramètres de DropWheel, la palette de commandes (Ctrl+Win+K), ou un pétale GUIDE que vous ajoutez à une roue. Dans une roue, la marque sous le nom d'un pétale (ou F1) affiche l'explication de ce pétale, avec un lien vers le guide.",
   "worksOn": "",
   "examples": [
    "Vous avez besoin d'un compte à rebours pour une pause en classe : tapez « compte à rebours » et Minuteur arrive en premier, avec Essayer pour le lancer.",

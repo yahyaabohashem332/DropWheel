@@ -119,7 +119,7 @@ public sealed class WheelFeatureTests : IDisposable
         foreach (var action in WheelActions.All)
         {
             Assert.True(Icons.Keys.Contains(action.Icon), action.Id);
-            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Work", "Media", "Petal" });
+            Assert.Contains(action.Section, new[] { "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Work", "Media", "DropWheel" });
         }
         Assert.Equal(WheelActions.All.Count, WheelActions.All.Select(a => a.Id).Distinct().Count());
     }
@@ -523,7 +523,7 @@ public sealed class WheelFeatureTests : IDisposable
     public void Practice_says_what_would_have_happened()
     {
         var photo = Path.Combine(_dir, "sunset.jpg");
-        Assert.Equal("Petal would save sunset.jpg as PNG beside the original.", Petal.App.Onboarding.Practice.Describe(WheelItem.From(F.Png), [photo]));
+        Assert.Equal("DropWheel would save sunset.jpg as PNG beside the original.", Petal.App.Onboarding.Practice.Describe(WheelItem.From(F.Png), [photo]));
         var tool = Petal.Core.Tools.ToolRegistry.Get(Petal.Core.Tools.ToolId.ResizeImage);
         Assert.Equal("The Resize & Rotate window would open for sunset.jpg.", Petal.App.Onboarding.Practice.Describe(WheelItem.From(tool), [photo]));
         var entry = new WheelEntry { Kind = EntryKind.Action, Action = "system.lock" };

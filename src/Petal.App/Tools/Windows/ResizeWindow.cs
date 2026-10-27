@@ -211,7 +211,7 @@ public sealed class ResizeImageWindow : ToolWindow
         _ai.Visibility = _aiNote.Visibility = enlarging ? Visibility.Visible : Visibility.Collapsed;
         _ai.IsEnabled = AiUpscaler.IsReady && fits;
         _aiNote.Text = !AiUpscaler.IsReady
-            ? L.T("The enlargement model is missing. Reinstall Petal to restore it.")
+            ? L.T("The enlargement model is missing. Reinstall DropWheel to restore it.")
             : !fits
                 ? L.T("AI enlargement works on pictures up to about 4 megapixels; this one is enlarged the ordinary way.")
                 : L.T("Real-ESRGAN adds detail instead of only smoothing pixels. Runs on this PC.");

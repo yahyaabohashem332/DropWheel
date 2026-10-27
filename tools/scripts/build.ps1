@@ -102,7 +102,7 @@ Compress-Archive -Path (Join-Path $deckStage 'com.petal.app.sdPlugin') -Destinat
 Move-Item $deckZip (Join-Path $integrations 'Petal.streamDeckPlugin') -Force
 Remove-Item $deckStage -Recurse -Force
 
-$zip = Join-Path $dist "Petal-$Version-win-$Arch.zip"
+$zip = Join-Path $dist "DropWheel-$Version-win-$Arch.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 # .NET's own zip rather than Compress-Archive, which is slow and twice stopped dead half way through the ARM64 build.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -114,7 +114,7 @@ $iscc = @("${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\I
 if ($iscc) {
     & $iscc "/DAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$dist" "/DArch=$Arch" (Join-Path $root 'installer\Petal.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
-    $setupName = if ($Arch -eq 'arm64') { "Petal-Setup-$Version-arm64.exe" } else { "Petal-Setup-$Version.exe" }
+    $setupName = if ($Arch -eq 'arm64') { "DropWheel-Setup-$Version-arm64.exe" } else { "DropWheel-Setup-$Version.exe" }
     $setup = Join-Path $dist $setupName
     Write-Host "Installer: $setup"
 

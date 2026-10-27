@@ -49,25 +49,25 @@ public static class Health
 
     private static HealthCheck Version()
     {
-        var where = Shell.Packaged.IsPackaged ? L.T("from the Microsoft Store") : L.T("from Petal's own setup");
-        return new HealthCheck("Petal", HealthState.Good, L.F("Petal {0}, {1}", PetalVersion, where),
+        var where = Shell.Packaged.IsPackaged ? L.T("from the Microsoft Store") : L.T("from DropWheel's own setup");
+        return new HealthCheck("DropWheel", HealthState.Good, L.F("DropWheel {0}, {1}", PetalVersion, where),
             $"Windows {Environment.OSVersion.Version} · .NET {Environment.Version} · {SettingsStore.Directory}");
     }
 
     private static HealthCheck Input()
     {
         if (SettingsStore.Current.Paused)
-            return new HealthCheck("Keys and mouse", HealthState.Note, L.T("Petal is paused: dragging with a key doesn't open the wheel"),
-                FixLabel: L.T("Turn Petal On"), Fix: () =>
+            return new HealthCheck("Keys and mouse", HealthState.Note, L.T("DropWheel is paused: dragging with a key doesn't open the wheel"),
+                FixLabel: L.T("Turn DropWheel On"), Fix: () =>
                 {
                     SettingsStore.Current.Paused = false;
                     SettingsStore.Save();
                 });
         bool running = Petal.App.Input.GlobalInputHook.Current?.IsRunning == true;
         return running
-            ? new HealthCheck("Keys and mouse", HealthState.Good, L.T("Petal sees drags and key taps"))
-            : new HealthCheck("Keys and mouse", HealthState.Problem, L.T("Petal can't see drags and key taps"),
-                L.T("Another program may be keeping them from Petal, or Windows stopped it after a long freeze. Closing and opening Petal again usually brings them back."));
+            ? new HealthCheck("Keys and mouse", HealthState.Good, L.T("DropWheel sees drags and key taps"))
+            : new HealthCheck("Keys and mouse", HealthState.Problem, L.T("DropWheel can't see drags and key taps"),
+                L.T("Another program may be keeping them from DropWheel, or Windows stopped it after a long freeze. Closing and opening DropWheel again usually brings them back."));
     }
 
     private static HealthCheck Shortcuts()
@@ -123,7 +123,7 @@ public static class Health
         return missing.Count == 0
             ? new HealthCheck("Helper programs", HealthState.Good, L.T("FFmpeg and ExifTool are in place"), ffmpegVersion)
             : new HealthCheck("Helper programs", HealthState.Problem, L.F("Missing or not starting: {0}", string.Join(", ", missing)),
-                L.T("Video, sound and photo details need them. Installing Petal again puts them back."));
+                L.T("Video, sound and photo details need them. Installing DropWheel again puts them back."));
     }
 
     private static HealthCheck Models()
@@ -257,7 +257,7 @@ public static class Health
             L.T(s.LocalApi ? "Other programs can run petals" : "Other programs can't run petals"),
             L.T(Actions.PcDrop.Receiving ? "Receiving files from other PCs" : "Not receiving files from other PCs"),
         };
-        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("Petal goes online only to download a model you ask for, or to look for updates when an address is set."));
+        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("DropWheel goes online only to download a model you ask for, or to look for updates when an address is set."));
     }
 
     private static string Tail(string path, int bytes)
@@ -283,7 +283,7 @@ public static class Health
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
         {
-            Log.Error(ex, "Opening from Petal Health");
+            Log.Error(ex, "Opening from DropWheel Health");
         }
     }
 
@@ -291,7 +291,7 @@ public static class Health
     public static string Text(IReadOnlyList<HealthCheck> checks)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Petal Health · {DateTime.Now:yyyy-MM-dd HH:mm}");
+        sb.AppendLine($"DropWheel Health · {DateTime.Now:yyyy-MM-dd HH:mm}");
         sb.AppendLine();
         foreach (var c in checks)
         {
@@ -325,7 +325,7 @@ public static class Health
     public static string SaveReport(IReadOnlyList<HealthCheck> checks)
     {
         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        var path = Petal.Core.Jobs.OutputNaming.Unique(desktop, $"Petal Health {DateTime.Now:yyyy-MM-dd HH.mm}", "zip");
+        var path = Petal.Core.Jobs.OutputNaming.Unique(desktop, $"DropWheel Health {DateTime.Now:yyyy-MM-dd HH.mm}", "zip");
         using var zip = ZipFile.Open(path, ZipArchiveMode.Create);
         void Add(string name, string text)
         {

@@ -271,7 +271,7 @@ public static class Speech
             {
                 int bits = BitConverter.ToInt16(wav, body + 14);
                 if (BitConverter.ToInt16(wav, body) != 1 || bits != 16)
-                    throw new MediaException("Windows returned speech in a format Petal doesn't expect.");
+                    throw new MediaException("Windows returned speech in a format DropWheel doesn't expect.");
                 format = new PcmFormat(BitConverter.ToInt32(wav, body + 4), BitConverter.ToInt16(wav, body + 2));
             }
             else if (id == "data" && format is { } f)

@@ -108,7 +108,7 @@ public sealed partial class WheelWindow : Window
         Height = Side;
         Left = -32000;
         Top = -32000;
-        Title = L.T("Petal wheel");
+        Title = L.T("DropWheel wheel");
         // The ring is drawn in screen geometry, so it stays left-to-right; its texts set their own direction.
         L.Apply(_root, mirror: false);
         AllowDrop = true;

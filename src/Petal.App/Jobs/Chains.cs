@@ -44,7 +44,7 @@ public static class Chains
             return "Folders can't take steps";
         var formats = files.Select(Formats.FromPath).ToList();
         if (formats.Any(f => f is null))
-            return "Petal doesn't know these files";
+            return "DropWheel doesn't know these files";
         var recipe = new Recipe { Steps = [.. Steps(chain), .. more] };
         return recipe.AppliesTo(formats!, converters) ? null : "It doesn't fit after the steps before";
     }

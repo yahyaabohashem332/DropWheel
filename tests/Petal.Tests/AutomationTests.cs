@@ -16,7 +16,7 @@ public class WatchRuleTests
     [InlineData(@"C:\Users\Someone\Downloads\photo.png.crdownload", false)]
     [InlineData(@"C:\Users\Someone\Downloads\photo.part", false)]
     [InlineData(@"C:\Users\Someone\Downloads\~$report.docx", false)]
-    [InlineData(@"C:\Users\Someone\Downloads\Petal\photo.jpg", false)]
+    [InlineData(@"C:\Users\Someone\Downloads\DropWheel\photo.jpg", false)]
     [InlineData(@"C:\Users\Someone\Downloads\Trip\photo.png", false)]
     [InlineData(@"C:\Users\Someone\Downloads2\photo.png", false)]
     [InlineData(@"C:\Users\Someone\photo.png", false)]
@@ -29,11 +29,13 @@ public class WatchRuleTests
         var rule = new WatchRule { Folder = Root + @"\", Kind = WatchedKind.Any, IncludeSubfolders = true };
         Assert.True(rule.Wants(Root + @"\Trip\Day 1\clip.mov"));
         Assert.True(rule.Wants(Root + @"\notes.txt"));
+        Assert.False(rule.Wants(Root + @"\DropWheel\clip.mp4"));
+        Assert.False(rule.Wants(Root + @"\DropWheel\Older\clip.mp4"));
+        // Results saved before the app was called DropWheel stay unwatched too.
         Assert.False(rule.Wants(Root + @"\Petal\clip.mp4"));
-        Assert.False(rule.Wants(Root + @"\Petal\Older\clip.mp4"));
         Assert.True(rule.Wants(Root + @"\Petals\clip.mov"));
         Assert.False(rule.Wants(Root + @"\unknown.xyz"));
-        Assert.Equal(Root + @"\Petal", rule.OutputFolder.TrimEnd('\\').Replace(@"\\", @"\"));
+        Assert.Equal(Root + @"\DropWheel", rule.OutputFolder.TrimEnd('\\').Replace(@"\\", @"\"));
     }
 
     [Theory]
@@ -120,10 +122,10 @@ public class FolderWatcherTests : IDisposable
             var partial = Path.Combine(_dir, "b.png.crdownload");
             File.WriteAllBytes(partial, png);
             File.Move(partial, Path.Combine(_dir, "b.png"));
-            // Not wanted: a song, a result in the Petal folder, and a JPG (already the target format).
+            // Not wanted: a song, a result in the DropWheel folder, and a JPG (already the target format).
             File.WriteAllBytes(Path.Combine(_dir, "song.mp3"), [1, 2, 3]);
-            Directory.CreateDirectory(Path.Combine(_dir, "Petal"));
-            File.WriteAllBytes(Path.Combine(_dir, "Petal", "c.png"), png);
+            Directory.CreateDirectory(Path.Combine(_dir, "DropWheel"));
+            File.WriteAllBytes(Path.Combine(_dir, "DropWheel", "c.png"), png);
             File.WriteAllBytes(Path.Combine(_dir, "d.jpg"), png);
 
             await gotOne.Task.WaitAsync(TimeSpan.FromSeconds(20));

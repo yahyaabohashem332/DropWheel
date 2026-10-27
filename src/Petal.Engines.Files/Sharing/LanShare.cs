@@ -348,7 +348,7 @@ public sealed class LanShare : IAsyncDisposable
     private string ZipName()
     {
         var name = string.Concat(ComputerName.Select(c => System.IO.Path.GetInvalidFileNameChars().Contains(c) ? '-' : c));
-        return $"{(name.Length > 0 ? name : "Petal")} files.zip";
+        return $"{(name.Length > 0 ? name : "DropWheel")} files.zip";
     }
 
     private async Task<bool> SendFileAsync(NetworkStream stream, Request request, SharedItem item, bool head, CancellationToken ct)

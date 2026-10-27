@@ -5,9 +5,9 @@ namespace Petal.Engines.Media.Internal;
 /// <summary>Runs FFmpeg with progress reporting and writes results through a temp file.</summary>
 internal static class Ffmpeg
 {
-    public static string Exe => ToolLocator.Ffmpeg ?? throw new MediaException("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in Petal's tools folder.");
+    public static string Exe => ToolLocator.Ffmpeg ?? throw new MediaException("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in DropWheel's tools folder.");
 
-    public static string ProbeExe => ToolLocator.Ffprobe ?? throw new MediaException("FFprobe was not found. Install FFmpeg or place ffprobe.exe in Petal's tools folder.");
+    public static string ProbeExe => ToolLocator.Ffprobe ?? throw new MediaException("FFprobe was not found. Install FFmpeg or place ffprobe.exe in DropWheel's tools folder.");
 
     public static bool IsAvailable => ToolLocator.Ffmpeg is not null && ToolLocator.Ffprobe is not null;
 

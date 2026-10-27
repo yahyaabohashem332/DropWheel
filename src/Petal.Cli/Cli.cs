@@ -85,7 +85,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 "with" => await WithAsync(rest, ct),
                 "actions" => await ActionsAsync(ct),
                 "status" => await StatusAsync(ct),
-                "version" or "--version" or "-v" => Print($"Petal {Version}"),
+                "version" or "--version" or "-v" => Print($"DropWheel {Version}"),
                 _ => throw new UsageException($"Unknown command \"{args[0]}\". Try \"petal help\"."),
             };
         }
@@ -109,7 +109,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
     }
 
     public const string Help = """
-        Petal — convert and tidy up files from the command line.
+        DropWheel — convert and tidy up files from the command line.
 
         Usage:
           petal convert <files> --to <format> [--max <px>] [--quality <n>] [--out <folder>]
@@ -121,14 +121,14 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
           petal text <image>        Print the text in a picture
           petal speak <document> [--voice <name>] [--speed <0.5-2>] [--out <folder>]
                                     Reads a document aloud into an MP3
-          petal voices              The voices installed, and the natural ones Petal can use
+          petal voices              The voices installed, and the natural ones DropWheel can use
           petal denoise <files> [--strength gentle|strong|full] [--out <folder>]
                                     Takes noise out of speech in recordings and videos
           petal separate <files> [--four] [--out <folder>]
                                     Splits songs into vocals and music (or four parts)
           petal translate <subtitles> [--out <folder>]
                                     English subtitles (SRT, VTT) into Arabic
-          (These three use AI models Petal downloads once, from its windows.)
+          (These three use AI models DropWheel downloads once, from its windows.)
           petal searchable <pdfs or pictures> [--out <folder>]
                                     Scans get a text layer so they can be searched and copied
                                     (pictures of pages become one PDF)
@@ -146,27 +146,27 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                                     The colours of a swatch file, listed or saved for code and other apps
           petal formats [<file>]    What each format (or this file) converts to
           petal ask "<request>" <files> [--run] [--out <folder>]
-                                    Says what Petal would do for a request in plain words
+                                    Says what DropWheel would do for a request in plain words
                                     (English or Arabic); --run does it
-          petal search <words>      Files found by Search by Meaning (turn it on in Petal's Settings)
-          petal recipes             The recipes made in Petal's Settings
+          petal search <words>      Files found by Search by Meaning (turn it on in DropWheel's Settings)
+          petal recipes             The recipes made in DropWheel's Settings
           petal run <recipe> <files> [--out <folder>]   Runs a recipe on the files
           petal version
 
-        The running Petal (turn on "Let other programs run petals" in Settings):
+        The running DropWheel (turn on "Let other programs run petals" in Settings):
           petal actions             The petals that "petal do" can run, and the wheels
           petal do <petal>          Runs a petal of the wheels without files, e.g. screen.full
           petal open-wheel <name>   Opens a wheel under the pointer, e.g. Work
           petal commands [<text>]   Opens the command palette, with the text typed in it
           petal with <petal> <files>  A petal of the file wheels on files: a format (webp),
                                     tool:Compress, action:Zip, or a favourite's or recipe's name
-          petal status              Whether Petal is running, and its version
+          petal status              Whether DropWheel is running, and its version
 
         Notes:
           Wildcards work everywhere: petal convert *.heic --to jpg
           --max keeps pictures and videos within that many pixels on the longest side.
           --quality is 1-100 for pictures, the bitrate in kbps for audio, and the CRF for
-          video (17 best ... 28 small). Without it, the quality set in Petal is used.
+          video (17 best ... 28 small). Without it, the quality set in DropWheel is used.
           Results are saved beside the originals unless --out names a folder; nothing is
           ever overwritten. Each saved path is printed on its own line.
 
@@ -183,12 +183,12 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         var answer = await Petal.Core.Util.PetalApi.SendAsync(request, null, ct);
         if (answer is null)
         {
-            error.WriteLine("Petal isn't running, or \"Let other programs run petals\" is off in its Settings.");
+            error.WriteLine("DropWheel isn't running, or \"Let other programs run petals\" is off in its Settings.");
             return Failed;
         }
         if (answer["ok"]?.GetValue<bool>() != true)
         {
-            error.WriteLine(answer["error"]?.GetValue<string>() ?? "Petal said no.");
+            error.WriteLine(answer["error"]?.GetValue<string>() ?? "DropWheel said no.");
             return Failed;
         }
         return Ok;
@@ -230,10 +230,10 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         var answer = await Petal.Core.Util.PetalApi.SendAsync(new() { ["cmd"] = "status" }, TimeSpan.FromSeconds(3), ct);
         if (answer is null)
         {
-            output.WriteLine("Petal isn't running (or doesn't let other programs in).");
+            output.WriteLine("DropWheel isn't running (or doesn't let other programs in).");
             return Failed;
         }
-        output.WriteLine($"Petal {answer["version"]?.GetValue<string>()} is running{(answer["paused"]?.GetValue<bool>() == true ? ", paused" : "")}.");
+        output.WriteLine($"DropWheel {answer["version"]?.GetValue<string>()} is running{(answer["paused"]?.GetValue<bool>() == true ? ", paused" : "")}.");
         return Ok;
     }
 
@@ -253,7 +253,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
             var from = F.FromPath(file);
             if (from is null)
             {
-                failures += Fail(file, "Petal doesn't know this kind of file.");
+                failures += Fail(file, "DropWheel doesn't know this kind of file.");
                 continue;
             }
             if (favourite.ConverterFor(from, Converters) is not { } converter)
@@ -282,7 +282,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         var id = name.Trim().TrimStart('.').ToLowerInvariant();
         var format = F.FromId(id) ?? F.FromPath("x." + id);
         if (format is not { CanWrite: true })
-            throw new UsageException($"\"{name}\" isn't a format Petal can write. See \"petal formats\".");
+            throw new UsageException($"\"{name}\" isn't a format DropWheel can write. See \"petal formats\".");
         return format;
     }
 
@@ -494,8 +494,8 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         if (answer.Recipe is not { } recipe)
         {
             error.WriteLine(Petal.Recipes.AskPetal.ModelReady
-                ? "Petal didn't find something it can do in that request."
-                : "Petal didn't understand that. Try simpler words, or download the AI model in Petal's Ask Petal window.");
+                ? "DropWheel didn't find something it can do in that request."
+                : "DropWheel didn't understand that. Try simpler words, or download the AI model in DropWheel's Ask DropWheel window.");
             return Failed;
         }
         int n = 1;
@@ -539,7 +539,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
             throw new UsageException("Say what to look for: petal search \"beach sunset\"");
         if (!File.Exists(Petal.Recipes.Search.SearchIndex.DefaultPath))
         {
-            error.WriteLine("There's no search index yet. Turn on Search by Meaning in Petal's Settings, and let it read your files.");
+            error.WriteLine("There's no search index yet. Turn on Search by Meaning in DropWheel's Settings, and let it read your files.");
             return Failed;
         }
         var query = string.Join(' ', a.Values);
@@ -560,7 +560,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
     {
         if (models.All(Petal.Core.Models.ModelStore.IsAvailable))
             return null;
-        error.WriteLine($"{tool} needs its AI model. Open {tool} in Petal once to download it.");
+        error.WriteLine($"{tool} needs its AI model. Open {tool} in DropWheel once to download it.");
         return tool;
     }
 
@@ -657,7 +657,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         foreach (var voice in Speech.AllVoices())
         {
             var state = voice.Kind == VoiceKind.Natural
-                ? voice.IsReady ? "natural" : "natural, download it in Petal's Read Aloud first"
+                ? voice.IsReady ? "natural" : "natural, download it in DropWheel's Read Aloud first"
                 : "Windows";
             output.WriteLine($"{voice.Name} ({voice.Language}, {state})");
         }
@@ -693,13 +693,13 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
             voice = Speech.Choose(language, voices.Where(v => v.IsReady).ToList());
             if (voice is null)
             {
-                error.WriteLine($"No voice for this document's language ({language}) is ready. Add one in Windows Settings › Time & language › Speech, or download a natural voice in Petal's Read Aloud.");
+                error.WriteLine($"No voice for this document's language ({language}) is ready. Add one in Windows Settings › Time & language › Speech, or download a natural voice in DropWheel's Read Aloud.");
                 return Failed;
             }
         }
         if (!voice.IsReady)
         {
-            error.WriteLine($"{voice.Name} isn't downloaded yet. Open Read Aloud in Petal once to get it.");
+            error.WriteLine($"{voice.Name} isn't downloaded yet. Open Read Aloud in DropWheel once to get it.");
             return Failed;
         }
         var path = OutputNaming.ForTool(file, ToolRegistry.Get(ToolId.ReadAloud), outputDirectory: a.OutputFolder());
@@ -837,7 +837,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         {
             var format = F.FromPath(a.Values[0]) ?? F.FromId(a.Values[0].TrimStart('.'));
             if (format is null)
-                throw new UsageException($"Petal doesn't know \"{a.Values[0]}\".");
+                throw new UsageException($"DropWheel doesn't know \"{a.Values[0]}\".");
             var targets = Converters.AvailableTargets([format]);
             output.WriteLine(targets.Count == 0 ? $"{format.Label} has no conversions on this PC." : $"{format.Label} → {string.Join(", ", targets.Select(t => t.Label))}");
             return Ok;
@@ -1151,7 +1151,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         var recipes = UserRecipes();
         if (recipes.Count == 0)
         {
-            output.WriteLine("No recipes yet. Make one in Petal's Settings › Recipes.");
+            output.WriteLine("No recipes yet. Make one in DropWheel's Settings › Recipes.");
             return Ok;
         }
         foreach (var recipe in recipes)

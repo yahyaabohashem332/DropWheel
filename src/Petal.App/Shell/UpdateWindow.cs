@@ -20,7 +20,7 @@ public static class UpdateService
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
 
-    static UpdateService() => Http.DefaultRequestHeaders.UserAgent.ParseAdd($"Petal/{Current}");
+    static UpdateService() => Http.DefaultRequestHeaders.UserAgent.ParseAdd($"DropWheel/{Current}");
 
     public static Version Current => Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0);
 
@@ -64,7 +64,7 @@ public static class UpdateService
             if (update is null)
             {
                 var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
-                card.Succeed(L.T("Petal is up to date."), L.F("This is Petal {0}.", CurrentText), null);
+                card.Succeed(L.T("DropWheel is up to date."), L.F("This is DropWheel {0}.", CurrentText), null);
                 return;
             }
             Offer(update);
@@ -96,7 +96,7 @@ public static class UpdateService
                 return;
             Offer(update);
             var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
-            card.Succeed(L.F("Petal {0} is available", update.Version), L.T("Click to see what's new"), () => UpdateWindow.ShowFor(update));
+            card.Succeed(L.F("DropWheel {0} is available", update.Version), L.T("Click to see what's new"), () => UpdateWindow.ShowFor(update));
         }
         catch (UpdateException ex)
         {
@@ -139,10 +139,10 @@ public sealed class UpdateWindow : ToolWindow
         _open.Activate();
     }
 
-    private UpdateWindow(UpdateManifest update) : base("Update Petal", 420)
+    private UpdateWindow(UpdateManifest update) : base("Update DropWheel", 420)
     {
         _update = update;
-        var title = Text(L.F("Petal {0} is available", update.Version), "Petal.Section");
+        var title = Text(L.F("DropWheel {0} is available", update.Version), "Petal.Section");
         title.FontSize = 15;
         Body.Children.Add(title);
         var size = update.Size > 0 ? " · " + Util.Sizes.Format(update.Size) : "";
@@ -157,7 +157,7 @@ public sealed class UpdateWindow : ToolWindow
         _fill.SetResourceReference(Border.BackgroundProperty, "Petal.Accent");
         _track.Child = _fill;
         Body.Children.Add(_track);
-        _status = Text("Petal closes while the update installs, then starts again.", "Petal.Caption");
+        _status = Text("DropWheel closes while the update installs, then starts again.", "Petal.Caption");
         _status.Margin = new Thickness(0, 10, 0, 0);
         _status.TextWrapping = TextWrapping.Wrap;
         Body.Children.Add(_status);

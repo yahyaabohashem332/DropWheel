@@ -75,7 +75,7 @@ internal static class Containers
     public static bool Supports(FileFormat format) => ById.ContainsKey(format.Id);
 
     public static ContainerSpec For(FileFormat format) =>
-        ById.TryGetValue(format.Id, out var spec) ? spec : throw new NotSupportedException($"Petal cannot write {format.Label} media files");
+        ById.TryGetValue(format.Id, out var spec) ? spec : throw new NotSupportedException($"DropWheel cannot write {format.Label} media files");
 
     /// <summary>The spec for an output path, falling back to the input's format for unknown extensions.</summary>
     public static ContainerSpec ForOutput(string outputPath, string inputPath)
@@ -90,7 +90,7 @@ internal static class Containers
                 return For(format) with { Id = "aac", Muxer = "adts", FastStart = false, CoverArt = false, CopyAudio = Set("aac") };
             return For(format);
         }
-        throw new MediaException($"Petal cannot write \"{Path.GetExtension(outputPath)}\" media files.");
+        throw new MediaException($"DropWheel cannot write \"{Path.GetExtension(outputPath)}\" media files.");
     }
 
     /// <summary>The subtitle codec to write for a source subtitle stream, or null when it cannot be carried over.</summary>

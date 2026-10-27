@@ -168,7 +168,7 @@ public sealed partial class SettingsWindow
                 var file = new MenuItem { Header = L.T("Save as a File…") };
                 file.Click += (_, _) =>
                 {
-                    var dialog = new SaveFileDialog { FileName = L.T(wheel.Name), DefaultExt = WheelSharing.Extension, Filter = L.T("Petal wheel") + $"|*{WheelSharing.Extension}" };
+                    var dialog = new SaveFileDialog { FileName = L.T(wheel.Name), DefaultExt = WheelSharing.Extension, Filter = L.T("DropWheel wheel") + $"|*{WheelSharing.Extension}" };
                     if (dialog.ShowDialog(this) == true)
                         File.WriteAllText(dialog.FileName, WheelSharing.ToJson(wheel));
                 };
@@ -239,7 +239,7 @@ public sealed partial class SettingsWindow
         var row = new WrapPanel();
         var choices = new[]
         {
-            (AccentChoice.Violet, "Petal violet"), (AccentChoice.Windows, "Windows accent"), (AccentChoice.Ocean, "Ocean"),
+            (AccentChoice.Violet, "DropWheel violet"), (AccentChoice.Windows, "Windows accent"), (AccentChoice.Ocean, "Ocean"),
             (AccentChoice.Mint, "Mint"), (AccentChoice.Rose, "Rose"), (AccentChoice.Amber, "Amber"), (AccentChoice.Graphite, "Graphite"),
         };
         var rings = new List<(AccentChoice Choice, Ellipse Ring)>();
@@ -436,7 +436,7 @@ public sealed partial class SettingsWindow
         buttons.Children.Add(import);
         buttons.Children.Add(folder);
         panel.Children.Add(buttons);
-        panel.Children.Add(Text("Petal notices when settings.json is changed by hand and uses the change at once. Which of your own petals and scripts may run is not exported: on another PC, each is shown once before it runs.", "Petal.Caption").WithMargin(0, 6, 0, 0));
+        panel.Children.Add(Text("DropWheel notices when settings.json is changed by hand and uses the change at once. Which of your own petals and scripts may run is not exported: on another PC, each is shown once before it runs.", "Petal.Caption").WithMargin(0, 6, 0, 0));
         var status = Text("", "Petal.Caption");
         status.Margin = new Thickness(0, 6, 0, 0);
         panel.Children.Add(status);
@@ -444,9 +444,9 @@ public sealed partial class SettingsWindow
         {
             var dialog = new SaveFileDialog
             {
-                Title = L.T("Export Petal's settings"),
-                FileName = $"Petal Settings {DateTime.Now:yyyy-MM-dd}.{SettingsTransfer.Extension}",
-                Filter = $"{L.T("Petal settings")} (*.{SettingsTransfer.Extension})|*.{SettingsTransfer.Extension}",
+                Title = L.T("Export DropWheel's settings"),
+                FileName = $"DropWheel Settings {DateTime.Now:yyyy-MM-dd}.{SettingsTransfer.Extension}",
+                Filter = $"{L.T("DropWheel settings")} (*.{SettingsTransfer.Extension})|*.{SettingsTransfer.Extension}",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             };
             if (dialog.ShowDialog(this) != true)
@@ -465,7 +465,7 @@ public sealed partial class SettingsWindow
         };
         import.Click += (_, _) =>
         {
-            var dialog = new OpenFileDialog { Title = L.T("Import Petal's settings"), Filter = $"{L.T("Petal settings")} (*.{SettingsTransfer.Extension})|*.{SettingsTransfer.Extension}|JSON (*.json)|*.json" };
+            var dialog = new OpenFileDialog { Title = L.T("Import DropWheel's settings"), Filter = $"{L.T("DropWheel settings")} (*.{SettingsTransfer.Extension})|*.{SettingsTransfer.Extension}|JSON (*.json)|*.json" };
             if (dialog.ShowDialog(this) != true)
                 return;
             try
@@ -541,7 +541,7 @@ public sealed partial class SettingsWindow
             ("Actions Wheel", "Actions and folders", "Choose the actions on the wheel, and add folders to drop files into."),
             ("Favourites", "Favourites", "Your usual conversions, first on the wheel with a star."),
             ("Recipes", "Recipes", "Several steps in one petal."),
-            ("Statistics", "Statistics", "What Petal has done for you, on this PC only."),
+            ("Statistics", "Statistics", "What DropWheel has done for you, on this PC only."),
             ("Backup", "Backup", "Everything in one file, for another PC."),
         };
         new TourOverlay(this, _scroll!, stops.Where(s => _cards.ContainsKey(s.Card)).Select(s => (_cards[s.Card], s.Title, s.Text)).ToList()).Start();

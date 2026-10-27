@@ -103,7 +103,7 @@ public class CliTests : IDisposable
         Assert.Equal(0, await Run());
         Assert.Contains("petal convert", _out.ToString());
         Assert.Equal(0, await Run("version"));
-        Assert.StartsWith("Petal ", Printed.Last());
+        Assert.StartsWith("DropWheel ", Printed.Last());
     }
 
     [Fact]

@@ -37,14 +37,14 @@ public sealed partial class SettingsWindow : ToolWindow
         _open.Activate();
     }
 
-    private SettingsWindow() : base("Petal Settings", 560)
+    private SettingsWindow() : base("DropWheel Settings", 560)
     {
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         SizeToContent = SizeToContent.Manual;
         Height = Math.Min(780, SystemParameters.WorkArea.Height - 40);
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
-        FooterNote = L.F("Petal {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, Petal.Core.Actions.FileActionRegistry.All.Count);
+        FooterNote = L.F("DropWheel {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, Petal.Core.Actions.FileActionRegistry.All.Count);
 
         var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-18, -14, -18, -16) };
         var page = new StackPanel { Margin = new Thickness(18, 14, 18, 18) };
@@ -68,12 +68,12 @@ public sealed partial class SettingsWindow : ToolWindow
         page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
         page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));
         page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
-        page.Children.Add(Card("Your Petals", "Tools of your own on the tools wheel: a small file says which files a petal takes and which program it runs. Petal shows the command before a petal's first run.", PetalsSection()));
-        page.Children.Add(Card("Search by Meaning", "Find files by what they're about: the words in documents and screenshots, and what photos and videos show. Petal reads the folders below while the PC is idle; the index stays on this PC.", SearchSection()));
+        page.Children.Add(Card("Your Petals", "Tools of your own on the tools wheel: a small file says which files a petal takes and which program it runs. DropWheel shows the command before a petal's first run.", PetalsSection()));
+        page.Children.Add(Card("Search by Meaning", "Find files by what they're about: the words in documents and screenshots, and what photos and videos show. DropWheel reads the folders below while the PC is idle; the index stays on this PC.", SearchSection()));
         page.Children.Add(Card("Results", null, OutputSection()));
         page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
-        page.Children.Add(Card("Helpers", "Petal uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
-        page.Children.Add(Card("Statistics", "What Petal has done for you, counted on this PC only.", StatisticsSection()));
+        page.Children.Add(Card("Helpers", "DropWheel uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
+        page.Children.Add(Card("Statistics", "What DropWheel has done for you, counted on this PC only.", StatisticsSection()));
         page.Children.Add(Card("General", null, GeneralSection()));
         page.Children.Add(Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()));
         page.Children.Add(Card("Updates", null, UpdatesSection()));
@@ -97,7 +97,7 @@ public sealed partial class SettingsWindow : ToolWindow
         grid.Children.Add(icon);
         var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(text, 1);
-        var title = Text("Petal", "Petal.Title");
+        var title = Text("DropWheel", "Petal.Title");
         title.FontSize = 22;
         text.Children.Add(title);
         text.Children.Add(Text("The zero-click file converter. Drag a file, tap Shift, and drop.", "Petal.Caption"));
@@ -115,7 +115,7 @@ public sealed partial class SettingsWindow : ToolWindow
         practice.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
         if (Shell.Packaged.Current is { Trial: true } trial)
         {
-            var buy = new Button { Content = L.T("Buy Petal"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(-8, 4, 0, 0) };
+            var buy = new Button { Content = L.T("Buy DropWheel"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(-8, 4, 0, 0) };
             buy.SetResourceReference(ForegroundProperty, "Petal.Accent");
             buy.Click += async (_, _) => await Shell.Packaged.BuyAsync(new System.Windows.Interop.WindowInteropHelper(this).Handle);
             var days = (int)Math.Ceiling(trial.TrialLeft.TotalDays);
@@ -161,7 +161,7 @@ public sealed partial class SettingsWindow : ToolWindow
         ValidateKeys();
         panel.Children.Add(Row("Quick shortcut", ShortcutPicker(), 150, 16));
         panel.Children.Add(Text("With files selected in File Explorer, it opens the wheel for them.", "Petal.Caption").WithMargin(150, 4, 0, 0));
-        var nothing = Choice([(Wheels.NothingSelected.Wheels, "The wheels without files"), (Wheels.NothingSelected.Clipboard, "The clipboard's wheel"), (Wheels.NothingSelected.Petal, "Petal's settings")], _s.NothingSelected);
+        var nothing = Choice([(Wheels.NothingSelected.Wheels, "The wheels without files"), (Wheels.NothingSelected.Clipboard, "The clipboard's wheel"), (Wheels.NothingSelected.Petal, "DropWheel's settings")], _s.NothingSelected);
         nothing.SelectionChanged += (_, _) =>
         {
             _s.NothingSelected = ValueOf<Wheels.NothingSelected>(nothing);
@@ -369,7 +369,7 @@ public sealed partial class SettingsWindow : ToolWindow
         };
         choose.Click += (_, _) =>
         {
-            var dialog = new OpenFolderDialog { Title = L.T("Save Petal results in") };
+            var dialog = new OpenFolderDialog { Title = L.T("Save DropWheel results in") };
             if (dialog.ShowDialog(this) == true)
             {
                 _s.OutputFolder = dialog.FolderName;
@@ -920,10 +920,10 @@ public sealed partial class SettingsWindow : ToolWindow
     private UIElement UpdatesSection()
     {
         var panel = new StackPanel();
-        panel.Children.Add(Text(L.F("This is Petal {0}.", Shell.UpdateService.CurrentText), "Petal.Body"));
+        panel.Children.Add(Text(L.F("This is DropWheel {0}.", Shell.UpdateService.CurrentText), "Petal.Body"));
         if (Shell.Packaged.IsPackaged)
         {
-            panel.Children.Add(Text("The Microsoft Store keeps Petal up to date.", "Petal.Caption").WithMargin(0, 4, 0, 0));
+            panel.Children.Add(Text("The Microsoft Store keeps DropWheel up to date.", "Petal.Caption").WithMargin(0, 4, 0, 0));
             return panel;
         }
         var feed = new TextBox { Text = _s.UpdateFeed, FlowDirection = FlowDirection.LeftToRight };
@@ -936,7 +936,7 @@ public sealed partial class SettingsWindow : ToolWindow
             Save();
         };
         panel.Children.Add(Row("Update address", feed, 150, 12));
-        panel.Children.Add(Text("Where Petal looks for new versions: an update.json over https, or in a shared folder. Leave it empty and Petal never looks. Only updates signed by Petal's maker are offered, and each installer is checked before it runs.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Text("Where DropWheel looks for new versions: an update.json over https, or in a shared folder. Leave it empty and DropWheel never looks. Only updates signed by DropWheel's maker are offered, and each installer is checked before it runs.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         panel.Children.Add(Switch("Check once a day", "Show a small card when a new version is out. Nothing is installed without asking.", _s.CheckForUpdates, v => _s.CheckForUpdates = v));
         var status = Text("", "Petal.Caption");
         status.TextWrapping = TextWrapping.Wrap;
@@ -960,11 +960,11 @@ public sealed partial class SettingsWindow : ToolWindow
                 Save();
                 if (update is null)
                 {
-                    status.Text = L.T("Petal is up to date.");
+                    status.Text = L.T("DropWheel is up to date.");
                 }
                 else
                 {
-                    status.Text = L.F("Petal {0} is available", update.Version);
+                    status.Text = L.F("DropWheel {0} is available", update.Version);
                     Shell.UpdateService.Offer(update);
                     Shell.UpdateWindow.ShowFor(update);
                 }
@@ -995,19 +995,19 @@ public sealed partial class SettingsWindow : ToolWindow
     private UIElement GeneralSection()
     {
         var panel = new StackPanel();
-        panel.Children.Add(Switch("Start with Windows", "Petal waits quietly in the notification area.", _s.LaunchAtStartup, v =>
+        panel.Children.Add(Switch("Start with Windows", "DropWheel waits quietly in the notification area.", _s.LaunchAtStartup, v =>
         {
             _s.LaunchAtStartup = v;
             LaunchAtLogin.Apply(v);
         }, top: 0));
         if (!Shell.Packaged.IsPackaged)
-            panel.Children.Add(Switch("Right-click menu", "Add “Convert with Petal” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
+            panel.Children.Add(Switch("Right-click menu", "Add “Convert with DropWheel” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
             {
                 _s.ExplorerContextMenu = v;
                 Shell.ContextMenuRegistration.Apply(v);
             }));
-        panel.Children.Add(Switch("Pause Petal", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
-        panel.Children.Add(Switch("Keep a history", "Remember what Petal made, so you can find a result again or undo it.", _s.KeepHistory, v => _s.KeepHistory = v));
+        panel.Children.Add(Switch("Pause DropWheel", "Ignore key taps while dragging until you turn this off.", _s.Paused, v => _s.Paused = v));
+        panel.Children.Add(Switch("Keep a history", "Remember what DropWheel made, so you can find a result again or undo it.", _s.KeepHistory, v => _s.KeepHistory = v));
         var log =new Button { Content = L.T("Open activity log"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         log.Click += (_, _) =>
         {

@@ -59,7 +59,7 @@ public static class ExplorerThumbnails
         var codeBase = new Uri(dll).AbsoluteUri;
         using (var clsid = root.CreateSubKey($@"Software\Classes\CLSID\{ClassId}"))
         {
-            clsid.SetValue(null, "Petal thumbnails");
+            clsid.SetValue(null, "DropWheel thumbnails");
             foreach (var key in new[] { "InprocServer32", @"InprocServer32\1.0.0.0" })
             {
                 using var server = clsid.CreateSubKey(key);

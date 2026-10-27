@@ -225,7 +225,7 @@ internal sealed class QuickLookWindow : Window
         _facts.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
         var open = new Button { Content = L.T("Open"), Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
         open.Click += (_, _) => OpenWithApp();
-        var wheel = new Button { Content = L.T("Petal Wheel"), Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
+        var wheel = new Button { Content = L.T("DropWheel"), Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
         wheel.Click += (_, _) => OpenWheel();
         var cross = Icons.Create("x", 14, Brushes.Gray, 2);
         cross.SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, "Petal.Text");

@@ -54,7 +54,7 @@ internal sealed class StepGuideWindow : ToolWindow
             }
             try
             {
-                if (_folder.StartsWith(Path.Combine(Path.GetTempPath(), "Petal Steps"), StringComparison.OrdinalIgnoreCase) && Directory.Exists(_folder))
+                if (_folder.StartsWith(Path.Combine(Path.GetTempPath(), "DropWheel Steps"), StringComparison.OrdinalIgnoreCase) && Directory.Exists(_folder))
                     Directory.Delete(_folder, recursive: true);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -171,7 +171,7 @@ internal sealed class StepGuideWindow : ToolWindow
             var title = _title.Text;
             var format = _format.Value;
             var steps = _steps.ToList();
-            var saving = Task.Run(() => Save(title, steps, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Petal Guides"), format,
+            var saving = Task.Run(() => Save(title, steps, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Guides"), format,
                 App.Current.Controller.Jobs.Converters, Settings.SettingsStore.Current.Conversion.Clone()));
             _saving = saving;
             var path = await saving;

@@ -38,7 +38,7 @@ internal static class MeetingRecorder
 
     public static bool IsRecording => _pill is not null;
 
-    public static string Folder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Petal Meetings");
+    public static string Folder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Meetings");
 
     public static void Toggle()
     {
@@ -59,10 +59,10 @@ internal static class MeetingRecorder
         }
         if (ToolLocator.Ffmpeg is null)
         {
-            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Meeting Notes"), L.T("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in Petal's tools folder."));
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Meeting Notes"), L.T("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in DropWheel's tools folder."));
             return;
         }
-        _work = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Petal meeting " + Guid.NewGuid().ToString("N")[..8]);
+        _work = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DropWheel meeting " + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(_work);
         foreach (var (make, name) in new (Func<IWaveIn>, string)[] { (() => new WasapiLoopbackCapture(), "system.wav"), (() => new NAudio.CoreAudioApi.WasapiCapture(), "mic.wav") })
         {
@@ -332,7 +332,7 @@ internal sealed class MeetingNotesWindow : ToolWindow
     private void Display()
     {
         bool summary = _view.Value;
-        _text.Text = summary ? (_summary.Length > 0 ? Readable(_summary) : L.T("No summary yet. With the AI model on this PC, Petal writes the summary, the decisions and the action items.")) : _transcript;
+        _text.Text = summary ? (_summary.Length > 0 ? Readable(_summary) : L.T("No summary yet. With the AI model on this PC, DropWheel writes the summary, the decisions and the action items.")) : _transcript;
         _text.FlowDirection = KeyboardLayout.LooksArabic(_text.Text) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         bool missing = summary && _summary.Length == 0;
         _model.Visibility = missing && !AskPetal.ModelReady ? Visibility.Visible : Visibility.Collapsed;

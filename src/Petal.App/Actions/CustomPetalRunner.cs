@@ -85,7 +85,7 @@ internal static class CustomPetalRunner
             Body.Children.Add(Row("Defined in", Path(petal.File), 90, 6));
             var always = new CheckBox { Content = L.T("Don't ask again for this petal"), Margin = new Thickness(90, 12, 0, 0) };
             Body.Children.Add(always);
-            Body.Children.Add(Text("Petal asks again if the petal's file changes.", "Petal.Caption").WithMargin(90, 4, 0, 0));
+            Body.Children.Add(Text("DropWheel asks again if the petal's file changes.", "Petal.Caption").WithMargin(90, 4, 0, 0));
             PrimaryButton.Content = L.T("Run");
             PrimaryButton.Click += (_, _) =>
             {

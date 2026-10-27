@@ -40,7 +40,7 @@ internal sealed class OdtWriter
     internal static XDocument MetaDocument(DocModel doc)
     {
         var meta = new XElement(OfficeNs + "meta",
-            new XElement(MetaNs + "generator", "Petal"),
+            new XElement(MetaNs + "generator", "DropWheel"),
             new XElement(MetaNs + "creation-date", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss")));
         if (doc.EffectiveTitle() is { } title) meta.Add(new XElement(DcNs + "title", title));
         if (doc.Metadata.Author is { } author)

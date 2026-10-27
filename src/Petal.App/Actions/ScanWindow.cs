@@ -71,7 +71,7 @@ public sealed class ScanWindow : ToolWindow
         catch (System.Net.Sockets.SocketException ex)
         {
             Log.Error(ex, "Starting the phone scanner");
-            Body.Children.Add(Text("Petal couldn't start sharing on this network.", "Petal.Body").WithMargin(0, 6, 0, 6));
+            Body.Children.Add(Text("DropWheel couldn't start sharing on this network.", "Petal.Body").WithMargin(0, 6, 0, 6));
             _session.Dispose();
             _session = null;
             return;
@@ -99,7 +99,7 @@ public sealed class ScanWindow : ToolWindow
             HorizontalAlignment = HorizontalAlignment.Center,
             Child = code,
         });
-        var how = Text("Scan it with the phone's camera, then photograph each page. Petal finds the page, straightens it and saves them as one searchable PDF.", "Petal.Body");
+        var how = Text("Scan it with the phone's camera, then photograph each page. DropWheel finds the page, straightens it and saves them as one searchable PDF.", "Petal.Body");
         how.TextAlignment = TextAlignment.Center;
         how.TextWrapping = TextWrapping.Wrap;
         how.Margin = new Thickness(0, 12, 0, 4);
@@ -133,7 +133,7 @@ public sealed class ScanWindow : ToolWindow
 
         _status.Margin = new Thickness(0, 14, 0, 0);
         Body.Children.Add(_status);
-        Body.Children.Add(Text("If Windows asks, allow Petal on private networks. On a network set to Public, the phone can't reach this PC.", "Petal.Caption").WithMargin(0, 10, 0, 0));
+        Body.Children.Add(Text("If Windows asks, allow DropWheel on private networks. On a network set to Public, the phone can't reach this PC.", "Petal.Caption").WithMargin(0, 10, 0, 0));
         FooterNote = "Stops when this window closes";
         SetStatus(L.T("Waiting for the phone…"));
         _idle.Start();
@@ -183,7 +183,7 @@ public sealed class ScanWindow : ToolWindow
         Language = L.Code,
         RightToLeft = L.IsRightToLeft,
         Title = L.T("Scan to {0}"),
-        Hint = L.T("Photograph each page. Petal straightens it and saves them as one PDF on the PC."),
+        Hint = L.T("Photograph each page. DropWheel straightens it and saves them as one PDF on the PC."),
         Take = L.T("Take a photo of a page"),
         Choose = L.T("Choose photos"),
         DragHint = L.T("Drag the corners onto the corners of the page."),

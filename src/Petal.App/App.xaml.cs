@@ -190,7 +190,7 @@ public partial class App : Application
             {
                 ShowSettings();
                 Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(
-                    L.F("Petal {0} is installed", UpdateService.Current.ToString(3)),
+                    L.F("DropWheel {0} is installed", UpdateService.Current.ToString(3)),
                     L.T("It waits in the notification area, by the clock."), null);
             });
         _ = UpdateService.CheckInBackgroundAsync();
@@ -201,7 +201,7 @@ public partial class App : Application
                 if (await Shell.Packaged.CheckAsync() is { Active: false })
                     Shell.TrialEndedWindow.ShowSingle();
             });
-        Log.Info($"Petal started, {converters.Converters.Count} converters");
+        Log.Info($"DropWheel started, {converters.Converters.Count} converters");
     }
 
     private readonly CommandChannel _commands = new();
@@ -281,7 +281,7 @@ public partial class App : Application
     private void CreateTray()
     {
         var icon = Path.Combine(AppContext.BaseDirectory, "Assets", "Petal.ico");
-        _tray = new TrayIcon(icon, L.T("Petal — drag a file and tap Shift"));
+        _tray = new TrayIcon(icon, L.T("DropWheel — drag a file and tap Shift"));
         _tray.Clicked += ShowSettings;
         BuildTrayMenu();
     }
@@ -290,15 +290,15 @@ public partial class App : Application
     {
         if (_tray is null)
             return;
-        _tray.SetTooltip(L.T(SettingsStore.Current.Paused ? "Petal — paused" : "Petal — drag a file and tap Shift"));
+        _tray.SetTooltip(L.T(SettingsStore.Current.Paused ? "DropWheel — paused" : "DropWheel — drag a file and tap Shift"));
         var menu = new ContextMenu();
         L.Apply(menu);
-        var pause = new MenuItem { Header = L.T("Pause Petal"), IsCheckable = true, IsChecked = SettingsStore.Current.Paused };
+        var pause = new MenuItem { Header = L.T("Pause DropWheel"), IsCheckable = true, IsChecked = SettingsStore.Current.Paused };
         pause.Click += (_, _) =>
         {
             SettingsStore.Current.Paused = pause.IsChecked;
             SettingsStore.Save();
-            _tray?.SetTooltip(L.T(pause.IsChecked ? "Petal — paused" : "Petal — drag a file and tap Shift"));
+            _tray?.SetTooltip(L.T(pause.IsChecked ? "DropWheel — paused" : "DropWheel — drag a file and tap Shift"));
         };
         var settingsItem = new MenuItem { Header = L.T("Settings…") };
         settingsItem.Click += (_, _) => ShowSettings();
@@ -306,7 +306,7 @@ public partial class App : Application
         scanItem.Click += (_, _) => Actions.ScanWindow.ShowSingle();
         var searchItem = new MenuItem { Header = L.T("Search by Meaning…") };
         searchItem.Click += (_, _) => Search.SearchWindow.ShowSingle();
-        var askItem = new MenuItem { Header = L.T("Ask Petal…") };
+        var askItem = new MenuItem { Header = L.T("Ask DropWheel…") };
         askItem.Click += (_, _) => { if (_controller is not null) Tools.Windows.AskWindow.ChooseAndShow(_controller.Jobs); };
         var duplicatesItem = new MenuItem { Header = L.T("Find Duplicates…") };
         duplicatesItem.Click += (_, _) => Tools.Windows.DuplicatesWindow.ChooseAndShow();
@@ -357,7 +357,7 @@ public partial class App : Application
             workMenu.Items.Add(item);
         var paletteItem = new MenuItem { Header = L.T("Command Palette") };
         paletteItem.Click += (_, _) => _ = Commands.CommandPalette.ToggleAsync(IntPtr.Zero);
-        var updatesItem = new MenuItem { Header = Shell.UpdateService.Waiting is { } waiting ? L.F("Install Petal {0}…", waiting.Version) : L.T("Check for Updates") };
+        var updatesItem = new MenuItem { Header = Shell.UpdateService.Waiting is { } waiting ? L.F("Install DropWheel {0}…", waiting.Version) : L.T("Check for Updates") };
         updatesItem.Click += async (_, _) =>
         {
             if (Shell.UpdateService.Waiting is { } update)
@@ -365,7 +365,7 @@ public partial class App : Application
             else
                 await Shell.UpdateService.CheckFromTrayAsync();
         };
-        var quit = new MenuItem { Header = L.T("Quit Petal") };
+        var quit = new MenuItem { Header = L.T("Quit DropWheel") };
         quit.Click += (_, _) => Quit();
         menu.Items.Add(settingsItem);
         menu.Items.Add(searchItem);
@@ -378,7 +378,7 @@ public partial class App : Application
         menu.Items.Add(screenMenu);
         menu.Items.Add(workMenu);
         menu.Items.Add(statsItem);
-        var healthItem = new MenuItem { Header = L.T("Petal Health…") };
+        var healthItem = new MenuItem { Header = L.T("DropWheel Health…") };
         healthItem.Click += (_, _) => Settings.HealthWindow.ShowSingle();
         menu.Items.Add(healthItem);
         menu.Items.Add(new Separator());

@@ -18,7 +18,7 @@ public partial class LocalizationTests
     // Strings in the app's sources that are not interface text, or read the same in Arabic.
     private static readonly HashSet<string> NotTranslated = new(StringComparer.Ordinal)
     {
-        "Petal", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",
+        "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",
         "Segoe UI Variable Display, Segoe UI", "Segoe UI Variable Text, Segoe UI", "Cascadia Mono, Consolas",
         "Shift", "Ctrl", "Alt", "Win", "⇧ Shift", "Shift ⇧", "Windows ⊞", "English",
         "FFmpeg", "Microsoft Office", "4K (2160p)", "Full HD (1080p)", "HD (720p)", "SD (480p)",
@@ -28,7 +28,7 @@ public partial class LocalizationTests
         // Font names, a template part, a unit and a file-name suffix (file names stay in English).
         "Segoe UI", "Segoe Script", "Segoe Print", "Ink Free", "Cell", "pt", "PNG · SVG", "Unlocked",
         // Date and time patterns, and a sample installer name in the design snapshots.
-        "HH:mm", "yyyy-MM-dd", "Petal-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
+        "HH:mm", "yyyy-MM-dd", "DropWheel-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
         // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Petal warm-up", "Microsoft",
         // The culture the wheel measures its text in, as WPF text blocks do by default.
@@ -38,7 +38,7 @@ public partial class LocalizationTests
         // Keycap names, cultures and date patterns for the statistics, and the line a PowerShell petal starts with.
         "Escape", "ar-EG", "en-GB", "d MMM", "d MMM yyyy", "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
         // Thread and message-window names.
-        "Petal app list", "Petal keep awake", "Petal wheel shortcuts",
+        "Petal app list", "DropWheel keep awake", "Petal wheel shortcuts",
         // Apps the ready-made wheels are for, by their own names.
         "VS Code", "Word", "Excel", "PowerPoint", "Teams", "Zoom", "Photoshop", "Slack", "Discord", "Bluetooth",
         // Sample requests and search results in the design snapshots, already in both languages.

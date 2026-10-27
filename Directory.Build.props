@@ -3,8 +3,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Company>Petal</Company>
-    <Product>Petal</Product>
+    <Company>DropWheel</Company>
+    <Product>DropWheel</Product>
     <Version>1.0.0</Version>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
     <!-- Petal's own words are in its code (English and its translations). Of the packages' translated resources only

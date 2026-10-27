@@ -143,7 +143,7 @@ public sealed class GuideWindow : ToolWindow
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.IsDefault = false;
         PrimaryButton.Click += (_, _) => Close();
-        FooterNote = "Answers come from Petal's own guide, worked out on this PC.";
+        FooterNote = "Answers come from DropWheel's own guide, worked out on this PC.";
         ShowSection(_section);
     }
 
@@ -417,14 +417,14 @@ public sealed class GuideWindow : ToolWindow
         if (!AskPetal.ModelReady)
         {
             _answer.Children.Add(Text(hits.Count > 0
-                ? "These come closest to what you said. With the AI model on this PC, Petal also answers in your words."
-                : "Nothing in Petal matches those words. With the AI model on this PC, Petal can understand other ways of saying it.", "Petal.Caption"));
+                ? "These come closest to what you said. With the AI model on this PC, DropWheel also answers in your words."
+                : "Nothing in DropWheel matches those words. With the AI model on this PC, DropWheel can understand other ways of saying it.", "Petal.Caption"));
             _model.Visibility = Visibility.Visible;
             return;
         }
         if (hits.Count == 0)
         {
-            _answer.Children.Add(Text("Nothing in Petal matches those words. Try saying it another way.", "Petal.Caption"));
+            _answer.Children.Add(Text("Nothing in DropWheel matches those words. Try saying it another way.", "Petal.Caption"));
             return;
         }
         _answer.Children.Add(Text("Thinking…", "Petal.Caption"));
@@ -447,7 +447,7 @@ public sealed class GuideWindow : ToolWindow
                 Refold();
             }
             else
-                _answer.Children.Add(Text("Petal has no tool for exactly that. These come closest:", "Petal.Caption"));
+                _answer.Children.Add(Text("DropWheel has no tool for exactly that. These come closest:", "Petal.Caption"));
         }
         catch (OperationCanceledException)
         {
@@ -503,7 +503,7 @@ public sealed class GuideWindow : ToolWindow
             text.FlowDirection = Petal.Core.Text.KeyboardLayout.LooksArabic(reply.Text) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             inside.Children.Add(text);
         }
-        inside.Children.Add(Text("From Petal's guide, by the AI model on this PC.", "Petal.Caption").WithMargin(0, 6, 0, 0));
+        inside.Children.Add(Text("From DropWheel's guide, by the AI model on this PC.", "Petal.Caption").WithMargin(0, 6, 0, 0));
         return card;
     }
 }

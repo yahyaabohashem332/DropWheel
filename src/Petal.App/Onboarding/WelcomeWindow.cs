@@ -36,7 +36,7 @@ public sealed class WelcomeWindow : ToolWindow
         _open.Activate();
     }
 
-    private WelcomeWindow() : base("Welcome to Petal", 600)
+    private WelcomeWindow() : base("Welcome to DropWheel", 600)
     {
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         PrimaryButton.Content = L.T("Get started");
@@ -49,7 +49,7 @@ public sealed class WelcomeWindow : ToolWindow
         ResetButton.Content = L.T("Settings");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => SettingsWindow.ShowSingle();
-        FooterNote = "Petal lives in the notification area.";
+        FooterNote = "DropWheel lives in the notification area.";
 
         var stage = PreviewPanel(_demo, 270);
         stage.Margin = new Thickness(0, 0, 0, 18);
@@ -59,7 +59,7 @@ public sealed class WelcomeWindow : ToolWindow
         headline.FontSize = 20;
         headline.Margin = new Thickness(0, 0, 0, 6);
         Body.Children.Add(headline);
-        Body.Children.Add(Text("Petal works while you drag. Everything happens on this PC — nothing is uploaded.", "Petal.Caption"));
+        Body.Children.Add(Text("DropWheel works while you drag. Everything happens on this PC — nothing is uploaded.", "Petal.Caption"));
 
         var steps = new UniformGrid3();
         steps.Add(Step("1", "Drag a file", "Start dragging any file in File Explorer or on the desktop."));
@@ -137,7 +137,7 @@ public sealed class WelcomeWindow : ToolWindow
         var well = Text("You've got it.", "Petal.Section");
         well.FontSize = 14;
         _finish.Children.Add(well);
-        _finish.Children.Add(Text("That is all Petal needs: drag, tap, drop. Settings has the rest, and the tour shows where.", "Petal.Caption"));
+        _finish.Children.Add(Text("That is all DropWheel needs: drag, tap, drop. Settings has the rest, and the tour shows where.", "Petal.Caption"));
         _finish.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0), Children = { tour } });
         panel.Children.Add(_finish);
         return panel;

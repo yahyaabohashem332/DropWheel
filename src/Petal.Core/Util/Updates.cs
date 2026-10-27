@@ -142,7 +142,7 @@ public static class Updates
         if (Normalize(offered) <= Normalize(current))
             return null;
         if (!IsSigned(manifest))
-            throw new UpdateException("The update isn't signed by Petal's maker, so it isn't offered.");
+            throw new UpdateException("The update isn't signed by DropWheel's maker, so it isn't offered.");
         var installer = Uri.TryCreate(feedUri, manifest.Url, out var resolved) ? resolved : null;
         if (installer is null || !(installer.Scheme == Uri.UriSchemeHttps || installer.IsFile))
             throw new UpdateException("The update feed points to an address that isn't secure.");
@@ -159,7 +159,7 @@ public static class Updates
         Directory.CreateDirectory(folder);
         var name = Path.GetFileName(source.LocalPath);
         if (string.IsNullOrWhiteSpace(name) || !name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-            name = $"Petal-Setup-{manifest.Version}.exe";
+            name = $"DropWheel-Setup-{manifest.Version}.exe";
         var final = Path.Combine(folder, name);
         var partial = final + ".part";
         try

@@ -20,7 +20,7 @@ public interface IWheelHost
 public sealed record WheelActionContext(ScreenPoint At, IntPtr Target, IWheelHost Host);
 
 /// <summary>A built-in action for the wheels without files, with its state when it is a switch.</summary>
-/// <param name="Section">Where the picker lists it: "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Media" or "Petal".</param>
+/// <param name="Section">Where the picker lists it: "Windows", "Screen", "Draw", "Text", "Arrange", "Clipboard", "Notes", "Media" or "DropWheel".</param>
 public sealed record WheelAction(string Id, string Label, string Name, string Icon, string Description, string Section)
 {
     /// <summary>On or off for a switch, read now; null for a plain action or when it can't be told.</summary>
@@ -193,7 +193,7 @@ public static class WheelActions
             Note = () => Screen.ScreenRecorder.IsRecording ? "Recording" : null,
             Run = async c => { await Task.Delay(180); Screen.ScreenRecorder.Toggle(Open(c)); },
         },
-        new("screen.scroll", "SCROLL SHOT", "Scrolling Screenshot", "scrollCapture", "A whole long page in one picture: Petal scrolls it and joins what it sees.", "Screen")
+        new("screen.scroll", "SCROLL SHOT", "Scrolling Screenshot", "scrollCapture", "A whole long page in one picture: DropWheel scrolls it and joins what it sees.", "Screen")
         {
             Run = async c => { await Task.Delay(180); Screen.ScrollCapture.Toggle(Open(c)); },
         },
@@ -287,7 +287,7 @@ public static class WheelActions
         Text("text.calculate", "CALCULATE", "Calculate", "calculator", "Works out a selected sum or unit conversion (12% of 340, 5 km in mi) and copies the answer."),
         Text("text.summarize", "SUMMARY", "Summarize", "summary", "A short summary of the selected text, made by the AI model on this PC."),
         Text("text.rewrite", "REWRITE", "Rewrite", "wand", "Clearer, shorter, more formal, friendlier, or with mistakes fixed, by the AI model on this PC."),
-        new("text.dictate", "DICTATE", "Dictate", "mic", "Speak, and Petal types what you say where the cursor is, in Arabic, English and more.", "Text")
+        new("text.dictate", "DICTATE", "Dictate", "mic", "Speak, and DropWheel types what you say where the cursor is, in Arabic, English and more.", "Text")
         {
             State = () => Words.Dictation.IsListening,
             Unavailable = () => Words.Listener.HasMicrophone ? null : "No microphone found",
@@ -429,16 +429,16 @@ public static class WheelActions
         },
 
         // ---------- Petal ----------
-        new("petal.clipboard", "CLIPBOARD", "Clipboard's Wheel", "clipboardPaste", "The wheel for what you copied: files, a screenshot or text. A copied link becomes a QR code.", "Petal")
+        new("petal.clipboard", "CLIPBOARD", "Clipboard's Wheel", "clipboardPaste", "The wheel for what you copied: files, a screenshot or text. A copied link becomes a QR code.", "DropWheel")
         {
             Unavailable = () => Shell.ClipboardSource.HasSomething() ? null : "The clipboard is empty",
             Run = c => { c.Host.Command("clipboard", c.At); return Task.CompletedTask; },
         },
-        new("petal.history", "HISTORY", "Petal History", "history", "What Petal made lately, to find or undo.", "Petal") { Run = c => { c.Host.Command("history", c.At); return Task.CompletedTask; } },
-        new("petal.search", "SEARCH", "Search by Meaning", "search", "Find files by what they are about.", "Petal") { Run = c => { c.Host.Command("search", c.At); return Task.CompletedTask; } },
-        new("petal.scan", "SCAN", "Scan with Phone", "scanLine", "Scan pages with a phone into a searchable PDF.", "Petal") { Run = c => { c.Host.Command("scan", c.At); return Task.CompletedTask; } },
-        new("petal.qr", "QR", "Create QR Code", "qr", "A QR code for text, a link or Wi-Fi.", "Petal") { Run = c => { c.Host.Command("qr", c.At); return Task.CompletedTask; } },
-        new("petal.guide", "GUIDE", "Tools Guide", "book", "Every tool explained with examples; say what you want to do and Petal finds the tool.", "Petal")
+        new("petal.history", "HISTORY", "DropWheel History", "history", "What DropWheel made lately, to find or undo.", "DropWheel") { Run = c => { c.Host.Command("history", c.At); return Task.CompletedTask; } },
+        new("petal.search", "SEARCH", "Search by Meaning", "search", "Find files by what they are about.", "DropWheel") { Run = c => { c.Host.Command("search", c.At); return Task.CompletedTask; } },
+        new("petal.scan", "SCAN", "Scan with Phone", "scanLine", "Scan pages with a phone into a searchable PDF.", "DropWheel") { Run = c => { c.Host.Command("scan", c.At); return Task.CompletedTask; } },
+        new("petal.qr", "QR", "Create QR Code", "qr", "A QR code for text, a link or Wi-Fi.", "DropWheel") { Run = c => { c.Host.Command("qr", c.At); return Task.CompletedTask; } },
+        new("petal.guide", "GUIDE", "Tools Guide", "book", "Every tool explained with examples; say what you want to do and DropWheel finds the tool.", "DropWheel")
         {
             Run = _ =>
             {
@@ -446,9 +446,9 @@ public static class WheelActions
                 return Task.CompletedTask;
             },
         },
-        new("petal.stats", "STATS", "Your Statistics", "chart", "What Petal has done for you.", "Petal") { Run = c => { c.Host.Command("stats", c.At); return Task.CompletedTask; } },
-        new("petal.settings", "PETAL", "Petal Settings", "sparkles", "Open Petal's settings.", "Petal") { Run = c => { c.Host.Command("settings", c.At); return Task.CompletedTask; } },
-        new("petal.pause", "PAUSE", "Pause Petal", "pause", "Ignore key taps while dragging until you turn it back on.", "Petal")
+        new("petal.stats", "STATS", "Your Statistics", "chart", "What DropWheel has done for you.", "DropWheel") { Run = c => { c.Host.Command("stats", c.At); return Task.CompletedTask; } },
+        new("petal.settings", "DROPWHEEL", "DropWheel Settings", "sparkles", "Open DropWheel's settings.", "DropWheel") { Run = c => { c.Host.Command("settings", c.At); return Task.CompletedTask; } },
+        new("petal.pause", "PAUSE", "Pause DropWheel", "pause", "Ignore key taps while dragging until you turn it back on.", "DropWheel")
         {
             State = () => Settings.SettingsStore.Current.Paused,
             Run = c => { c.Host.Command("pause", c.At); return Task.CompletedTask; },

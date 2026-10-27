@@ -1,4 +1,4 @@
-﻿; Petal installer (Inno Setup 6). Built by tools\scripts\build.ps1.
+﻿; DropWheel installer (Inno Setup 6). Built by tools\scripts\build.ps1.
 ; Per-user install: no admin rights needed, like Petal's own settings and context-menu entry.
 
 #ifndef AppVersion
@@ -16,12 +16,13 @@
 
 [Setup]
 AppId={{6F1E3C2A-8B7D-4E59-9A41-5C0D2B7E9F13}
-AppName=Petal
+AppName=DropWheel
 AppVersion={#AppVersion}
-AppVerName=Petal {#AppVersion}
-AppPublisher=Petal
-DefaultDirName={localappdata}\Programs\Petal
-DefaultGroupName=Petal
+AppVerName=DropWheel {#AppVersion}
+AppPublisher=DropWheel
+; Updates keep the folder an earlier version was installed in (Programs\Petal before the new name).
+DefaultDirName={localappdata}\Programs\DropWheel
+DefaultGroupName=DropWheel
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 #if Arch == "arm64"
@@ -29,12 +30,12 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=arm64
 ArchitecturesInstallIn64BitMode=arm64
 MinVersion=10.0.22621
-OutputBaseFilename=Petal-Setup-{#AppVersion}-arm64
+OutputBaseFilename=DropWheel-Setup-{#AppVersion}-arm64
 #else
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
-OutputBaseFilename=Petal-Setup-{#AppVersion}
+OutputBaseFilename=DropWheel-Setup-{#AppVersion}
 #endif
 OutputDir={#OutputDir}
 SetupIconFile=..\src\Petal.App\Assets\Petal.ico
@@ -55,30 +56,30 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [CustomMessages]
 english.Options=Options:
-english.TaskStartup=Start Petal when I sign in to Windows
-english.TaskMenu=Add "Convert with Petal" to File Explorer's right-click menu
+english.TaskStartup=Start DropWheel when I sign in to Windows
+english.TaskMenu=Add "Convert with DropWheel" to File Explorer's right-click menu
 english.TaskPath=Add the "petal" command to the command line (PATH)
-english.StartNow=Start Petal now
+english.StartNow=Start DropWheel now
 arabic.Options=الخيارات:
-arabic.TaskStartup=تشغيل Petal عند تسجيل الدخول إلى Windows
-arabic.TaskMenu=إضافة «التحويل بـ Petal» إلى قائمة النقر الأيمن في مستكشف الملفات
+arabic.TaskStartup=تشغيل DropWheel عند تسجيل الدخول إلى Windows
+arabic.TaskMenu=إضافة «التحويل بـ DropWheel» إلى قائمة النقر الأيمن في مستكشف الملفات
 arabic.TaskPath=إضافة الأمر «petal» إلى سطر الأوامر (PATH)
-arabic.StartNow=تشغيل Petal الآن
+arabic.StartNow=تشغيل DropWheel الآن
 turkish.Options=Seçenekler:
-turkish.TaskStartup=Windows'ta oturum açtığımda Petal'ı başlat
-turkish.TaskMenu=Dosya Gezgini'nin sağ tık menüsüne "Petal ile dönüştür" ekle
+turkish.TaskStartup=Windows'ta oturum açtığımda DropWheel'i başlat
+turkish.TaskMenu=Dosya Gezgini'nin sağ tık menüsüne "DropWheel ile dönüştür" ekle
 turkish.TaskPath="petal" komutunu komut satırına ekle (PATH)
-turkish.StartNow=Petal'ı şimdi başlat
+turkish.StartNow=DropWheel'i şimdi başlat
 french.Options=Options :
-french.TaskStartup=Démarrer Petal à l'ouverture de ma session Windows
-french.TaskMenu=Ajouter « Convertir avec Petal » au menu contextuel de l'Explorateur de fichiers
+french.TaskStartup=Démarrer DropWheel à l'ouverture de ma session Windows
+french.TaskMenu=Ajouter « Convertir avec DropWheel » au menu contextuel de l'Explorateur de fichiers
 french.TaskPath=Ajouter la commande « petal » à la ligne de commande (PATH)
-french.StartNow=Démarrer Petal maintenant
+french.StartNow=Démarrer DropWheel maintenant
 spanish.Options=Opciones:
-spanish.TaskStartup=Iniciar Petal al iniciar sesión en Windows
-spanish.TaskMenu=Añadir «Convertir con Petal» al menú contextual del Explorador de archivos
+spanish.TaskStartup=Iniciar DropWheel al iniciar sesión en Windows
+spanish.TaskMenu=Añadir «Convertir con DropWheel» al menú contextual del Explorador de archivos
 spanish.TaskPath=Añadir el comando «petal» a la línea de comandos (PATH)
-spanish.StartNow=Iniciar Petal ahora
+spanish.StartNow=Iniciar DropWheel ahora
 
 [Tasks]
 Name: "startup"; Description: "{cm:TaskStartup}"; GroupDescription: "{cm:Options}"
@@ -89,14 +90,18 @@ Name: "path"; Description: "{cm:TaskPath}"; GroupDescription: "{cm:Options}"; Fl
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Petal"; Filename: "{app}\Petal.exe"
+Name: "{autoprograms}\DropWheel"; Filename: "{app}\Petal.exe"
+
+[InstallDelete]
+; The Start menu shortcut from before the new name.
+Type: files; Name: "{autoprograms}\Petal.lnk"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Petal"; ValueData: """{app}\Petal.exe"" --background"; Tasks: startup; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\Classes\*\shell\Petal"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Convert with Petal"; Tasks: contextmenu; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\*\shell\Petal"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Convert with DropWheel"; Tasks: contextmenu; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\*\shell\Petal"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\Petal.exe"",0"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\*\shell\Petal\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Petal.exe"" --wheel ""%1"""; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Petal actions"; Tasks: contextmenu; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal"; ValueType: string; ValueName: "MUIVerb"; ValueData: "DropWheel actions"; Tasks: contextmenu; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\Petal.exe"",0"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Petal\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Petal.exe"" --wheel ""%1"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Tasks: path; Check: NeedsAddPath(ExpandConstant('{app}'))

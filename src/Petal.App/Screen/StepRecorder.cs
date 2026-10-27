@@ -156,7 +156,7 @@ internal static class StepRecorder
         _typingPicture = null;
         _lastClick = null;
         TidyOld();
-        _folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Petal Steps",
+        _folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DropWheel Steps",
             DateTime.Now.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N")[..6]);
         Directory.CreateDirectory(_folder);
         _session = new CancellationTokenSource();
@@ -227,7 +227,7 @@ internal static class StepRecorder
     /// <summary>Pictures left by a recording Petal didn't get to finish (it was closed, or the PC turned off).</summary>
     private static void TidyOld()
     {
-        var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Petal Steps");
+        var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DropWheel Steps");
         _ = Task.Run(() =>
         {
             try

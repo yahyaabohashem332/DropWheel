@@ -272,7 +272,7 @@ public sealed class FileDetailsWindow : ToolWindow
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             Log.Error(ex, "Reading file details");
-            _status.Text = L.T("Petal couldn't read this file.") + " " + L.T(ex.Message);
+            _status.Text = L.T("DropWheel couldn't read this file.") + " " + L.T(ex.Message);
         }
     }
 
@@ -461,7 +461,7 @@ public sealed class CollectFilesWindow : ToolWindow
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             Log.Error(ex, "Planning a collection");
-            _summary.Text = L.T("Petal couldn't read this file.") + " " + L.T(ex.Message);
+            _summary.Text = L.T("DropWheel couldn't read this file.") + " " + L.T(ex.Message);
         }
     }
 

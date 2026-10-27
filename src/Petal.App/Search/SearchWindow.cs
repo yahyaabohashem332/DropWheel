@@ -110,12 +110,12 @@ public sealed class SearchWindow : ToolWindow
             SearchService.Hurry();
             Sync();
         };
-        var what = Text("Petal reads the files in your Pictures, Documents, Desktop, Downloads and Videos folders while the PC is idle: the words in documents and screenshots, and what photos and videos show. The index stays on this PC.", "Petal.Body");
+        var what = Text("DropWheel reads the files in your Pictures, Documents, Desktop, Downloads and Videos folders while the PC is idle: the words in documents and screenshots, and what photos and videos show. The index stays on this PC.", "Petal.Body");
         what.TextWrapping = TextWrapping.Wrap;
         _off.Child = new StackPanel { Children = { what, turnOn } };
         Body.Children.Add(_off);
 
-        _modelsHint = Text("To find photos and videos by what they show, Petal needs its picture models.", "Petal.Caption");
+        _modelsHint = Text("To find photos and videos by what they show, DropWheel needs its picture models.", "Petal.Caption");
         _modelsHint.Margin = new Thickness(0, 12, 0, 0);
         Body.Children.Add(_modelsHint);
         Body.Children.Add(_models);
@@ -297,7 +297,7 @@ public sealed class SearchWindow : ToolWindow
             if (!Petal.Recipes.AskPetal.ModelReady)
             {
                 _askModel.Visibility = Visibility.Visible;
-                inside.Children.Add(Text("With the AI model on this PC, Petal answers in a sentence.", "Petal.Caption").WithMargin(0, 4, 0, 0));
+                inside.Children.Add(Text("With the AI model on this PC, DropWheel answers in a sentence.", "Petal.Caption").WithMargin(0, 4, 0, 0));
             }
         }
         _answer.Children.Add(card);

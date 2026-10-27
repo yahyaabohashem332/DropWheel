@@ -249,7 +249,7 @@ public static class AiUpscaler
     /// <summary>A new image four times the size, sharpened by the model. Transparency is enlarged smoothly.</summary>
     internal static MagickImage Upscale(MagickImage image, IProgress<double>? progress, CancellationToken cancellationToken)
     {
-        var path = ModelStore.Find(ModelCatalog.Upscaler) ?? throw new FileNotFoundException("The enlargement model is missing. Reinstall Petal to restore it.");
+        var path = ModelStore.Find(ModelCatalog.Upscaler) ?? throw new FileNotFoundException("The enlargement model is missing. Reinstall DropWheel to restore it.");
         var model = OnnxModel.Get(path, allowGpu: true);
         int w = (int)image.Width, h = (int)image.Height, ow = w * Factor, oh = h * Factor;
 

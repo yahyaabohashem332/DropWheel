@@ -47,7 +47,7 @@ public static class SharingCleaner
                 await PdfMetadataEditor.RemoveAllAsync(input, output, cancellationToken);
                 break;
             default:
-                throw new NotSupportedException("Petal can't clean this kind of file.");
+                throw new NotSupportedException("DropWheel can't clean this kind of file.");
         }
     }
 

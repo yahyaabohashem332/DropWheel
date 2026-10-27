@@ -256,7 +256,7 @@ internal sealed class PdfDocumentWriter
         var date = DateTimeOffset.Now;
         var offset = date.Offset;
         var stamp = $"D:{date:yyyyMMddHHmmss}{(offset < TimeSpan.Zero ? '-' : '+')}{Math.Abs(offset.Hours):00}'{Math.Abs(offset.Minutes):00}'";
-        var info = $"<< /Producer (Petal) /CreationDate ({stamp})";
+        var info = $"<< /Producer (DropWheel) /CreationDate ({stamp})";
         if (!string.IsNullOrEmpty(title))
             info += $" /Title {PdfText(title)}";
         WriteObject(3, info + " >>");

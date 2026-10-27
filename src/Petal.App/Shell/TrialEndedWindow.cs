@@ -32,14 +32,14 @@ public sealed class TrialEndedWindow : ToolWindow
     private TrialEndedWindow() : base("Your Trial Has Ended", 440)
     {
         Settings.SettingsStore.Current.Paused = true;
-        var title = Text("Thank you for trying Petal", "Petal.Section");
+        var title = Text("Thank you for trying DropWheel", "Petal.Section");
         title.FontSize = 15;
         Body.Children.Add(title);
-        Body.Children.Add(Text("The trial is over. Buy Petal in the Microsoft Store to keep converting and using the tools and the wheels. Your settings, wheels and history are kept.", "Petal.Body").WithMarginT(8));
+        Body.Children.Add(Text("The trial is over. Buy DropWheel in the Microsoft Store to keep converting and using the tools and the wheels. Your settings, wheels and history are kept.", "Petal.Body").WithMarginT(8));
         var status = Text("", "Petal.Caption");
         status.Margin = new Thickness(0, 10, 0, 0);
         Body.Children.Add(status);
-        PrimaryButton.Content = L.T("Buy Petal");
+        PrimaryButton.Content = L.T("Buy DropWheel");
         PrimaryButton.Click += async (_, _) =>
         {
             PrimaryButton.IsEnabled = false;
@@ -54,7 +54,7 @@ public sealed class TrialEndedWindow : ToolWindow
             status.Text = L.T("The purchase didn't go through. You can try again.");
             PrimaryButton.IsEnabled = true;
         };
-        ResetButton.Content = L.T("Quit Petal");
+        ResetButton.Content = L.T("Quit DropWheel");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => Close();
         Closed += (_, _) =>

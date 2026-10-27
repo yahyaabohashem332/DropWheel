@@ -115,7 +115,7 @@ public static partial class Packaged
         }
         catch (Exception ex) when (ex is COMException or InvalidOperationException or UnauthorizedAccessException)
         {
-            Log.Error(ex, "Buying Petal in the Store");
+            Log.Error(ex, "Buying DropWheel in the Store");
             return false;
         }
     }

@@ -124,7 +124,7 @@
  "tool:ResizeImage": {
   "category": "pictures",
   "summary": "Makes pictures larger or smaller, turns them a quarter turn and flips them, one picture or a whole selection.",
-  "details": "Resize & Rotate offers Keep, Percent (50% at first, from 5% to 200%), Width, Height or Fit, which keeps the picture within a width and height you type; proportions are always kept. Allow making images larger lets Width, Height and Fit go above the original size, and when a picture comes out larger, Enlarge with AI for sharper detail uses the Real-ESRGAN model that ships with Petal (pictures up to about 4 megapixels). Rotate left, Rotate right, Flip horizontally and Flip vertically are under Turn; one picture shows a live preview with the size before and after. Save writes each result next to its original as 'name Resized' in the same format.",
+  "details": "Resize & Rotate offers Keep, Percent (50% at first, from 5% to 200%), Width, Height or Fit, which keeps the picture within a width and height you type; proportions are always kept. Allow making images larger lets Width, Height and Fit go above the original size, and when a picture comes out larger, Enlarge with AI for sharper detail uses the Real-ESRGAN model that ships with DropWheel (pictures up to about 4 megapixels). Rotate left, Rotate right, Flip horizontally and Flip vertically are under Turn; one picture shows a live preview with the size before and after. Save writes each result next to its original as 'name Resized' in the same format.",
   "how": "Drag one or more pictures, tap Ctrl and drop on RESIZE; pick a size and any turn, then choose Save.",
   "examples": [
    "A 6000-pixel camera photo too big for a website upload: choose Width 1600.",
@@ -149,7 +149,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Puts your text or logo on pictures, on every frame of a video, or on every page of a PDF.",
-  "details": "Add Watermark has two kinds: Text (Arabic included; '© year' at first) with a Colour (white at first), or Picture, a logo you choose. Size goes from 5% to 90% (30% at first) and Opacity from 10% to 100% (60% at first). Position is one of nine spots (bottom right at first), or tick Repeat across to cover the whole picture. A preview shows the first file, and Petal remembers your last watermark for next time. Each result is saved next to its original as 'name Watermarked'.",
+  "details": "Add Watermark has two kinds: Text (Arabic included; '© year' at first) with a Colour (white at first), or Picture, a logo you choose. Size goes from 5% to 90% (30% at first) and Opacity from 10% to 100% (60% at first). Position is one of nine spots (bottom right at first), or tick Repeat across to cover the whole picture. A preview shows the first file, and DropWheel remembers your last watermark for next time. Each result is saved next to its original as 'name Watermarked'.",
   "how": "Drag files, tap Ctrl and drop on WATERMARK; set the text or picture, size and position, then choose Add Watermark.",
   "examples": [
    "Thirty wedding photos for a client preview: drop them all and add your studio name in the bottom right corner.",
@@ -269,7 +269,7 @@
  "tool:SlimPhotoshop": {
   "category": "pictures",
   "summary": "Makes Photoshop files smaller by removing the hidden list of every file ever pasted in, leaving layers untouched.",
-  "details": "Remove Photoshop History runs straight away, with no window. Photoshop keeps adding a hidden list of every file ever pasted or placed into a document (its document ancestors), which can make a PSD many times larger than its pictures. Petal saves a copy without that list next to the original as 'name Slim'; layers and pixels are not changed. The card says how much smaller the files became.",
+  "details": "Remove Photoshop History runs straight away, with no window. Photoshop keeps adding a hidden list of every file ever pasted or placed into a document (its document ancestors), which can make a PSD many times larger than its pictures. DropWheel saves a copy without that list next to the original as 'name Slim'; layers and pixels are not changed. The card says how much smaller the files became.",
   "how": "Drag one or more PSD files, tap Ctrl and drop on HISTORY; the slim copies appear next to them.",
   "examples": [
    "A 900 MB PSD that should be about 80 MB: drop it on HISTORY and compare the sizes.",
@@ -1391,7 +1391,7 @@
  "action:Ask": {
   "category": "files",
   "summary": "Does what you ask with the files, in your own words in English or Arabic, after showing you the steps.",
-  "details": "Ask Petal opens a box where you type (or say, with the microphone button) what to do, such as 'make them 1080 px WEBP and zip them' or 'put them in one searchable PDF'. Petal lists the steps it understood under 'Petal will:' and warns when they don't fit the files; nothing runs until you press Run. Common requests are understood without a model, and with the AI model (Qwen2.5 1.5B, about 1.1 GB, downloaded once from the window) requests worded freely are understood too, all on this PC. Save as Recipe… keeps the steps as a petal on the tools wheel, and results are saved beside the originals as 'name' plus the recipe's name.",
+  "details": "Ask DropWheel opens a box where you type (or say, with the microphone button) what to do, such as 'make them 1080 px WEBP and zip them' or 'put them in one searchable PDF'. DropWheel lists the steps it understood under 'DropWheel will:' and warns when they don't fit the files; nothing runs until you press Run. Common requests are understood without a model, and with the AI model (Qwen2.5 1.5B, about 1.1 GB, downloaded once from the window) requests worded freely are understood too, all on this PC. Save as Recipe… keeps the steps as a petal on the tools wheel, and results are saved beside the originals as 'name' plus the recipe's name.",
   "how": "Drag the files, tap Alt and drop on ASK; type what you want, press Ask, check the steps and press Run.",
   "examples": [
    "Twenty phone photos: type 'compress them for WhatsApp' and send them right after.",
@@ -1415,7 +1415,7 @@
  "action:Share": {
   "category": "files",
   "summary": "Opens the Windows share window to send files with Nearby Sharing, Mail, Teams or another app.",
-  "details": "Share hands the dropped files and folders to Windows' own share window, the same one apps use. From there you can send them with Nearby Sharing to a PC close by, or to any app that offers sharing, such as Mail or Teams. Petal doesn't upload anything itself; what happens next is up to the app you pick.",
+  "details": "Share hands the dropped files and folders to Windows' own share window, the same one apps use. From there you can send them with Nearby Sharing to a PC close by, or to any app that offers sharing, such as Mail or Teams. DropWheel doesn't upload anything itself; what happens next is up to the app you pick.",
   "how": "Drag the files, tap Alt and drop on SHARE, then pick where to send them in the Windows share window.",
   "examples": [
    "A presentation sent to a colleague's laptop in the same room with Nearby Sharing.",
@@ -1438,7 +1438,7 @@
  "action:Phone": {
   "category": "files",
   "summary": "Shows a QR code so a phone on the same Wi-Fi can save the files, with nothing going through the internet.",
-  "details": "Send to Phone starts a small sharing page on this PC and shows its QR code and address. Scan it with the phone's camera: the page lists the files to tap and save, folders download as ZIP, and 'Download everything as ZIP' takes it all. Turn on 'Let the phone send files to this PC' and the phone can send files back, saved in Downloads. When photos or videos record where they were taken, Share Without Location offers clean copies instead; sharing stops when you press Stop Sharing, close the window, or after 15 minutes with nothing happening. If Windows asks, allow Petal on private networks; on a network set to Public the phone can't reach the PC.",
+  "details": "Send to Phone starts a small sharing page on this PC and shows its QR code and address. Scan it with the phone's camera: the page lists the files to tap and save, folders download as ZIP, and 'Download everything as ZIP' takes it all. Turn on 'Let the phone send files to this PC' and the phone can send files back, saved in Downloads. When photos or videos record where they were taken, Share Without Location offers clean copies instead; sharing stops when you press Stop Sharing, close the window, or after 15 minutes with nothing happening. If Windows asks, allow DropWheel on private networks; on a network set to Public the phone can't reach the PC.",
   "how": "Drag the files, tap Alt and drop on TO PHONE, then scan the QR code with the phone's camera.",
   "examples": [
    "Holiday videos moved from the PC to an iPhone without a cable or a cloud upload.",
@@ -1461,8 +1461,8 @@
  },
  "action:SendToPc": {
   "category": "files",
-  "summary": "Sends files and folders straight to another PC with Petal on the same network, which asks before saving.",
-  "details": "Send to PC looks for PCs on your network where Petal is receiving and lists them by name; Look Again searches once more. Choose one and that PC shows who wants to send how many files and how big they are, with Accept and Decline (it declines by itself after two minutes). Accepted files are saved in Downloads\\Petal on that PC, and a card here says when they were sent, refused, or couldn't get through. The other PC must turn on 'Let other PCs send me files' in Settings › Work & Sharing, since receiving is off until then; nothing goes through the internet.",
+  "summary": "Sends files and folders straight to another PC with DropWheel on the same network, which asks before saving.",
+  "details": "Send to PC looks for PCs on your network where DropWheel is receiving and lists them by name; Look Again searches once more. Choose one and that PC shows who wants to send how many files and how big they are, with Accept and Decline (it declines by itself after two minutes). Accepted files are saved in Downloads\\DropWheel on that PC, and a card here says when they were sent, refused, or couldn't get through. The other PC must turn on 'Let other PCs send me files' in Settings › Work & Sharing, since receiving is off until then; nothing goes through the internet.",
   "how": "Drag the files, tap Alt, open MORE and drop on TO PC; then choose the PC to send to.",
   "examples": [
    "A 3 GB video sent from a desktop to the laptop in the next room.",
@@ -1555,7 +1555,7 @@
  "action:Move": {
   "category": "files",
   "summary": "Moves the original files to a folder you choose.",
-  "details": "Move opens a folder picker that starts in the files' own folder. Pick the destination and the originals are moved there with Windows' own copy engine, so its progress window and its questions about names already there appear as usual. A card then says how many items moved; click it to see them in File Explorer. Petal's History keeps the move, so you can put the files back from there.",
+  "details": "Move opens a folder picker that starts in the files' own folder. Pick the destination and the originals are moved there with Windows' own copy engine, so its progress window and its questions about names already there appear as usual. A card then says how many items moved; click it to see them in File Explorer. DropWheel's History keeps the move, so you can put the files back from there.",
   "how": "Drag the files, tap Alt and drop on MOVE, then choose the folder.",
   "examples": [
    "Finished invoices moved from Downloads into the Accounts folder.",
@@ -1807,7 +1807,7 @@
  "kind:recipe": {
   "category": "general",
   "summary": "Runs several steps on the files as one petal, such as remove the background, resize, save as WEBP and zip.",
-  "details": "A recipe is made in Settings › Recipes with New Recipe…: give it a name and add steps from Convert, Resize, Rotate, Compress, Remove Background, Add Watermark, Clean for Sharing, Rename, Compress to ZIP, Combine into one PDF and Make Searchable. Steps run in order, each on what the one before made, and each step has its own settings, such as a format and size, an app to compress for, watermark text and position, or a name pattern. With 'Show it on the tools wheel' on, the recipe appears first on the Ctrl wheel whenever it fits the files. Results are saved beside the originals as 'name' plus the recipe's name; Ask Petal's Save as Recipe… makes recipes too, and the command line runs them with petal run.",
+  "details": "A recipe is made in Settings › Recipes with New Recipe…: give it a name and add steps from Convert, Resize, Rotate, Compress, Remove Background, Add Watermark, Clean for Sharing, Rename, Compress to ZIP, Combine into one PDF and Make Searchable. Steps run in order, each on what the one before made, and each step has its own settings, such as a format and size, an app to compress for, watermark text and position, or a name pattern. With 'Show it on the tools wheel' on, the recipe appears first on the Ctrl wheel whenever it fits the files. Results are saved beside the originals as 'name' plus the recipe's name; Ask DropWheel's Save as Recipe… makes recipes too, and the command line runs them with petal run.",
   "how": "Make it in Settings › Recipes, then drag files, tap Ctrl and drop on the recipe's petal.",
   "examples": [
    "'Shop photo': remove the background, resize to 1080 px and save as WEBP, for every new product picture.",
@@ -1831,7 +1831,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Runs a program of your own on the dropped files, described by a small file in the petals folder.",
-  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (SHA-256 checksums with Windows' certutil) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds Petal doesn't know. Petal shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
+  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (SHA-256 checksums with Windows' certutil) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds DropWheel doesn't know. DropWheel shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
   "how": "Add the file in Settings › Your Petals, then drag matching files, tap Ctrl and drop on its petal.",
   "examples": [
    "A petal that runs oxipng on PNG files and saves 'name Optimised.png'.",
@@ -1877,7 +1877,7 @@
  "kind:keys": {
   "category": "general",
   "summary": "Presses a keyboard shortcut, or a sequence of them, in the app that was in front.",
-  "details": "A keys petal holds a shortcut such as Ctrl+Shift+T, or several presses in a row (Ctrl+K Ctrl+S); in Settings › Wheels you click the Keys box and press them. The keys go only to the window that was in front when the wheel opened, once it is back in front, and the centre shows them while you rest on the petal. Petal's ready-made wheels for browsers, File Explorer, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack and Discord are made of such petals and come first while their app is in front. If that window has closed, a card says the keys weren't pressed.",
+  "details": "A keys petal holds a shortcut such as Ctrl+Shift+T, or several presses in a row (Ctrl+K Ctrl+S); in Settings › Wheels you click the Keys box and press them. The keys go only to the window that was in front when the wheel opened, once it is back in front, and the centre shows them while you rest on the petal. DropWheel's ready-made wheels for browsers, File Explorer, VS Code, Word, Excel, PowerPoint, Teams, Zoom, Photoshop, Windows Terminal, Slack and Discord are made of such petals and come first while their app is in front. If that window has closed, a card says the keys weren't pressed.",
   "how": "In the app you want, press Ctrl+Win+Z with nothing selected and choose the petal.",
   "examples": [
    "Reopen Closed Tab in Chrome from the wheel without remembering Ctrl+Shift+T.",
@@ -1968,7 +1968,7 @@
  "kind:group": {
   "category": "general",
   "summary": "Holds petals of its own that fly out around it as glass bubbles, such as More.",
-  "details": "A group petal opens its petals on an orbit of glass bubbles just outside the ring, turned away from the screen's edge, while the rest of the ring steps back. Point at it, click it, or hold over it while dragging, then choose a bubble; the arrow keys, Enter and 1 to 9 work on the bubbles, and Esc, the group again or the centre takes them back in. Your own groups hold up to eight petals and are made in Settings › Wheels; Petal's own More groups hold the extra petals of the Quick and Arrange wheels, of the tools wheel when it has more than twelve, and the actions not placed on the actions wheel.",
+  "details": "A group petal opens its petals on an orbit of glass bubbles just outside the ring, turned away from the screen's edge, while the rest of the ring steps back. Point at it, click it, or hold over it while dragging, then choose a bubble; the arrow keys, Enter and 1 to 9 work on the bubbles, and Esc, the group again or the centre takes them back in. Your own groups hold up to eight petals and are made in Settings › Wheels; DropWheel's own More groups hold the extra petals of the Quick and Arrange wheels, of the tools wheel when it has more than twelve, and the actions not placed on the actions wheel.",
   "how": "Rest on or click the group petal (for example MORE), then choose one of its bubbles.",
   "examples": [
    "MORE on the Alt wheel to reach Copy Path, Copy Name, VS Code and Terminal.",
@@ -2012,7 +2012,7 @@
  "kind:clips": {
   "category": "general",
   "summary": "Shows the last things you copied as petals that paste them into the app in front.",
-  "details": "The Recent Clips petal (CLIPS) shows the last eight clips, pinned ones first: text, pictures or files, each a petal that pastes it where you are working; on the Clipboard wheel the clips sit right on the ring. If a clip can't be pasted it stays on the clipboard for Ctrl+V. It comes from Petal's clipboard history (search, pin, delete), whose switches are in Settings › Screen & Text; private copies such as passwords are never kept, and the history is remembered after Petal closes only if you ask. When nothing has been copied yet the petal is dim.",
+  "details": "The Recent Clips petal (CLIPS) shows the last eight clips, pinned ones first: text, pictures or files, each a petal that pastes it where you are working; on the Clipboard wheel the clips sit right on the ring. If a clip can't be pasted it stays on the clipboard for Ctrl+V. It comes from DropWheel's clipboard history (search, pin, delete), whose switches are in Settings › Screen & Text; private copies such as passwords are never kept, and the history is remembered after DropWheel closes only if you ask. When nothing has been copied yet the petal is dim.",
   "how": "Press Ctrl+Win+Z with nothing selected, go to the Clipboard wheel and choose a clip.",
   "examples": [
    "Paste an address you copied an hour ago without finding it again.",
@@ -2057,7 +2057,7 @@
  "do:system.darkmode": {
   "category": "system",
   "summary": "Switches Windows and your apps between light and dark mode with one petal.",
-  "details": "Dark Mode changes the same two switches as Windows Settings for colours: the mode for apps and the mode for Windows itself, together. Petal tells every open window that the setting changed, as Settings does, so apps that follow the Windows theme change at once. The petal shows whether dark mode is on now, read from Windows, so it is right even if you changed it somewhere else. Choose it again to go back to light.",
+  "details": "Dark Mode changes the same two switches as Windows Settings for colours: the mode for apps and the mode for Windows itself, together. DropWheel tells every open window that the setting changed, as Settings does, so apps that follow the Windows theme change at once. The petal shows whether dark mode is on now, read from Windows, so it is right even if you changed it somewhere else. Choose it again to go back to light.",
   "how": "Press Ctrl+Win+Z with nothing selected and choose DARK MODE on the Quick wheel. You can also type 'dark mode' in the command palette (Ctrl+Win+K).",
   "examples": [
    "Working late at night: choose DARK MODE and File Explorer, Settings and the taskbar turn dark.",
@@ -2129,7 +2129,7 @@
  "do:system.awake": {
   "category": "system",
   "summary": "Keeps the PC and the screen from going to sleep until you turn it off.",
-  "details": "Keep Awake asks Windows to keep both the PC and the display on, so the sleep and screen-off timers don't kick in. It stays on until you choose the petal again or Petal quits. The petal shows whether it is on. Your power settings are not changed; turning it off lets the normal timers work again.",
+  "details": "Keep Awake asks Windows to keep both the PC and the display on, so the sleep and screen-off timers don't kick in. It stays on until you choose the petal again or DropWheel quits. The petal shows whether it is on. Your power settings are not changed; turning it off lets the normal timers work again.",
   "how": "Press Ctrl+Win+Z with nothing selected and choose AWAKE on the Quick wheel.",
   "examples": [
    "Downloading a 20 GB game overnight: AWAKE stops the PC from sleeping halfway.",
@@ -2315,7 +2315,7 @@
  "do:system.clearclipboard": {
   "category": "clipboard",
   "summary": "Empties the Windows clipboard so what you copied can no longer be pasted.",
-  "details": "Empty Clipboard forgets whatever is copied right now: text, a picture or files. A card confirms Clipboard emptied. It doesn't touch Petal's clipboard history; Clear Clipboard History on the wheels does that. Use it after copying a password or other private details.",
+  "details": "Empty Clipboard forgets whatever is copied right now: text, a picture or files. A card confirms Clipboard emptied. It doesn't touch DropWheel's clipboard history; Clear Clipboard History on the wheels does that. Use it after copying a password or other private details.",
   "how": "Press Ctrl+Win+Z with nothing selected, open MORE on the Quick wheel and choose CLEAR.",
   "examples": [
    "You copied a password from your password manager: clear the clipboard so it can't be pasted by accident.",
@@ -2429,8 +2429,8 @@
  "do:system.settings": {
   "category": "system",
   "summary": "Opens the Windows Settings app.",
-  "details": "Windows Settings opens the Settings app at its home page, the same as Win+I. From there you can change the display, sound, network, apps and everything else Windows offers. It is not on any wheel at first: add it to one of your wheels in Petal Settings under Wheels, or find it in the command palette.",
-  "how": "Press Ctrl+Win+K, type 'windows settings' and press Enter, or add the SETTINGS petal to a wheel in Petal Settings under Wheels.",
+  "details": "Windows Settings opens the Settings app at its home page, the same as Win+I. From there you can change the display, sound, network, apps and everything else Windows offers. It is not on any wheel at first: add it to one of your wheels in DropWheel Settings under Wheels, or find it in the command palette.",
+  "how": "Press Ctrl+Win+K, type 'windows settings' and press Enter, or add the SETTINGS petal to a wheel in DropWheel Settings under Wheels.",
   "examples": [
    "Change the screen resolution for a projector: open Windows Settings and go to Display.",
    "Connect to a new Wi-Fi network at a hotel.",
@@ -2523,8 +2523,8 @@
  },
  "do:screen.scroll": {
   "category": "screen",
-  "summary": "Takes one tall screenshot of a whole long page: Petal scrolls it and joins what it sees.",
-  "details": "Drag over the part of the window that scrolls, such as a web page or a chat; Petal puts the pointer there, scrolls down by itself and joins each new piece into one picture, with sticky headers and footers shown once. It stops at the end of the page, when you press Esc or when you move the mouse, and the picture can be up to 30,000 pixels tall. If the page changes while scrolling, the part so far is kept and the card says so. The picture is saved in the Screenshots folder inside Pictures and copied to the clipboard, a card shows where with Show in Folder and Open, and the conversion wheel opens on it.",
+  "summary": "Takes one tall screenshot of a whole long page: DropWheel scrolls it and joins what it sees.",
+  "details": "Drag over the part of the window that scrolls, such as a web page or a chat; DropWheel puts the pointer there, scrolls down by itself and joins each new piece into one picture, with sticky headers and footers shown once. It stops at the end of the page, when you press Esc or when you move the mouse, and the picture can be up to 30,000 pixels tall. If the page changes while scrolling, the part so far is kept and the card says so. The picture is saved in the Screenshots folder inside Pictures and copied to the clipboard, a card shows where with Show in Folder and Open, and the conversion wheel opens on it.",
   "how": "Press Ctrl+Win+Z with nothing selected, choose SCROLL SHOT on the Screen wheel, then drag over the scrolling part of the window.",
   "examples": [
    "Keep a long online receipt as one picture, then turn it into a PDF on the wheel.",
@@ -2596,7 +2596,7 @@
   "category": "screen",
   "summary": "Keeps part of another window live and on top of everything, changing as it changes there.",
   "details": "Drag over part of an app's window, such as a video call, a stream or a progress bar, and a small window shows that part live above all others. Windows draws it, so nothing is copied or recorded and it costs almost nothing. You can resize it and it keeps its shape; its top bar shows the window's name with See-through (three steps) and Close, and Esc also closes it. It closes by itself when the source window closes. Up to 6 live regions can be open, and the desktop and taskbar can't be used.",
-  "how": "It is not on a wheel at first: press Ctrl+Win+K and type 'live region', or add LIVE to a wheel in Petal Settings under Wheels, then drag over part of a window.",
+  "how": "It is not on a wheel at first: press Ctrl+Win+K and type 'live region', or add LIVE to a wheel in DropWheel Settings under Wheels, then drag over part of a window.",
   "examples": [
    "Keep the score corner of a football stream in view while you work in Excel.",
    "Keep the speaker's video from a Zoom call visible while you take notes in Word.",
@@ -2618,7 +2618,7 @@
  "do:screen.private": {
   "category": "screen",
   "summary": "Takes a screenshot with e-mail addresses, phone numbers, card numbers and passwords already covered, to share safely.",
-  "details": "Drag over an area; the picture waits in Petal's temporary folder and opens in the Redact Photo window, which looks for private details straight away and covers each one with a box: e-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords. You can also press Faces or Text to cover those, drag on the picture to cover any other area, move or resize a box, or remove it with Delete. Style can be Solid, in a colour you choose, or Blur. Save Redacted Copy saves only the covered copy, named like 'Screenshot 2026-10-21 16.40.05 Redacted.png', in the Screenshots folder inside Pictures, puts it on the clipboard and shows where it is; the uncovered picture is deleted, and closing the window without saving keeps nothing.",
+  "details": "Drag over an area; the picture waits in DropWheel's temporary folder and opens in the Redact Photo window, which looks for private details straight away and covers each one with a box: e-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords. You can also press Faces or Text to cover those, drag on the picture to cover any other area, move or resize a box, or remove it with Delete. Style can be Solid, in a colour you choose, or Blur. Save Redacted Copy saves only the covered copy, named like 'Screenshot 2026-10-21 16.40.05 Redacted.png', in the Screenshots folder inside Pictures, puts it on the clipboard and shows where it is; the uncovered picture is deleted, and closing the window without saving keeps nothing.",
   "how": "Press Ctrl+Win+Z with nothing selected, choose PRIVATE SHOT on the Screen wheel, drag over the area, check the boxes and press Save Redacted Copy.",
   "examples": [
    "Show customer support your order page without your e-mail address and card number.",
@@ -2829,7 +2829,7 @@
  "do:draw.clicks": {
   "category": "draw",
   "summary": "Shows rings where you click and the shortcuts you press, for recordings and presentations.",
-  "details": "Show Clicks and Keys draws a ring at each click: amber for the left button, blue for the right and green for the middle. Shortcuts with Ctrl, Alt or Win, and keys such as F5 or Esc, appear in pills at the bottom of the screen, like Ctrl + C. Plain typing is not shown unless you turn on Show every key in Petal Settings under Screen & Text, so passwords never appear by default. Clicks pass through, and choosing SHOW CLICKS again turns it off.",
+  "details": "Show Clicks and Keys draws a ring at each click: amber for the left button, blue for the right and green for the middle. Shortcuts with Ctrl, Alt or Win, and keys such as F5 or Esc, appear in pills at the bottom of the screen, like Ctrl + C. Plain typing is not shown unless you turn on Show every key in DropWheel Settings under Screen & Text, so passwords never appear by default. Clicks pass through, and choosing SHOW CLICKS again turns it off.",
   "how": "Press Ctrl+Win+Z with nothing selected, press Tab until the Draw & Present wheel shows and choose SHOW CLICKS.",
   "examples": [
    "Recording an Excel tutorial: viewers see each click and every Ctrl+C you press.",
@@ -3037,7 +3037,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Opens a search box where you type what you want: any action, a petal for selected files, an app, a file or a sum.",
-  "details": "The Command Palette opens over the window in front and finds things as you type, in English or Arabic: every action of every wheel, each wheel itself, every petal for the files selected in File Explorer, Petal's windows, the apps on the PC, what you copied lately, files found by Search by Meaning, snippets and workspaces. Type a sum or unit conversion such as 12% of 340 or 5 km in mi and Enter copies the answer. Use the arrow keys to choose, Enter to run, Ctrl+Enter for the other action (such as opening a file's folder) and Esc to close. The microphone button lets you say a command instead. If nothing fits, it offers to search the web.",
+  "details": "The Command Palette opens over the window in front and finds things as you type, in English or Arabic: every action of every wheel, each wheel itself, every petal for the files selected in File Explorer, DropWheel's windows, the apps on the PC, what you copied lately, files found by Search by Meaning, snippets and workspaces. Type a sum or unit conversion such as 12% of 340 or 5 km in mi and Enter copies the answer. Use the arrow keys to choose, Enter to run, Ctrl+Enter for the other action (such as opening a file's folder) and Esc to close. The microphone button lets you say a command instead. If nothing fits, it offers to search the web.",
   "how": "Press Ctrl+Win+K, choose COMMANDS on the Work wheel, or choose Command Palette in the tray menu.",
   "examples": [
    "Type 'rec' and press Enter to start Record the Screen without looking for its wheel.",
@@ -3061,7 +3061,7 @@
  "do:petal.clipboard": {
   "category": "clipboard",
   "summary": "Opens the wheel for what you copied: files, a screenshot or text; a copied link becomes a QR code.",
-  "details": "Clipboard's Wheel looks at the clipboard: copied files open the conversion wheel for them, or the actions wheel if a folder is among them. A copied picture is saved as 'Clipboard 2026-10-21 16.40.05.png' in the Screenshots folder inside Pictures, and copied text as a .txt file in the Petal folder inside Documents, and the conversion wheel opens on that file. A single copied link (a web address, mailto or tel) opens Create QR Code with the link filled in. When the clipboard is empty, the petal is dimmed and says The clipboard is empty.",
+  "details": "Clipboard's Wheel looks at the clipboard: copied files open the conversion wheel for them, or the actions wheel if a folder is among them. A copied picture is saved as 'Clipboard 2026-10-21 16.40.05.png' in the Screenshots folder inside Pictures, and copied text as a .txt file in the DropWheel folder inside Documents, and the conversion wheel opens on that file. A single copied link (a web address, mailto or tel) opens Create QR Code with the link filled in. When the clipboard is empty, the petal is dimmed and says The clipboard is empty.",
   "how": "Press Ctrl+Win+Z with nothing selected and choose CLIPBOARD on the Quick wheel or the Clipboard wheel.",
   "examples": [
    "You copied a picture from a web page: open the clipboard's wheel and save it as a JPG.",
@@ -3083,9 +3083,9 @@
  },
  "do:petal.history": {
   "category": "petal",
-  "summary": "Shows what Petal made lately, so you can find a result or undo it.",
-  "details": "Petal History lists finished conversions and tools, newest first, each with when it happened and the result's name. Show in File Explorer opens the folder with the result selected. Undo moves the results to the Recycle Bin, puts the old names back after a rename, or puts files back from the Recycle Bin. Clear History empties the list. The history stays on this PC, and if keeping a history is off in Settings, the window says so.",
-  "how": "It is not on a wheel at first: choose History in the tray menu or in Petal Settings, or type 'history' in the command palette (Ctrl+Win+K).",
+  "summary": "Shows what DropWheel made lately, so you can find a result or undo it.",
+  "details": "DropWheel History lists finished conversions and tools, newest first, each with when it happened and the result's name. Show in File Explorer opens the folder with the result selected. Undo moves the results to the Recycle Bin, puts the old names back after a rename, or puts files back from the Recycle Bin. Clear History empties the list. The history stays on this PC, and if keeping a history is off in Settings, the window says so.",
+  "how": "It is not on a wheel at first: choose History in the tray menu or in DropWheel Settings, or type 'history' in the command palette (Ctrl+Win+K).",
   "examples": [
    "You compressed a video yesterday and can't find it: open History and choose Show in File Explorer.",
    "You converted 30 photos to the wrong format: Undo sends the results to the Recycle Bin.",
@@ -3108,7 +3108,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Finds files by what they are about: the words in them, their name, or what a photo or video shows.",
-  "details": "Search by Meaning lets you type things like 'receipt from the pharmacy' or 'beach photos' and finds matching files in your Pictures, Documents, Desktop, Downloads and Videos folders. It is off until you press Turn On; then Petal reads those folders while the PC is idle and keeps the index on this PC. Finding photos and videos by what they show needs Petal's picture models, downloaded once. Enter opens the first result, and you can drag any result into another app. When you type a question, Ask Your Files answers from what your documents say, with the files it came from; this needs the AI model, downloaded once.",
+  "details": "Search by Meaning lets you type things like 'receipt from the pharmacy' or 'beach photos' and finds matching files in your Pictures, Documents, Desktop, Downloads and Videos folders. It is off until you press Turn On; then DropWheel reads those folders while the PC is idle and keeps the index on this PC. Finding photos and videos by what they show needs DropWheel's picture models, downloaded once. Enter opens the first result, and you can drag any result into another app. When you type a question, Ask Your Files answers from what your documents say, with the files it came from; this needs the AI model, downloaded once.",
   "how": "It is not on a wheel at first: choose Search by Meaning in the tray menu, or type 'search' in the command palette (Ctrl+Win+K).",
   "examples": [
    "You can't remember what you named a scanned electricity bill: type 'electricity bill' and it shows up.",
@@ -3132,7 +3132,7 @@
  "do:petal.scan": {
   "category": "petal",
   "summary": "Scans paper pages with your phone's camera into one searchable PDF on the PC.",
-  "details": "Scan with Phone shows a QR code; scan it with the phone's camera to open a camera page in the phone's browser, over your Wi-Fi with nothing going through the internet. Photograph each page or Choose photos, drag the corners if needed, pick Document, Colour, Grey or Black & white, and press Save as PDF. Petal finds each page, straightens it on the PC and saves one searchable PDF in the Scans folder inside Documents, or a folder you pick with Choose. The phone and the PC must be on the same network, and Windows may ask you to allow Petal on private networks. Sharing stops when the window closes, or after 20 minutes with no activity.",
+  "details": "Scan with Phone shows a QR code; scan it with the phone's camera to open a camera page in the phone's browser, over your Wi-Fi with nothing going through the internet. Photograph each page or Choose photos, drag the corners if needed, pick Document, Colour, Grey or Black & white, and press Save as PDF. DropWheel finds each page, straightens it on the PC and saves one searchable PDF in the Scans folder inside Documents, or a folder you pick with Choose. The phone and the PC must be on the same network, and Windows may ask you to allow DropWheel on private networks. Sharing stops when the window closes, or after 20 minutes with no activity.",
   "how": "It is not on a wheel at first: choose Scan with Phone in the tray menu, or type 'scan' in the command palette (Ctrl+Win+K).",
   "examples": [
    "Scan a signed 3-page contract into one PDF to e-mail back.",
@@ -3178,13 +3178,13 @@
  },
  "do:petal.stats": {
   "category": "petal",
-  "summary": "Shows what Petal has done for you: files handled, space saved, petals used and days in a row.",
+  "summary": "Shows what DropWheel has done for you: files handled, space saved, petals used and days in a row.",
   "details": "Your Statistics shows four big numbers: files handled, space saved, petals used and days in a row, with the date counting began and your longest run. Below are a calendar of the last twelve weeks, the petals you used most and your milestones. Everything is counted on this PC only and nothing is sent anywhere. You can untick Keep counting, and Start Over forgets everything after asking.",
   "how": "It is not on a wheel at first: choose Your Statistics in the tray menu, or type 'statistics' in the command palette (Ctrl+Win+K).",
   "examples": [
    "See how many gigabytes compressing your phone videos has saved this year.",
    "Find out which petal you use most, to put it first on a wheel.",
-   "Check your streak of days in a row using Petal."
+   "Check your streak of days in a row using DropWheel."
   ],
   "worksOn": "",
   "keywords": [
@@ -3201,9 +3201,9 @@
  },
  "do:petal.settings": {
   "category": "petal",
-  "summary": "Opens Petal's settings window.",
-  "details": "Petal Settings is Petal's main window, and every change is saved at once. It has sections for Keys, Wheels (to change, add or switch off wheels and their petals), Appearance, The Wheel, Screen & Text, Work & Sharing, Actions Wheel, Favourites, Recipes, Automations, Your Petals, Search by Meaning, Results, Quality, Helpers, Statistics, General, Backup and Updates. A new wheel you make starts with this petal on it.",
-  "how": "Choose Settings in the tray menu, choose PETAL on a wheel where you added it, or type 'settings' in the command palette (Ctrl+Win+K).",
+  "summary": "Opens DropWheel's settings window.",
+  "details": "DropWheel Settings is DropWheel's main window, and every change is saved at once. It has sections for Keys, Wheels (to change, add or switch off wheels and their petals), Appearance, The Wheel, Screen & Text, Work & Sharing, Actions Wheel, Favourites, Recipes, Automations, Your Petals, Search by Meaning, Results, Quality, Helpers, Statistics, General, Backup and Updates. A new wheel you make starts with this petal on it.",
+  "how": "Choose Settings in the tray menu, choose DROPWHEEL on a wheel where you added it, or type 'settings' in the command palette (Ctrl+Win+K).",
   "examples": [
    "Change the key that opens the conversion wheel from Shift to another key.",
    "Add the Live Region petal to your Screen wheel under Wheels.",
@@ -3224,13 +3224,13 @@
  },
  "do:petal.pause": {
   "category": "petal",
-  "summary": "Pauses Petal so key taps while dragging no longer open the wheel, until you turn it back on.",
-  "details": "Pause Petal makes Petal ignore Shift, Ctrl and Alt taps while you drag files, useful in apps where you need those keys mid-drag. A card says Petal is paused; choose it again and the card says Petal is on again. The petal shows whether Petal is paused, and the tray icon's tooltip says so too. The same switch is Pause Petal in the tray menu.",
-  "how": "It is not on a wheel at first: right-click the tray icon and choose Pause Petal, or type 'pause' in the command palette (Ctrl+Win+K).",
+  "summary": "Pauses DropWheel so key taps while dragging no longer open the wheel, until you turn it back on.",
+  "details": "Pause DropWheel makes DropWheel ignore Shift, Ctrl and Alt taps while you drag files, useful in apps where you need those keys mid-drag. A card says DropWheel is paused; choose it again and the card says DropWheel is on again. The petal shows whether DropWheel is paused, and the tray icon's tooltip says so too. The same switch is Pause DropWheel in the tray menu.",
+  "how": "It is not on a wheel at first: right-click the tray icon and choose Pause DropWheel, or type 'pause' in the command palette (Ctrl+Win+K).",
   "examples": [
-   "Moving layers in Photoshop with Shift held: pause Petal so the wheel doesn't appear.",
-   "Playing a game that uses Ctrl while dragging: pause Petal for the evening.",
-   "Copying files in File Explorer with Ctrl held: pause Petal for a big tidy-up."
+   "Moving layers in Photoshop with Shift held: pause DropWheel so the wheel doesn't appear.",
+   "Playing a game that uses Ctrl while dragging: pause DropWheel for the evening.",
+   "Copying files in File Explorer with Ctrl held: pause DropWheel for a big tidy-up."
   ],
   "worksOn": "",
   "keywords": [
@@ -3248,7 +3248,7 @@
  "do:text.fixlayout": {
   "category": "text",
   "summary": "Puts right text typed with the wrong keyboard language: ؤشف becomes cat, and hgsghl becomes السلام.",
-  "details": "Select the garbled text in any app and choose this petal. Petal sees which way it went wrong: text that is mostly Arabic letters becomes the English keys under them, and English letters become the Arabic they were meant to be (the US English and Arabic 101 layouts). The fixed text is pasted over the selection, and the keyboard then switches to the language you meant when both layouts are installed, so you can keep typing. Petal takes the selection by asking the app through Windows UI Automation, or by copying it with Ctrl+C, and puts your clipboard back as it was afterwards. If the app in front changed meanwhile, the result goes on the clipboard instead ('Copied instead').",
+  "details": "Select the garbled text in any app and choose this petal. DropWheel sees which way it went wrong: text that is mostly Arabic letters becomes the English keys under them, and English letters become the Arabic they were meant to be (the US English and Arabic 101 layouts). The fixed text is pasted over the selection, and the keyboard then switches to the language you meant when both layouts are installed, so you can keep typing. DropWheel takes the selection by asking the app through Windows UI Automation, or by copying it with Ctrl+C, and puts your clipboard back as it was afterwards. If the app in front changed meanwhile, the result goes on the clipboard instead ('Copied instead').",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), press Tab until the Text wheel shows and choose FIX LAYOUT.",
   "examples": [
    "You typed a WhatsApp Web message while the keyboard was still on Arabic and got ؤشف: select it and FIX LAYOUT turns it into cat.",
@@ -3271,8 +3271,8 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Translates the selected text on this PC, Arabic and English both ways or into the language Petal speaks, to replace or copy.",
-  "details": "Select text in any app and choose TRANSLATE: a Translate window opens with the start of the original and the translation in a box you can still edit. Arabic text goes into English and anything else into Arabic; when Petal itself is set to Turkish, Persian, Urdu, Indonesian, French or Spanish, text goes into that language instead (or into English when it is already in it). English into Arabic and Arabic into English use the Opus-MT translation models (about 114 MB each) when they are downloaded, a sentence at a time; otherwise, and for the other languages, the AI model Qwen2.5 1.5B (about 1.1 GB) translates; the window offers the download the first time. Replace the Selection pastes the translation over the original text, and Copy puts it on the clipboard. It runs on this PC; the text isn't sent anywhere.",
+  "summary": "Translates the selected text on this PC, Arabic and English both ways or into the language DropWheel speaks, to replace or copy.",
+  "details": "Select text in any app and choose TRANSLATE: a Translate window opens with the start of the original and the translation in a box you can still edit. Arabic text goes into English and anything else into Arabic; when DropWheel itself is set to Turkish, Persian, Urdu, Indonesian, French or Spanish, text goes into that language instead (or into English when it is already in it). English into Arabic and Arabic into English use the Opus-MT translation models (about 114 MB each) when they are downloaded, a sentence at a time; otherwise, and for the other languages, the AI model Qwen2.5 1.5B (about 1.1 GB) translates; the window offers the download the first time. Replace the Selection pastes the translation over the original text, and Copy puts it on the clipboard. It runs on this PC; the text isn't sent anywhere.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose TRANSLATE; then press Replace the Selection or Copy.",
   "examples": [
    "An English e-mail from a supplier in Outlook: select it, choose TRANSLATE and read it in Arabic.",
@@ -3296,7 +3296,7 @@
  "do:text.upper": {
   "category": "text",
   "summary": "Turns the selected text into CAPITAL LETTERS, right where it is in any app.",
-  "details": "Select text in any app and choose UPPER; every letter becomes a capital and the text is pasted back over the selection. Arabic has no capitals and stays as it is. Petal reads the selection through Windows UI Automation, or copies it with Ctrl+C, and puts your clipboard back afterwards. If nothing would change, a card says 'Nothing to change'; if nothing is selected, it says 'No text is selected'.",
+  "details": "Select text in any app and choose UPPER; every letter becomes a capital and the text is pasted back over the selection. Arabic has no capitals and stays as it is. DropWheel reads the selection through Windows UI Automation, or copies it with Ctrl+C, and puts your clipboard back afterwards. If nothing would change, a card says 'Nothing to change'; if nothing is selected, it says 'No text is selected'.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the CASE group and choose UPPER.",
   "examples": [
    "A heading in a PowerPoint slide should shout: select 'summer sale' and it becomes 'SUMMER SALE'.",
@@ -3318,7 +3318,7 @@
  "do:text.lower": {
   "category": "text",
   "summary": "Turns the selected text into small letters, right where it is in any app.",
-  "details": "Select text in any app and choose LOWER; every capital becomes a small letter and the text is pasted back over the selection. Arabic has no capitals and stays as it is. Petal reads the selection through Windows UI Automation, or copies it with Ctrl+C, and puts your clipboard back afterwards. If the text is already all small, a card says 'Nothing to change'.",
+  "details": "Select text in any app and choose LOWER; every capital becomes a small letter and the text is pasted back over the selection. Arabic has no capitals and stays as it is. DropWheel reads the selection through Windows UI Automation, or copies it with Ctrl+C, and puts your clipboard back afterwards. If the text is already all small, a card says 'Nothing to change'.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the CASE group and choose LOWER.",
   "examples": [
    "You typed a whole paragraph with Caps Lock on in Word: select it and LOWER fixes it.",
@@ -3362,7 +3362,7 @@
  "do:text.sentence": {
   "category": "text",
   "summary": "Makes only the first letter of each sentence a capital and the rest small: Sentence case.",
-  "details": "Select text in any app and choose SENTENCE; the first letter after a full stop, ! , ? , the Arabic question mark or a new line becomes a capital, and every other letter becomes small. It is the quickest way to calm text typed in capitals without losing sentence starts. Arabic has no capitals and stays as it is. The text is pasted back over the selection, and Petal puts your clipboard back afterwards.",
+  "details": "Select text in any app and choose SENTENCE; the first letter after a full stop, ! , ? , the Arabic question mark or a new line becomes a capital, and every other letter becomes small. It is the quickest way to calm text typed in capitals without losing sentence starts. Arabic has no capitals and stays as it is. The text is pasted back over the selection, and DropWheel puts your clipboard back afterwards.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the CASE group and choose SENTENCE.",
   "examples": [
    "A customer's message pasted in capitals, 'MY ORDER IS LATE. WHERE IS IT?', becomes 'My order is late. Where is it?'.",
@@ -3452,7 +3452,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Counts the words, characters, lines and sentences in the selected text and shows them on a card.",
-  "details": "Select text in any app and choose COUNT; a card shows the number of words, then characters, characters without spaces, lines and sentences. Nothing is changed in the text. Arabic and English words are both counted, and emoji count as one character. Petal reads the selection through Windows UI Automation or by copying it, and puts your clipboard back afterwards.",
+  "details": "Select text in any app and choose COUNT; a card shows the number of words, then characters, characters without spaces, lines and sentences. Nothing is changed in the text. Arabic and English words are both counted, and emoji count as one character. DropWheel reads the selection through Windows UI Automation or by copying it, and puts your clipboard back afterwards.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose COUNT.",
   "examples": [
    "An essay box allows 500 words: select your draft in the browser and COUNT tells you if it fits.",
@@ -3548,7 +3548,7 @@
  "do:text.dictate": {
   "category": "text",
   "summary": "Types what you say where the cursor is, in any app, in Arabic, English and many more languages.",
-  "details": "Click where the words should go, then start dictation: a small pill at the bottom of the screen shows a level meter and the time while Petal listens. Press the shortcut or DICTATE again, or the tick on the pill, to stop; Esc or the X cancels, and it stops by itself at two minutes. Whisper writes down what you said on this PC and Petal types it into the app that was in front; if that app changed, the words go on the clipboard instead. The first time, the Dictation window asks for the speech model: Accuracy Fast (about 60 MB, clear English), Balanced (about 190 MB, the default) or Accurate (about 574 MB, best for Arabic and accents), and Language Detect automatically (the default), العربية, English or many others. It needs a microphone and nothing is sent anywhere.",
+  "details": "Click where the words should go, then start dictation: a small pill at the bottom of the screen shows a level meter and the time while DropWheel listens. Press the shortcut or DICTATE again, or the tick on the pill, to stop; Esc or the X cancels, and it stops by itself at two minutes. Whisper writes down what you said on this PC and DropWheel types it into the app that was in front; if that app changed, the words go on the clipboard instead. The first time, the Dictation window asks for the speech model: Accuracy Fast (about 60 MB, clear English), Balanced (about 190 MB, the default) or Accurate (about 574 MB, best for Arabic and accents), and Language Detect automatically (the default), العربية, English or many others. It needs a microphone and nothing is sent anywhere.",
   "how": "Press Ctrl+Win+J in any app, or choose DICTATE on the Text wheel or the Work wheel (Ctrl+Win+Z with no files selected, then Tab); speak, then press it again to type.",
   "examples": [
    "Your hands are full: click in a WhatsApp Web chat, press Ctrl+Win+J and say your reply in Arabic.",
@@ -3572,7 +3572,7 @@
  "do:window.left": {
   "category": "windows",
   "summary": "Puts the window that was in front into the left half of its screen.",
-  "details": "Choose LEFT and the window that was in front when you opened the wheel fills the left half of the screen it is on, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. Petal's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
+  "details": "Choose LEFT and the window that was in front when you opened the wheel fills the left half of the screen it is on, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. DropWheel's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose LEFT.",
   "examples": [
    "Put a Word document on the left and the browser on the right to copy facts across.",
@@ -3595,7 +3595,7 @@
  "do:window.right": {
   "category": "windows",
   "summary": "Puts the window that was in front into the right half of its screen.",
-  "details": "Choose RIGHT and the window that was in front when you opened the wheel fills the right half of the screen it is on, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. Petal's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
+  "details": "Choose RIGHT and the window that was in front when you opened the wheel fills the right half of the screen it is on, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. DropWheel's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose RIGHT.",
   "examples": [
    "Keep a YouTube tutorial on the right while you follow it in Photoshop on the left.",
@@ -3618,7 +3618,7 @@
  "do:window.top": {
   "category": "windows",
   "summary": "Puts the window that was in front into the top half of its screen.",
-  "details": "Choose TOP and the window that was in front when you opened the wheel fills the top half of its screen, across its full width. A maximised or minimised window is restored first, and its visible frame is fitted exactly. It suits tall or portrait screens. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose TOP and the window that was in front when you opened the wheel fills the top half of its screen, across its full width. A maximised or minimised window is restored first, and its visible frame is fitted exactly. It suits tall or portrait screens. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose TOP.",
   "examples": [
    "On a portrait monitor, keep a chat app in the top half and your code editor below.",
@@ -3640,7 +3640,7 @@
  "do:window.bottom": {
   "category": "windows",
   "summary": "Puts the window that was in front into the bottom half of its screen.",
-  "details": "Choose BOTTOM and the window that was in front when you opened the wheel fills the bottom half of its screen, across its full width and above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose BOTTOM and the window that was in front when you opened the wheel fills the bottom half of its screen, across its full width and above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose BOTTOM.",
   "examples": [
    "Keep a terminal window in the bottom half under your code on a tall screen.",
@@ -3662,7 +3662,7 @@
  "do:window.topleft": {
   "category": "windows",
   "summary": "Puts the window that was in front into the top-left quarter of its screen.",
-  "details": "Choose TOP LEFT and the window that was in front when you opened the wheel fills the top-left quarter of its screen. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose TOP LEFT and the window that was in front when you opened the wheel fills the top-left quarter of its screen. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose TOP LEFT.",
   "examples": [
    "Watch four security camera apps or streams at once, one in each quarter.",
@@ -3684,7 +3684,7 @@
  "do:window.topright": {
   "category": "windows",
   "summary": "Puts the window that was in front into the top-right quarter of its screen.",
-  "details": "Choose TOP RIGHT and the window that was in front when you opened the wheel fills the top-right quarter of its screen. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose TOP RIGHT and the window that was in front when you opened the wheel fills the top-right quarter of its screen. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose TOP RIGHT.",
   "examples": [
    "Keep Spotify in the top-right corner while you work in the other three quarters.",
@@ -3706,7 +3706,7 @@
  "do:window.bottomleft": {
   "category": "windows",
   "summary": "Puts the window that was in front into the bottom-left quarter of its screen.",
-  "details": "Choose BOTTOM LEFT and the window that was in front when you opened the wheel fills the bottom-left quarter of its screen, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose BOTTOM LEFT and the window that was in front when you opened the wheel fills the bottom-left quarter of its screen, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose BOTTOM LEFT.",
   "examples": [
    "Keep File Explorer in the bottom-left corner to drag files into the windows above it.",
@@ -3728,7 +3728,7 @@
  "do:window.bottomright": {
   "category": "windows",
   "summary": "Puts the window that was in front into the bottom-right quarter of its screen.",
-  "details": "Choose BOTTOM RIGHT and the window that was in front when you opened the wheel fills the bottom-right quarter of its screen, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose BOTTOM RIGHT and the window that was in front when you opened the wheel fills the bottom-right quarter of its screen, above the taskbar. A maximised or minimised window is restored first, and its visible frame is fitted exactly. With the other quarter petals you can show four windows at once. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose BOTTOM RIGHT.",
   "examples": [
    "Keep a Zoom meeting in the bottom-right corner while you share notes in the rest.",
@@ -3816,7 +3816,7 @@
  "do:window.centre": {
   "category": "windows",
   "summary": "Moves the window that was in front to the middle of its screen, keeping its size.",
-  "details": "Choose CENTRE and the window that was in front when you opened the wheel is placed in the middle of its screen at the size it has. A maximised window is restored first. A window bigger than about 92% of the screen shrinks to fit, and a very small one (under 200 by 150 pixels) is made 60% wide and 70% tall. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose CENTRE and the window that was in front when you opened the wheel is placed in the middle of its screen at the size it has. A maximised window is restored first. A window bigger than about 92% of the screen shrinks to fit, and a very small one (under 200 by 150 pixels) is made 60% wide and 70% tall. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose CENTRE.",
   "examples": [
    "A Settings window opened in a corner of a big monitor: CENTRE brings it where you look.",
@@ -3838,7 +3838,7 @@
  "do:window.maximize": {
   "category": "windows",
   "summary": "Makes the window that was in front fill its screen, or puts it back to its size.",
-  "details": "Choose MAXIMIZE and the window that was in front when you opened the wheel fills its screen; choose it again and it goes back to its earlier size. The middle of the wheel shows whether that window is maximised now. Petal's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
+  "details": "Choose MAXIMIZE and the window that was in front when you opened the wheel fills its screen; choose it again and it goes back to its earlier size. The middle of the wheel shows whether that window is maximised now. DropWheel's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel and choose MAXIMIZE.",
   "examples": [
    "A small Excel window needs the whole screen to see more rows: one petal maximises it.",
@@ -3882,7 +3882,7 @@
  "do:window.ontop": {
   "category": "windows",
   "summary": "Keeps the window that was in front above all other windows, or lets it go back.",
-  "details": "Choose ON TOP and the window that was in front when you opened the wheel stays above every other window, even when you click elsewhere; choose it again and it behaves normally. The middle of the wheel shows whether that window is on top now. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Choose ON TOP and the window that was in front when you opened the wheel stays above every other window, even when you click elsewhere; choose it again and it behaves normally. The middle of the wheel shows whether that window is on top now. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose ON TOP.",
   "examples": [
    "Keep a small Calculator window above the Excel sheet you are checking.",
@@ -3904,7 +3904,7 @@
  "do:window.seethrough": {
   "category": "windows",
   "summary": "Makes the window that was in front see-through a step at a time, then solid again.",
-  "details": "Each time you choose SEE THROUGH, the window that was in front when you opened the wheel becomes more see-through: 85% solid, then 70%, then 55%, and then solid again. A card shows the new level, and the middle of the wheel shows how solid the window is now. You can still click and type in it as usual. Petal's own windows, the desktop and the taskbar are left alone.",
+  "details": "Each time you choose SEE THROUGH, the window that was in front when you opened the wheel becomes more see-through: 85% solid, then 70%, then 55%, and then solid again. A card shows the new level, and the middle of the wheel shows how solid the window is now. You can still click and type in it as usual. DropWheel's own windows, the desktop and the taskbar are left alone.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose SEE THROUGH; choose it again for the next step.",
   "examples": [
    "Trace a drawing: make a picture window 55% solid over your drawing app.",
@@ -3926,7 +3926,7 @@
  "do:window.minimize": {
   "category": "windows",
   "summary": "Sends the window that was in front down to the taskbar.",
-  "details": "Choose MINIMIZE and the window that was in front when you opened the wheel goes down to the taskbar, where you can click it to bring it back. The app keeps running while it is down there. Petal's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
+  "details": "Choose MINIMIZE and the window that was in front when you opened the wheel goes down to the taskbar, where you can click it to bring it back. The app keeps running while it is down there. DropWheel's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose MINIMIZE.",
   "examples": [
    "Someone walks up to your desk: minimise the personal chat window in one move.",
@@ -3948,7 +3948,7 @@
  "do:window.close": {
   "category": "windows",
   "summary": "Closes the window that was in front, as its own X button would.",
-  "details": "Choose CLOSE and Petal asks the window that was in front when you opened the wheel to close, exactly like clicking its X. The app can still ask you to save your work first, so nothing is lost without asking. Petal's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
+  "details": "Choose CLOSE and DropWheel asks the window that was in front when you opened the wheel to close, exactly like clicking its X. The app can still ask you to save your work first, so nothing is lost without asking. DropWheel's own windows, the desktop and the taskbar are left alone; with no app window in front, a card says 'No window to arrange'.",
   "how": "Click the app's window, press Ctrl+Win+Z (with no files selected), Tab to the Arrange wheel, open the MORE group and choose CLOSE.",
   "examples": [
    "Close a pop-up window whose X button is off the screen.",
@@ -3970,7 +3970,7 @@
  "do:clipboard.history": {
   "category": "clipboard",
   "summary": "Opens everything you copied lately, to search, pin and paste again into the app you were using.",
-  "details": "The Clipboard History window lists the last 30 things you copied (text, pictures and files), newest first with pinned clips on top; only the latest 8 pictures are kept. Type in the search box to find a clip, use the pin button to keep one and the bin button (or Delete) to remove one. Double-click a clip, press Enter or choose Paste, and Petal puts it on the clipboard and pastes it with Ctrl+V into the app that was in front; Clear All removes everything except pinned clips. Copies that password managers mark as private are never kept. History is kept while Petal runs; only pinned clips are remembered after it closes unless you turn that on, in Settings › Screen & Text.",
+  "details": "The Clipboard History window lists the last 30 things you copied (text, pictures and files), newest first with pinned clips on top; only the latest 8 pictures are kept. Type in the search box to find a clip, use the pin button to keep one and the bin button (or Delete) to remove one. Double-click a clip, press Enter or choose Paste, and DropWheel puts it on the clipboard and pastes it with Ctrl+V into the app that was in front; Clear All removes everything except pinned clips. Copies that password managers mark as private are never kept. History is kept while DropWheel runs; only pinned clips are remembered after it closes unless you turn that on, in Settings › Screen & Text.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Clipboard wheel and choose HISTORY; double-click a clip to paste it.",
   "examples": [
    "You copied an address an hour ago and then copied other things: find it in History and paste it into the delivery form.",
@@ -3993,14 +3993,14 @@
  "do:clipboard.forget": {
   "category": "clipboard",
   "summary": "Clears the clipboard history in one step, keeping only the clips you pinned.",
-  "details": "Choose FORGET and every clip in Petal's clipboard history is deleted, except the ones you pinned; a card says 'Clipboard history cleared' and 'Pinned clips stay'. It works on Petal's history, while Empty Clipboard (CLEAR, under MORE on the Quick wheel) forgets only what is on the clipboard right now. It isn't on a ready-made wheel: add it from the Clipboard section in Settings › Wheels, or run Clear Clipboard History from the command palette.",
+  "details": "Choose FORGET and every clip in DropWheel's clipboard history is deleted, except the ones you pinned; a card says 'Clipboard history cleared' and 'Pinned clips stay'. It works on DropWheel's history, while Empty Clipboard (CLEAR, under MORE on the Quick wheel) forgets only what is on the clipboard right now. It isn't on a ready-made wheel: add it from the Clipboard section in Settings › Wheels, or run Clear Clipboard History from the command palette.",
   "how": "Press Ctrl+Win+K, type 'Clear Clipboard History' and press Enter, or add FORGET to a wheel in Settings › Wheels.",
   "examples": [
    "You copied passwords and bank details from a document: clear the history before lending your laptop.",
    "Before sharing your screen in a meeting, forget the private clips so they don't show in the history.",
    "Start a fresh day with an empty history while your pinned e-mail templates stay."
   ],
-  "worksOn": "Petal's clipboard history; no files.",
+  "worksOn": "DropWheel's clipboard history; no files.",
   "keywords": [
    "clear clipboard history",
    "delete copied items",
@@ -4015,7 +4015,7 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Puts a new sticky note on the desktop near the pointer, in any language and colour.",
-  "details": "Choose NOTE and a sticky note opens near the pointer, ready to type; Arabic runs right to left by itself. Its band has buttons for a New note, Colour (yellow, green, blue, pink, purple, grey), Keep on top and Delete note, and you can drag it by the band and resize it from the corner. Ctrl+N in a note makes another one. Notes are saved by themselves and come back where they were when Petal starts; a deleted note with text can be brought back by clicking the card that appears.",
+  "details": "Choose NOTE and a sticky note opens near the pointer, ready to type; Arabic runs right to left by itself. Its band has buttons for a New note, Colour (yellow, green, blue, pink, purple, grey), Keep on top and Delete note, and you can drag it by the band and resize it from the corner. Ctrl+N in a note makes another one. Notes are saved by themselves and come back where they were when DropWheel starts; a deleted note with text can be brought back by clicking the card that appears.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work or Clipboard wheel and choose NOTE, then type.",
   "examples": [
    "Jot down a phone number during a call without opening any app.",
@@ -4038,7 +4038,7 @@
  "do:notes.toggle": {
   "category": "notes",
   "summary": "Brings every sticky note out, or tucks them all away while they stay saved.",
-  "details": "Choose NOTES to hide every sticky note at once, and again to show them all where they were. Hidden notes stay saved, and Petal remembers the choice: notes tucked away stay hidden the next time Petal starts. When you have no notes yet, it makes a new one. It isn't on a ready-made wheel: add it from the Notes section in Settings › Wheels, or run Show or Hide Notes from the command palette.",
+  "details": "Choose NOTES to hide every sticky note at once, and again to show them all where they were. Hidden notes stay saved, and DropWheel remembers the choice: notes tucked away stay hidden the next time DropWheel starts. When you have no notes yet, it makes a new one. It isn't on a ready-made wheel: add it from the Notes section in Settings › Wheels, or run Show or Hide Notes from the command palette.",
   "how": "Press Ctrl+Win+K, type 'Show or Hide Notes' and press Enter, or add NOTES to a wheel in Settings › Wheels.",
   "examples": [
    "Hide your notes before sharing your screen in a Zoom meeting, then bring them back after.",
@@ -4083,7 +4083,7 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Records a meeting, then writes the transcript, a summary, the decisions and action items on this PC.",
-  "details": "Choose MEETING and Petal records both the PC's sound and your microphone; a pill at the top shows the time, with a tick to stop and write the notes and an X to cancel, and it is kept out of the meeting's own screen shares. When you stop, Whisper writes the transcript with times, and if the AI model (about 1.1 GB) is on the PC it adds Summary, Decisions and Action items sections. The notes (a Markdown file) and the sound (an M4A file) are saved as 'Meeting date time' in the Petal Meetings folder in Documents, and the Meeting Notes window opens with Summary and Transcript views, Copy and Open Folder. It needs a speech model from the Dictation window and FFmpeg; without the AI model, a Write a Summary button lets you add the summary later.",
+  "details": "Choose MEETING and DropWheel records both the PC's sound and your microphone; a pill at the top shows the time, with a tick to stop and write the notes and an X to cancel, and it is kept out of the meeting's own screen shares. When you stop, Whisper writes the transcript with times, and if the AI model (about 1.1 GB) is on the PC it adds Summary, Decisions and Action items sections. The notes (a Markdown file) and the sound (an M4A file) are saved as 'Meeting date time' in the DropWheel Meetings folder in Documents, and the Meeting Notes window opens with Summary and Transcript views, Copy and Open Folder. It needs a speech model from the Dictation window and FFmpeg; without the AI model, a Write a Summary button lets you add the summary later.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work wheel and choose MEETING; choose it again or press the tick on the pill to stop.",
   "examples": [
    "A one-hour Teams call: get the decisions and who does what without taking notes yourself.",
@@ -4107,7 +4107,7 @@
  "do:work.captions": {
   "category": "work",
   "summary": "Shows live captions for any video, call or lesson, translated into Arabic as they come, on this PC.",
-  "details": "Choose CC and a caption bar appears at the bottom of the screen; drag it anywhere. Petal listens to the PC's sound (the default) or the microphone, Whisper writes the words down as they are said, within about half a second (the newest look dimmer until they are sure), and the translation model puts each sentence into Arabic as it goes, with no internet needed. If the PC is too slow for the speech model chosen, a quicker one that is downloaded takes over so the captions keep up. Hover over the bar for its buttons: switch between the PC's sound and the microphone, change what is shown (both, Arabic, the original, or English), or turn the captions off. It needs a speech model from the Dictation window, and the Arabic translation model (about 114 MB) is offered the first time; until it is there, the captions show what was said. Choose CC again to stop.",
+  "details": "Choose CC and a caption bar appears at the bottom of the screen; drag it anywhere. DropWheel listens to the PC's sound (the default) or the microphone, Whisper writes the words down as they are said, within about half a second (the newest look dimmer until they are sure), and the translation model puts each sentence into Arabic as it goes, with no internet needed. If the PC is too slow for the speech model chosen, a quicker one that is downloaded takes over so the captions keep up. Hover over the bar for its buttons: switch between the PC's sound and the microphone, change what is shown (both, Arabic, the original, or English), or turn the captions off. It needs a speech model from the Dictation window, and the Arabic translation model (about 114 MB) is offered the first time; until it is there, the captions show what was said. Choose CC again to stop.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work wheel and choose CC; choose it again to turn the captions off.",
   "examples": [
    "Watch an English YouTube course and read the Arabic captions under it.",
@@ -4131,7 +4131,7 @@
  "do:steps.record": {
   "category": "work",
   "summary": "Records a step-by-step guide while you work: each click with a picture and its words, to save as PDF or Word.",
-  "details": "Choose STEPS and a bar at the top of the screen counts the steps while you work; every click, double-click, right-click, typing and shortcut in other apps becomes a step with a picture of the window and a ring where you clicked, and words such as 'Click «Save» in Notepad'. Whatever is typed into a password box is never kept; the step just says 'Type the password'. Press the tick to finish (or choose STEPS again), or X to cancel; it stops by itself at 200 steps. The Step-by-Step Guide window then lets you change the title and each step's words, move steps up or down and remove them, and Save Guide as PDF (the default), Word, Web Page or Markdown into the Petal Guides folder in Documents. It isn't on a ready-made wheel: add it from the Work section in Settings › Wheels, or run Record Steps from the command palette.",
+  "details": "Choose STEPS and a bar at the top of the screen counts the steps while you work; every click, double-click, right-click, typing and shortcut in other apps becomes a step with a picture of the window and a ring where you clicked, and words such as 'Click «Save» in Notepad'. Whatever is typed into a password box is never kept; the step just says 'Type the password'. Press the tick to finish (or choose STEPS again), or X to cancel; it stops by itself at 200 steps. The Step-by-Step Guide window then lets you change the title and each step's words, move steps up or down and remove them, and Save Guide as PDF (the default), Word, Web Page or Markdown into the DropWheel Guides folder in Documents. It isn't on a ready-made wheel: add it from the Work section in Settings › Wheels, or run Record Steps from the command palette.",
   "how": "Press Ctrl+Win+K, type 'Record Steps' and press Enter (or add STEPS to a wheel in Settings › Wheels); do the task, then press the tick on the bar.",
   "examples": [
    "Show your parents how to join a video call: record the clicks once and send them a PDF guide.",
@@ -4177,8 +4177,8 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Opens the Tools Guide: every tool and action explained, with examples, and a box to say what you want to do.",
-  "details": "The guide lists Petal's tools, file actions and the actions of the wheels without files by section. Each one opens to what it does, how to use it, three examples and what it works on, with Try It to start it and a box to ask about it. Type what you want to do in your own words at the top and the closest tools appear at once; press Enter and the AI model on this PC answers from the guide and links the tools it names. The model downloads once, the first time you ask; without it the closest tools still appear.",
-  "how": "Open it from the tray menu (Tools Guide…), the Tools Guide button at the top of Petal's settings, the command palette (Ctrl+Win+K), or a GUIDE petal you add to a wheel. In a wheel, the mark under a petal's name (or F1) shows that petal's explanation, with a link to the guide.",
+  "details": "The guide lists DropWheel's tools, file actions and the actions of the wheels without files by section. Each one opens to what it does, how to use it, three examples and what it works on, with Try It to start it and a box to ask about it. Type what you want to do in your own words at the top and the closest tools appear at once; press Enter and the AI model on this PC answers from the guide and links the tools it names. The model downloads once, the first time you ask; without it the closest tools still appear.",
+  "how": "Open it from the tray menu (Tools Guide…), the Tools Guide button at the top of DropWheel's settings, the command palette (Ctrl+Win+K), or a GUIDE petal you add to a wheel. In a wheel, the mark under a petal's name (or F1) shows that petal's explanation, with a link to the guide.",
   "examples": [
    "You need a countdown for a class break: type \"countdown\" and Timer comes first, with Try It to start it.",
    "You want a PDF small enough for an e-mail: ask \"make a PDF smaller\" and the guide points to Compress and how to use it.",

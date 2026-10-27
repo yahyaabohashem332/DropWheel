@@ -528,7 +528,7 @@ public sealed class PetalController : IDisposable, IWheelHost
             case "pause":
                 SettingsStore.Current.Paused = !SettingsStore.Current.Paused;
                 SettingsStore.Save();
-                Card(at, L.T(SettingsStore.Current.Paused ? "Petal is paused" : "Petal is on again"), "", true);
+                Card(at, L.T(SettingsStore.Current.Paused ? "DropWheel is paused" : "DropWheel is on again"), "", true);
                 break;
             case "clipboard":
                 OpenClipboard(at);

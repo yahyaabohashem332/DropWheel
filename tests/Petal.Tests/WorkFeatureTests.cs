@@ -239,10 +239,10 @@ public sealed class WorkFeatureTests : IDisposable
     [Fact]
     public void Anything_that_isnt_a_wheel_is_turned_away()
     {
-        Assert.Equal("This isn't a Petal wheel.", WheelSharing.Read("hello").Problem);
-        Assert.Equal("This isn't a Petal wheel.", WheelSharing.Read("PETAL-WHEEL:!!!").Problem);
-        Assert.Equal("This isn't a Petal wheel.", WheelSharing.Read("{\"petalWheel\":2,\"wheel\":{\"name\":\"x\",\"items\":[]}}").Problem);
-        Assert.Equal("This isn't a Petal wheel.", WheelSharing.Read("{\"petalWheel\":1,\"wheel\":{\"name\":\" \",\"items\":[]}}").Problem);
+        Assert.Equal("This isn't a DropWheel wheel.", WheelSharing.Read("hello").Problem);
+        Assert.Equal("This isn't a DropWheel wheel.", WheelSharing.Read("PETAL-WHEEL:!!!").Problem);
+        Assert.Equal("This isn't a DropWheel wheel.", WheelSharing.Read("{\"petalWheel\":2,\"wheel\":{\"name\":\"x\",\"items\":[]}}").Problem);
+        Assert.Equal("This isn't a DropWheel wheel.", WheelSharing.Read("{\"petalWheel\":1,\"wheel\":{\"name\":\" \",\"items\":[]}}").Problem);
         Assert.Equal("This wheel is too large.", WheelSharing.Read("{" + new string(' ', 600_000) + "}").Problem);
     }
 

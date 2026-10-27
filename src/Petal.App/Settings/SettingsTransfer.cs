@@ -50,14 +50,14 @@ public static class SettingsTransfer
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
-            throw new InvalidDataException("This isn't a Petal settings file.", ex);
+            throw new InvalidDataException("This isn't a DropWheel settings file.", ex);
         }
         if (root["format"]?.GetValue<string>() != Format || root["settings"] is not JsonObject json)
-            throw new InvalidDataException("This isn't a Petal settings file.");
+            throw new InvalidDataException("This isn't a DropWheel settings file.");
         AppSettings settings;
         try
         {
-            settings = json.Deserialize<AppSettings>(SettingsStore.Options) ?? throw new InvalidDataException("This isn't a Petal settings file.");
+            settings = json.Deserialize<AppSettings>(SettingsStore.Options) ?? throw new InvalidDataException("This isn't a DropWheel settings file.");
         }
         catch (JsonException ex)
         {

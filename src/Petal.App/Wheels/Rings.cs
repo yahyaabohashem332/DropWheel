@@ -90,7 +90,7 @@ public static class Rings
             {
                 var action = WheelActions.Get(e.Action);
                 if (action is null)
-                    return new WheelItem("?", e.Action ?? "", "alert", e) { Unavailable = "This action isn't in this version of Petal", Blocked = true };
+                    return new WheelItem("?", e.Action ?? "", "alert", e) { Unavailable = "This action isn't in this version of DropWheel", Blocked = true };
                 return new WheelItem(e.Label ?? action.LiveLabel?.Invoke() ?? action.Label, e.Name ?? action.Name, e.Icon ?? action.Icon, e)
                 {
                     Tint = tint,

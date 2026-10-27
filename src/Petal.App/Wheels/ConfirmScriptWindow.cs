@@ -39,7 +39,7 @@ internal sealed class ConfirmScriptWindow : ToolWindow
         });
         var always = new CheckBox { Content = L.T("Don't ask again for this script"), Margin = new Thickness(0, 12, 0, 0) };
         Body.Children.Add(always);
-        Body.Children.Add(Text("Petal asks again if the script changes.", "Petal.Caption").WithMarginT(4));
+        Body.Children.Add(Text("DropWheel asks again if the script changes.", "Petal.Caption").WithMarginT(4));
         PrimaryButton.Content = L.T("Run");
         PrimaryButton.Click += (_, _) =>
         {

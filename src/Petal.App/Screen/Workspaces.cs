@@ -134,7 +134,7 @@ internal sealed class SaveWorkspaceWindow : ToolWindow
 
     private SaveWorkspaceWindow(IReadOnlyList<WorkspaceWindow> windows) : base("Save Workspace", 460)
     {
-        Body.Children.Add(Text("The apps open now and where their windows are. Open the workspace later and Petal opens what isn't running and puts every window back.", "Petal.Body"));
+        Body.Children.Add(Text("The apps open now and where their windows are. Open the workspace later and DropWheel opens what isn't running and puts every window back.", "Petal.Body"));
         _name.Text = L.F("Workspace {0}", SettingsStore.Current.Workspaces.Count + 1);
         Body.Children.Add(Row("Name", _name, 90, 14));
         foreach (var place in windows)

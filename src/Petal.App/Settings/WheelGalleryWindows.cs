@@ -85,7 +85,7 @@ internal sealed class ImportWheelWindow : ToolWindow
         var open = new Button { Content = L.T("Open File…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };
         open.Click += (_, _) =>
         {
-            var dialog = new OpenFileDialog { Filter = L.T("Petal wheel") + $"|*{WheelSharing.Extension}" };
+            var dialog = new OpenFileDialog { Filter = L.T("DropWheel wheel") + $"|*{WheelSharing.Extension}" };
             if (dialog.ShowDialog(this) == true)
                 Check(File.ReadAllText(dialog.FileName));
         };
@@ -123,7 +123,7 @@ internal sealed class ImportWheelWindow : ToolWindow
         PrimaryButton.IsEnabled = wheel is not null;
         if (wheel is null)
         {
-            _about.Text = L.T(problem ?? "This isn't a Petal wheel.");
+            _about.Text = L.T(problem ?? "This isn't a DropWheel wheel.");
             return;
         }
         var (petals, scripts, unknown) = WheelSharing.Summary(wheel);
@@ -131,9 +131,9 @@ internal sealed class ImportWheelWindow : ToolWindow
         if (wheel.Kind == WheelKind.App)
             lines.Add(L.F("First while {0} is in front", string.Join(", ", wheel.Apps)));
         if (scripts > 0)
-            lines.Add(L.P(scripts, "It has {0} script; Petal shows it before its first run.", "It has {0} scripts; Petal shows each before its first run."));
+            lines.Add(L.P(scripts, "It has {0} script; DropWheel shows it before its first run.", "It has {0} scripts; DropWheel shows each before its first run."));
         if (unknown > 0)
-            lines.Add(L.P(unknown, "{0} petal is from a newer Petal and stays dim.", "{0} petals are from a newer Petal and stay dim."));
+            lines.Add(L.P(unknown, "{0} petal is from a newer DropWheel and stays dim.", "{0} petals are from a newer DropWheel and stay dim."));
         _about.Text = string.Join(Environment.NewLine, lines);
     }
 }

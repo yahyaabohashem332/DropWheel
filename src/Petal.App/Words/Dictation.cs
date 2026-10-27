@@ -245,7 +245,7 @@ internal sealed class DictationSetupWindow : ToolWindow
     private DictationSetupWindow() : base("Dictation", 440)
     {
         var settings = SettingsStore.Current;
-        Body.Children.Add(Text("Speak, and Petal types what you say in any app: in Arabic, English and many more languages. It runs on this PC; nothing is sent anywhere.", "Petal.Body"));
+        Body.Children.Add(Text("Speak, and DropWheel types what you say in any app: in Arabic, English and many more languages. It runs on this PC; nothing is sent anywhere.", "Petal.Body"));
         var accuracy = Segments([("Fast", "Fast"), ("Balanced", "Balanced"), ("Accurate", "Accurate")], settings.DictationAccuracy);
         Body.Children.Add(Row("Accuracy", accuracy, 110, 14));
         Body.Children.Add(Text("Accurate is best for Arabic and accents; Fast suits clear English.", "Petal.Caption").WithMargin(110, 4, 0, 0));

@@ -46,7 +46,7 @@ public static class StemSplitter
         if (!info.HasAudio)
             throw new MediaException("This file has no sound to separate.");
         if (info.DurationSeconds > MaxMinutes * 60)
-            throw new MediaException($"Petal separates up to {MaxMinutes:0} minutes at a time. Trim the file first.");
+            throw new MediaException($"DropWheel separates up to {MaxMinutes:0} minutes at a time. Trim the file first.");
         var safe = new SafeProgress(progress);
         var pcm = await MediaPreview.DecodePcmAsync(input, new PcmDecodeOptions(Rate, 2), cancellationToken).ConfigureAwait(false);
         int length = pcm.FrameCount;

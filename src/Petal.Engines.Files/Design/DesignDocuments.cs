@@ -39,7 +39,7 @@ public static partial class DesignDocuments
         ".aep" => AfterEffects(path),
         ".ai" => FromXmp(path, "Illustrator file"),
         ".eps" or ".epsf" => FromXmp(path, "EPS file"),
-        _ => throw new NotSupportedException("Petal can't read this kind of file."),
+        _ => throw new NotSupportedException("DropWheel can't read this kind of file."),
     };
 
     /// <summary>The preview the application stored: InDesign's and Illustrator's XMP thumbnail, XD's preview picture.</summary>

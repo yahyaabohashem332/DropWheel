@@ -39,7 +39,7 @@ public sealed class GuideCard : Window
         Topmost = true;
         SizeToContent = SizeToContent.Height;
         Width = CardWidth + 32;
-        Title = L.T("Petal");
+        Title = L.T("DropWheel");
         L.Apply(this);
         Content = Build();
     }

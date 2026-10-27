@@ -314,7 +314,7 @@ internal sealed class CommandPalette : Window
         // Petal's own windows.
         foreach (var (key, name, icon, run) in new (string, string, string, Action<PaletteContext>)[]
         {
-            ("settings", "Petal Settings", "settings", _ => App.Current.ShowSettings()),
+            ("settings", "DropWheel Settings", "settings", _ => App.Current.ShowSettings()),
             ("history", "History", "history", _ => Tools.Windows.HistoryWindow.ShowSingle()),
             ("search", "Search by Meaning", "search", _ => Search.SearchWindow.ShowSingle()),
             ("scan", "Scan with Phone", "scanLine", _ => Actions.ScanWindow.ShowSingle()),
@@ -322,8 +322,8 @@ internal sealed class CommandPalette : Window
             ("stats", "Your Statistics", "chart", _ => Stats.StatsWindow.ShowSingle()),
             ("duplicates", "Find Duplicates", "copy", _ => Tools.Windows.DuplicatesWindow.ChooseAndShow()),
             ("practice", "Practice", "target", _ => Onboarding.PracticeWindow.ShowSingle()),
-            ("health", "Petal Health", "heart", _ => Settings.HealthWindow.ShowSingle()),
-            ("ask", "Ask Petal", "ask", c => { if (c.Files.Count > 0) Tools.Windows.AskWindow.Show(c.Files, controller.Jobs, c.At); else Tools.Windows.AskWindow.ChooseAndShow(controller.Jobs); }),
+            ("health", "DropWheel Health", "heart", _ => Settings.HealthWindow.ShowSingle()),
+            ("ask", "Ask DropWheel", "ask", c => { if (c.Files.Count > 0) Tools.Windows.AskWindow.Show(c.Files, controller.Jobs, c.At); else Tools.Windows.AskWindow.ChooseAndShow(controller.Jobs); }),
         })
         {
             // Windows that are petals too are listed once, as the petal.
@@ -385,12 +385,12 @@ internal sealed class CommandPalette : Window
         }
         if (_ctx.Files.Count > 0 && query.Contains(' '))
         {
-            yield return new PaletteItem("ask", L.F("Ask Petal: {0}", query), L.T("Petal shows the steps before anything runs"), "ask", c =>
+            yield return new PaletteItem("ask", L.F("Ask DropWheel: {0}", query), L.T("DropWheel shows the steps before anything runs"), "ask", c =>
             {
                 Tools.Windows.AskWindow.Show(c.Files, App.Current.Controller.Jobs, c.At, query);
                 return Task.CompletedTask;
             })
-            { Kind = L.T("Ask Petal"), Score = 300 };
+            { Kind = L.T("Ask DropWheel"), Score = 300 };
         }
         foreach (var source in Sources)
         {

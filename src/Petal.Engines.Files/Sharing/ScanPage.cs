@@ -10,7 +10,7 @@ public sealed record ScanPageText
     public string Language { get; init; } = "en";
     public bool RightToLeft { get; init; }
     public string Title { get; init; } = "Scan to {0}";
-    public string Hint { get; init; } = "Photograph each page. Petal straightens it and saves them as one PDF on the PC.";
+    public string Hint { get; init; } = "Photograph each page. DropWheel straightens it and saves them as one PDF on the PC.";
     public string Take { get; init; } = "Take a photo of a page";
     public string Choose { get; init; } = "Choose photos";
     public string DragHint { get; init; } = "Drag the corners onto the corners of the page.";

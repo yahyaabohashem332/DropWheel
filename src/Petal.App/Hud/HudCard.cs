@@ -74,7 +74,7 @@ public sealed class HudCard : Window
         Topmost = true;
         Width = _width + CardMargin * 2;
         Height = _height + CardMargin * 2;
-        Title = L.T("Petal");
+        Title = L.T("DropWheel");
         Content = Build();
         _dismissTimer.Tick += (_, _) => Dismiss();
     }

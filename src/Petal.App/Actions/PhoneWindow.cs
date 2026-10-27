@@ -73,7 +73,7 @@ public sealed class PhoneWindow : ToolWindow
         catch (System.Net.Sockets.SocketException ex)
         {
             Log.Error(ex, "Starting the phone share");
-            Body.Children.Add(Text("Petal couldn't start sharing on this network.", "Petal.Body").WithMargin(0, 6, 0, 6));
+            Body.Children.Add(Text("DropWheel couldn't start sharing on this network.", "Petal.Body").WithMargin(0, 6, 0, 6));
             PrimaryButton.Content = L.T("Done");
             return;
         }
@@ -133,7 +133,7 @@ public sealed class PhoneWindow : ToolWindow
 
         _status.Margin = new Thickness(0, 12, 0, 0);
         Body.Children.Add(_status);
-        Body.Children.Add(Text("If Windows asks, allow Petal on private networks. On a network set to Public, the phone can't reach this PC.", "Petal.Caption").WithMargin(0, 10, 0, 0));
+        Body.Children.Add(Text("If Windows asks, allow DropWheel on private networks. On a network set to Public, the phone can't reach this PC.", "Petal.Caption").WithMargin(0, 10, 0, 0));
         FooterNote = "Stops when this window closes";
         SetStatus(L.T("Waiting for the phone…"));
         _idle.Start();

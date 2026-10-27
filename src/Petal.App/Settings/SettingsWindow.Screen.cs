@@ -112,7 +112,7 @@ public sealed partial class SettingsWindow
 
         panel.Children.Add(Text("Clipboard history", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Keep a clipboard history", "What you copy (text, pictures and files) can be pasted again from the Clipboard wheel. Passwords that apps mark as private are never kept.", _s.KeepClipboardHistory, v => _s.KeepClipboardHistory = v, top: 6));
-        panel.Children.Add(Switch("Remember it after Petal closes", "Kept on this PC beside the settings. Pinned clips are always remembered.", _s.RememberClipboardHistory, v => _s.RememberClipboardHistory = v));
+        panel.Children.Add(Switch("Remember it after DropWheel closes", "Kept on this PC beside the settings. Pinned clips are always remembered.", _s.RememberClipboardHistory, v => _s.RememberClipboardHistory = v));
         var clear = new Button { Content = L.T("Clear the history"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         clear.Click += (_, _) =>
         {
@@ -133,7 +133,7 @@ public sealed partial class SettingsWindow
         panel.Children.Add(ShortcutRow(() => _s.VoiceShortcut, v => _s.VoiceShortcut = v, Words.VoiceCommand.RegisterShortcut, "Ctrl+Win+M"));
 
         panel.Children.Add(Text("Snippets", "Petal.Label").WithMargin(0, 18, 0, 0));
-        panel.Children.Add(Switch("Expand snippets as I type", "An abbreviation such as ;addr becomes its text in any app. Petal holds only the last few letters typed, in memory, to spot one; nothing is kept or sent.", _s.SnippetsOn, v => _s.SnippetsOn = v, top: 6));
+        panel.Children.Add(Switch("Expand snippets as I type", "An abbreviation such as ;addr becomes its text in any app. DropWheel holds only the last few letters typed, in memory, to spot one; nothing is kept or sent.", _s.SnippetsOn, v => _s.SnippetsOn = v, top: 6));
         var snippets = new Button { Content = L.T("Edit Snippets…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
         snippets.Click += (_, _) => new SnippetsWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
         panel.Children.Add(snippets);
@@ -181,7 +181,7 @@ public sealed partial class SettingsWindow
                 _ = Task.Run(() => Shell.ExplorerThumbnails.Apply(v));
             }));
         panel.Children.Add(Text("Other programs", "Petal.Label").WithMargin(0, 18, 0, 0));
-        panel.Children.Add(Switch("Let other programs run petals", "Stream Deck, AutoHotkey, Power Automate, scripts and the petal command can run Petal's own petals and open its wheels, for this Windows user only. Your own scripts on the wheels can't be run this way.", _s.LocalApi, v => _s.LocalApi = v));
+        panel.Children.Add(Switch("Let other programs run petals", "Stream Deck, AutoHotkey, Power Automate, scripts and the petal command can run DropWheel's own petals and open its wheels, for this Windows user only. Your own scripts on the wheels can't be run this way.", _s.LocalApi, v => _s.LocalApi = v));
         var deck = System.IO.Path.Combine(AppContext.BaseDirectory, "integrations", "Petal.streamDeckPlugin");
         if (System.IO.File.Exists(deck))
         {
@@ -200,7 +200,7 @@ public sealed partial class SettingsWindow
             panel.Children.Add(add);
         }
         panel.Children.Add(Text("Other PCs", "Petal.Label").WithMargin(0, 18, 0, 0));
-        panel.Children.Add(Switch("Let other PCs send me files", "PCs with Petal on the same network can send files with Send to PC. Petal asks every time, and saves them in Downloads\\Petal.", _s.ReceiveFromPcs, v =>
+        panel.Children.Add(Switch("Let other PCs send me files", "PCs with DropWheel on the same network can send files with Send to PC. DropWheel asks every time, and saves them in Downloads\\DropWheel.", _s.ReceiveFromPcs, v =>
         {
             _s.ReceiveFromPcs = v;
             _ = Actions.PcDrop.ApplyAsync(v);

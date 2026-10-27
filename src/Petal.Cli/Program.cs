@@ -20,7 +20,7 @@ internal static class Program
         };
         if (!await StoreLicence.AllowsAsync())
         {
-            Console.Error.WriteLine("Petal's trial is over. Buy Petal in the Microsoft Store to keep using it, the command line included.");
+            Console.Error.WriteLine("DropWheel's trial is over. Buy DropWheel in the Microsoft Store to keep using it, the command line included.");
             return 1;
         }
         var cli = new Cli(Console.Out, Console.Error, showProgress: !Console.IsErrorRedirected);

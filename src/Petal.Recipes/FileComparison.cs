@@ -43,8 +43,8 @@ public static class FileComparison
     public static async Task<ComparisonResult> CompareAsync(string before, string after, string output, ConverterRegistry converters, ConversionSettings settings,
         ComparisonText text, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var formatA = Formats.FromPath(before) ?? throw new InvalidOperationException($"{Path.GetFileName(before)}: Petal doesn't know this kind of file.");
-        var formatB = Formats.FromPath(after) ?? throw new InvalidOperationException($"{Path.GetFileName(after)}: Petal doesn't know this kind of file.");
+        var formatA = Formats.FromPath(before) ?? throw new InvalidOperationException($"{Path.GetFileName(before)}: DropWheel doesn't know this kind of file.");
+        var formatB = Formats.FromPath(after) ?? throw new InvalidOperationException($"{Path.GetFileName(after)}: DropWheel doesn't know this kind of file.");
         List<DiffParagraph>? diff = null;
         var pictures = new List<(int Index, string? Before, string? After, bool Changed)>();
         int pageCount = 0;

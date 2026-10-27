@@ -30,7 +30,7 @@ public static class Practice
     /// <summary>A petal chosen while practising: the petal, the files, the page ("files:Tools") and what was said.</summary>
     public static event Action<WheelItem, IReadOnlyList<string>, string, string>? Chosen;
 
-    public static string Folder => Path.Combine(Path.GetTempPath(), "Petal Practice");
+    public static string Folder => Path.Combine(Path.GetTempPath(), "DropWheel Practice");
 
     public static void Start() => IsOn = true;
 
@@ -88,8 +88,8 @@ public static class Practice
         var name = files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
         return item.Payload switch
         {
-            FileFormat f when files.Count > 0 => L.F("Petal would save {0} as {1} beside the original.", name, f.Label),
-            Favourite when files.Count > 0 => L.F("Petal would make {0} with your favourite “{1}”.", name, L.T(item.Label)),
+            FileFormat f when files.Count > 0 => L.F("DropWheel would save {0} as {1} beside the original.", name, f.Label),
+            Favourite when files.Count > 0 => L.F("DropWheel would make {0} with your favourite “{1}”.", name, L.T(item.Label)),
             ToolInfo { HasWindow: true } t => L.F("The {0} window would open for {1}.", L.T(t.Name), name),
             ToolInfo t => L.F("{0} would run on {1}.", L.T(t.Name), name),
             FileActionInfo a => L.F("{0} would run on {1}.", L.T(a.Name), name),

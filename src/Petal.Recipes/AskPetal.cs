@@ -261,7 +261,7 @@ public static partial class AskPetal
     // ---- The AI model ----
 
     private const string SystemPrompt = """
-        You turn a request about the user's selected files into steps for Petal, a file tool. Requests may be in English or Arabic. Answer with JSON only.
+        You turn a request about the user's selected files into steps for DropWheel, a file tool. Requests may be in English or Arabic. Answer with JSON only.
 
         Use only the steps the request asks for, in the order it asks for them. Never add a step the request doesn't mention.
 

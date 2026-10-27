@@ -31,7 +31,7 @@ public sealed class AutomationWindow : ToolWindow
         _rule = existing?.Copy() ?? new WatchRule { Folder = DefaultFolder() };
         _folder.Style = (Style)FindResource("Petal.Body");
 
-        Body.Children.Add(Text("Petal watches the folder and converts each new file as soon as it has finished arriving. Results go to a “Petal” folder inside it; the originals stay where they are.", "Petal.Caption").WithMargin(0, 0, 0, 10));
+        Body.Children.Add(Text("DropWheel watches the folder and converts each new file as soon as it has finished arriving. Results go to a “DropWheel” folder inside it; the originals stay where they are.", "Petal.Caption").WithMargin(0, 0, 0, 10));
 
         var choose = new Button { Content = L.T("Choose…"), Margin = new Thickness(8, 0, 0, 0) };
         choose.Click += (_, _) =>
@@ -213,7 +213,7 @@ public sealed class AutomationWindow : ToolWindow
         _summary.Text = !exists
             ? L.T("Choose a folder that exists.")
             : !hasAction
-                ? L.T("Nothing Petal can convert these files to.")
+                ? L.T("Nothing DropWheel can convert these files to.")
                 : _rule.Action == WatchAction.Organize
                     ? Describe(_rule) + ". " + L.T("Each new file moves into a folder for its kind inside this one. History can put them back.")
                     : Describe(_rule) + ". " + L.F("Results are saved in {0}.", _rule.OutputFolder);
