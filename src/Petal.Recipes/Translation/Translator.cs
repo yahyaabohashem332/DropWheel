@@ -33,13 +33,31 @@ public static class Translator
 
     /// <summary>Each line in Arabic; empty lines stay empty.</summary>
     public static IReadOnlyList<string> ToArabic(IReadOnlyList<string> lines, IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>
-        IntoArabic.Lines(lines, progress, cancellationToken);
+        IntoArabic.Lines(lines, progress, cancellationToken).Select(Tidy).ToList();
 
     /// <summary>
     /// One line in Arabic. Quick follows only the likeliest word at each step (about four times less work): for
     /// a sentence still being said, whose words may change before it is translated properly.
     /// </summary>
-    public static string ToArabic(string line, bool quick) => IntoArabic.Line(line, quick);
+    public static string ToArabic(string line, bool quick) => Tidy(IntoArabic.Line(line, quick));
+
+    /// <summary>
+    /// What the English to Arabic model leaves behind now and then, put right: an English "a" or "the" left among the Arabic
+    /// words, every letter given its vowel marks (a style it picked up from some of what it learnt from, which nobody writes
+    /// today; the marks a writer would keep, the doubling mark and the "an" ending as in جداً, stay), and the thousands of a
+    /// number parted by an Arabic comma (10،000).
+    /// </summary>
+    internal static string Tidy(string arabic)
+    {
+        if (arabic.Length == 0)
+            return arabic;
+        var text = System.Text.RegularExpressions.Regex.Replace(arabic, @"(?<=\p{IsArabic}[\p{P}]*) (?:a|an|the)(?= \p{IsArabic})", "");
+        // Fatha, damma, kasra, sukun and the "un" and "in" endings: kept when there are only one or two, put there on purpose.
+        static bool Vowel(char c) => c is >= (char)0x064C and <= (char)0x0650 or (char)0x0652;
+        if (text.Count(Vowel) >= 3)
+            text = new string(text.Where(c => !Vowel(c)).ToArray());
+        return System.Text.RegularExpressions.Regex.Replace(text, @"(?<=\d)،(?=\d{3}(?!\d))", ",");
+    }
 
     /// <summary>Each line (in Arabic) in English; empty lines stay empty.</summary>
     public static IReadOnlyList<string> ToEnglish(IReadOnlyList<string> lines, IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>

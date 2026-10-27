@@ -259,6 +259,12 @@ internal static class DesignSnapshots
             window.Loaded += (_, _) => then(window);
             return window;
         }
+        Window Dub(Action<Tools.Windows.DubWindow> then)
+        {
+            var window = new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at);
+            window.Loaded += (_, _) => then(window);
+            return window;
+        }
         var audio = new[] { file("mixtape.mp3") };
         // The sample folder itself, dropped as a folder.
         var folder = Petal.Core.Jobs.FolderContents.Read([Path.GetDirectoryName(file("landscape.jpg"))!]);
@@ -381,6 +387,9 @@ internal static class DesignSnapshots
             ("shortslistening", () => Shorts(window => window.ShowListeningForSnapshot(0.42, 2735))),
             ("shortsreview", () => Shorts(window => window.ShowForSnapshot(SampleMoments(),
                 new Petal.Recipes.ShortsSource(video[0], Localization.L.IsArabic ? "ar" : "en", [], new Petal.Engines.Media.SoundLevels([]))))),
+            ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
+            ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
+            ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
             ("health", () => Settings.HealthWindow.ForSnapshot(
             [
                 new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("DropWheel sees drags and key taps")),
@@ -438,6 +447,23 @@ internal static class DesignSnapshots
             var words = parts.Select((w, i) => new Petal.Engines.Media.SpokenWord(w, s.Start + 0.4 * i, s.Start + 0.4 * i + 0.35)).ToList();
             return new Petal.Engines.Media.Moment(s.Start, s.Start + s.Length, s.Score, s.Why, words);
         }).ToList();
+    }
+
+    /// <summary>Made-up lines of an interview, as Dub would prepare them: English into Arabic, or Arabic into English.</summary>
+    private static Petal.Recipes.DubSource SampleDub(string video)
+    {
+        bool ar = Localization.L.IsArabic;
+        (double Start, double End, string English, string Arabic)[] lines =
+        [
+            (0.0, 1.6, "I'm a very lucky person.", "أنا شخص محظوظ جدًا."),
+            (1.6, 9.0, "I'm grateful every day, and I want more people to come up here to space.", "أنا ممتن كل يوم، وأريد أن يأتي المزيد من الناس إلى الفضاء."),
+            (9.0, 11.0, "We need some good wings up here.", "نحتاج إلى أجنحة جيدة هنا."),
+            (11.1, 13.6, "I would love to go. Can you take me to space?", "أحب أن أذهب. هل يمكنك أن تأخذني إلى الفضاء؟"),
+            (27.4, 31.8, "I'd look down and say: I'm over Europe, and in twenty seconds I'll be on the West Coast.", "سأنظر إلى الأسفل وأقول: أنا فوق أوروبا، وبعد عشرين ثانية سأكون على الساحل الغربي."),
+        ];
+        // An Arabic reader sees English dubbed into Arabic; anyone else, Arabic dubbed into English.
+        var dub = lines.Select(l => ar ? new Petal.Engines.Media.DubLine(l.Start, l.End, l.English, l.Arabic) : new Petal.Engines.Media.DubLine(l.Start, l.End, l.Arabic, l.English)).ToList();
+        return new Petal.Recipes.DubSource(video, ar ? "en" : "ar", ar ? "ar" : "en", "", "", dub, 152);
     }
 
     /// <summary>Made-up meeting notes in a scratch file.</summary>

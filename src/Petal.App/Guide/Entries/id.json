@@ -1005,6 +1005,32 @@
    "potong video"
   ]
  },
+ "tool:Dub": {
+  "category": "video",
+  "summary": "Mengucapkan ulang ucapan dalam video ke bahasa lain, dari Arab ke Inggris atau dari Inggris ke Arab, dengan suara masing-masing pembicara; musiknya dihapus dan semua suara lainnya tetap ada.",
+  "details": "Sulih Suara memisahkan suara pembicara dari suara lainnya (Demucs), menuliskan apa yang diucapkan beserta waktu setiap kata (Whisper), lalu menerjemahkannya kalimat demi kalimat, semuanya di PC ini. Pilih bahasa tujuan Sulih Suara (Ke bahasa Inggris atau Ke bahasa Arab), bahasa yang Diucapkan dalam (atau Deteksi otomatis) dan Akurasi pendengarannya, lalu pilih Siapkan Sulih Suara. Kalimat-kalimat muncul beserta terjemahannya: periksa, ubah yang perlu, dan putar sebuah kalimat untuk mendengar cara kalimat itu diucapkan. Lalu pilih Sulih Suara. Pertama, musik dihapus dari suara lainnya (dengan TIGER, yang dibuat untuk memisahkan suara film menjadi ucapan, musik, dan efek), sehingga langkah kaki, hujan, angin, dan dengung ruangan tetap ada sementara musiknya hilang; ini memakan waktu pada kali pertama, lalu disimpan. Kemudian setiap kalimat diucapkan ulang oleh model suara di PC ini (Chatterbox) dengan suara orang yang mengucapkannya, dipelajari dari kalimat itu sendiri; kalimat itu didengarkan kembali dan diucapkan ulang bila hasilnya salah, dimuat dalam waktu yang dipakai kalimat aslinya (diucapkan hingga 1,3 kali lebih cepat bila lebih panjang), dan diletakkan di atas suara lainnya sekeras kalimat aslinya. Video baru disimpan di samping aslinya sebagai 'nama Arabic.mp4' atau 'nama English.mp4', gambarnya tidak diubah. Simpan suara asli sebagai trek kedua menambahkan suara asli beserta musiknya untuk pemutar yang bisa berganti trek, dan Subtitel dalam bahasa baru menaruh terjemahan di dalam file sebagai subtitel. File itu menyebutkan bahwa suaranya dibuat dengan AI. Video yang sudah disiapkan sekali langsung terbuka lagi. Sulihsuarakan hanya video yang pembicaranya setuju suaranya dipakai.",
+  "how": "Seret sebuah video, ketuk Ctrl, lalu lepaskan di SULIH SUARA; pilih bahasa tujuan, pilih Siapkan Sulih Suara, periksa terjemahannya, lalu pilih Sulih Suara.",
+  "examples": [
+   "Pelajaran berbahasa Inggris yang disulihsuarakan ke bahasa Arab dengan suara gurunya sendiri, musik latarnya dihapus dan suara kelas tetap ada.",
+   "Wawancara berbahasa Arab yang disulihsuarakan ke bahasa Inggris, dengan subtitel Inggris.",
+   "Video produk berbahasa Inggris dijadikan berbahasa Arab tanpa musik, dua terjemahan diperbaiki sebelum sulih suara."
+  ],
+  "worksOn": "Satu video berisi ucapan dalam bahasa Arab atau Inggris, hingga 30 menit.",
+  "keywords": [
+   "sulih suara",
+   "dubbing",
+   "dub",
+   "voice over",
+   "terjemahkan video",
+   "terjemahan suara",
+   "arab ke inggris",
+   "inggris ke arab",
+   "kloning suara",
+   "dubbing ai",
+   "hapus musik",
+   "tanpa musik"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Memperkecil gambar, video, audio, dan PDF, dengan prasetel, ukuran target, persentase, atau batas sebuah aplikasi.",

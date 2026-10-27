@@ -131,6 +131,15 @@ public static class ModelCatalog
         "https://huggingface.co/timcsy/demucs-web-onnx/resolve/main/htdemucs_embedded.onnx",
         "e5e425c17683f163a472462eb5f5a4ffcd11c31858d57fbd0833b012d8b88077", 180_534_758, "MIT");
 
+    /// <summary>
+    /// TIGER for Divide and Remaster (Tsinghua University, Apache-2.0), audiojs's 8-bit ONNX export at a fixed revision:
+    /// splits film sound into dialogue, music and effects, so Dub can take the music out and keep the other sounds.
+    /// </summary>
+    public static readonly ModelInfo Tiger = new(
+        "tiger-dnr", "TIGER sound separation", "tiger-dnr.int8.onnx",
+        "https://huggingface.co/audiojs/tiger-dnr/resolve/65072a210374cac07ea2ac30a85a4a0b7c71a652/tiger.int8.onnx",
+        "2189859ac7e89cf4d9d284c6f393e737aaa2b3233ed7ee424ad622012bce7bca", 7_320_735, "Apache-2.0");
+
     /// <summary>LaMa (big-lama, Apache-2.0), Carve's ONNX export: fills in what Erase Object removes.</summary>
     public static readonly ModelInfo Lama = new(
         "lama", "LaMa", "lama_fp32.onnx",
@@ -179,10 +188,75 @@ public static class ModelCatalog
         "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/vocab.json",
         "87b78c097c331672ca22a522c3ba24c5dc2cdff90495dcb52cf742635439a3a0", 2_257_246, "Apache-2.0");
 
+    /// <summary>
+    /// Chatterbox Multilingual V3 (Resemble AI, MIT): speech in someone's own voice in Arabic, English and 21 other
+    /// languages, for Dub. Its voice listener, text reader and speech writer come from the ONNX export by Masterx, and its
+    /// voice maker from KitsuMate's, which has it in parts (the flow prepared, one step of it, the vocoder) that load in
+    /// seconds instead of a minute and a half, and whose step can run on the graphics card. Both at fixed revisions; the
+    /// files sit together in their own folder (the graphs find their weights beside them by name).
+    /// </summary>
+    private const string ChatterboxBase = "https://huggingface.co/Masterx/chatterbox-multilingual-v3-ONNX/resolve/19b94afe41de738624b2f3afc75b4cd56221fbeb/";
+
+    private const string ChatterboxFlowBase = "https://huggingface.co/KitsuMate/chatterbox-multilingual-v3-onnx/resolve/3f44461db006cc1ffb553cda02d6f6841125288a/onnx/";
+
+    public static readonly ModelInfo ChatterboxEncoder = new(
+        "chatterbox-v3-encoder", "Chatterbox voice listener", @"chatterbox-v3\speech_encoder.onnx", ChatterboxBase + "onnx/speech_encoder.onnx",
+        "012a9583c0a9560afa11307b585f1e799fca0e1701bdae53fa34766da78f8eae", 1_204_600, "MIT");
+
+    public static readonly ModelInfo ChatterboxEncoderWeights = new(
+        "chatterbox-v3-encoder-data", "Chatterbox Multilingual", @"chatterbox-v3\speech_encoder.onnx_data", ChatterboxBase + "onnx/speech_encoder.onnx_data",
+        "f1f663a1a03aa885f8f0fcaa730dd8dfbce8caad514093b13c9682a4a2842990", 591_274_880, "MIT");
+
+    public static readonly ModelInfo ChatterboxEmbeddings = new(
+        "chatterbox-v3-embed", "Chatterbox text reader", @"chatterbox-v3\embed_tokens.onnx", ChatterboxBase + "onnx/embed_tokens.onnx",
+        "c8dd692ee8dfc9099baf39c8074e9bcc0a760e8c25ae1cac4a8c62c7cf4536bc", 17_616, "MIT");
+
+    public static readonly ModelInfo ChatterboxEmbeddingWeights = new(
+        "chatterbox-v3-embed-data", "Chatterbox text reader weights", @"chatterbox-v3\embed_tokens.onnx_data", ChatterboxBase + "onnx/embed_tokens.onnx_data",
+        "d263116bec8ae582953c99bdffa9ecd53914d1ae2732da8455e361ed5baa2a9a", 68_808_704, "MIT");
+
+    public static readonly ModelInfo ChatterboxLanguage = new(
+        "chatterbox-v3-language", "Chatterbox speech writer", @"chatterbox-v3\language_model_q4.onnx", ChatterboxBase + "onnx/language_model_q4.onnx",
+        "91846c24706116f87b39aac5b13aa1a67243b6f973bc433327d143b8eff9fde6", 228_633, "MIT");
+
+    public static readonly ModelInfo ChatterboxLanguageWeights = new(
+        "chatterbox-v3-language-data", "Chatterbox speech writer weights", @"chatterbox-v3\language_model_q4.onnx_data", ChatterboxBase + "onnx/language_model_q4.onnx_data",
+        "621a963492f871ccc841592c6ca117bf88dbea4c0c25d61be4391197c8b878b0", 353_621_248, "MIT");
+
+    public static readonly ModelInfo ChatterboxFlowStart = new(
+        "chatterbox-v3-flow-prepare", "Chatterbox voice maker", @"chatterbox-v3\flow_prepare_slim.onnx", ChatterboxFlowBase + "flow_prepare_slim.onnx",
+        "017b89038172ba02a3aa099b8de0804fd7573ab34089a23947aa1fde4eed5d2d", 285_857, "MIT");
+
+    public static readonly ModelInfo ChatterboxFlowStartWeights = new(
+        "chatterbox-v3-flow-prepare-data", "Chatterbox voice maker weights", @"chatterbox-v3\flow_prepare_slim.onnx.data", ChatterboxFlowBase + "flow_prepare_slim.onnx.data",
+        "63e02f938147256fda34cbfa80e0d03abecdbbe02cc64f96b6b5762ea586f469", 185_464_832, "MIT");
+
+    public static readonly ModelInfo ChatterboxFlowStep = new(
+        "chatterbox-v3-flow-step", "Chatterbox voice maker steps", @"chatterbox-v3\flow_step_slim.onnx", ChatterboxFlowBase + "flow_step_slim.onnx",
+        "4c45789f929f7728bc1c0f6b7ec50a9b1e787847e708cc78bf615d837750ae96", 286_124_928, "MIT");
+
+    public static readonly ModelInfo ChatterboxVocoder = new(
+        "chatterbox-v3-vocoder", "Chatterbox vocoder", @"chatterbox-v3\vocoder_slim.onnx", ChatterboxFlowBase + "vocoder_slim.onnx",
+        "cc59b61c5dba729d13b059ea8a47bb5ab61db3463027ecd25c73e21668d925c9", 293_882, "MIT");
+
+    public static readonly ModelInfo ChatterboxVocoderWeights = new(
+        "chatterbox-v3-vocoder-data", "Chatterbox vocoder weights", @"chatterbox-v3\vocoder_slim.onnx.data", ChatterboxFlowBase + "vocoder_slim.onnx.data",
+        "d3e9a3a21a3e37ba5d5ef3fec3b18d20a91f984b39f929ff225a9598529f0ea3", 83_194_752, "MIT");
+
+    public static readonly ModelInfo ChatterboxVocabulary = new(
+        "chatterbox-v3-tokenizer", "Chatterbox vocabulary", @"chatterbox-v3\tokenizer.json", ChatterboxBase + "tokenizer.json",
+        "8763bb615f5e0ad49fbb53b65d371e37961f64bb0a55b96c0205f4a59ba5be13", 72_765, "MIT");
+
+    /// <summary>Everything Chatterbox needs, the largest first.</summary>
+    public static IReadOnlyList<ModelInfo> Chatterbox { get; } =
+        [ChatterboxEncoderWeights, ChatterboxLanguageWeights, ChatterboxFlowStep, ChatterboxFlowStartWeights, ChatterboxVocoderWeights, ChatterboxEmbeddingWeights,
+         ChatterboxEncoder, ChatterboxVocoder, ChatterboxFlowStart, ChatterboxLanguage, ChatterboxVocabulary, ChatterboxEmbeddings];
+
     public static IReadOnlyList<ModelInfo> All { get; } =
         [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen, SmolVlm, SmolVlmProjector,
-         ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Lama,
-         OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary];
+         ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Tiger, Lama,
+         OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary,
+         .. Chatterbox];
 }
 
 /// <summary>Where models live, and the verified download of the ones that don't ship with Petal.</summary>
@@ -236,8 +310,9 @@ public static class ModelStore
         {
             if (Find(model) is { } existing)
                 return existing;
-            Directory.CreateDirectory(Folder);
             var target = Path.Combine(Folder, model.FileName);
+            // A model of several files keeps them in a folder of its own.
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             var part = target + ".part";
             var http = client ?? Shared.Value;
             try

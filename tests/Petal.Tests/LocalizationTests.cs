@@ -77,6 +77,9 @@ public partial class LocalizationTests
         "Can you take me to space? I want to float around and do flips.", "The truth is actually pretty amazing. When we get into space, we all feel something.",
         "We go around the Earth every 90 minutes. I've seen it all.", "My advice to anyone who dreams of flying: start today.",
         "The first time I saw the Earth through the window, I couldn't speak.", "The best part",
+        // 1.12: the made-up lines of an interview Dub is drawn with in the design snapshots (the Arabic ones are written beside them).
+        "I'm a very lucky person.", "I'm grateful every day, and I want more people to come up here to space.", "We need some good wings up here.",
+        "I would love to go. Can you take me to space?", "I'd look down and say: I'm over Europe, and in twenty seconds I'll be on the West Coast.",
     };
 
     private static readonly Regex Literal = MakeLiteral();

@@ -982,6 +982,32 @@
    "video kesme"
   ]
  },
+ "tool:Dub": {
+  "category": "video",
+  "summary": "Bir videodaki konuşmayı diğer dilde, Arapçadan İngilizceye ya da İngilizceden Arapçaya, her konuşmacının kendi sesiyle yeniden söyler; müzik çıkarılır, diğer tüm sesler korunur.",
+  "details": "Dublaj, konuşmacıların seslerini diğer seslerden ayırır (Demucs), söyleneni her kelimenin zamanıyla yazıya döker (Whisper) ve cümle cümle çevirir; hepsi bu bilgisayarda. Dublaj dilini (İngilizceye veya Arapçaya), Konuşma dilini (veya Otomatik algıla) ve dinlemenin Doğruluğunu seçin, sonra Dublajı Hazırla'yı seçin. Cümleler çevirileriyle birlikte görünür: kontrol edin, gerekenleri değiştirin ve nasıl söylendiğini duymak için bir cümleyi oynatın. Sonra Dublaj'ı seçin. Önce müzik diğer seslerden çıkarılır (film seslerini konuşma, müzik ve efektlere ayırmak için yapılmış TIGER ile); böylece adımlar, yağmur, rüzgâr ve odanın uğultusu kalır, müzik gider. Bu ilk seferde biraz sürer, sonra saklanır. Ardından her cümle, bu bilgisayardaki ses modeli (Chatterbox) tarafından onu söyleyen kişinin sesiyle yeniden söylenir; ses, o cümlenin kendisinden öğrenilir. Cümle geri dinlenir ve yanlış çıktıysa yeniden söylenir, orijinalin sürdüğü zamana sığdırılır (daha uzunsa 1,3 kata kadar hızlı söylenir) ve orijinal ne kadar yüksek söylendiyse o kadar yüksek diğer seslerin üzerine yerleştirilir. Yeni video orijinalin yanına 'ad Arabic.mp4' veya 'ad English.mp4' olarak kaydedilir; görüntüsüne dokunulmaz. Orijinal sesi ikinci parça olarak tut, parça değiştirebilen oynatıcılar için orijinal sesi müziğiyle birlikte ekler; Yeni dilde altyazı, çeviriyi dosyaya altyazı olarak ekler. Dosya, seslerinin yapay zekâ ile yapıldığını belirtir. Bir kez hazırlanan video sonra hemen açılır. Yalnızca konuşmacılarının seslerinin kullanılmasına razı olacağı videoları dublajlayın.",
+  "how": "Bir videoyu sürükleyin, Ctrl'ye dokunun ve DUBLAJ üzerine bırakın; dublaj dilini seçin, Dublajı Hazırla'yı seçin, çevirileri kontrol edin, sonra Dublaj'ı seçin.",
+  "examples": [
+   "Öğretmenin kendi sesiyle Arapçaya dublajlanmış bir İngilizce ders; arka plan müziği çıkarılmış, sınıfın sesleri korunmuş.",
+   "İngilizceye dublajlanmış Arapça bir röportaj; İngilizce altyazı eklenmiş.",
+   "İngilizce bir ürün videosu müziksiz olarak Arapça yapılır; dublajdan önce iki çeviri düzeltilir."
+  ],
+  "worksOn": "Arapça veya İngilizce konuşma içeren tek bir video, en fazla 30 dakika.",
+  "keywords": [
+   "dublaj",
+   "seslendirme",
+   "video çevirisi",
+   "ses çevirisi",
+   "arapçadan ingilizceye",
+   "ingilizceden arapçaya",
+   "ses klonlama",
+   "yapay zekâ dublaj",
+   "müziği kaldır",
+   "müziksiz",
+   "dub",
+   "dubbing"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Resimleri, videoları, sesleri ve PDF'leri bir hazır ayara, hedef boyuta, yüzdeye ya da bir uygulamanın sınırına göre küçültür.",

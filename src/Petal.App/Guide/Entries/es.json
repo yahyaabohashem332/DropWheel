@@ -994,6 +994,32 @@
    "cortar video"
   ]
  },
+ "tool:Dub": {
+  "category": "video",
+  "summary": "Vuelve a decir lo que se habla en un video en el otro idioma, del árabe al inglés o del inglés al árabe, con la propia voz de cada persona; la música se quita y todos los demás sonidos se conservan.",
+  "details": "Doblaje separa las voces del resto del sonido (Demucs), escribe lo que se dice con el momento de cada palabra (Whisper) y lo traduce frase por frase, todo en este PC. Elige el idioma del Doblaje (Al inglés o Al árabe), el idioma Hablado en (o Detectar automáticamente) y la Precisión de la escucha, y luego elige Preparar el doblaje. Las frases aparecen con sus traducciones: revísalas, cambia las que lo necesiten y reproduce una frase para oír cómo se dijo. Luego elige Doblaje. Primero se quita la música del resto del sonido (con TIGER, hecho para separar el sonido de las películas en habla, música y efectos), así que los pasos, la lluvia, el viento y el murmullo de una sala se quedan y la música se va; la primera vez tarda un poco y después se guarda. Luego el modelo de voz de este PC (Chatterbox) vuelve a decir cada frase con la voz de la persona que la dijo, aprendida de esa misma frase; la frase se vuelve a escuchar y se repite si salió mal, se ajusta al tiempo que ocupaba la original (se dice hasta 1,3 veces más rápido si es más larga) y se coloca sobre los demás sonidos tan fuerte como se dijo la original. El nuevo video se guarda junto al original como 'nombre Arabic.mp4' o 'nombre English.mp4', con la imagen intacta. Conservar el sonido original como segunda pista añade el sonido original, con su música, para los reproductores que cambian de pista, y Subtítulos en el nuevo idioma pone la traducción en el archivo como subtítulos. El archivo indica que sus voces se crearon con IA. Un video preparado una vez se vuelve a abrir al instante. Dobla solo videos cuyas personas estarían de acuerdo en que se use su voz.",
+  "how": "Arrastra un video, toca Ctrl y suéltalo en DOBLAJE; elige el idioma del doblaje, elige Preparar el doblaje, revisa las traducciones y luego elige Doblaje.",
+  "examples": [
+   "Una clase en inglés doblada al árabe con la propia voz del profesor, sin la música de fondo y con los sonidos del aula.",
+   "Una entrevista en árabe doblada al inglés, con subtítulos en inglés.",
+   "Un video de producto en inglés convertido al árabe sin su música, con dos traducciones corregidas antes del doblaje."
+  ],
+  "worksOn": "Un video con habla en árabe o en inglés, de hasta 30 minutos.",
+  "keywords": [
+   "doblaje",
+   "doblar",
+   "voz en off",
+   "traducir video",
+   "traducción de voz",
+   "árabe a inglés",
+   "inglés a árabe",
+   "clonación de voz",
+   "doblaje con ia",
+   "quitar música",
+   "sin música",
+   "dub"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Reduce el tamaño de imágenes, videos, audio y PDF, con un ajuste predefinido, un tamaño objetivo, un porcentaje o el límite de una aplicación.",

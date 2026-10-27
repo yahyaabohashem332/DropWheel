@@ -977,6 +977,32 @@
    "découper une vidéo"
   ]
  },
+ "tool:Dub": {
+  "category": "video",
+  "summary": "Redit la parole d'une vidéo dans l'autre langue, de l'arabe vers l'anglais ou de l'anglais vers l'arabe, avec la voix de chaque orateur ; la musique est retirée et tous les autres sons sont gardés.",
+  "details": "Doublage sépare les voix du reste du son (Demucs), écrit ce qui est dit avec l'instant de chaque mot (Whisper) et le traduit phrase par phrase, le tout sur ce PC. Choisissez la langue du Doublage (En anglais ou En arabe), la Langue parlée (ou Détecter automatiquement) et la Précision de l'écoute, puis choisissez Préparer le doublage. Les phrases apparaissent avec leurs traductions : vérifiez-les, modifiez celles qui le demandent et écoutez une phrase pour entendre comment elle a été dite. Puis choisissez Doublage. D'abord la musique est retirée du reste du son (par TIGER, fait pour séparer le son des films en parole, musique et effets) : les pas, la pluie, le vent et le bruit d'une pièce restent, la musique s'en va ; cela prend un moment la première fois, puis c'est gardé. Ensuite chaque phrase est redite par le modèle de voix de ce PC (Chatterbox) avec la voix de la personne qui l'a prononcée, apprise de cette phrase même ; elle est réécoutée et redite si elle est sortie de travers, ajustée au temps qu'avait pris l'originale (dite jusqu'à 1,3 fois plus vite si elle est plus longue) et posée sur les autres sons aussi fort que l'originale avait été dite. La nouvelle vidéo est enregistrée à côté de l'originale sous le nom « nom Arabic.mp4 » ou « nom English.mp4 », son image intacte. Garder le son d'origine comme deuxième piste ajoute le son d'origine, musique comprise, pour les lecteurs qui changent de piste, et Sous-titres dans la nouvelle langue met la traduction dans le fichier en sous-titres. Le fichier indique que ses voix ont été créées par l'IA. Une vidéo préparée une fois se rouvre aussitôt. Ne doublez que des vidéos dont les orateurs accepteraient que leur voix soit utilisée.",
+  "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur DOUBLAGE ; choisissez la langue du doublage, choisissez Préparer le doublage, vérifiez les traductions, puis choisissez Doublage.",
+  "examples": [
+   "Un cours en anglais doublé en arabe avec la voix même de l'enseignant, la musique de fond retirée et les bruits de la classe gardés.",
+   "Une interview en arabe doublée en anglais, avec des sous-titres anglais.",
+   "Une vidéo de produit en anglais rendue arabe sans sa musique, deux traductions corrigées avant le doublage."
+  ],
+  "worksOn": "Une vidéo avec de la parole en arabe ou en anglais, jusqu'à 30 minutes.",
+  "keywords": [
+   "doublage",
+   "doubler",
+   "voix off",
+   "traduire une vidéo",
+   "traduction vocale",
+   "arabe vers anglais",
+   "anglais vers arabe",
+   "clonage de voix",
+   "doublage ia",
+   "retirer la musique",
+   "sans musique",
+   "dub"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Réduit la taille des images, vidéos, fichiers audio et PDF, selon un préréglage, une taille cible, un pourcentage ou la limite d'une application.",

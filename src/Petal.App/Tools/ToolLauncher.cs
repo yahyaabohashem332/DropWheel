@@ -48,6 +48,7 @@ public sealed class ToolLauncher(JobRunner jobs)
         [ToolId.AnimatedCaptions] = (t, f, j, a) => new AnimatedCaptionsWindow(t, f, j, a),
         [ToolId.Reframe] = (t, f, j, a) => new ReframeWindow(t, f, j, a),
         [ToolId.MakeShorts] = (t, f, j, a) => new MakeShortsWindow(t, f, j, a),
+        [ToolId.Dub] = (t, f, j, a) => new DubWindow(t, f, j, a),
         [ToolId.TrimAudio] = (t, f, j, a) => new TrimAudioWindow(t, f, j, a),
         [ToolId.AudioChannels] = (t, f, j, a) => new AudioChannelsWindow(t, f, j, a),
         [ToolId.AudioVisualizer] = (t, f, j, a) => new VisualizerWindow(t, f, j, a),
