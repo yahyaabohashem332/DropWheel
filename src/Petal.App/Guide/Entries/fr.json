@@ -951,6 +951,32 @@
    "story instagram"
   ]
  },
+ "tool:MakeShorts": {
+  "category": "video",
+  "summary": "Transforme une longue vidéo (conférence, interview, podcast, cours) en courts extraits prêts pour Reels, Shorts et TikTok : ses meilleurs moments, trouvés, cadrés et sous-titrés.",
+  "details": "Vidéos courtes écoute toute la vidéo sur ce PC (Whisper, avec l'instant de chaque mot) et trouve les moments qui tiennent debout seuls : chacun commence au début d'une phrase et finit là où une idée s'achève. Ils sont classés selon ce qui retient le spectateur : une ouverture qui accroche (une question, « imaginez… »), un débit vivant, une histoire, des conseils, des chiffres, de l'émotion ou des rires, un seul sujet du début à la fin, et la durée demandée. Choisissez le nombre de Clips (3, 5 ou 8), leur Durée (jusqu'à 30 s, 30–60 s ou 60–90 s), la Forme (Vertical 9:16, Carré ou Tel quel) et le Cadrage. Suivre l'orateur trouve les visages avec le détecteur de visages de Windows, garde dans le cadre celui qui parle, glisse quand il bouge et coupe quand un autre prend la parole ; quand aucun visage n'est net (diapositives, scène), il montre toute l'image sur une copie floutée d'elle-même, comme Image entière le fait toujours. Les Sous-titres sont incrustés Mot à mot (le mot prononcé s'allume dans la couleur choisie), Un mot ou Lignes, et Mots en est la langue parlée, l'anglais ou l'arabe. Titre au début place un titre sur les premières secondes ; Couper les silences resserre les blancs entre les phrases. Choisissez Trouver les meilleurs moments : ils s'affichent du meilleur au moins bon, chacun avec une note sur 100 et la raison de son choix. Lisez-en un pour vérifier, changez son titre (les titres sont écrits par le modèle d'IA de ce PC quand il est là, et gardés seulement s'ils restent fidèles à ce qui est dit), décochez ceux dont vous ne voulez pas, puis choisissez Créer les vidéos courtes. Les extraits sont enregistrés dans un nouveau dossier nommé « nom Shorts », numérotés et titrés, en MP4 1080 × 1920, le son au niveau sonore que jouent les applications. Une vidéo écoutée une fois se rouvre aussitôt.",
+  "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur SHORTS ; choisissez le nombre, la durée, la forme et les sous-titres des extraits, choisissez Trouver les meilleurs moments, vérifiez les moments, puis choisissez Créer les vidéos courtes.",
+  "worksOn": "Une vidéo avec de la parole, de n'importe quelle durée.",
+  "examples": [
+   "Un podcast d'une heure transformé en huit extraits de 60 secondes pour TikTok, chacun ouvert par une question et sous-titré mot à mot.",
+   "Un cours en arabe transformé en cinq Reels avec sous-titres arabes et titre, les silences coupés.",
+   "Un webinaire enregistré avec diapositives : Image entière garde les diapositives lisibles, avec des sous-titres anglais en dessous."
+  ],
+  "keywords": [
+   "shorts",
+   "reels",
+   "tiktok",
+   "vidéos courtes",
+   "extraits",
+   "longue vidéo en extraits",
+   "meilleurs moments",
+   "temps forts",
+   "extraits de podcast",
+   "clips viraux",
+   "sous-titres",
+   "découper une vidéo"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Réduit la taille des images, vidéos, fichiers audio et PDF, selon un préréglage, une taille cible, un pourcentage ou la limite d'une application.",

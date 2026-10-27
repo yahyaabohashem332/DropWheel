@@ -85,6 +85,10 @@ internal static class Fixtures
         ["pauses.wav"] = ["-f", "lavfi", "-i", Pauses, "-c:a", "pcm_s16le"],
         ["pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=6.5", "-f", "lavfi", "-i", Pauses, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
         ["quiet.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.03*sin(2*PI*440*t):s=44100:d=6", "-ac", "2", "-c:a", "pcm_s16le"],
+        // Twelve seconds of a wide picture with "speech" (a wavering tone) at 1–3, 4.5–6.5, 7–9.5 and 10–11.5 s.
+        ["talk.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=1280x720:r=30:d=12", "-f", "lavfi", "-i",
+            "aevalsrc='if(between(t,1,3)+between(t,4.5,6.5)+between(t,7,9.5)+between(t,10,11.5),0.3*sin(2*PI*220*t)*(0.6+0.4*sin(2*PI*3*t)),0)':s=44100:d=12",
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
         ["cover.jpg"] = ["-f", "lavfi", "-i", "color=c=orange:s=64x64", "-frames:v", "1"],
         ["tagged.mp4"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",
             "-metadata", "title=Clip Title", "-metadata", "comment=Hello"],

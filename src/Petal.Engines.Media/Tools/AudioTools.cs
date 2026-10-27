@@ -288,7 +288,7 @@ public static partial class AudioTools
         return new Measurement(stats, report.Value("target_offset"));
     }
 
-    private sealed class LoudnormReport(Dictionary<string, string> values)
+    internal sealed class LoudnormReport(Dictionary<string, string> values)
     {
         public double Value(string key)
         {
@@ -304,7 +304,7 @@ public static partial class AudioTools
     }
 
     /// <summary>loudnorm prints a flat JSON object after its "[Parsed_loudnorm…]" line.</summary>
-    private static LoudnormReport? ParseLoudnorm(string stderr)
+    internal static LoudnormReport? ParseLoudnorm(string stderr)
     {
         var marker = stderr.LastIndexOf("Parsed_loudnorm", StringComparison.Ordinal);
         if (marker < 0)

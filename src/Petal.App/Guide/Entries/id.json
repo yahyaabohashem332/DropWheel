@@ -979,6 +979,32 @@
    "instagram story"
   ]
  },
+ "tool:MakeShorts": {
+  "category": "video",
+  "summary": "Mengubah video panjang (ceramah, wawancara, podcast, pelajaran) menjadi klip pendek yang siap untuk Reels, Shorts, dan TikTok: momen terbaiknya, ditemukan, dibingkai, dan diberi teks.",
+  "details": "Buat Video Pendek mendengarkan seluruh video di PC ini (Whisper, dengan waktu setiap kata) dan menemukan momen yang bisa berdiri sendiri: masing-masing dimulai di awal kalimat dan berakhir saat sebuah gagasan selesai. Momen diurutkan menurut apa yang membuat orang terus menonton: pembuka yang menarik (pertanyaan, “bayangkan…”), penyampaian yang bersemangat, cerita, saran, angka, perasaan atau tawa, satu topik dari awal sampai akhir, dan panjang yang diminta. Pilih jumlah Klip (3, 5, atau 8), Panjang (hingga 30 dtk, 30–60 dtk, atau 60–90 dtk), Bentuk (Tegak 9:16, Persegi, atau Seperti aslinya), dan Pembingkaian. Ikuti pembicara menemukan wajah dengan pendeteksi wajah bawaan Windows, menjaga orang yang berbicara tetap dalam bingkai, bergeser halus saat ia bergerak, dan berpindah potong saat orang lain berbicara; bila tidak ada wajah yang jelas (slide, panggung), ia menampilkan seluruh gambar di atas salinannya yang buram, seperti yang selalu dilakukan Seluruh gambar. Teks ditulis di video Kata demi kata (kata yang diucapkan menyala dengan warna pilihan), Satu kata, atau Baris, dan Kata dalam adalah bahasa yang diucapkan, Inggris, atau Arab. Judul di awal memasang judul di atas detik-detik pertama; Potong jeda memendekkan keheningan di antara kalimat. Pilih Temukan Momen Terbaik: momen muncul dari yang terbaik, masing-masing dengan skor dari 100 dan alasan dipilihnya. Putar salah satunya untuk memeriksa, ubah judulnya (judul ditulis oleh model AI di PC ini bila tersedia, dan hanya dipertahankan bila setia pada apa yang diucapkan), hapus centang yang tidak Anda inginkan, lalu pilih tombol Buat video pendek. Klip disimpan di folder baru bernama 'nama Shorts', bernomor dan berjudul, sebagai MP4 1080 × 1920 dengan suara pada tingkat kenyaringan yang diputar aplikasi. Video yang sudah didengar sekali langsung terbuka lagi.",
+  "how": "Seret sebuah video, ketuk Ctrl, lalu lepaskan di VIDEO PENDEK; pilih jumlah, panjang, bentuk, dan teks klip, pilih Temukan Momen Terbaik, periksa momennya, lalu pilih tombol Buat video pendek.",
+  "worksOn": "Satu video berisi ucapan, berapa pun panjangnya.",
+  "examples": [
+   "Podcast satu jam menjadi delapan klip 60 detik untuk TikTok, masing-masing dibuka dengan pertanyaan dan diberi teks kata demi kata.",
+   "Kuliah berbahasa Arab menjadi lima Reels dengan teks Arab dan judul, jedanya dipotong.",
+   "Webinar rekaman dengan slide: Seluruh gambar menjaga slide tetap terbaca, dengan teks bahasa Inggris di bawahnya."
+  ],
+  "keywords": [
+   "video pendek",
+   "shorts",
+   "reels",
+   "tiktok",
+   "klip",
+   "video panjang jadi klip pendek",
+   "momen terbaik",
+   "sorotan",
+   "klip podcast",
+   "klip viral",
+   "teks",
+   "potong video"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Memperkecil gambar, video, audio, dan PDF, dengan prasetel, ukuran target, persentase, atau batas sebuah aplikasi.",

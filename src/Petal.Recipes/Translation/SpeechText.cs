@@ -74,7 +74,8 @@ public static class SpeechText
         var translated = await Task.Run(() => into == "ar"
             ? Translator.ToArabic(lines, progress, cancellationToken)
             : Translator.ToEnglish(lines, progress, cancellationToken), cancellationToken).ConfigureAwait(false);
-        return new Transcript(transcript.Segments.Select((s, i) => s with { Text = translated[i] }).ToList(), into);
+        // The words' own times belong to the words spoken, not to their translation.
+        return new Transcript(transcript.Segments.Select((s, i) => s with { Text = translated[i], Words = [] }).ToList(), into);
     }
 
     private static IProgress<double>? Part(IProgress<double>? progress, double from, double to) =>

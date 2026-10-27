@@ -9,9 +9,17 @@ namespace Petal.Engines.Media;
 /// <param name="ModelPath">A Whisper ggml model file.</param>
 /// <param name="Language">"auto" to detect, or a code such as "ar" or "en".</param>
 /// <param name="TranslateToEnglish">Write the English translation instead of the original words.</param>
-public sealed record TranscribeOptions(string ModelPath, string Language = "auto", bool TranslateToEnglish = false);
+/// <param name="WordTimes">Also when each word is said, aligned to the sound (see <see cref="TranscriptSegment.Words"/>).</param>
+public sealed record TranscribeOptions(string ModelPath, string Language = "auto", bool TranslateToEnglish = false, bool WordTimes = false);
 
-public sealed record TranscriptSegment(TimeSpan Start, TimeSpan End, string Text);
+/// <summary>A word and when it is said, in seconds from the start of the recording.</summary>
+public sealed record SpokenWord(string Text, double Start, double End);
+
+public sealed record TranscriptSegment(TimeSpan Start, TimeSpan End, string Text)
+{
+    /// <summary>The segment's words with their own times, when they were asked for; otherwise none.</summary>
+    public IReadOnlyList<SpokenWord> Words { get; init; } = [];
+}
 
 /// <summary>What was said, with timings, and the language Whisper heard.</summary>
 public sealed record Transcript(IReadOnlyList<TranscriptSegment> Segments, string Language)
@@ -127,6 +135,8 @@ public static class Transcriber
             throw new FileNotFoundException("The speech model isn't downloaded yet.", options.ModelPath);
         if (options.TranslateToEnglish && !CanTranslate(options.ModelPath))
             throw new InvalidOperationException("This speech model can't translate; another one puts the words into English.");
+        if (options.WordTimes && !options.TranslateToEnglish)
+            return await TranscribeWordsAsync(samples, options, null, progress, cancellationToken).ConfigureAwait(false);
 
         return await Task.Run(async () =>
         {
@@ -148,6 +158,130 @@ public static class Transcriber
             progress?.Report(1);
             return new Transcript(segments, options.TranslateToEnglish ? "en" : language);
         }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>The longest stretch of sound Whisper is given at once when the words' times are wanted.</summary>
+    private const double LongestPiece = 28;
+
+    /// <summary>
+    /// What was said with when each word is said, aligned to the sound. Whisper's alignment (DTW) stops without a word
+    /// partway through a long recording, so the sound is cut into pieces of under half a minute at its pauses, each
+    /// written down with what was said just before it as context; quiet between the pieces is never read (which is
+    /// where Whisper makes words up). A piece the alignment fails on is written again with Whisper's own times. The
+    /// language is told from the first piece with speech, unless it was given, and kept for the rest.
+    /// </summary>
+    /// <param name="levels">The sound's levels, when already measured.</param>
+    public static async Task<Transcript> TranscribeWordsAsync(float[] samples, TranscribeOptions options, SoundLevels? levels = null,
+        IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(options.ModelPath))
+            throw new FileNotFoundException("The speech model isn't downloaded yet.", options.ModelPath);
+        levels ??= SoundLevels.Measure(samples);
+        var pieces = Pieces(levels, samples.Length / 16000.0);
+        return await Task.Run(async () =>
+        {
+            var heads = StreamingTranscriber.Heads(Path.GetFileName(options.ModelPath));
+            using var aligned = heads is { } preset
+                ? WhisperFactory.FromPath(options.ModelPath, new WhisperFactoryOptions { UseDtwTimeStamps = true, HeadsPreset = preset })
+                : WhisperFactory.FromPath(options.ModelPath);
+            WhisperFactory? plain = null;
+            try
+            {
+                string language = string.IsNullOrEmpty(options.Language) ? "auto" : options.Language;
+                var segments = new List<TranscriptSegment>();
+                var recent = new List<string>();
+                for (int p = 0; p < pieces.Count; p++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var (from, to) = pieces[p];
+                    var sound = samples.AsSpan((int)(from * 16000), Math.Min(samples.Length, (int)(to * 16000)) - (int)(from * 16000)).ToArray();
+                    var context = string.Join(' ', recent);
+                    var found = await PieceAsync(aligned, heads is not null, sound, from, language, context, cancellationToken).ConfigureAwait(false);
+                    if (found.Segments.Count == 0 && heads is not null)
+                    {
+                        plain ??= WhisperFactory.FromPath(options.ModelPath);
+                        found = await PieceAsync(plain, false, sound, from, language, context, cancellationToken).ConfigureAwait(false);
+                    }
+                    if (language == "auto" && found.Language is { Length: > 0 } heard && found.Segments.Count > 0)
+                        language = heard;
+                    foreach (var segment in found.Segments)
+                    {
+                        segments.Add(segment);
+                        recent.Add(segment.Text);
+                        if (recent.Count > 3)
+                            recent.RemoveAt(0);
+                    }
+                    progress?.Report((p + 1.0) / pieces.Count);
+                }
+                progress?.Report(1);
+                return new Transcript(segments, language);
+            }
+            finally
+            {
+                plain?.Dispose();
+            }
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>One piece of sound written down, its times moved to where the piece is in the recording.</summary>
+    private static async Task<(List<TranscriptSegment> Segments, string? Language)> PieceAsync(WhisperFactory factory, bool aligned, float[] sound, double offset,
+        string language, string context, CancellationToken cancellationToken)
+    {
+        var builder = factory.CreateBuilder().WithLanguage(language).WithTokenTimestamps().WithThreads(Math.Clamp(Environment.ProcessorCount, 1, 8));
+        if (context.Length > 0)
+            builder = builder.WithPrompt(context.Length > 200 ? context[^200..] : context);
+        await using var processor = builder.Build();
+        var segments = new List<TranscriptSegment>();
+        string? heard = null;
+        double length = sound.Length / 16000.0;
+        await foreach (var segment in processor.ProcessAsync(sound, cancellationToken).ConfigureAwait(false))
+        {
+            if (!string.IsNullOrEmpty(segment.Language))
+                heard = segment.Language;
+            var text = segment.Text.Trim();
+            if (text.Length == 0 || LiveTranscriber.IsNoise(text) || MadeUp(text) || segment.NoSpeechProbability > 0.7 && segment.Probability < 0.4)
+                continue;
+            var words = TokenWords.Spelled(text, TokenWords.Of(segment, aligned))
+                .Select(w => new SpokenWord(w.Text, offset + Math.Clamp(w.Start, 0, length), offset + Math.Clamp(w.End, 0, length))).ToList();
+            segments.Add(new TranscriptSegment(segment.Start + TimeSpan.FromSeconds(offset), segment.End + TimeSpan.FromSeconds(offset), text) { Words = words });
+        }
+        return (segments, heard);
+    }
+
+    /// <summary>What Whisper writes when it hears music or nothing and makes words up, from the videos it learnt from.</summary>
+    internal static bool MadeUp(string text)
+    {
+        var key = new string(text.Where(c => char.IsLetter(c) || c == ' ').ToArray()).Trim().ToLowerInvariant();
+        return key is "thank you for watching" or "thanks for watching" or "thank you so much for watching" or "please subscribe"
+                   or "subscribe to the channel" or "see you in the next video"
+               || key.Contains("نانسي قنقر") || key.Contains("اشتركوا في القناة") || key.Contains("شكرا للمشاهدة") || key.Contains("لا تنسوا الاشتراك");
+    }
+
+    /// <summary>
+    /// The recording cut into pieces of at most <see cref="LongestPiece"/> seconds for Whisper, at the longest pause
+    /// in each piece's last part; quiet longer than a second between them is left out.
+    /// </summary>
+    internal static List<(double Start, double End)> Pieces(SoundLevels levels, double length)
+    {
+        var pieces = new List<(double Start, double End)>();
+        double t = 0;
+        while (t < length - 0.3)
+        {
+            while (t < length && levels.QuietShare(t, Math.Min(length, t + 1)) > 0.97)
+                t += 0.5;
+            if (t >= length - 0.3)
+                break;
+            double start = Math.Max(0, t - 0.25);
+            if (length - start <= LongestPiece)
+            {
+                pieces.Add((start, length));
+                break;
+            }
+            double end = levels.LongestPauseBetween(start + LongestPiece * 0.45, start + LongestPiece);
+            pieces.Add((start, end));
+            t = end;
+        }
+        return pieces;
     }
 
     /// <summary>

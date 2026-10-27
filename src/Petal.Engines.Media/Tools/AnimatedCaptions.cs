@@ -20,6 +20,8 @@ public enum CaptionPlace
     Bottom,
     Middle,
     Top,
+    /// <summary>A third of the way up: clear of the buttons and the description short-video apps lay over the bottom.</summary>
+    Lower,
 }
 
 /// <param name="Size">Letter height as a share of the picture's height (0.04 small … 0.09 large).</param>
@@ -62,17 +64,17 @@ public static class AnimatedCaptions
     }
 
     /// <summary>
-    /// Lines of at most <paramref name="mostWords"/> words and about 28 letters; a line also ends at the
-    /// end of a sentence, or where the speaker pauses.
+    /// Lines of at most <paramref name="mostWords"/> words and <paramref name="mostLetters"/> letters; a line also ends at
+    /// the end of a sentence, or where the speaker pauses.
     /// </summary>
-    public static List<List<CaptionWord>> Lines(IReadOnlyList<CaptionWord> words, int mostWords)
+    public static List<List<CaptionWord>> Lines(IReadOnlyList<CaptionWord> words, int mostWords, int mostLetters = 28)
     {
         var lines = new List<List<CaptionWord>>();
         List<CaptionWord>? line = null;
         foreach (var word in words)
         {
             bool pause = line is { Count: > 0 } && word.Start - line[^1].End > TimeSpan.FromSeconds(0.6);
-            if (line is null || pause || line.Count >= Math.Max(1, mostWords) || line.Sum(w => w.Text.Length + 1) + word.Text.Length > 28)
+            if (line is null || pause || line.Count >= Math.Max(1, mostWords) || line.Sum(w => w.Text.Length + 1) + word.Text.Length > mostLetters)
             {
                 line = [];
                 lines.Add(line);
@@ -85,11 +87,21 @@ public static class AnimatedCaptions
     }
 
     /// <summary>The captions as an Advanced SubStation file, sized for a picture of this size.</summary>
-    public static string Ass(IReadOnlyList<TranscriptSegment> segments, int width, int height, AnimatedCaptionOptions options)
+    public static string Ass(IReadOnlyList<TranscriptSegment> segments, int width, int height, AnimatedCaptionOptions options) =>
+        Ass(Words(segments), width, height, options);
+
+    /// <summary>
+    /// Words already timed (each word's own time, when it is known) as an Advanced SubStation file for a picture of this
+    /// size; with a <paramref name="headline"/>, a title in a box of the lit word's colour at the top for the first
+    /// <paramref name="headlineSeconds"/> seconds, as short videos open.
+    /// </summary>
+    public static string Ass(IReadOnlyList<CaptionWord> words, int width, int height, AnimatedCaptionOptions options, string? headline = null, double headlineSeconds = 4.5)
     {
         int size = Math.Max(12, (int)Math.Round(height * Math.Clamp(options.Size, 0.02, 0.15) * (options.Style == CaptionStyle.OneWord ? 1.5 : 1)));
         int alignment = options.Place switch { CaptionPlace.Top => 8, CaptionPlace.Middle => 5, _ => 2 };
-        int margin = (int)Math.Round(height * (options.Place == CaptionPlace.Middle ? 0 : 0.09));
+        int margin = (int)Math.Round(height * options.Place switch { CaptionPlace.Middle => 0, CaptionPlace.Lower => 0.28, _ => 0.09 });
+        // As many letters as fit across, at about half a letter's height each (never more than the 28 that read well).
+        int letters = Math.Clamp((int)(width * 5 / 6.0 / (size * 0.56)), 8, 28);
         var sb = new StringBuilder();
         sb.AppendLine("[Script Info]");
         sb.AppendLine("ScriptType: v4.00+");
@@ -102,10 +114,15 @@ public static class AnimatedCaptions
         sb.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
         // Encoding -1: each line takes its direction from its own letters, so Arabic reads right to left.
         sb.AppendLine(Invariant($"Style: Petal,Segoe UI,{size},&H00FFFFFF,&H00FFFFFF,&H00101010,&H80000000,-1,0,0,0,100,100,0,0,1,{Math.Max(2, size / 11)},{Math.Max(1, size / 22)},{alignment},{width / 12},{width / 12},{margin},-1"));
+        int titleSize = Math.Max(12, (int)Math.Round(height * (height > width * 1.2 ? 0.032 : 0.05)));
+        // An opaque box (border style 3) in the lit word's colour, its padding the "outline"; dark letters on it.
+        sb.AppendLine(Invariant($"Style: Headline,Segoe UI,{titleSize},&H00141414,&H00141414,{Colour(options.Highlight).TrimEnd('&')},&H00000000,-1,0,0,0,100,100,0,0,3,{Math.Max(4, titleSize / 3)},0,8,{width / 10},{width / 10},{(int)Math.Round(height * (height > width * 1.2 ? 0.11 : 0.06))},-1"));
         sb.AppendLine();
         sb.AppendLine("[Events]");
         sb.AppendLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
-        var words = Words(segments);
+        if (!string.IsNullOrWhiteSpace(headline) && headlineSeconds > 0)
+            sb.Append("Dialogue: 1,").Append(Stamp(TimeSpan.Zero)).Append(',').Append(Stamp(TimeSpan.FromSeconds(headlineSeconds)))
+              .Append(",Headline,,0,0,0,,").Append(@"{\fad(200,350)}").AppendLine(Escape(headline.Trim()));
         var lit = Colour(options.Highlight);
         switch (options.Style)
         {
@@ -114,11 +131,11 @@ public static class AnimatedCaptions
                     Event(sb, word.Start, word.End, @"{\fscx70\fscy70\t(0,90,\fscx100\fscy100)}" + Escape(word.Text));
                 break;
             case CaptionStyle.Lines:
-                foreach (var line in Lines(words, options.MostWords))
+                foreach (var line in Lines(words, options.MostWords, letters))
                     Event(sb, line[0].Start, line[^1].End, string.Join(' ', line.Select(w => Escape(w.Text))));
                 break;
             default:
-                foreach (var line in Lines(words, options.MostWords))
+                foreach (var line in Lines(words, options.MostWords, letters))
                 {
                     for (int i = 0; i < line.Count; i++)
                     {

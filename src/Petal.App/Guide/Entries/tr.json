@@ -956,6 +956,32 @@
    "videoyu dikey yap"
   ]
  },
+ "tool:MakeShorts": {
+  "category": "video",
+  "summary": "Uzun bir videoyu (konuşma, röportaj, podcast, ders) Reels, Shorts ve TikTok için hazır kısa kliplere dönüştürür: en iyi anlarını bulur, çerçeveler ve altyazısını ekler.",
+  "details": "Kısa Videolar, videonun tamamını bu bilgisayarda dinler (her sözcüğün zamanıyla Whisper) ve kendi başına anlam taşıyan anları bulur: her biri bir cümlenin başladığı yerde başlar ve bir düşüncenin bittiği yerde biter. Anlar izleyiciyi tutan şeylere göre sıralanır: ilgi çeken bir açılış (bir soru, “düşünün ki…”), canlı anlatım, bir hikâye, tavsiye, rakamlar, duygu ya da kahkaha, baştan sona tek bir konu ve istenen uzunluk. Klipler sayısını (3, 5 veya 8), Uzunluğu (30 sn'ye kadar, 30–60 sn veya 60–90 sn), Şekli (Dikey 9:16, Kare veya Çekildiği gibi) ve Çerçeveyi seçin. Konuşanı izle, yüzleri Windows'un kendi yüz algılayıcısıyla bulur, konuşan kişiyi kadrajda tutar, hareket ettikçe kayar ve başkası konuştuğunda kesme yapar; net bir yüz yoksa (slaytlar, bir sahne) görüntünün tamamını bulanık bir kopyasının üzerinde gösterir, Resmin tamamı'nın her zaman yaptığı gibi. Altyazı Sözcük sözcük (söylenen sözcük seçilen renkte yanar), Tek sözcük veya Satırlar olarak videoya yazılır; Sözcüklerin dili konuşulan dil, İngilizce veya Arapçadır. Başta başlık ilk saniyelerin üzerine bir başlık koyar; Duraklamaları kes cümleler arasındaki sessizlikleri kısaltır. En İyi Anları Bul'u seçin: anlar en iyisi önce, her biri 100 üzerinden bir puan ve neden seçildiğiyle görünür. Kontrol etmek için birini oynatın, başlığını değiştirin (başlıkları, varsa bu bilgisayardaki yapay zekâ modeli yazar ve yalnızca söylenene sadık olanlar tutulur), istemediklerinizin işaretini kaldırın, sonra kısa videoları yap düğmesini seçin. Klipler 'ad Shorts' adlı yeni bir klasöre, numaralı ve başlıklı olarak, 1080 × 1920 MP4 biçiminde ve sesi uygulamaların çaldığı düzeyde kaydedilir. Bir kez dinlenen video sonra hemen açılır.",
+  "how": "Bir videoyu sürükleyin, Ctrl'ye dokunun ve KISA VİDEO üzerine bırakın; kliplerin sayısını, uzunluğunu, şeklini ve altyazısını seçin, En İyi Anları Bul'u seçin, anları kontrol edin, sonra kısa videoları yap düğmesini seçin.",
+  "worksOn": "Konuşma içeren tek bir video, her uzunlukta.",
+  "examples": [
+   "Bir saatlik bir podcast, TikTok için her biri bir soruyla açılan ve sözcük sözcük altyazılı sekiz adet 60 saniyelik klibe dönüşür.",
+   "Arapça bir ders, Arapça altyazılı ve başlıklı, duraklamaları kesilmiş beş Reels'e dönüşür.",
+   "Slaytlı kayıtlı bir web semineri: Resmin tamamı slaytları okunur tutar, altında İngilizce altyazıyla."
+  ],
+  "keywords": [
+   "shorts",
+   "reels",
+   "tiktok",
+   "kısa video",
+   "klip",
+   "uzun videodan kısa klip",
+   "en iyi anlar",
+   "öne çıkanlar",
+   "podcast klipleri",
+   "viral klip",
+   "altyazı",
+   "video kesme"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Resimleri, videoları, sesleri ve PDF'leri bir hazır ayara, hedef boyuta, yüzdeye ya da bir uygulamanın sınırına göre küçültür.",

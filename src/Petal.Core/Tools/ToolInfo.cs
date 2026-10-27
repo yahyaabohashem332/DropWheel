@@ -61,6 +61,7 @@ public enum ToolId
     TableFromImage,
     CompareFiles,
     DescribePicture,
+    MakeShorts,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

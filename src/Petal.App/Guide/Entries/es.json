@@ -968,6 +968,32 @@
    "poner video en vertical"
   ]
  },
+ "tool:MakeShorts": {
+  "category": "video",
+  "summary": "Convierte un video largo (charla, entrevista, podcast, clase) en clips cortos listos para Reels, Shorts y TikTok: sus mejores momentos, encontrados, encuadrados y subtitulados.",
+  "details": "Videos cortos escucha todo el video en este PC (Whisper, con el momento de cada palabra) y encuentra los momentos que se sostienen solos: cada uno empieza donde empieza una frase y termina donde termina una idea. Se ordenan por lo que retiene al espectador: un inicio que atrapa (una pregunta, «imagina…»), una forma de hablar con energía, una historia, un consejo, cifras, emoción o risas, un solo tema de principio a fin y la duración pedida. Elige cuántos Clips (3, 5 u 8), su Longitud (hasta 30 s, 30–60 s o 60–90 s), la Forma (Vertical 9:16, Cuadrado o Como se grabó) y el Encuadre. Seguir a quien habla encuentra los rostros con el detector de rostros del propio Windows, mantiene en cuadro a quien habla, se desliza cuando se mueve y corta cuando habla otra persona; donde no hay un rostro claro (diapositivas, un escenario) muestra toda la imagen sobre una copia desenfocada de sí misma, como hace siempre Imagen completa. Los Subtítulos se graban en el video Palabra por palabra (la palabra que se dice se ilumina en el color elegido), Una palabra o Líneas, y Palabras en es el idioma hablado, inglés o árabe. Título al inicio pone un título sobre los primeros segundos; Quitar las pausas acorta los silencios entre frases. Elige Buscar los mejores momentos: aparecen de mejor a peor, cada uno con una nota sobre 100 y el motivo de su elección. Reproduce uno para comprobarlo, cambia su título (los títulos los escribe el modelo de IA de este PC cuando está, y solo se conservan si son fieles a lo que se dice), desmarca los que no quieras y elige Crear videos cortos. Los clips se guardan en una carpeta nueva llamada «nombre Shorts», numerados y con título, en MP4 de 1080 × 1920, con el sonido al volumen al que los reproducen las apps. Un video escuchado una vez se vuelve a abrir al instante.",
+  "how": "Arrastra un video, toca Ctrl y suéltalo en CORTOS; elige el número, la longitud, la forma y los subtítulos de los clips, elige Buscar los mejores momentos, revisa los momentos y luego elige Crear videos cortos.",
+  "worksOn": "Un video con habla, de cualquier duración.",
+  "examples": [
+   "Un podcast de una hora convertido en ocho clips de 60 segundos para TikTok, cada uno empezando con una pregunta y subtitulado palabra por palabra.",
+   "Una clase en árabe convertida en cinco Reels con subtítulos en árabe y título, sin pausas.",
+   "Un seminario web grabado con diapositivas: Imagen completa mantiene legibles las diapositivas, con subtítulos en inglés debajo."
+  ],
+  "keywords": [
+   "shorts",
+   "reels",
+   "tiktok",
+   "videos cortos",
+   "clips",
+   "video largo a clips cortos",
+   "mejores momentos",
+   "momentos destacados",
+   "clips de podcast",
+   "clips virales",
+   "subtítulos",
+   "cortar video"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Reduce el tamaño de imágenes, videos, audio y PDF, con un ajuste predefinido, un tamaño objetivo, un porcentaje o el límite de una aplicación.",

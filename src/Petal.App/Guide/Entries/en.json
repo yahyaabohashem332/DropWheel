@@ -926,6 +926,32 @@
    "instagram story"
   ]
  },
+ "tool:MakeShorts": {
+  "category": "video",
+  "summary": "Turns a long video (a talk, an interview, a podcast, a lesson) into short clips ready for Reels, Shorts and TikTok: its best moments, found, framed and captioned.",
+  "details": "Make Shorts listens to the whole video on this PC (Whisper, with each word's time) and finds the moments that stand on their own: each starts where a sentence starts and ends where a thought ends. They are ranked by what keeps people watching: an opening that pulls you in (a question, “imagine…”), lively delivery, a story, advice, numbers, feeling or laughter, one topic from start to end, and the length asked for. Choose how many Clips (3, 5 or 8), their Length (up to 30 s, 30–60 s or 60–90 s), the Shape (Tall 9:16, Square or As filmed) and the Framing. Follow the speaker finds faces with Windows' own face detector, keeps the one talking in frame, glides as they move and cuts when someone else speaks; where no face is clear (slides, a stage) it shows the whole picture over a blurred copy instead, as Whole picture always does. Captions are burned in Word by word (the word being said lit up in the colour chosen), One word or Lines, and Words in is the language spoken, English or Arabic. Headline at the start puts a title over the first seconds; Cut the pauses tightens the silences between sentences. Choose Find the Best Moments: the moments appear best first, each with a score out of 100 and why it was chosen. Play one to check it, change its title (titles are written by the AI model on this PC when it is there, and kept only when they hold to what is said), untick any you don't want, then choose Make Shorts. The clips are saved in a new folder named 'name Shorts', numbered and titled, as MP4 at 1080 × 1920 with the sound at the loudness the apps play at. A video heard once opens again at once.",
+  "how": "Drag a video, tap Ctrl and drop it on SHORTS; choose the number, length, shape and captions of the clips, choose Find the Best Moments, check the moments, then choose Make Shorts.",
+  "examples": [
+   "A one-hour podcast into eight 60-second clips for TikTok, each opening with a question and captioned word by word.",
+   "An Arabic lecture into five Reels with Arabic captions and a headline, the pauses cut.",
+   "A recorded webinar with slides: Whole picture keeps the slides readable, with English captions under them."
+  ],
+  "worksOn": "One video with speech, of any length.",
+  "keywords": [
+   "shorts",
+   "reels",
+   "tiktok",
+   "clips",
+   "long video to short clips",
+   "highlights",
+   "best moments",
+   "viral clips",
+   "podcast clips",
+   "repurpose video",
+   "auto clip",
+   "captions"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Makes pictures, videos, audio and PDFs smaller, by a preset, a target size, a percentage or an app's limit.",

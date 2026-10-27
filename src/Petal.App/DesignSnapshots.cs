@@ -253,6 +253,12 @@ internal static class DesignSnapshots
     {
         Petal.Core.Tools.ToolInfo T(Petal.Core.Tools.ToolId id) => Petal.Core.Tools.ToolRegistry.Get(id);
         var video = new[] { file("weekend.mov") };
+        Window Shorts(Action<Tools.Windows.MakeShortsWindow> then)
+        {
+            var window = new Tools.Windows.MakeShortsWindow(T(Petal.Core.Tools.ToolId.MakeShorts), video, jobs, at);
+            window.Loaded += (_, _) => then(window);
+            return window;
+        }
         var audio = new[] { file("mixtape.mp3") };
         // The sample folder itself, dropped as a folder.
         var folder = Petal.Core.Jobs.FolderContents.Read([Path.GetDirectoryName(file("landscape.jpg"))!]);
@@ -370,6 +376,11 @@ internal static class DesignSnapshots
             ("animatedcaptionsenglish", () => new Tools.Windows.AnimatedCaptionsWindow(T(Petal.Core.Tools.ToolId.AnimatedCaptions), video, jobs, at) { WordsIn = "en" }),
             ("vertical", () => new Tools.Windows.ReframeWindow(T(Petal.Core.Tools.ToolId.Reframe), video, jobs, at)),
             ("describe", () => new Tools.Windows.DescribePictureWindow(T(Petal.Core.Tools.ToolId.DescribePicture), file("landscape.jpg"))),
+            // 1.11
+            ("shorts", () => new Tools.Windows.MakeShortsWindow(T(Petal.Core.Tools.ToolId.MakeShorts), video, jobs, at)),
+            ("shortslistening", () => Shorts(window => window.ShowListeningForSnapshot(0.42, 2735))),
+            ("shortsreview", () => Shorts(window => window.ShowForSnapshot(SampleMoments(),
+                new Petal.Recipes.ShortsSource(video[0], Localization.L.IsArabic ? "ar" : "en", [], new Petal.Engines.Media.SoundLevels([]))))),
             ("health", () => Settings.HealthWindow.ForSnapshot(
             [
                 new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("DropWheel sees drags and key taps")),
@@ -398,6 +409,35 @@ internal static class DesignSnapshots
         var window = new Shell.QuickLookWindow(IntPtr.Zero, [path], null);
         window.Loaded += async (_, _) => await window.ShowFirstAsync();
         return window;
+    }
+
+    /// <summary>Made-up moments of a long interview, as Make Shorts would find them.</summary>
+    private static IReadOnlyList<Petal.Engines.Media.Moment> SampleMoments()
+    {
+        bool ar = Localization.L.IsArabic;
+        (string Text, double Start, double Length, int Score, Petal.Engines.Media.MomentReason[] Why)[] samples = ar
+            ?
+            [
+                ("هل يمكنك أن تأخذني إلى الفضاء؟ أريد أن أطفو وأقلب في الهواء.", 751, 44, 92, [Petal.Engines.Media.MomentReason.Question, Petal.Engines.Media.MomentReason.Feeling]),
+                ("الحقيقة مدهشة فعلًا. حين نصل إلى الفضاء نشعر جميعًا بشيء غريب.", 1442, 38, 88, [Petal.Engines.Media.MomentReason.Hook, Petal.Engines.Media.MomentReason.Story]),
+                ("ندور حول الأرض كل تسعين دقيقة. رأيت كل شيء من هنا.", 465, 46, 81, [Petal.Engines.Media.MomentReason.Numbers, Petal.Engines.Media.MomentReason.Complete]),
+                ("نصيحتي لكل من يحلم بالطيران: ابدأ اليوم ولا تنتظر.", 1870, 42, 74, [Petal.Engines.Media.MomentReason.Advice]),
+                ("أول مرة رأيت فيها الأرض من النافذة لم أستطع الكلام.", 2465, 35, 66, [Petal.Engines.Media.MomentReason.Story, Petal.Engines.Media.MomentReason.Feeling]),
+            ]
+            :
+            [
+                ("Can you take me to space? I want to float around and do flips.", 751, 44, 92, [Petal.Engines.Media.MomentReason.Question, Petal.Engines.Media.MomentReason.Feeling]),
+                ("The truth is actually pretty amazing. When we get into space, we all feel something.", 1442, 38, 88, [Petal.Engines.Media.MomentReason.Hook, Petal.Engines.Media.MomentReason.Story]),
+                ("We go around the Earth every 90 minutes. I've seen it all.", 465, 46, 81, [Petal.Engines.Media.MomentReason.Numbers, Petal.Engines.Media.MomentReason.Complete]),
+                ("My advice to anyone who dreams of flying: start today.", 1870, 42, 74, [Petal.Engines.Media.MomentReason.Advice]),
+                ("The first time I saw the Earth through the window, I couldn't speak.", 2465, 35, 66, [Petal.Engines.Media.MomentReason.Story, Petal.Engines.Media.MomentReason.Feeling]),
+            ];
+        return samples.Select(s =>
+        {
+            var parts = s.Text.Split(' ');
+            var words = parts.Select((w, i) => new Petal.Engines.Media.SpokenWord(w, s.Start + 0.4 * i, s.Start + 0.4 * i + 0.35)).ToList();
+            return new Petal.Engines.Media.Moment(s.Start, s.Start + s.Length, s.Score, s.Why, words);
+        }).ToList();
     }
 
     /// <summary>Made-up meeting notes in a scratch file.</summary>

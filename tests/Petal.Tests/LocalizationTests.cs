@@ -73,6 +73,10 @@ public partial class LocalizationTests
         "lesson.mp4 · 37%",
         // 1.10: the sample page Circle Anything is drawn over in the design snapshots, its made-up explanation, and what its checks write when nothing was read.
         "A quiet lake town for the weekend", "Two hours from the city, the old harbour has cafés, boat trips and a market", "every Saturday morning. The trail around the lake is easy and shaded, and", "the views at sunset are worth the walk.", "Rooms from $1,299 a week · the hotel is 3.5 km from the station", "Live Q&A on Nov 5, 2026 at 3:00 PM PST · call +1 415 555 0134", "Theme colour: #7C5CFC", "Scan for the app", "The harbour at dusk", "A short travel note: a small lake town two hours from the city, with an old harbour, cafés, boat trips and a Saturday market. The walk round the lake is easy and shady, best at sunset.", "(not read)", "(nothing)",
+        // 1.11: the made-up moments of an interview Make Shorts is drawn with in the design snapshots, and the sample title over its preview.
+        "Can you take me to space? I want to float around and do flips.", "The truth is actually pretty amazing. When we get into space, we all feel something.",
+        "We go around the Earth every 90 minutes. I've seen it all.", "My advice to anyone who dreams of flying: start today.",
+        "The first time I saw the Earth through the window, I couldn't speak.", "The best part",
     };
 
     private static readonly Regex Literal = MakeLiteral();

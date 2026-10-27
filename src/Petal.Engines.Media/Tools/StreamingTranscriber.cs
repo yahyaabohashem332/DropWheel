@@ -345,36 +345,8 @@ public sealed class StreamingTranscriber : IDisposable
     private static List<StreamWord> Words(SegmentData segment, long windowStart, int windowLength, bool aligned)
     {
         double offset = (double)windowStart / Rate, last = (double)windowLength / Rate;
-        var spans = new List<(string Text, double Start, double End)>();
-        var text = new StringBuilder();
-        double start = -1, end = 0;
-        foreach (var token in segment.Tokens)
-        {
-            var t = token.Text;
-            if (string.IsNullOrEmpty(t) || t.StartsWith("[_") || t.StartsWith("<|"))
-                continue;
-            double at = aligned && token.DtwTimestamp > 0 ? token.DtwTimestamp / 100.0 : token.Start / 100.0;
-            if (t.StartsWith(' ') && text.Length > 0)
-            {
-                spans.Add((text.ToString().Trim(), start, end));
-                text.Clear();
-                start = -1;
-            }
-            if (start < 0)
-                start = at;
-            end = Math.Max(Math.Max(at, token.End / 100.0), start);
-            text.Append(t);
-        }
-        if (text.ToString().Trim().Length > 0)
-            spans.Add((text.ToString().Trim(), Math.Max(0, start), Math.Max(end, segment.End.TotalSeconds)));
-        var words = new List<StreamWord>(spans.Count);
-        for (int i = 0; i < spans.Count; i++)
-        {
-            double wordEnd = i + 1 < spans.Count ? Math.Max(spans[i].Start, Math.Min(spans[i].End, spans[i + 1].Start)) : spans[i].End;
-            // Never later than the sound there is (Whisper's last times can run past it).
-            words.Add(new StreamWord(spans[i].Text, offset + Math.Min(spans[i].Start, last), offset + Math.Min(wordEnd, last)));
-        }
-        return words;
+        // Never later than the sound there is (Whisper's last times can run past it).
+        return TokenWords.Of(segment, aligned).Select(w => new StreamWord(w.Text, offset + Math.Min(w.Start, last), offset + Math.Min(w.End, last))).ToList();
     }
 
     /// <summary>Without what Whisper writes for noise ("[Music]", "♪") and without a phrase stuck in a loop.</summary>
