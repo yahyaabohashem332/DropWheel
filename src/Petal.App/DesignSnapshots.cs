@@ -265,6 +265,12 @@ internal static class DesignSnapshots
             window.Loaded += (_, _) => then(window);
             return window;
         }
+        Window EditByText(Action<Tools.Windows.EditByTextWindow> then)
+        {
+            var window = new Tools.Windows.EditByTextWindow(T(Petal.Core.Tools.ToolId.EditByText), video, jobs, at);
+            window.Loaded += (_, _) => then(window);
+            return window;
+        }
         var audio = new[] { file("mixtape.mp3") };
         // The sample folder itself, dropped as a folder.
         var folder = Petal.Core.Jobs.FolderContents.Read([Path.GetDirectoryName(file("landscape.jpg"))!]);
@@ -390,6 +396,16 @@ internal static class DesignSnapshots
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
+            // 1.13
+            ("editbytext", () => new Tools.Windows.EditByTextWindow(T(Petal.Core.Tools.ToolId.EditByText), video, jobs, at)),
+            ("editbytextlistening", () => EditByText(window => window.ShowListeningForSnapshot(0.58, 1934))),
+            ("editbytextwords", () => EditByText(window =>
+            {
+                var words = SampleWords();
+                // The clean-up done and one long pause shortened, as it would look after two clicks and a Delete.
+                window.ShowForSnapshot(words, Petal.Engines.Media.TextCut.Fillers(words).Append(words.FindIndex(w => w.Kind == Petal.Engines.Media.EditTokenKind.Pause)),
+                    Localization.L.IsArabic ? "ar" : "en");
+            })),
             ("health", () => Settings.HealthWindow.ForSnapshot(
             [
                 new Settings.HealthCheck(Localization.L.T("Keys and mouse"), Settings.HealthState.Good, Localization.L.T("DropWheel sees drags and key taps")),
@@ -464,6 +480,28 @@ internal static class DesignSnapshots
         // An Arabic reader sees English dubbed into Arabic; anyone else, Arabic dubbed into English.
         var dub = lines.Select(l => ar ? new Petal.Engines.Media.DubLine(l.Start, l.End, l.English, l.Arabic) : new Petal.Engines.Media.DubLine(l.Start, l.End, l.Arabic, l.English)).ToList();
         return new Petal.Recipes.DubSource(video, ar ? "en" : "ar", ar ? "ar" : "en", "", "", dub, 152);
+    }
+
+    /// <summary>Made-up words of an interview, as Edit by Text shows them: hesitations, words said twice, a sound and pauses ("|" a pause, "~" a sound).</summary>
+    private static List<Petal.Engines.Media.EditToken> SampleWords()
+    {
+        var text = Localization.L.IsArabic
+            ? "إذن، إمم، أعتقد أن أن أجمل ما في العيش هنا هو المنظر. | كل تسعين دقيقة نرى شروق الشمس. آآ، ولا نملّ منه أبدًا. ~ نصيحتي لكل من يحلم بالطيران: ابدأ اليوم، و و لا تنتظر. | الحقيقة مدهشة فعلًا. حين نصل إلى الفضاء نشعر جميعًا بشيء غريب، شيء يصعب وصفه بالكلمات."
+            : "So, um, I think the the best part of living up here is the view. | Every ninety minutes we see a sunrise. Uh, it never gets old. ~ My advice to anyone who dreams of flying: start today, and and don't wait. | The truth is actually pretty amazing. When we get into space, we all feel something strange, something hard to put into words.";
+        var words = new List<Petal.Engines.Media.EditToken>();
+        double t = 0.4;
+        foreach (var part in text.Split(' '))
+        {
+            var (kind, length) = part switch
+            {
+                "|" => (Petal.Engines.Media.EditTokenKind.Pause, 1.8),
+                "~" => (Petal.Engines.Media.EditTokenKind.Sound, 0.6),
+                _ => (Petal.Engines.Media.EditTokenKind.Word, 0.3),
+            };
+            words.Add(new Petal.Engines.Media.EditToken(kind, kind == Petal.Engines.Media.EditTokenKind.Word ? part : "", t, t + length));
+            t += length + 0.08;
+        }
+        return words;
     }
 
     /// <summary>Made-up meeting notes in a scratch file.</summary>

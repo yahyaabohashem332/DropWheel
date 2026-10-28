@@ -249,7 +249,7 @@ public static partial class AudioTools
         var ranges = options.Ranges.Where(r => r.End > r.Start).ToList();
         if (ranges.Count == 0)
             return "anull";
-        var inside = string.Join('+', ranges.Select(r => $"between(t,{Inv.N(Math.Max(0, r.Start))},{Inv.N(r.End)})"));
+        var inside = PauseRemover.Expression(ranges.Select(r => (Math.Max(0, r.Start), r.End)).ToList());
         var amplitude = Inv.N(Math.Clamp(options.ToneVolume, 0, 1));
         var frequency = Inv.N(Math.Clamp(options.Frequency, 20, 20000));
         return $"aeval='if({inside},{amplitude}*sin(2*PI*{frequency}*t),val(ch))':c=same";

@@ -195,7 +195,7 @@ public static class ShortClip
             string? sound = null;
             if (info.HasAudio)
             {
-                var select = cuts ? $"asetnsamples=n=64:p=0,aselect='{Expression()}',asetpts=N/SR/TB," : "";
+                var select = cuts ? PauseRemover.AudioSelect(Expression()) + "," : "";
                 var measured = await MeasureAsync(video, info, start, end - start, select, length, cancellationToken).ConfigureAwait(false);
                 safe.Report(0.18);
                 // Brought to the level only when it could be measured: a near-silent clip would have its hiss raised instead.

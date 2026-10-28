@@ -84,6 +84,9 @@ internal static class Fixtures
         // Tone 0–1 s, pause 1–3 s, tone 3–4 s, pause 4–5.5 s, tone 5.5–6.5 s: two pauses to remove.
         ["pauses.wav"] = ["-f", "lavfi", "-i", Pauses, "-c:a", "pcm_s16le"],
         ["pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=6.5", "-f", "lavfi", "-i", Pauses, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
+        // A tone for 0.3 s of every second, 130 times: 129 pauses, 130 parts to keep.
+        ["many-pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=130", "-f", "lavfi", "-i", "aevalsrc='if(lt(mod(t,1),0.3),0.3*sin(2*PI*440*t),0)':s=44100:d=130",
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
         ["quiet.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.03*sin(2*PI*440*t):s=44100:d=6", "-ac", "2", "-c:a", "pcm_s16le"],
         // Twelve seconds of a wide picture with "speech" (a wavering tone) at 1–3, 4.5–6.5, 7–9.5 and 10–11.5 s.
         ["talk.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=1280x720:r=30:d=12", "-f", "lavfi", "-i",

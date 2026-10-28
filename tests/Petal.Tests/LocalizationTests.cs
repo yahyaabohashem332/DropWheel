@@ -80,6 +80,8 @@ public partial class LocalizationTests
         // 1.12: the made-up lines of an interview Dub is drawn with in the design snapshots (the Arabic ones are written beside them).
         "I'm a very lucky person.", "I'm grateful every day, and I want more people to come up here to space.", "We need some good wings up here.",
         "I would love to go. Can you take me to space?", "I'd look down and say: I'm over Europe, and in twenty seconds I'll be on the West Coast.",
+        // 1.13: the made-up words of an interview Edit by Text is drawn with in the design snapshots (the Arabic ones are written beside them).
+        "So, um, I think the the best part of living up here is the view. | Every ninety minutes we see a sunrise. Uh, it never gets old. ~ My advice to anyone who dreams of flying: start today, and and don't wait. | The truth is actually pretty amazing. When we get into space, we all feel something strange, something hard to put into words.",
     };
 
     private static readonly Regex Literal = MakeLiteral();

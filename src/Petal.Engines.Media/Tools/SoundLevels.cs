@@ -1,18 +1,20 @@
 namespace Petal.Engines.Media;
 
 /// <summary>
-/// How loud a recording is, twenty times a second, in decibels below full scale: where the speech is, how lively
-/// it is, and where it pauses. Read once from the same sound Whisper listens to.
+/// How loud a recording is, twenty times a second (or as often as asked), in decibels below full scale: where the speech
+/// is, how lively it is, and where it pauses. Read once from the same sound Whisper listens to.
 /// </summary>
 public sealed class SoundLevels
 {
+    /// <summary>How many levels a second, unless asked for otherwise.</summary>
     public const int PerSecond = 20;
 
     private readonly float[] _db;
 
-    public SoundLevels(float[] db)
+    public SoundLevels(float[] db, int perSecond = PerSecond)
     {
         _db = db;
+        Rate = perSecond;
         if (db.Length == 0)
         {
             Floor = Speech = -90;
@@ -29,10 +31,10 @@ public sealed class SoundLevels
         QuietBelow = Math.Max(Floor + 6, Speech - 22);
     }
 
-    /// <summary>Levels of 16 kHz mono samples, one for each twentieth of a second.</summary>
-    public static SoundLevels Measure(ReadOnlySpan<float> samples, int rate = 16000)
+    /// <summary>Levels of 16 kHz mono samples, one for each twentieth of a second (or <paramref name="perSecond"/> a second).</summary>
+    public static SoundLevels Measure(ReadOnlySpan<float> samples, int rate = 16000, int perSecond = PerSecond)
     {
-        int step = rate / PerSecond;
+        int step = rate / perSecond;
         var db = new float[samples.Length / step];
         for (int i = 0; i < db.Length; i++)
         {
@@ -42,8 +44,11 @@ public sealed class SoundLevels
                 sum += s * s;
             db[i] = (float)(10 * Math.Log10(sum / step + 1e-10));
         }
-        return new SoundLevels(db);
+        return new SoundLevels(db, perSecond);
     }
+
+    /// <summary>How many levels a second.</summary>
+    public int Rate { get; }
 
     /// <summary>The level of the quiet between words (a tenth of the time is quieter).</summary>
     public double Floor { get; }
@@ -56,10 +61,10 @@ public sealed class SoundLevels
 
     public int Count => _db.Length;
 
-    public double Length => (double)_db.Length / PerSecond;
+    public double Length => (double)_db.Length / Rate;
 
     /// <summary>The level at a moment (seconds).</summary>
-    public double At(double t) => _db.Length == 0 ? -90 : _db[Math.Clamp((int)(t * PerSecond), 0, _db.Length - 1)];
+    public double At(double t) => _db.Length == 0 ? -90 : _db[Math.Clamp((int)(t * Rate), 0, _db.Length - 1)];
 
     /// <summary>The loudness of a stretch, from its average power.</summary>
     public double Mean(double from, double to)
@@ -110,7 +115,7 @@ public sealed class SoundLevels
         for (int i = a + 1; i < b; i++)
             if (_db[i] < _db[best])
                 best = i;
-        return (best + 0.5) / PerSecond;
+        return (best + 0.5) / Rate;
     }
 
     /// <summary>
@@ -139,12 +144,12 @@ public sealed class SoundLevels
             }
         }
         if (bestStart >= 0)
-            return (bestStart + bestLength / 2.0) / PerSecond;
+            return (bestStart + bestLength / 2.0) / Rate;
         int quietest = a;
         for (int i = a + 1; i < b; i++)
             if (_db[i] <= _db[quietest])
                 quietest = i;
-        return (quietest + 0.5) / PerSecond;
+        return (quietest + 0.5) / Rate;
     }
 
     /// <summary>
@@ -156,7 +161,7 @@ public sealed class SoundLevels
         var (a, b) = Span(t, limit);
         for (int i = a; i + 1 < b; i++)
             if (_db[i] < QuietBelow && _db[i + 1] < QuietBelow)
-                return Math.Max(t, (double)i / PerSecond);
+                return Math.Max(t, (double)i / Rate);
         return Math.Max(t, limit);
     }
 
@@ -166,12 +171,12 @@ public sealed class SoundLevels
         var (a, b) = Span(limit, t);
         for (int i = b - 1; i - 1 >= a; i--)
             if (_db[i] < QuietBelow && _db[i - 1] < QuietBelow)
-                return Math.Min(t, (double)(i + 1) / PerSecond);
+                return Math.Min(t, (double)(i + 1) / Rate);
         return Math.Min(t, limit);
     }
 
     private (int From, int To) Span(double from, double to) =>
-        (Math.Clamp((int)Math.Floor(from * PerSecond), 0, _db.Length), Math.Clamp((int)Math.Ceiling(to * PerSecond), 0, _db.Length));
+        (Math.Clamp((int)Math.Floor(from * Rate), 0, _db.Length), Math.Clamp((int)Math.Ceiling(to * Rate), 0, _db.Length));
 
     /// <summary>The levels, for keeping with a transcript.</summary>
     public IReadOnlyList<float> Values => _db;

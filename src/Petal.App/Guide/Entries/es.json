@@ -1020,6 +1020,30 @@
    "dub"
   ]
  },
+ "tool:EditByText": {
+  "category": "video",
+  "summary": "Corta un video o una grabación editando lo que se dijo: quite palabras del texto y se cortan de la imagen y del sonido.",
+  "details": "Editar por texto escucha la grabación en este PC (Whisper) y muestra lo que se dijo como texto: cada palabra con su momento, las pausas con su duración y los sonidos entre palabras que no eran palabras (un «eh» que Whisper no escribió, una respiración, una risa) como [sonido]. Elija la Precisión y Hablado en, y luego Mostrar las palabras. Seleccione palabras, una frase o un párrafo entero y pulse Supr (o Quitar) para cortarlos; quedan tachados, y pulsar Supr otra vez los vuelve a poner. El botón de muletillas quita los titubeos (um, uh, eh), una palabra dicha dos veces seguidas y los sonidos que no eran palabras; el botón de pausas acorta cada pausa de más de 0,8 segundos a 0,3 segundos. Buscar palabras encuentra una palabra o frase en todos los lugares donde se dijo, y Quitarlas las quita todas de una vez. Espacio reproduce la edición desde el cursor tal como quedará, saltando lo que se quitó; hacer clic en una palabra mientras se reproduce reproduce desde ahí. Ctrl+Z deshace y Ctrl+Y rehace. Una palabra quitada se va con el silencio que la rodea, y se dejan unas centésimas de segundo junto a las palabras que quedan para que no se atropellen. Guardar escribe 'nombre Edited' junto al original, en su formato; los cortes caen en los fotogramas del video, así que la imagen y el sonido siguen juntos por muchos cortes que haya. Lo que quitó se guarda, así que la misma grabación se vuelve a abrir como la dejó, y una grabación escuchada una vez (aquí o en Videos cortos) se abre al instante.",
+  "how": "Arrastre un video o una grabación, toque Ctrl y suéltelo en EDITAR POR TEXTO; elija Mostrar las palabras, seleccione lo que quiere cortar y pulse Supr, y luego elija Guardar.",
+  "examples": [
+   "Una charla sin ninguno de sus «eh» y «este», con las pausas largas acortadas, en dos clics.",
+   "Un pódcast al que se le corta una frase mal dicha seleccionándola en el texto.",
+   "Una entrevista en la que «o sea» se encuentra en todos los lugares donde se dijo y se quita de una vez."
+  ],
+  "worksOn": "Un video o una grabación de audio con voz.",
+  "keywords": [
+   "editar video con texto",
+   "editar transcripción",
+   "quitar muletillas",
+   "quitar eh",
+   "cortar palabras",
+   "quitar silencios",
+   "acortar pausas",
+   "editar pódcast",
+   "edit by text",
+   "filler words"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Reduce el tamaño de imágenes, videos, audio y PDF, con un ajuste predefinido, un tamaño objetivo, un porcentaje o el límite de una aplicación.",

@@ -1031,6 +1031,30 @@
    "tanpa musik"
   ]
  },
+ "tool:EditByText": {
+  "category": "video",
+  "summary": "Memotong video atau rekaman dengan mengedit apa yang diucapkan: hapus kata dari teks, maka kata itu dipotong dari gambar dan suaranya.",
+  "details": "Edit lewat Teks mendengarkan rekaman di PC ini (Whisper) dan menampilkan apa yang diucapkan sebagai teks: setiap kata dengan waktunya, jeda dengan panjangnya, dan suara di antara kata yang bukan kata (“em” yang tidak ditulis Whisper, napas, tawa) sebagai [suara]. Pilih Akurasi dan Diucapkan dalam, lalu Tampilkan Kata-kata. Pilih kata, kalimat, atau satu paragraf penuh lalu tekan Delete (atau Hapus) untuk memotongnya; kata-kata itu dicoret, dan menekan Delete lagi mengembalikannya. Tombol kata pengisi menghapus keraguan (um, uh, em), kata yang diucapkan dua kali berturut-turut, dan suara yang bukan kata; tombol jeda mempersingkat setiap jeda yang lebih dari 0,8 detik menjadi 0,3 detik. Cari kata menemukan kata atau frasa di setiap tempat diucapkan, dan Hapus semuanya menghapus semuanya sekaligus. Space memutar hasil edit dari kursor sebagaimana jadinya nanti, melewati yang dihapus; mengeklik kata saat diputar akan memutar dari sana. Ctrl+Z membatalkan dan Ctrl+Y mengulang. Kata yang dihapus pergi bersama keheningan di sekitarnya, dengan beberapa perseratus detik disisakan di samping kata yang tersisa agar tidak saling bertabrakan. Simpan menulis 'nama Edited' di samping aslinya, dalam formatnya; potongan jatuh tepat pada frame video, sehingga gambar dan suara tetap bersama berapa pun banyaknya potongan. Apa yang Anda hapus disimpan, jadi rekaman yang sama terbuka lagi seperti Anda tinggalkan, dan rekaman yang sudah didengar sekali (di sini atau oleh Buat Video Pendek) langsung terbuka.",
+  "how": "Seret video atau rekaman, ketuk Ctrl lalu jatuhkan di EDIT LEWAT TEKS; pilih Tampilkan Kata-kata, pilih yang mau dipotong lalu tekan Delete, kemudian pilih Simpan.",
+  "examples": [
+   "Ceramah yang setiap “em” dan “eh”-nya dihapus dan jeda panjangnya dipersingkat, dalam dua klik.",
+   "Podcast yang kalimat salah ucapnya dipotong dengan memilihnya di teks.",
+   "Wawancara yang kata “jadi”-nya ditemukan di setiap tempat diucapkan lalu dihapus sekaligus."
+  ],
+  "worksOn": "Satu video atau rekaman audio berisi ucapan.",
+  "keywords": [
+   "edit video lewat teks",
+   "edit transkrip",
+   "hapus kata pengisi",
+   "hapus em",
+   "potong kata",
+   "hapus jeda",
+   "persingkat jeda",
+   "edit podcast",
+   "edit by text",
+   "filler words"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Memperkecil gambar, video, audio, dan PDF, dengan prasetel, ukuran target, persentase, atau batas sebuah aplikasi.",

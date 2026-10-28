@@ -24,10 +24,10 @@ public sealed record PauseCut(int Pauses, TimeSpan Before, TimeSpan After, strin
 public static partial class PauseRemover
 {
     /// <summary>
-    /// Longest filter Petal hands FFmpeg; beyond this the shortest gaps between pauses are merged. A video's
-    /// command line holds it twice (picture and sound) within Windows' 32,767 characters.
+    /// Longest filter Petal hands FFmpeg (a long one goes in a file); beyond this, hours of short pauses, the shortest gaps
+    /// between them are merged.
     /// </summary>
-    private const int LongestFilter = 14_000;
+    private const int LongestFilter = 400_000;
 
     /// <summary>Finds the pauses without changing anything.</summary>
     public static async Task<IReadOnlyList<(double Start, double End)>> FindAsync(string input, RemovePausesOptions options, CancellationToken cancellationToken = default)
@@ -91,18 +91,49 @@ public static partial class PauseRemover
         return ranges.Where(r => r.End - r.Start >= 0.02).ToList();
     }
 
-    /// <summary>The ranges as an FFmpeg expression that is true while a frame is kept.</summary>
+    /// <summary>
+    /// The ranges as an FFmpeg expression that is true while a frame is kept: a search through them by where they start
+    /// (if(lt(t,start),earlier,later)), so a frame is tested against a dozen of them rather than all of them, and FFmpeg,
+    /// whose parser takes no more than a hundred terms added in a row, reads any number. Ranges that overlap are joined.
+    /// Each takes in its start and not its end, so a run of sound blocks that starts on a cut isn't a block longer than the
+    /// picture at every cut.
+    /// </summary>
     internal static string Expression(IReadOnlyList<(double Start, double End)> ranges)
     {
-        var sb = new StringBuilder();
-        foreach (var (start, end) in ranges)
+        var joined = new List<(double Start, double End)>();
+        foreach (var (start, end) in ranges.Where(r => r.End >= r.Start).OrderBy(r => r.Start))
         {
-            if (sb.Length > 0)
-                sb.Append('+');
-            sb.Append("between(t,").Append(Short(start)).Append(',').Append(Short(end)).Append(')');
+            if (joined.Count > 0 && start <= joined[^1].End)
+                joined[^1] = (joined[^1].Start, Math.Max(joined[^1].End, end));
+            else
+                joined.Add((start, end));
         }
+        if (joined.Count == 0)
+            return "0";
+        var sb = new StringBuilder();
+        void Search(int first, int last)
+        {
+            if (first == last)
+            {
+                sb.Append("gte(t,").Append(Short(joined[first].Start)).Append(")*lt(t,").Append(Short(joined[first].End)).Append(')');
+                return;
+            }
+            int middle = (first + last + 1) / 2;
+            sb.Append("if(lt(t,").Append(Short(joined[middle].Start)).Append("),");
+            Search(first, middle - 1);
+            sb.Append(',');
+            Search(middle, last);
+            sb.Append(')');
+        }
+        Search(0, joined.Count - 1);
         return sb.ToString();
     }
+
+    /// <summary>
+    /// The sound filter that keeps what <paramref name="expression"/> keeps: the sound in blocks of 32 samples (under a
+    /// millisecond, so the cuts fall within one of the picture's), each kept or not, laid end to end.
+    /// </summary>
+    internal static string AudioSelect(string expression) => $"asetnsamples=n=32:p=0,aselect='{expression}',asetpts=N/SR/TB";
 
     private static string Short(double seconds) => seconds.ToString("0.###", CultureInfo.InvariantCulture);
 
@@ -151,13 +182,16 @@ public static partial class PauseRemover
         if (ranges.Count == 0 || length.TotalSeconds - kept < 0.2)
             return new PauseCut(0, length, length, null);
 
-        var expression = Expression(ranges);
+        // Each part from half a frame before its first frame to half a frame before the next part's, so the frames' times sit
+        // well inside it whatever the rounding: a whole number of frames, and the picture doesn't gain one at every cut.
+        double rate = info.Video is not null && info.FrameRate is > 1 and < 1000 ? info.FrameRate : 0;
+        var expression = Expression(rate > 0 ? ranges.Select(r => (r.Start - 0.5 / rate, r.End - 0.5 / rate)).ToList() : ranges);
         var target = Containers.ForOutput(output, input);
         var plan = ToolSupport.Plan(input, info, target, options.EffectiveSettings) with
         {
             VideoFilter = info.Video is null ? null : $"select='{expression}',setpts=N/FRAME_RATE/TB",
             // Sound cut in small steps, not whole encoded frames, so it ends where the picture does.
-            AudioFilter = $"asetnsamples=n=64:p=0,aselect='{expression}',asetpts=N/SR/TB",
+            AudioFilter = AudioSelect(expression),
             AllAudioTracks = false,
             Subtitles = false,
             Chapters = false,

@@ -63,6 +63,7 @@ public enum ToolId
     DescribePicture,
     MakeShorts,
     Dub,
+    EditByText,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

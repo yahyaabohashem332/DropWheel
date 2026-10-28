@@ -70,6 +70,8 @@ public static class ToolRegistry
         new(MakeShorts, "SHORTS", "Make Shorts", "shorts", true, ToolSelection.Single, "Shorts", ToolOutputKind.Folder),
         // The speech said again in the other language (Arabic and English), in the speakers' own voices; named for that language.
         new(Dub, "DUB", "Dub", "dub", true, ToolSelection.Single, "Dubbed", ToolOutputKind.FixedFormat, "mp4"),
+        // A recording cut by taking words out of what was said.
+        new(EditByText, "EDIT BY TEXT", "Edit by Text", "textCut", true, ToolSelection.Single, "Edited"),
         new(DescribePicture, "DESCRIBE", "Describe Picture", "eye", true, ToolSelection.Single, ""),
         new(TableFromImage, "TABLE", "Table to Excel", "sheet", false, ToolSelection.SingleOrBatch, "Table", ToolOutputKind.FixedFormat, "xlsx"),
         // Exactly two files: two versions of a document, or two pictures.
@@ -84,9 +86,9 @@ public static class ToolRegistry
     private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
     private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];

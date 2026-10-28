@@ -1008,6 +1008,30 @@
    "dubbing"
   ]
  },
+ "tool:EditByText": {
+  "category": "video",
+  "summary": "Bir videoyu ya da kaydı söylenenleri düzenleyerek keser: metinden kelime çıkarın, görüntüden ve sesten de kesilsin.",
+  "details": "Metinle Düzenle, kaydı bu bilgisayarda dinler (Whisper) ve söyleneni metin olarak gösterir: her kelime zamanıyla, duraklamalar uzunluklarıyla, kelimeler arasındaki kelime olmayan sesler (Whisper'ın yazmadığı bir “ee”, bir nefes, bir gülüş) [ses] olarak. Doğruluk'u ve Konuşma dili'ni seçin, sonra Kelimeleri Göster'i seçin. Kelimeleri, bir cümleyi ya da bütün bir paragrafı seçip kesmek için Delete'e (veya Çıkar'a) basın; üstleri çizilir, Delete'e yeniden basmak onları geri koyar. Dolgu düğmesi duraksamaları (um, uh, ee), art arda iki kez söylenen kelimeyi ve kelime olmayan sesleri çıkarır; duraklama düğmesi 0,8 saniyeden uzun her duraklamayı 0,3 saniyeye kısaltır. Kelime bul, bir kelimeyi ya da ifadeyi söylendiği her yerde bulur; Hepsini çıkar hepsini birden çıkarır. Ara Çubuğu düzenlemeyi imleçten itibaren olacağı gibi, çıkarılanları atlayarak oynatır; oynarken bir kelimeye tıklamak oradan oynatır. Ctrl+Z geri alır, Ctrl+Y yineler. Çıkarılan kelime çevresindeki sessizlikle birlikte gider; kalan kelimelerin yanında, birbirine karışmasınlar diye saniyenin birkaç yüzde biri bırakılır. Kaydet, orijinalin yanına aynı biçimde 'ad Edited' yazar; kesimler videonun karelerine denk gelir, böylece kaç kesim olursa olsun görüntü ve ses birlikte kalır. Çıkardıklarınız saklanır, aynı kayıt bıraktığınız gibi açılır; bir kez dinlenen kayıt (burada ya da Kısa Videolar'da) hemen açılır.",
+  "how": "Bir videoyu ya da kaydı sürükleyin, Ctrl'ye dokunun ve METİNLE DÜZENLE üzerine bırakın; Kelimeleri Göster'i seçin, kesilecekleri seçip Delete'e basın, sonra Kaydet'i seçin.",
+  "examples": [
+   "Her “ee” ve “ıı”sı çıkarılmış, uzun duraklamaları kısaltılmış bir konuşma; iki tıkla.",
+   "Yanlış söylenmiş bir cümlesi metinde seçilerek kesilmiş bir podcast.",
+   "“Yani” kelimesi söylendiği her yerde bulunup bir kerede çıkarılmış bir röportaj."
+  ],
+  "worksOn": "Konuşma içeren tek bir video ya da ses kaydı.",
+  "keywords": [
+   "metinle video düzenleme",
+   "transkript düzenleme",
+   "dolgu sözcüklerini kaldır",
+   "ee kaldır",
+   "kelime kes",
+   "sessizlikleri kaldır",
+   "duraklamaları kısalt",
+   "podcast düzenleme",
+   "edit by text",
+   "filler words"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Resimleri, videoları, sesleri ve PDF'leri bir hazır ayara, hedef boyuta, yüzdeye ya da bir uygulamanın sınırına göre küçültür.",

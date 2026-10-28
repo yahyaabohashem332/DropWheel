@@ -1003,6 +1003,30 @@
    "dub"
   ]
  },
+ "tool:EditByText": {
+  "category": "video",
+  "summary": "Coupe une vidéo ou un enregistrement en modifiant ce qui a été dit : retirez des mots du texte, ils sont coupés de l'image et du son.",
+  "details": "Montage par le texte écoute l'enregistrement sur ce PC (Whisper) et montre ce qui a été dit sous forme de texte : chaque mot avec son moment, les pauses avec leur durée, et les sons entre les mots qui n'étaient pas des mots (un « euh » que Whisper n'a pas écrit, une respiration, un rire) sous la forme [son]. Choisissez la Précision et la Langue parlée, puis Afficher les mots. Sélectionnez des mots, une phrase ou un paragraphe entier et appuyez sur Suppr (ou Retirer) pour les couper ; ils sont barrés, et appuyer de nouveau sur Suppr les remet. Le bouton des hésitations retire les hésitations (um, uh, euh), un mot dit deux fois de suite et les sons qui n'étaient pas des mots ; le bouton des pauses raccourcit chaque pause de plus de 0,8 seconde à 0,3 seconde. Chercher des mots trouve un mot ou une expression partout où il a été dit, et Les retirer les retire tous d'un coup. Espace lit le montage depuis le curseur tel qu'il sera, en sautant ce qui a été retiré ; cliquer sur un mot pendant la lecture lit à partir de là. Ctrl+Z annule et Ctrl+Y rétablit. Un mot retiré part avec le silence qui l'entoure, et quelques centièmes de seconde sont gardés à côté des mots restants pour qu'ils ne se chevauchent pas. Enregistrer écrit « nom Edited » à côté de l'original, dans son format ; les coupes tombent sur les images de la vidéo, si bien que l'image et le son restent ensemble quel que soit leur nombre. Ce que vous avez retiré est gardé : le même enregistrement se rouvre tel que vous l'avez laissé, et un enregistrement écouté une fois (ici ou par Vidéos courtes) s'ouvre aussitôt.",
+  "how": "Faites glisser une vidéo ou un enregistrement, appuyez sur Ctrl et déposez-le sur MONTAGE PAR TEXTE ; choisissez Afficher les mots, sélectionnez ce qu'il faut couper et appuyez sur Suppr, puis choisissez Enregistrer.",
+  "examples": [
+   "Une conférence débarrassée de tous ses « euh » et « hum », ses longues pauses raccourcies, en deux clics.",
+   "Un podcast dont une phrase mal dite est coupée en la sélectionnant dans le texte.",
+   "Une interview où le mot « genre » est trouvé partout où il a été dit et retiré d'un coup."
+  ],
+  "worksOn": "Une vidéo ou un enregistrement audio avec de la parole.",
+  "keywords": [
+   "montage vidéo par le texte",
+   "modifier la transcription",
+   "retirer les hésitations",
+   "supprimer les euh",
+   "couper des mots",
+   "supprimer les silences",
+   "raccourcir les pauses",
+   "montage de podcast",
+   "edit by text",
+   "filler words"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Réduit la taille des images, vidéos, fichiers audio et PDF, selon un préréglage, une taille cible, un pourcentage ou la limite d'une application.",

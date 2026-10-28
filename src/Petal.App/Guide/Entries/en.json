@@ -978,6 +978,32 @@
    "localize video"
   ]
  },
+ "tool:EditByText": {
+  "category": "video",
+  "summary": "Cuts a video or a recording by editing what was said: take words out of the text and they are cut out of the picture and the sound.",
+  "details": "Edit by Text listens to the recording on this PC (Whisper) and shows what was said as text: each word with its time, the pauses with their length, and the sounds between words that weren't words (an “um” Whisper didn't write, a breath, a laugh) as [sound]. Choose the Accuracy and the language Spoken in, then Show the Words. Select words, a sentence or a whole paragraph and press Delete (or Take out) to cut them; they are struck through, and pressing Delete again puts them back. The fillers button takes out the hesitations (um, uh, إمم), a word said twice in a row and the sounds that weren't words; the pauses button shortens every pause longer than 0.8 seconds to 0.3. Find words finds a word or a phrase everywhere it was said, and Take them out takes them all out at once. Space plays the edit from the cursor as it will be, skipping what was taken out, and clicking a word while it plays plays from there. Ctrl+Z undoes and Ctrl+Y redoes. A word taken out goes with the silence around it, a few hundredths of a second kept beside the words left so they don't run into each other. Save writes 'name Edited' next to the original, in its format; the cuts fall on the video's frames, so picture and sound stay together however many there are. What you took out is kept, so the same recording opens again as you left it, and a recording heard once (here or by Make Shorts) opens at once.",
+  "how": "Drag a video or a recording, tap Ctrl and drop it on EDIT BY TEXT; choose Show the Words, select what to cut and press Delete, then choose Save.",
+  "examples": [
+   "A talk with every “um” and “uh” taken out and its long pauses shortened, in two clicks.",
+   "A podcast with a sentence said wrongly cut out by selecting it in the text.",
+   "An interview with the word “basically” found everywhere it was said and taken out at once."
+  ],
+  "worksOn": "One video or audio recording with speech.",
+  "keywords": [
+   "edit video by text",
+   "transcript editing",
+   "text based editing",
+   "remove filler words",
+   "remove um",
+   "cut words",
+   "edit by transcript",
+   "remove pauses",
+   "remove silences",
+   "delete words from video",
+   "cut speech",
+   "edit podcast"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Makes pictures, videos, audio and PDFs smaller, by a preset, a target size, a percentage or an app's limit.",

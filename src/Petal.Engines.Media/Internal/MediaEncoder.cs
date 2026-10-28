@@ -114,6 +114,32 @@ internal static class MediaEncoder
         return await Ffmpeg.EncodeAsync(buildArgs(false), outputPath, muxer, duration, progress, cancellationToken, logLevel).ConfigureAwait(false);
     }
 
+    /// <summary>Longest filter put on the command line; Windows allows 32,767 characters for the whole of it.</summary>
+    private const int LongestOnLine = 8000;
+
+    /// <summary>
+    /// A filter (<paramref name="option"/> "vf" or "af") on the command line, or, when it is too long for one (a list of
+    /// hundreds of cuts), read by FFmpeg from a file ("-/vf file"). The files are kept a day, then cleared.
+    /// </summary>
+    internal static void AddFilter(List<string> args, string option, string filter)
+    {
+        if (filter.Length <= LongestOnLine)
+        {
+            args.AddRange(["-" + option, filter]);
+            return;
+        }
+        var folder = Path.Combine(Path.GetTempPath(), "Petal", "filters");
+        Directory.CreateDirectory(folder);
+        foreach (var old in new DirectoryInfo(folder).GetFiles().Where(f => f.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-1)))
+        {
+            try { old.Delete(); } catch (IOException) { }
+        }
+        var path = Path.Combine(folder, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(filter)))[..20] + ".txt");
+        if (!File.Exists(path))
+            File.WriteAllText(path, filter);
+        args.AddRange(["-/" + option, path]);
+    }
+
     internal static List<string> BuildArgs(EncodePlan plan, bool hardware, int pass = 0, string? passLog = null)
     {
         var src = plan.Source;
@@ -149,7 +175,7 @@ internal static class MediaEncoder
             {
                 // yuv420p needs even dimensions; scale is a no-op when they already are.
                 var filter = Join(plan.VideoFilter, "scale=trunc(iw/2)*2:trunc(ih/2)*2");
-                args.AddRange(["-vf", filter]);
+                AddFilter(args, "vf", filter);
                 args.AddRange(Containers.VideoEncoderArgs(target.Video, plan.Quality, hardware, pass, passLog));
             }
             args.AddRange(["-max_muxing_queue_size", "4096"]);
@@ -162,7 +188,7 @@ internal static class MediaEncoder
             args.AddRange(["-map", "1:a:0"]);
             audioMapped = true;
             if (!string.IsNullOrEmpty(plan.AudioFilter))
-                args.AddRange(["-af", plan.AudioFilter]);
+                AddFilter(args, "af", plan.AudioFilter);
             args.AddRange(Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, plan.AudioBitDepth ?? Containers.BitDepthOf(src.Audio), plan.MaxFlacCompression));
         }
         else if (plan.Audio != StreamMode.Drop && src.HasAudio && !analysisPass)
@@ -178,7 +204,7 @@ internal static class MediaEncoder
             else
             {
                 if (!string.IsNullOrEmpty(plan.AudioFilter))
-                    args.AddRange(["-af", plan.AudioFilter]);
+                    AddFilter(args, "af", plan.AudioFilter);
                 var depth = plan.AudioBitDepth ?? Containers.BitDepthOf(src.Audio);
                 args.AddRange(Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, depth, plan.MaxFlacCompression));
             }

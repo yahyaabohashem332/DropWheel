@@ -41,11 +41,18 @@ public static class ShortsMaker
         }
         var samples = await Transcriber.ReadSpeechAsync(video, cancellationToken).ConfigureAwait(false);
         progress?.Report(0.04);
+        return await HearAsync(video, samples, model, language, progress is null ? null : new Part(progress, 0.04, 1), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>What is said in the video's sound, already read (16 kHz mono), heard and kept as <see cref="ListenAsync"/> keeps it.</summary>
+    public static async Task<ShortsSource> HearAsync(string video, float[] samples, string model, string language, IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
         var levels = SoundLevels.Measure(samples);
-        var transcript = await Transcriber.TranscribeWordsAsync(samples, new TranscribeOptions(model, language, WordTimes: true), levels,
-            progress is null ? null : new Part(progress, 0.04, 1), cancellationToken).ConfigureAwait(false);
+        var transcript = await Transcriber.TranscribeWordsAsync(samples, new TranscribeOptions(model, language, WordTimes: true), levels, progress, cancellationToken)
+            .ConfigureAwait(false);
         var source = new ShortsSource(video, transcript.Language, transcript.Segments, levels);
-        Write(key, source);
+        Write(CacheKey(video, model, language), source);
         return source;
     }
 
