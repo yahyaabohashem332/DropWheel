@@ -51,6 +51,7 @@ public sealed class ToolLauncher(JobRunner jobs)
         [ToolId.Dub] = (t, f, j, a) => new DubWindow(t, f, j, a),
         [ToolId.EditByText] = (t, f, j, a) => new EditByTextWindow(t, f, j, a),
         [ToolId.AskFile] = (t, f, j, a) => new AskFileWindow(t, f[0], j, a),
+        [ToolId.RecordingStudio] = (t, f, j, a) => new Screen.Studio.StudioWindow(t, f[0], j, a),
         [ToolId.TrimAudio] = (t, f, j, a) => new TrimAudioWindow(t, f, j, a),
         [ToolId.AudioChannels] = (t, f, j, a) => new AudioChannelsWindow(t, f, j, a),
         [ToolId.AudioVisualizer] = (t, f, j, a) => new VisualizerWindow(t, f, j, a),

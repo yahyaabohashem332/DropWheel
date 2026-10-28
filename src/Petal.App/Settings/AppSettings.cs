@@ -137,6 +137,10 @@ public sealed class AppSettings
     public bool PolishLargeCursor { get; set; } = true;
     public bool PolishClickRings { get; set; } = true;
 
+    /// <summary>The cinematic studio's look and video size last used, so the next recording starts from them.</summary>
+    public Petal.Core.Recording.StudioLook? StudioLook { get; set; }
+    public Petal.Core.Recording.StudioOutput? StudioOutput { get; set; }
+
     /// <summary>Recordings show the webcam in a round bubble; where it sits (its middle, across and down the area) and how big (of the area's shorter side).</summary>
     public bool RecordCamera { get; set; }
     public double RecordCameraX { get; set; } = 0.86;

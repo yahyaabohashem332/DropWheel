@@ -65,6 +65,7 @@ public enum ToolId
     Dub,
     EditByText,
     AskFile,
+    RecordingStudio,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

@@ -1051,6 +1051,31 @@
    "chat with pdf"
   ]
  },
+ "tool:RecordingStudio": {
+  "category": "video",
+  "summary": "Fait d'un enregistrement d'écran une vidéo soignée : la vue s'approche là où vous cliquez et tapez, le pointeur glisse, la vidéo repose sur un arrière-plan, et vous coupez, accélérez et rognez sur une frise.",
+  "details": "Le Studio d'enregistrement s'ouvre de lui-même quand vous arrêtez un enregistrement fait avec Cinématique activé, et depuis la roue pour n'importe quelle vidéo. Un enregistrement fait avec DropWheel garde la position du pointeur 120 fois par seconde, sa forme, les clics, les moments où vous tapez (jamais ce que vous tapez) et les raccourcis utilisés ; la vue s'approche donc d'elle-même un peu avant chaque clic et sur chaque passage de saisie, suit ce que vous faites sans osciller au moindre petit mouvement et garde toujours le pointeur en vue. La frise montre le son avec une marque à chaque clic ; la piste des zooms contient les zooms (faites-en glisser un pour le déplacer, ses bords pour le modifier, une partie vide pour en ajouter un), et la piste du dessous les passages coupés ou accélérés (de 2× à 16×, le son garde sa hauteur). Les poignées aux deux bouts rognent le début et la fin. Sélectionnez un zoom pour régler son niveau et choisir s'il suit l'action ou regarde un endroit que vous cliquez sur l'image. Sur le côté : l'arrière-plan (huit dégradés, votre fond d'écran, l'enregistrement lui-même flouté, ou aucun), la marge, les coins et l'ombre ; la forme de l'image (telle qu'enregistrée, 16:9, 9:16, 1:1 ou 4:5, les formes hautes suivant l'action) ; la taille du pointeur, son mouvement fluide, son masquage quand il est immobile et les anneaux aux clics ; le flou de mouvement ; les raccourcis à l'écran ; le nettoyage du micro et l'uniformisation du volume ; la taille de la vidéo (jusqu'à 4K) et sa fluidité (60 ou 30 i/s). Espace lit la vidéo telle qu'elle sera enregistrée, en sautant les coupes ; Z, C et S ajoutent un zoom, une coupe et une accélération à la tête de lecture ; Ctrl+Z annule. Enregistrer la vidéo écrit un MP4 dans le dossier Enregistrements d'écran (ou à côté de la vidéo d'origine) ; les modifications sont gardées, si bien que le même enregistrement se rouvre tel que vous l'avez laissé, et enregistrer à nouveau met cette vidéo à jour. Tout est fait sur ce PC.",
+  "how": "Enregistrez avec Cinématique activé puis arrêtez ; ou faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur STUDIO. Modifiez ce que vous voulez, puis choisissez Enregistrer la vidéo.",
+  "examples": [
+   "Un tutoriel enregistré dont chaque clic est zoomé et le pointeur glisse, enregistré en vidéo 1080p sur un arrière-plan violet.",
+   "Une démo de logiciel devenue un extrait 9:16 pour les réseaux sociaux qui suit le pointeur à travers l'écran.",
+   "Une longue installation au milieu d'un tutoriel accélérée 8× et une erreur coupée, le tout sur la frise."
+  ],
+  "worksOn": "Une vidéo ; les enregistrements faits avec l'interrupteur Cinématique de DropWheel ont aussi des zooms sur les clics et la saisie et un pointeur redessiné.",
+  "keywords": [
+   "studio d'enregistrement",
+   "enregistrement d'écran cinématique",
+   "zoom sur les clics",
+   "zoom automatique",
+   "montage d'enregistrement d'écran",
+   "pointeur fluide",
+   "arrière-plan d'enregistrement d'écran",
+   "vidéo verticale",
+   "accélérer une partie de vidéo",
+   "screen studio",
+   "zoom on clicks"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Réduit la taille des images, vidéos, fichiers audio et PDF, selon un préréglage, une taille cible, un pourcentage ou la limite d'une application.",
@@ -2668,7 +2693,7 @@
  "do:screen.record": {
   "category": "screen",
   "summary": "Enregistre une zone ou tout l'écran dans une vidéo MP4, avec le son du PC et votre microphone si vous le souhaitez.",
-  "details": "Faites glisser sur la zone à enregistrer, ou appuyez sur Enter pour tout l'écran ; une barre apparaît avec Enregistrer et des interrupteurs pour le son du PC (activé au départ), le microphone, l'affichage des clics et des raccourcis, votre caméra dans une bulle ronde, et Peaufiner (activé au départ : zoom sur les clics, pointeur fluide et arrière-plan coloré). Enregistrer compte 3, 2, 1, puis la barre affiche le temps avec Arrêter et enregistrer et Annuler ; choisir à nouveau le pétale, qui affiche alors ARRÊTER, arrête aussi. La vidéo est enregistrée sous le nom « Recording 2026-10-21 16.40.05.mp4 » dans le dossier Enregistrements d'écran du dossier Vidéos, et une carte montre où, avec Afficher dans le dossier et Ouvrir. La roue des conversions s'ouvre ensuite dessus, pour en faire un GIF, un fichier plus léger ou un extrait plus court. Le cadre rouge et la barre n'apparaissent pas dans la vidéo. L'enregistrement nécessite FFmpeg ; sans lui, une carte indique FFmpeg est introuvable.",
+  "details": "Faites glisser sur la zone à enregistrer, ou appuyez sur Enter pour tout l'écran ; une barre apparaît avec Enregistrer et des interrupteurs pour le son du PC (activé au départ), le microphone, l'affichage des clics et des raccourcis, votre caméra dans une bulle ronde, et Cinématique (activé au départ). Enregistrer compte 3, 2, 1, puis la barre affiche le temps avec Arrêter et enregistrer et Annuler ; choisir à nouveau le pétale, qui affiche alors ARRÊTER, arrête aussi. Avec Cinématique, l'enregistrement s'ouvre dans le Studio d'enregistrement : la vue s'approche déjà là où vous avez cliqué et tapé, le pointeur est redessiné fluide et net, et la vidéo repose sur un arrière-plan ; modifiez ce que vous voulez, puis choisissez Enregistrer la vidéo. Sans lui, la vidéo est enregistrée aussitôt sous le nom « Recording 2026-10-21 16.40.05.mp4 » dans le dossier Enregistrements d'écran du dossier Vidéos, une carte montre où, avec Afficher dans le dossier et Ouvrir, et la roue des conversions s'ouvre dessus, pour en faire un GIF, un fichier plus léger ou un extrait plus court. Le cadre rouge et la barre n'apparaissent pas dans la vidéo. L'enregistrement nécessite FFmpeg ; sans lui, une carte indique FFmpeg est introuvable.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner, choisissez ENREGISTRER sur la roue Écran (ou Enregistrer l'écran dans le menu de la zone de notification), faites glisser sur la zone et appuyez sur Enregistrer.",
   "worksOn": "",
   "examples": [

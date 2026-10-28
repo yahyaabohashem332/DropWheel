@@ -271,6 +271,8 @@ internal static class DesignSnapshots
             window.Loaded += (_, _) => then(window);
             return window;
         }
+        Window Studio(Action<Screen.Studio.StudioWindow> then, bool tall = false) =>
+            Screen.Studio.StudioWindow.ForSnapshot(SampleStudio(file("weekend.mp4"), tall), SampleScreen(), SamplePeaks(), then);
         Window Ask(Action<Tools.Windows.AskFileWindow> then)
         {
             var window = new Tools.Windows.AskFileWindow(T(Petal.Core.Tools.ToolId.AskFile), file("album.pdf"), jobs, at);
@@ -402,6 +404,23 @@ internal static class DesignSnapshots
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
+            // 1.15
+            ("studio", () => Studio(window => window.SeekForSnapshot(3.6))),
+            ("studiozoom", () => Studio(window =>
+            {
+                window.SelectForSnapshot(1, 0);
+                window.SeekForSnapshot(9.4);
+            })),
+            ("studiotall", () => Studio(window =>
+            {
+                window.SelectForSnapshot(2, 0);
+                window.SeekForSnapshot(4.2);
+            }, tall: true)),
+            ("studioexport", () => Studio(window =>
+            {
+                window.SeekForSnapshot(9.4);
+                window.ExportingForSnapshot(0.42);
+            })),
             // 1.14
             ("askfile", () => new Tools.Windows.AskFileWindow(T(Petal.Core.Tools.ToolId.AskFile), file("album.pdf"), jobs, at)),
             ("askfilereading", () => Ask(window => window.ShowReadingForSnapshot(0.46))),
@@ -512,6 +531,114 @@ internal static class DesignSnapshots
             t += length + 0.08;
         }
         return words;
+    }
+
+    /// <summary>
+    /// A made-up recording of a notes app: the pointer going to the sidebar, the document and the Share button,
+    /// a run of typing, a shortcut, and the zooms DropWheel would plan, with a stretch sped up and one cut out.
+    /// </summary>
+    private static Petal.Core.Recording.StudioProject SampleStudio(string video, bool tall)
+    {
+        var stops = new (double T, double X, double Y)[] { (0, 640, 520), (2.4, 150, 214), (3, 150, 214), (5.2, 520, 300), (6.6, 520, 300), (11.5, 540, 340), (12.6, 1150, 76), (14, 1150, 76), (17, 900, 600), (24, 900, 600) };
+        var pointer = new List<Petal.Core.Recording.PointerSample>();
+        for (int i = 0; i <= 24 * 60; i++)
+        {
+            double t = i / 60.0;
+            int k = 0;
+            while (k + 1 < stops.Length && stops[k + 1].T <= t)
+                k++;
+            var a = stops[k];
+            var b = stops[Math.Min(k + 1, stops.Length - 1)];
+            double f = b.T > a.T ? Math.Clamp((t - a.T) / (b.T - a.T), 0, 1) : 0;
+            f = f * f * (3 - 2 * f);
+            var kind = t is > 6.6 and < 11.5 ? Petal.Core.Recording.PointerKind.Text : t is > 12.5 and < 14.2 ? Petal.Core.Recording.PointerKind.Hand : Petal.Core.Recording.PointerKind.Arrow;
+            pointer.Add(new(t, a.X + (b.X - a.X) * f, a.Y + (b.Y - a.Y) * f, true, kind));
+        }
+        var typing = Enumerable.Range(0, 18).Select(i => new Petal.Core.Recording.TypingSample(7 + i * 0.22, 560 + i * 9, 330, true)).ToList();
+        var project = new Petal.Core.Recording.StudioProject
+        {
+            Folder = Path.Combine(Path.GetTempPath(), "DropWheel studio snapshot"),
+            Video = Path.GetFullPath(video),
+            Width = 1280,
+            Height = 720,
+            Fps = 30,
+            Duration = 24,
+            HasPointer = true,
+            Pointer = pointer,
+            Clicks = [new(3, 150, 214), new(6.6, 520, 300), new(14, 1150, 76)],
+            Typing = typing,
+            Keys = [new(11.2, "Ctrl + S")],
+        };
+        var look = new Petal.Core.Recording.StudioLook { Shape = tall ? "9:16" : "recorded" };
+        project.Edit = project.Automatic(look, new Petal.Core.Recording.StudioOutput(), 1.8) with
+        {
+            Edits = [new(15, 17.5, Petal.Core.Recording.EditKind.Speed, 4), new(20, 21.5, Petal.Core.Recording.EditKind.Cut)],
+        };
+        return project;
+    }
+
+    /// <summary>A notes app as a screen recording would show it.</summary>
+    private static BitmapSource SampleScreen()
+    {
+        var visual = new DrawingVisual();
+        var face = new Typeface(Visuals.UiFonts.Text, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+        var bold = new Typeface(Visuals.UiFonts.Text, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+        using (var dc = visual.RenderOpen())
+        {
+            void Write(string text, double x, double y, double size, Color colour, bool strong = false) =>
+                dc.DrawText(new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, strong ? bold : face, size, new SolidColorBrush(colour), 1), new Point(x, y));
+            Brush Fill(byte r, byte g, byte b) => new SolidColorBrush(Color.FromRgb(r, g, b));
+            dc.DrawRectangle(Fill(0xF4, 0xF5, 0xF7), null, new Rect(0, 0, 1280, 720));
+            dc.DrawRectangle(Fill(0xFF, 0xFF, 0xFF), null, new Rect(0, 0, 1280, 44));
+            Write("Notes — Quarterly plan", 18, 12, 14, Color.FromRgb(0x33, 0x33, 0x3A));
+            foreach (var (x, glyph) in new[] { (1150.0, "—"), (1196.0, "☐"), (1242.0, "✕") })
+                Write(glyph, x, 11, 15, Color.FromRgb(0x55, 0x55, 0x5E));
+            dc.DrawRectangle(Fill(0xFF, 0xFF, 0xFF), null, new Rect(0, 44, 250, 676));
+            dc.DrawRectangle(Fill(0xE6, 0xE7, 0xEA), null, new Rect(250, 44, 1, 676));
+            string[] items = ["Inbox", "Projects", "Quarterly plan", "Ideas", "Meeting notes", "Archive"];
+            for (int i = 0; i < items.Length; i++)
+            {
+                double y = 78 + i * 46;
+                if (i == 2)
+                    dc.DrawRoundedRectangle(Fill(0xEC, 0xE8, 0xFF), null, new Rect(12, y - 10, 226, 40), 8, 8);
+                dc.DrawRoundedRectangle(i == 2 ? Fill(0x7C, 0x5C, 0xFC) : Fill(0xC9, 0xCC, 0xD3), null, new Rect(28, y + 2, 16, 16), 4, 4);
+                Write(items[i], 56, y, 15, i == 2 ? Color.FromRgb(0x3B, 0x2A, 0xA8) : Color.FromRgb(0x33, 0x33, 0x3A), i == 2);
+            }
+            dc.DrawRoundedRectangle(Fill(0x7C, 0x5C, 0xFC), null, new Rect(1100, 60, 104, 34), 8, 8);
+            Write("Share", 1130, 66, 15, Colors.White, true);
+            dc.DrawRoundedRectangle(Fill(0xFF, 0xFF, 0xFF), new Pen(Fill(0xE6, 0xE7, 0xEA), 1), new Rect(290, 112, 950, 580), 12, 12);
+            Write("Quarterly plan", 330, 140, 30, Color.FromRgb(0x1A, 0x1A, 0x22), true);
+            Write("Launch the new reading lamp in March, with the shops and the website ready the same week.", 330, 200, 16, Color.FromRgb(0x44, 0x44, 0x4C));
+            string[] tasks = ["Photos for the website", "Price list for the shops", "Two short videos for social media", "Answers for the support team"];
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                double y = 252 + i * 40;
+                dc.DrawRoundedRectangle(i < 2 ? Fill(0x22, 0xC5, 0x5E) : null, new Pen(i < 2 ? Fill(0x22, 0xC5, 0x5E) : Fill(0xB8, 0xBB, 0xC4), 1.6), new Rect(332, y + 2, 18, 18), 5, 5);
+                Write(tasks[i], 364, y, 16, i < 2 ? Color.FromRgb(0x8A, 0x8D, 0x96) : Color.FromRgb(0x2A, 0x2A, 0x33));
+            }
+            Write("Budget", 330, 432, 20, Color.FromRgb(0x1A, 0x1A, 0x22), true);
+            double[] bars = [0.42, 0.7, 0.55, 0.9];
+            for (int i = 0; i < bars.Length; i++)
+                dc.DrawRoundedRectangle(Fill(0x7C, 0x5C, 0xFC), null, new Rect(334 + i * 90, 640 - 150 * bars[i], 56, 150 * bars[i]), 6, 6);
+            Write("The marketing budget is 250,000 euros, half of it for online adverts.", 720, 480, 16, Color.FromRgb(0x44, 0x44, 0x4C));
+            Write("Next review: Thursday at 10:00.", 720, 516, 16, Color.FromRgb(0x44, 0x44, 0x4C));
+        }
+        var bitmap = new RenderTargetBitmap(1280, 720, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    /// <summary>A voice's waveform, made up.</summary>
+    private static float[] SamplePeaks()
+    {
+        var random = new Random(5);
+        return Enumerable.Range(0, 1600).Select(i =>
+        {
+            double t = i / 1600.0 * 24;
+            double speaking = Math.Sin(t * 1.7) > -0.3 ? 1 : 0.15;
+            return (float)Math.Min(1, speaking * (0.25 + random.NextDouble() * 0.7));
+        }).ToArray();
     }
 
     /// <summary>Questions about a declaration of rights, as Ask a File answers them, each with the page it comes from.</summary>

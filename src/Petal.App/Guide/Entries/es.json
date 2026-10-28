@@ -1068,6 +1068,31 @@
    "chat with pdf"
   ]
  },
+ "tool:RecordingStudio": {
+  "category": "video",
+  "summary": "Convierte una grabación de pantalla en un video pulido: la vista se acerca donde hace clic y escribe, el puntero se desliza, el video se coloca sobre un fondo, y usted corta, acelera y recorta en una línea de tiempo.",
+  "details": "El Estudio de grabación se abre solo cuando detiene una grabación hecha con Cinematográfico activado, y desde la rueda para cualquier video. Una grabación hecha con DropWheel guarda dónde estaba el puntero 120 veces por segundo, su forma, los clics, cuándo escribió (nunca qué) y los atajos pulsados; así la vista se acerca sola un poco antes de cada clic y sobre cada tramo de escritura, sigue lo que hace sin balancearse con cada pequeño movimiento y mantiene siempre el puntero a la vista. La línea de tiempo muestra el sonido con una marca en cada clic; la pista de zoom contiene los zooms (arrastre uno para moverlo, sus extremos para cambiarlo, una parte vacía para añadir uno), y la pista de abajo los tramos cortados o acelerados (de 2× a 16×, con el sonido en su tono). Los tiradores de los dos extremos recortan el principio y el final. Seleccione un zoom para ajustar cuánto acerca y si sigue la acción o mira un lugar que pulse en la imagen. Al lado: el fondo (ocho degradados, su fondo de escritorio, la propia grabación desenfocada o ninguno), el margen, las esquinas y la sombra; la forma del cuadro (como se grabó, 16:9, 9:16, 1:1 o 4:5, las altas siguiendo la acción); el tamaño del puntero, su movimiento suave, ocultarlo cuando se detiene y los anillos en los clics; el desenfoque de movimiento; los atajos en pantalla; limpiar el micrófono e igualar el volumen; y el tamaño del video (hasta 4K) y su fluidez (60 o 30 fps). Espacio reproduce el video tal como se guardará, saltando los cortes; Z, C y S añaden un zoom, un corte y una aceleración en el cabezal; Ctrl+Z deshace. Guardar video escribe un MP4 en la carpeta Screen Recordings (o junto al video del que se hizo); las ediciones se guardan, así que la misma grabación se vuelve a abrir como la dejó, y guardar de nuevo actualiza ese video. Todo se hace en este PC.",
+  "how": "Grabe con Cinematográfico activado y detenga; o arrastre un video, toque Ctrl y suéltelo en ESTUDIO. Cambie lo que quiera y elija Guardar video.",
+  "examples": [
+   "Un tutorial grabado en el que cada clic se acerca y el puntero se desliza, guardado como video 1080p sobre un fondo violeta.",
+   "Una demo de software convertida en un clip 9:16 para redes sociales que sigue el puntero por toda la pantalla.",
+   "Una instalación larga en mitad de un tutorial acelerada 8× y un error cortado, todo en la línea de tiempo."
+  ],
+  "worksOn": "Un video; las grabaciones hechas con el interruptor Cinematográfico de DropWheel también tienen zoom en los clics y al escribir y un puntero redibujado.",
+  "keywords": [
+   "estudio de grabación",
+   "grabación de pantalla cinematográfica",
+   "zoom en los clics",
+   "zoom automático",
+   "editar grabación de pantalla",
+   "puntero suave",
+   "fondo para grabación de pantalla",
+   "video vertical",
+   "acelerar parte de un video",
+   "screen studio",
+   "zoom on clicks"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Reduce el tamaño de imágenes, videos, audio y PDF, con un ajuste predefinido, un tamaño objetivo, un porcentaje o el límite de una aplicación.",
@@ -2702,7 +2727,7 @@
  "do:screen.record": {
   "category": "screen",
   "summary": "Graba una zona o toda la pantalla en un video MP4, con el sonido del PC y tu micrófono si quieres.",
-  "details": "Arrastra sobre la zona que quieres grabar, o pulsa Enter para toda la pantalla; aparece una barra con Grabar e interruptores para el sonido del PC (activado al principio), el micrófono, mostrar los clics y los atajos, tu cámara en una burbuja redonda y Pulido (activado al principio: zoom en los clics, un puntero suave y un fondo de color). Grabar cuenta 3, 2, 1, y luego la barra muestra el tiempo con Detener y guardar y Cancelar; elegir de nuevo el pétalo, que ahora dice DETENER, también detiene la grabación. El video se guarda como «Recording 2026-10-21 16.40.05.mp4» en la carpeta Screen Recordings dentro de Videos, y una tarjeta muestra dónde con Mostrar en la carpeta y Abrir. Luego se abre la rueda de conversiones con él, para hacer un GIF, un archivo más pequeño o un clip más corto. El marco rojo y la barra no salen en el video. La grabación necesita FFmpeg; sin él, una tarjeta dice No se encontró FFmpeg.",
+  "details": "Arrastra sobre la zona que quieres grabar, o pulsa Enter para toda la pantalla; aparece una barra con Grabar e interruptores para el sonido del PC (activado al principio), el micrófono, mostrar los clics y los atajos, tu cámara en una burbuja redonda y Cinematográfico (activado al principio). Grabar cuenta 3, 2, 1, y luego la barra muestra el tiempo con Detener y guardar y Cancelar; elegir de nuevo el pétalo, que ahora dice DETENER, también detiene la grabación. Con Cinematográfico, la grabación se abre en el Estudio de grabación: la vista ya se acerca donde hiciste clic y escribiste, el puntero se redibuja suave y nítido, y el video se coloca sobre un fondo; cambia allí lo que quieras y elige Guardar video. Sin él, el video se guarda enseguida como «Recording 2026-10-21 16.40.05.mp4» en la carpeta Screen Recordings dentro de Videos, una tarjeta muestra dónde con Mostrar en la carpeta y Abrir, y se abre la rueda de conversiones con él, para hacer un GIF, un archivo más pequeño o un clip más corto. El marco rojo y la barra no salen en el video. La grabación necesita FFmpeg; sin él, una tarjeta dice No se encontró FFmpeg.",
   "how": "Pulsa Ctrl+Win+Z sin nada seleccionado, elige GRABAR en la rueda Pantalla (o Grabar la pantalla en el menú de la bandeja del sistema), arrastra sobre la zona y pulsa Grabar.",
   "worksOn": "",
   "examples": [

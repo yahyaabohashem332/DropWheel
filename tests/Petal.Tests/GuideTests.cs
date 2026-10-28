@@ -84,6 +84,7 @@ public sealed class GuideTests
     [InlineData("join two pdf files", "tool:MergePdfs")]
     [InlineData("remove the ums from my video", "tool:EditByText")]
     [InlineData("ask questions about a pdf", "tool:AskFile")]
+    [InlineData("zoom in on clicks in my screen recording", "tool:RecordingStudio")]
     public void Plain_words_find_the_tool(string request, string key)
     {
         var hits = GuideSearch.Find(request, 3).Select(h => h.Key).ToList();
@@ -98,6 +99,7 @@ public sealed class GuideTests
     [InlineData("كتبت بلغة لوحة المفاتيح الخطأ", "do:text.fixlayout")]
     [InlineData("حذف كلمات الحشو من الفيديو", "tool:EditByText")]
     [InlineData("أسئلة عن ملف pdf", "tool:AskFile")]
+    [InlineData("تكبير تلقائي عند النقر في تسجيل الشاشة", "tool:RecordingStudio")]
     public void Arabic_words_find_the_tool_whatever_language_Petal_speaks(string request, string key)
     {
         var hits = GuideSearch.Find(request, 3).Select(h => h.Key).ToList();

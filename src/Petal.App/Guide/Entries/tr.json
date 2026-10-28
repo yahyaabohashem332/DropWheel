@@ -1056,6 +1056,31 @@
    "chat with pdf"
   ]
  },
+ "tool:RecordingStudio": {
+  "category": "video",
+  "summary": "Bir ekran kaydını özenli bir videoya çevirir: görüntü tıkladığınız ve yazdığınız yere yaklaşır, işaretçi akıcı kayar, video bir arka plan üzerinde durur; bir zaman çizelgesinde keser, hızlandırır ve kırparsınız.",
+  "details": "Kayıt Stüdyosu, Sinematik açıkken yaptığınız bir kaydı durdurduğunuzda kendiliğinden, herhangi bir video için de çarktan açılır. DropWheel ile yapılan bir kayıt, işaretçinin yerini saniyede 120 kez, biçimini, tıklamaları, ne zaman yazdığınızı (neyi yazdığınızı değil) ve basılan kısayolları saklar; böylece görüntü her tıklamadan biraz önce ve her yazma dizisinin üzerinde kendiliğinden yaklaşır, yaptığınızı her küçük harekette sallanmadan izler ve işaretçiyi hep görüş alanında tutar. Zaman çizelgesi sesi her tıklamada bir işaretle gösterir; yakınlaştırma şeridinde yakınlaştırmalar durur (taşımak için birini, değiştirmek için uçlarını, eklemek için boş bir yeri sürükleyin), altındaki şeritte kesilen ya da hızlandırılan bölümler bulunur (2× ile 16× arası, ses perdesini korur). İki uçtaki kırpma tutamakları başı ve sonu atar. Ne kadar yakın olacağını ve olanı mı izleyeceğini yoksa görüntüde tıkladığınız tek bir yere mi bakacağını ayarlamak için bir yakınlaştırmayı seçin. Yanda: arka plan (sekiz renk geçişi, masaüstü duvar kâğıdınız, bulanıklaştırılmış kaydın kendisi ya da hiçbiri), kenar boşluğu, köşeler ve gölge; karenin biçimi (kaydedildiği gibi, 16:9, 9:16, 1:1 ya da 4:5; uzun olanlar olanı izler); işaretçinin boyutu, akıcı hareketi, dururken gizlenmesi ve tıklama halkaları; hareket bulanıklığı; ekranda kısayollar; mikrofonu temizleme ve ses düzeyini eşitleme; videonun boyutu (4K'ya kadar) ve akıcılığı (60 ya da 30 fps). Ara Çubuğu videoyu kaydedileceği gibi, kesilenleri atlayarak oynatır; Z, C ve S oynatma konumuna bir yakınlaştırma, bir kesim ve bir hızlandırma ekler; Ctrl+Z geri alır. Videoyu Kaydet, Ekran Kayıtları klasörüne (ya da yapıldığı videonun yanına) bir MP4 yazar; düzenlemeler saklanır, böylece aynı kayıt bıraktığınız gibi yeniden açılır ve yeniden kaydetmek o videoyu günceller. Hepsi bu bilgisayarda yapılır.",
+  "how": "Sinematik açıkken kaydedin ve durdurun; ya da bir videoyu sürükleyin, Ctrl'ye dokunun ve STÜDYO üzerine bırakın. İstediğinizi değiştirin, sonra Videoyu Kaydet'i seçin.",
+  "examples": [
+   "Her tıklamasında yakınlaştırılan, işaretçisi akıcı kayan, mor bir arka plan üzerinde 1080p video olarak kaydedilmiş bir nasıl yapılır kaydı.",
+   "İşaretçiyi ekran boyunca izleyen, sosyal medya için 9:16 bir klibe dönüşmüş bir yazılım tanıtımı.",
+   "Bir eğitimin ortasındaki uzun bir kurulumun 8× hızlandırılması ve bir hatanın kesilmesi, hepsi zaman çizelgesinde."
+  ],
+  "worksOn": "Tek bir video; DropWheel'in Sinematik anahtarıyla yapılan kayıtlarda ayrıca tıklama ve yazmada yakınlaştırma ile yeniden çizilen bir işaretçi olur.",
+  "keywords": [
+   "kayıt stüdyosu",
+   "sinematik ekran kaydı",
+   "tıklamada yakınlaştırma",
+   "otomatik yakınlaştırma",
+   "ekran kaydı düzenleme",
+   "akıcı işaretçi",
+   "ekran kaydı arka planı",
+   "dikey video",
+   "videonun bir kısmını hızlandır",
+   "screen studio",
+   "zoom on clicks"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Resimleri, videoları, sesleri ve PDF'leri bir hazır ayara, hedef boyuta, yüzdeye ya da bir uygulamanın sınırına göre küçültür.",
@@ -2735,7 +2760,7 @@
  "do:screen.record": {
   "category": "screen",
   "summary": "Bir alanı ya da ekranın tamamını, istersen bilgisayarın sesi ve mikrofonunla birlikte MP4 videoya kaydeder.",
-  "details": "Kaydedilecek alanın üzerine sürükle ya da ekranın tamamı için Enter'a bas; Kaydet düğmesi ve bilgisayarın sesi (ilk başta açık), mikrofon, tıklamaları ve kısayolları gösterme, yuvarlak bir baloncukta kameran ve Güzelleştir (ilk başta açık: tıklamalarda yakınlaştırır, akıcı bir işaretçi ve renkli bir arka plan) için anahtarlar içeren bir çubuk belirir. Kaydet 3, 2, 1 diye sayar, sonra çubuk süreyi Durdur ve kaydet ve İptal ile gösterir; artık DURDUR yazan yaprağı yeniden seçmek de durdurur. Video, Videolar içindeki Ekran Kayıtları klasörüne 'Recording 2026-10-21 16.40.05.mp4' adıyla kaydedilir; bir kart nerede olduğunu Klasörde göster ve Aç ile gösterir. Sonra dönüştürme çarkı onun için açılır; bir GIF, daha küçük bir dosya ya da daha kısa bir klip yapmak için. Kırmızı çerçeve ve çubuk videoya girmez. Kayıt için FFmpeg gerekir; yoksa bir kart FFmpeg bulunamadı. der.",
+  "details": "Kaydedilecek alanın üzerine sürükle ya da ekranın tamamı için Enter'a bas; Kaydet düğmesi ve bilgisayarın sesi (ilk başta açık), mikrofon, tıklamaları ve kısayolları gösterme, yuvarlak bir baloncukta kameran ve Sinematik (ilk başta açık) için anahtarlar içeren bir çubuk belirir. Kaydet 3, 2, 1 diye sayar, sonra çubuk süreyi Durdur ve kaydet ve İptal ile gösterir; artık DURDUR yazan yaprağı yeniden seçmek de durdurur. Sinematik açıkken kayıt Kayıt Stüdyosu'nda açılır: görüntü tıkladığın ve yazdığın yere kendiliğinden yaklaşmış, işaretçi akıcı ve keskin olarak yeniden çizilmiş ve video bir arka plan üzerine yerleşmiştir; orada istediğini değiştirip Videoyu Kaydet'i seç. Kapalıyken video hemen Videolar içindeki Ekran Kayıtları klasörüne 'Recording 2026-10-21 16.40.05.mp4' adıyla kaydedilir; bir kart nerede olduğunu Klasörde göster ve Aç ile gösterir ve dönüştürme çarkı onun için açılır; bir GIF, daha küçük bir dosya ya da daha kısa bir klip yapmak için. Kırmızı çerçeve ve çubuk videoya girmez. Kayıt için FFmpeg gerekir; yoksa bir kart FFmpeg bulunamadı. der.",
   "how": "Hiçbir şey seçili değilken Ctrl+Win+Z'ye bas, Ekran çarkında KAYDET'i seç (ya da bildirim alanı menüsünde Ekranı Kaydet), alanın üzerine sürükle ve Kaydet'e bas.",
   "worksOn": "",
   "examples": [

@@ -87,6 +87,11 @@ internal sealed class RecordingSession
     private CameraTrack? _cameraTrack;
     private bool _cameraStarting, _cameraWanted;
     private readonly List<BubbleSample> _places = [];
+    // A cinematic recording: what happened besides the pictures, and the studio project it becomes.
+    private Studio.StudioCapture? _studio;
+    private string? _studioFolder;
+    private readonly double _scale;
+    private bool _closed;
 
     public event Action? Ended;
 
@@ -101,6 +106,7 @@ internal sealed class RecordingSession
         _area = area;
         _openFiles = openFiles;
         var monitor = ScreenNative.Describe(MonitorFromPoint(new POINT { X = area.Left + area.Width / 2, Y = area.Top + area.Height / 2 }, 2));
+        _scale = monitor.Scale;
         _frame = new MonitorWindow(monitor.Bounds, clickThrough: true, noActivate: true, hideFromCapture: true) { Title = L.T("Screen Recording") };
         var canvas = new Canvas();
         _frame.Content = canvas;
@@ -288,8 +294,21 @@ internal sealed class RecordingSession
                 _warning ??= L.T("The camera couldn't be added; the recording is saved without it.");
             }
         }
+        if (_polish)
+        {
+            try
+            {
+                _studioFolder = Petal.Core.Recording.StudioLibrary.NewFolder();
+                _studio = new Studio.StudioCapture(_area, _clock, _studioFolder);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Info($"No studio folder, so the recording is polished as before: {ex.Message}");
+            }
+        }
         Recording = true;
         _clock.Start();
+        _studio?.Start();
         foreach (var track in _tracks)
             track.Start();
         _grabber = new Thread(Grab) { IsBackground = true, Name = "Petal screen recording", Priority = ThreadPriority.AboveNormal };
@@ -358,6 +377,7 @@ internal sealed class RecordingSession
         _clock.Stop();
         foreach (var track in _tracks)
             track.Stop(elapsed);
+        _studio?.Stop();
         await Task.Run(() => _grabber?.Join(3000));
         try { _ffmpeg?.StandardInput.Close(); } catch (IOException) { }
         if (_ffmpeg is not null)
@@ -386,6 +406,19 @@ internal sealed class RecordingSession
         else if (_cameraTrack is not null)
         {
             _warning ??= L.T("The camera sent no picture, so the recording has none.");
+        }
+        // Cinematic: the recording becomes a studio project and opens in the studio.
+        if (_polish && _studio is not null)
+        {
+            Close();
+            if (await StudioAsync(video, sounds, webcam))
+            {
+                Cleanup();
+                return;
+            }
+            // The studio couldn't be made ready: the recording is kept as it was.
+            _polish = false;
+            _warning ??= L.T("The studio couldn't open this recording; it is saved as it was.");
         }
         // Polished or with the camera: the plain recording goes beside the work files first, and the finished one is drawn from it.
         bool render = _polish || webcam is not null;
@@ -424,6 +457,91 @@ internal sealed class RecordingSession
         // Where the video is, with buttons to show it in its folder or play it.
         Hud.HudCard.ShowSaved("Recording saved", output, _warning);
         _openFiles?.Invoke(output, middle);
+    }
+
+    /// <summary>
+    /// The recording as a studio project: the screen with its sound mixed (to play while editing), each sound apart
+    /// (to be cleaned and mixed again when saving), the camera, and what happened while recording; then the studio.
+    /// </summary>
+    private async Task<bool> StudioAsync(string video, List<string> sounds, CameraOverlay? webcam)
+    {
+        var folder = _studioFolder!;
+        var card = Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), L.T("Getting the studio ready…"), L.T("Planning the zooms on your clicks and typing"));
+        try
+        {
+            var screen = System.IO.Path.Combine(folder, "screen.mp4");
+            if (!await Mux(video, sounds, screen) && !await Mux(video, [], screen))
+                return false;
+            var project = new Petal.Core.Recording.StudioProject
+            {
+                Folder = folder,
+                Video = "screen.mp4",
+                Width = _area.Width,
+                Height = _area.Height,
+                Fps = _fps,
+                Duration = _cursor.Count / (double)_fps,
+                PixelScale = _scale,
+                HasPointer = true,
+                Pointer = _studio!.Pointer,
+                Keys = _studio.Keys,
+                Typing = _studio.Typing,
+                Shapes = _studio.Shapes,
+            };
+            lock (_clicks)
+                project.Clicks = [.. _clicks];
+            foreach (var track in _tracks.Where(t => t.HasSound))
+            {
+                bool voice = System.IO.Path.GetFileName(track.Path) == "mic.wav";
+                var name = voice ? "microphone.flac" : "system.flac";
+                if (await Ffmpeg("-i", track.Path, "-c:a", "flac", "-y", System.IO.Path.Combine(folder, name)))
+                {
+                    if (voice)
+                        project.Microphone = name;
+                    else
+                        project.SystemSound = name;
+                }
+            }
+            if (webcam is not null && await Ffmpeg("-i", webcam.Video, "-c", "copy", "-y", System.IO.Path.Combine(folder, "camera.mp4")))
+            {
+                project.Camera = "camera.mp4";
+                project.CameraSide = webcam.Side;
+                project.CameraPlaces = webcam.Places.Select(p => new Petal.Core.Recording.CameraPlace(p.Time, p.X, p.Y, p.Diameter)).ToList();
+            }
+            project.Edit = project.Automatic(Studio.StudioSettings.Look, Studio.StudioSettings.Output, Studio.StudioSettings.Zoom);
+            project.Save();
+            Petal.Core.Recording.StudioLibrary.Prune(folder);
+            Studio.StudioWindow.Open(project, _openFiles);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Making the studio project");
+            return false;
+        }
+        finally
+        {
+            card.Dismiss();
+        }
+    }
+
+    private static async Task<bool> Ffmpeg(params string[] args)
+    {
+        var start = new ProcessStartInfo(ToolLocator.Ffmpeg!) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
+        foreach (var a in new[] { "-hide_banner", "-loglevel", "error" }.Concat(args))
+            start.ArgumentList.Add(a);
+        try
+        {
+            using var process = Process.Start(start);
+            if (process is null)
+                return false;
+            await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            return process.ExitCode == 0;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            return false;
+        }
     }
 
     /// <summary>The video with its sound (both mixed when there are two) into an MP4 that plays everywhere.</summary>
@@ -469,6 +587,7 @@ internal sealed class RecordingSession
             track.Stop(_clock.Elapsed);
         _grabber?.Join(2000);
         _cameraTrack?.Kill();
+        _studio?.Stop();
         try
         {
             _ffmpeg?.StandardInput.Close();
@@ -500,6 +619,9 @@ internal sealed class RecordingSession
 
     private void Close()
     {
+        if (_closed)
+            return;
+        _closed = true;
         StopCamera();
         _frame.Close();
         _bar.Close();
@@ -811,7 +933,7 @@ internal sealed class RecordBar : Window
             }
         }) { IsOn = settings.RecordCamera };
         StripButton? polish = null;
-        polish = new StripButton("sparkles", "Polish: zoom in on clicks, a smooth pointer and a background", () =>
+        polish = new StripButton("sparkles", "Cinematic: zooms where you click and type, a smooth pointer and a background, then the studio to change them", () =>
         {
             settings.RecordPolish = !settings.RecordPolish;
             polish!.IsOn = settings.RecordPolish;

@@ -80,6 +80,12 @@ public partial class LocalizationTests
         // 1.12: the made-up lines of an interview Dub is drawn with in the design snapshots (the Arabic ones are written beside them).
         "I'm a very lucky person.", "I'm grateful every day, and I want more people to come up here to space.", "We need some good wings up here.",
         "I would love to go. Can you take me to space?", "I'd look down and say: I'm over Europe, and in twenty seconds I'll be on the West Coast.",
+        // 1.15: the studio's thread, FFmpeg's filters, the file name's ending, and the made-up notes app its design snapshots show (a screen as it was recorded).
+        "Petal studio pointer", ",highpass=f=80,afftdn=nr=12:nf=-40:tn=1", "loudnorm=I=-16:TP=-1.5:LRA=11", "alimiter=limit=0.95", "[out]", ",atempo=2", "Cinematic",
+        "Ctrl + S", "Notes — Quarterly plan", "Inbox", "Quarterly plan", "Ideas", "Meeting notes", "Archive",
+        "Launch the new reading lamp in March, with the shops and the website ready the same week.", "Photos for the website", "Price list for the shops",
+        "Two short videos for social media", "Answers for the support team", "Budget", "The marketing budget is 250,000 euros, half of it for online adverts.",
+        "Next review: Thursday at 10:00.",
         // 1.14: the made-up questions and answers Ask a File is drawn with in the design snapshots (the Arabic ones are written beside them).
         "Is elementary education compulsory?", "Yes. Elementary education is compulsory, and it must be free, at least in the elementary and fundamental stages.",
         "Everyone has the right to education. Education shall be free, at least in the elementary and fundamental stages. Elementary education shall be compulsory.",

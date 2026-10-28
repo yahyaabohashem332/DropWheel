@@ -1031,6 +1031,34 @@
    "ai pdf reader"
   ]
  },
+ "tool:RecordingStudio": {
+  "category": "video",
+  "summary": "Turns a screen recording into a polished video: the view zooms in where you click and type, the pointer glides, the video sits on a background, and you cut, speed up and trim on a timeline.",
+  "details": "The Recording Studio opens by itself when you stop a recording made with Cinematic on, and from the wheel for any video. A recording made with DropWheel keeps where the pointer was 120 times a second, its shape, the clicks, when you typed (never what) and the shortcuts pressed, so the view goes in by itself a little before each click and over each run of typing, follows what you do without swaying with every small move, and keeps the pointer in sight. The timeline shows the sound with a mark at each click; the zoom lane holds the zooms (drag one to move it, drag its ends to change it, drag on an empty part to add one), and the lane below holds the stretches cut out or sped up (2× to 16×, the sound kept at its pitch). The trim handles at both ends take off the start and the end. Select a zoom to set how far in it goes and whether it follows the action or looks at one place you click on the picture. On the right: the background (eight gradients, your desktop wallpaper, the recording itself blurred, or none), the margin, the corners and the shadow; the frame's shape (as recorded, 16:9, 9:16, 1:1 or 4:5, the tall ones following the action); the pointer's size, smooth movement, hiding it while it rests and rings at clicks; motion blur; the shortcuts on screen; cleaning up the microphone and evening out the volume; and the video's size (up to 4K) and smoothness (60 or 30 fps). Space plays it as it will be saved, skipping the cuts; Z, C and S add a zoom, a cut and a speed-up at the playhead; Ctrl+Z undoes. Save Video writes an MP4 to the Screen Recordings folder (or next to the video it was made from); the edits are kept, so the same recording opens again as you left it, and saving again updates that video. Everything is made on this PC.",
+  "how": "Record with Cinematic on and stop; or drag a video, tap Ctrl and drop on STUDIO. Change what you like, then choose Save Video.",
+  "examples": [
+   "A how-to recording where every click is zoomed in on and the pointer glides, saved as a 1080p video on a violet background.",
+   "A software demo turned into a 9:16 clip for social media that follows the pointer across the screen.",
+   "A long installation in the middle of a tutorial sped up 8× and a mistake cut out, all on the timeline."
+  ],
+  "worksOn": "One video; recordings made with DropWheel's Cinematic switch also get zooms on clicks and typing and a redrawn pointer.",
+  "keywords": [
+   "recording studio",
+   "cinematic screen recording",
+   "zoom on clicks",
+   "auto zoom",
+   "screen recording editor",
+   "smooth cursor",
+   "background for screen recording",
+   "vertical video from screen recording",
+   "speed up part of a video",
+   "cut part of a video",
+   "motion blur",
+   "tutorial video",
+   "demo video",
+   "screen studio"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Makes pictures, videos, audio and PDFs smaller, by a preset, a target size, a percentage or an app's limit.",
@@ -2632,7 +2660,7 @@
  "do:screen.record": {
   "category": "screen",
   "summary": "Records an area or the whole screen to an MP4 video, with the PC's sound and your microphone if you want.",
-  "details": "Drag over the area to record, or press Enter for the whole screen; a bar appears with Record and switches for the PC's sound (on at first), the microphone, showing clicks and shortcuts, your camera in a round bubble, and Polish (on at first: zooms in on clicks, a smooth pointer and a coloured background). Record counts 3, 2, 1, then the bar shows the time with Stop and save and Cancel; choosing the petal again, which now reads STOP, also stops. The video is saved as 'Recording 2026-10-21 16.40.05.mp4' in the Screen Recordings folder inside Videos, and a card shows where with Show in Folder and Open. The conversion wheel then opens on it, to make a GIF, a smaller file or a shorter clip. The red frame and the bar stay out of the video. Recording needs FFmpeg; without it a card says FFmpeg was not found.",
+  "details": "Drag over the area to record, or press Enter for the whole screen; a bar appears with Record and switches for the PC's sound (on at first), the microphone, showing clicks and shortcuts, your camera in a round bubble, and Cinematic (on at first). Record counts 3, 2, 1, then the bar shows the time with Stop and save and Cancel; choosing the petal again, which now reads STOP, also stops. With Cinematic on, the recording opens in the Recording Studio: the view already zooms in where you clicked and typed, the pointer is redrawn smooth and sharp, and the video sits on a background; change anything there and choose Save Video. With it off, the video is saved at once as 'Recording 2026-10-21 16.40.05.mp4' in the Screen Recordings folder inside Videos, a card shows where with Show in Folder and Open, and the conversion wheel opens on it, to make a GIF, a smaller file or a shorter clip. The red frame and the bar stay out of the video. Recording needs FFmpeg; without it a card says FFmpeg was not found.",
   "how": "Press Ctrl+Win+Z with nothing selected, choose RECORD on the Screen wheel (or Record the Screen in the tray menu), drag over the area and press Record.",
   "examples": [
    "Show your mother how to book a doctor's appointment online: record the browser with your voice and send the MP4.",

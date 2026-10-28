@@ -64,9 +64,9 @@ public sealed partial class SettingsWindow
         panel.Children.Add(Switch("Record the PC's sound", "What plays through the speakers goes into the video.", _s.RecordSystemSound, v => _s.RecordSystemSound = v, top: 6));
         panel.Children.Add(Switch("Record the microphone", "Your voice goes into the video, mixed with the PC's sound.", _s.RecordMicrophone, v => _s.RecordMicrophone = v));
         panel.Children.Add(Switch("Show me from the camera", "Your webcam in a round bubble over the recording. Drag the bubble anywhere and scroll on it to resize it; the camera's picture never leaves this PC.", _s.RecordCamera, v => _s.RecordCamera = v));
-        panel.Children.Add(Switch("Polish recordings", "The camera glides in where you click and follows the pointer, the pointer is smoothed and larger, and the video sits on a background with rounded corners.", _s.RecordPolish, v => _s.RecordPolish = v));
+        panel.Children.Add(Switch("Cinematic recordings", "When you stop, the recording opens in the studio: the view goes in where you click and type, the pointer glides, and the video sits on a background. Change any of it, then save.", _s.RecordPolish, v => _s.RecordPolish = v));
         var backgrounds = new WrapPanel();
-        foreach (var (key, name, from, to) in Screen.PolishOptions.Backgrounds)
+        foreach (var (key, name, from, to) in Screen.Studio.StudioBackgrounds.Gradients.Append(("none", "None", SkiaSharp.SKColors.Black, SkiaSharp.SKColors.Black)))
         {
             var swatch = new Border
             {
@@ -84,6 +84,7 @@ public sealed partial class SettingsWindow
             swatch.MouseLeftButtonUp += (_, _) =>
             {
                 _s.PolishBackground = chosen;
+                Screen.Studio.StudioSettings.FromSettings();
                 Save();
                 foreach (var other in backgrounds.Children.OfType<Border>())
                 {
@@ -102,9 +103,17 @@ public sealed partial class SettingsWindow
             _s.PolishZoom = v;
             Save();
         };
-        panel.Children.Add(Row("Zoom on clicks", zoom, 150, 8));
-        panel.Children.Add(Switch("A larger pointer", "Easier to follow in the video.", _s.PolishLargeCursor, v => _s.PolishLargeCursor = v));
-        panel.Children.Add(Switch("Rings at clicks", "A ring shows where each click was.", _s.PolishClickRings, v => _s.PolishClickRings = v));
+        panel.Children.Add(Row("Zoom on clicks and typing", zoom, 150, 8));
+        panel.Children.Add(Switch("A larger pointer", "Easier to follow in the video.", _s.PolishLargeCursor, v =>
+        {
+            _s.PolishLargeCursor = v;
+            Screen.Studio.StudioSettings.FromSettings();
+        }));
+        panel.Children.Add(Switch("Rings at clicks", "A ring shows where each click was.", _s.PolishClickRings, v =>
+        {
+            _s.PolishClickRings = v;
+            Screen.Studio.StudioSettings.FromSettings();
+        }));
         panel.Children.Add(Switch("Show clicks and shortcuts in recordings", "Rings where you click and the keys you press appear in the video.", _s.RecordShowsClicks, v => _s.RecordShowsClicks = v));
         var folder = new Button { Content = L.T("Open the recordings folder"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
         folder.Click += (_, _) =>

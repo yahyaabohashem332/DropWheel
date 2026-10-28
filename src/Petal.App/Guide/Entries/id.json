@@ -1079,6 +1079,31 @@
    "chat with pdf"
   ]
  },
+ "tool:RecordingStudio": {
+  "category": "video",
+  "summary": "Mengubah rekaman layar menjadi video yang rapi: tampilan mendekat ke tempat Anda mengeklik dan mengetik, penunjuk bergerak mulus, video berada di atas latar, dan Anda memotong, mempercepat, serta memangkas di garis waktu.",
+  "details": "Studio Rekaman terbuka sendiri saat Anda menghentikan rekaman yang dibuat dengan Sinematik aktif, dan dari roda untuk video apa pun. Rekaman yang dibuat dengan DropWheel menyimpan posisi penunjuk 120 kali per detik, bentuknya, klik, kapan Anda mengetik (bukan apa yang diketik), dan pintasan yang ditekan; jadi tampilan mendekat sendiri sesaat sebelum setiap klik dan di atas setiap rangkaian ketikan, mengikuti apa yang Anda lakukan tanpa bergoyang di setiap gerakan kecil, dan selalu menjaga penunjuk tetap terlihat. Garis waktu menampilkan suara dengan tanda di setiap klik; jalur zoom berisi zoom (seret satu untuk memindahkannya, seret ujungnya untuk mengubahnya, seret di bagian kosong untuk menambah), dan jalur di bawahnya berisi bagian yang dipotong atau dipercepat (2× hingga 16×, suara tetap pada nadanya). Pegangan pangkas di kedua ujung membuang awal dan akhir. Pilih sebuah zoom untuk mengatur seberapa dekat dan apakah ia mengikuti aksinya atau melihat satu tempat yang Anda klik di gambar. Di samping: latar (delapan gradien, wallpaper desktop Anda, rekaman itu sendiri yang diburamkan, atau tanpa latar), margin, sudut, dan bayangan; bentuk bingkai (seperti direkam, 16:9, 9:16, 1:1, atau 4:5, yang tinggi mengikuti aksinya); ukuran penunjuk, gerakan mulus, menyembunyikannya saat diam, dan cincin klik; blur gerak; pintasan di layar; membersihkan suara mikrofon dan meratakan volume; serta ukuran video (hingga 4K) dan kehalusannya (60 atau 30 fps). Space memutar video seperti yang akan disimpan, melewati bagian yang dipotong; Z, C, dan S menambah zoom, potongan, dan percepatan di posisi putar; Ctrl+Z membatalkan. Simpan Video menulis MP4 ke folder Rekaman Layar (Screen Recordings) (atau di samping video asalnya); suntingan disimpan, jadi rekaman yang sama terbuka lagi seperti Anda tinggalkan, dan menyimpan lagi memperbarui video itu. Semuanya dibuat di PC ini.",
+  "how": "Rekam dengan Sinematik aktif lalu hentikan; atau seret video, ketuk Ctrl lalu jatuhkan di STUDIO. Ubah apa saja, lalu pilih Simpan Video.",
+  "examples": [
+   "Rekaman tutorial yang setiap kliknya diperbesar dan penunjuknya bergerak mulus, disimpan sebagai video 1080p di atas latar ungu.",
+   "Demo perangkat lunak yang menjadi klip 9:16 untuk media sosial dan mengikuti penunjuk di seluruh layar.",
+   "Instalasi panjang di tengah tutorial dipercepat 8× dan sebuah kesalahan dipotong, semuanya di garis waktu."
+  ],
+  "worksOn": "Satu video; rekaman yang dibuat dengan sakelar Sinematik DropWheel juga mendapat zoom pada klik dan ketikan serta penunjuk yang digambar ulang.",
+  "keywords": [
+   "studio rekaman",
+   "rekaman layar sinematik",
+   "zoom saat klik",
+   "zoom otomatis",
+   "edit rekaman layar",
+   "penunjuk mulus",
+   "latar rekaman layar",
+   "video vertikal",
+   "percepat bagian video",
+   "screen studio",
+   "zoom on clicks"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Memperkecil gambar, video, audio, dan PDF, dengan prasetel, ukuran target, persentase, atau batas sebuah aplikasi.",
@@ -2755,7 +2780,7 @@
  "do:screen.record": {
   "category": "screen",
   "summary": "Merekam sebuah area atau seluruh layar menjadi video MP4, dengan suara PC dan mikrofon Anda jika diinginkan.",
-  "details": "Seret di atas area yang akan direkam, atau tekan Enter untuk seluruh layar; sebuah bilah muncul dengan Rekam dan sakelar untuk suara PC (awalnya aktif), mikrofon, menampilkan klik dan pintasan, kamera Anda dalam gelembung bulat, dan Percantik (awalnya aktif: memperbesar pada klik, penunjuk yang mulus, dan latar belakang berwarna). Rekam menghitung 3, 2, 1, lalu bilah menampilkan waktu dengan Hentikan dan simpan serta Batal; memilih kelopaknya lagi, yang kini bertuliskan BERHENTI, juga menghentikan rekaman. Video disimpan sebagai 'Recording 2026-10-21 16.40.05.mp4' di folder Rekaman Layar (Screen Recordings) di dalam Video, dan sebuah kartu menampilkan lokasinya dengan Tampilkan di folder dan Buka. Roda konversi lalu terbuka untuk video itu, untuk membuat GIF, file yang lebih kecil, atau klip yang lebih pendek. Bingkai merah dan bilah tidak ikut terekam di video. Perekaman memerlukan FFmpeg; tanpanya sebuah kartu menampilkan FFmpeg tidak ditemukan.",
+  "details": "Seret di atas area yang akan direkam, atau tekan Enter untuk seluruh layar; sebuah bilah muncul dengan Rekam dan sakelar untuk suara PC (awalnya aktif), mikrofon, menampilkan klik dan pintasan, kamera Anda dalam gelembung bulat, dan Sinematik (awalnya aktif). Rekam menghitung 3, 2, 1, lalu bilah menampilkan waktu dengan Hentikan dan simpan serta Batal; memilih kelopaknya lagi, yang kini bertuliskan BERHENTI, juga menghentikan rekaman. Dengan Sinematik aktif, rekaman terbuka di Studio Rekaman: tampilan sudah mendekat sendiri ke tempat Anda mengeklik dan mengetik, penunjuk digambar ulang mulus dan tajam, dan video berada di atas latar; ubah apa saja di sana lalu pilih Simpan Video. Tanpanya, video langsung disimpan sebagai 'Recording 2026-10-21 16.40.05.mp4' di folder Rekaman Layar (Screen Recordings) di dalam Video, sebuah kartu menampilkan lokasinya dengan Tampilkan di folder dan Buka, dan roda konversi terbuka untuk video itu, untuk membuat GIF, file yang lebih kecil, atau klip yang lebih pendek. Bingkai merah dan bilah tidak ikut terekam di video. Perekaman memerlukan FFmpeg; tanpanya sebuah kartu menampilkan FFmpeg tidak ditemukan.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih, pilih REKAM di roda Layar (atau Rekam Layar di menu baki sistem), seret di atas areanya, lalu tekan Rekam.",
   "worksOn": "",
   "examples": [

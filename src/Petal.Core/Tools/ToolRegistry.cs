@@ -74,6 +74,8 @@ public static class ToolRegistry
         new(EditByText, "EDIT BY TEXT", "Edit by Text", "textCut", true, ToolSelection.Single, "Edited"),
         // Questions about one document or recording, answered from its own words with the page or the minute.
         new(AskFile, "ASK FILE", "Ask a File", "fileQuestion", true, ToolSelection.Single, ""),
+        // A video made cinematic: zooms, a background and frame, cuts and speed-ups (a recording's pointer drawn anew).
+        new(RecordingStudio, "STUDIO", "Recording Studio", "cinematic", true, ToolSelection.Single, "Cinematic"),
         new(DescribePicture, "DESCRIBE", "Describe Picture", "eye", true, ToolSelection.Single, ""),
         new(TableFromImage, "TABLE", "Table to Excel", "sheet", false, ToolSelection.SingleOrBatch, "Table", ToolOutputKind.FixedFormat, "xlsx"),
         // Exactly two files: two versions of a document, or two pictures.
@@ -90,7 +92,7 @@ public static class ToolRegistry
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
     private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, AskFile, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, RecordingStudio, AskFile, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
