@@ -1004,6 +1004,33 @@
    "edit podcast"
   ]
  },
+ "tool:AskFile": {
+  "category": "documents",
+  "summary": "Answers questions about a PDF, a document, a spreadsheet or a recording from its own words, with the page, slide or minute it comes from.",
+  "details": "Ask a File reads the file once, on this PC: a PDF page by page (scanned pages with the text recognition built into Windows), a Word document or a presentation as it prints when Word, PowerPoint or LibreOffice is installed (otherwise by its headings and slides), a spreadsheet a few rows at a time, and a recording or a video by listening to it (Whisper). Type a question and press Ask: DropWheel finds the parts of the file that speak to it, by what they mean as well as by their words, in Arabic and English and across the two, and the AI model on this PC (Qwen3 4B, about 2.5 GB, downloaded once from the window) writes a short answer from those parts alone, in the question's language, with where the file says so: the page, the slide, the rows or the minute. Click a place to see it: the page is shown with the words the answer comes from lit up, and a recording plays from that minute. When the file doesn't say, the answer says so and shows the closest parts instead of making something up. Until the answer model is downloaded, each question shows the parts of the file that speak to it. Finding needs a small model (about 120 MB), downloaded once. A file read once is kept, so asking it again later starts at once, and nothing leaves the PC. Open the File opens it in its own app.",
+  "how": "Drag a PDF, a document, a spreadsheet or a recording, tap Ctrl and drop on ASK FILE; type a question and press Ask.",
+  "examples": [
+   "A 70-page contract: ask how many days' notice it needs to cancel, and see the page with the sentence lit up.",
+   "A two-hour lecture recording: ask when the exam was discussed and play it from that minute.",
+   "An English policy PDF asked in Arabic and answered in Arabic, with the page the answer comes from."
+  ],
+  "worksOn": "One file: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, text, Markdown, HTML, EPUB, or an audio or video recording.",
+  "keywords": [
+   "ask a pdf",
+   "chat with pdf",
+   "ask questions about a document",
+   "question a file",
+   "answer from a pdf",
+   "which page says",
+   "ask a recording",
+   "ask a video",
+   "pdf questions",
+   "document q&a",
+   "ask a spreadsheet",
+   "ask a presentation",
+   "ai pdf reader"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Makes pictures, videos, audio and PDFs smaller, by a preset, a target size, a percentage or an app's limit.",

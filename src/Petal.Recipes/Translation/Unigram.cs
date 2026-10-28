@@ -12,6 +12,7 @@ internal sealed class Unigram
 {
     private const char Space = '▁';
     private readonly Dictionary<string, float> _pieces = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, int> _ids = new(StringComparer.Ordinal);
     private readonly int _longest;
     private readonly float _unknownScore;
 
@@ -67,6 +68,8 @@ internal sealed class Unigram
                     Skip(bytes, ref i, wire);
                 }
             }
+            if (piece is not null)
+                _ids.TryAdd(piece, _ids.Count);
             // Normal and user-defined pieces take part in splitting; control, unknown and byte pieces don't.
             if (piece is not null && type is 1 or 4)
             {
@@ -108,6 +111,9 @@ internal sealed class Unigram
             default: throw new InvalidDataException("The tokenizer model is damaged.");
         }
     }
+
+    /// <summary>A piece's number in the model (its place among them, from 0), or -1 for a piece it doesn't have.</summary>
+    public int IdOf(string piece) => _ids.TryGetValue(piece, out var id) ? id : -1;
 
     /// <summary>NFKC, whitespace collapsed, "▁" for each space and one in front.</summary>
     internal static string Normalize(string text)

@@ -83,6 +83,7 @@ public sealed class GuideTests
     [InlineData("I want to put my logo on photos", "tool:Watermark")]
     [InlineData("join two pdf files", "tool:MergePdfs")]
     [InlineData("remove the ums from my video", "tool:EditByText")]
+    [InlineData("ask questions about a pdf", "tool:AskFile")]
     public void Plain_words_find_the_tool(string request, string key)
     {
         var hits = GuideSearch.Find(request, 3).Select(h => h.Key).ToList();
@@ -96,6 +97,7 @@ public sealed class GuideTests
     [InlineData("تصغير حجم ملف pdf", "tool:Compress")]
     [InlineData("كتبت بلغة لوحة المفاتيح الخطأ", "do:text.fixlayout")]
     [InlineData("حذف كلمات الحشو من الفيديو", "tool:EditByText")]
+    [InlineData("أسئلة عن ملف pdf", "tool:AskFile")]
     public void Arabic_words_find_the_tool_whatever_language_Petal_speaks(string request, string key)
     {
         var hits = GuideSearch.Find(request, 3).Select(h => h.Key).ToList();

@@ -64,6 +64,7 @@ public enum ToolId
     MakeShorts,
     Dub,
     EditByText,
+    AskFile,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

@@ -103,6 +103,15 @@ internal static class PdfContent
 
     private static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
+    /// <summary>One page's words as laid out (no OCR, no pictures): for finding words on it.</summary>
+    internal static PdfPageContent ReadOne(string path, int index)
+    {
+        using var pdf = PigDocument.Open(File.ReadAllBytes(path), new ParsingOptions { UseLenientParsing = true, SkipMissingFonts = true });
+        if (index < 0 || index >= pdf.NumberOfPages)
+            return new PdfPageContent { Index = index, Width = 612, Height = 792 };
+        return ReadPage(pdf.GetPage(index + 1), index, new PdfContentOptions { Ocr = false, Pictures = false });
+    }
+
     private static PdfPageContent ReadPage(Page page, int index, PdfContentOptions options)
     {
         // PdfPig already gives positions on the page as displayed (its /Rotate applied, the

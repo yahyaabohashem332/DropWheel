@@ -57,10 +57,10 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_62_tools_and_16_actions()
+    public void There_are_63_tools_and_16_actions()
     {
-        Assert.Equal(62, ToolRegistry.All.Count);
-        Assert.Equal(62, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(63, ToolRegistry.All.Count);
+        Assert.Equal(63, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
         Assert.Equal(16, Petal.Core.Actions.FileActionRegistry.All.Count);
     }
@@ -78,7 +78,7 @@ public class RegistryTests
         Assert.DoesNotContain(ToolId.SignPdf, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
         Assert.Contains(ToolId.JoinVideos, ToolRegistry.ToolsFor([F.Mp4, F.Mov]).Select(t => t.Id));
         Assert.Contains(ToolId.MergePdfs, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
-        Assert.Equal([ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
+        Assert.Equal([ToolId.AskFile, ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
         Assert.Contains(ToolId.ReadAloud, ToolRegistry.ToolsFor([F.Pdf]).Select(t => t.Id));
         // Two documents of any kinds, or two pictures, can be compared; three can't.
         Assert.Equal([ToolId.CompareFiles], ToolRegistry.ToolsFor([F.Docx, F.Txt]).Select(t => t.Id));

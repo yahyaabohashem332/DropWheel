@@ -21,12 +21,14 @@ public static partial class AskPetal
 
     /// <summary>
     /// The same, with the answer handed to <paramref name="partial"/> as it is written, so it can be shown word by word
-    /// (on the thread that reads the model's output).
+    /// (on the thread that reads the model's output). Another <paramref name="model"/> can write it (a larger one, on every
+    /// core: it is waited for), and its answer can be begun for it (<paramref name="begun"/>, given back with the rest).
     /// </summary>
-    public static async Task<string> WriteAsync(string instruction, string text, Action<string>? partial, int maxTokens = 700, CancellationToken cancellationToken = default, double temperature = 0.2)
+    public static async Task<string> WriteAsync(string instruction, string text, Action<string>? partial, int maxTokens = 700, CancellationToken cancellationToken = default,
+        double temperature = 0.2, ModelInfo? model = null, string begun = "")
     {
         var folder = RuntimeFolder();
-        var model = ModelStore.Find(ModelCatalog.Qwen) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
+        var weights = ModelStore.Find(model ?? ModelCatalog.Qwen) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
         var work = Path.Combine(Path.GetTempPath(), "Petal", $"write-{Guid.NewGuid():N}");
         Directory.CreateDirectory(work);
         try
@@ -36,7 +38,7 @@ public static partial class AskPetal
                 clean = clean[..MaxWritingText];
             var prompt = Path.Combine(work, "prompt.txt");
             await File.WriteAllTextAsync(prompt,
-                $"<|im_start|>system\n{instruction}<|im_end|>\n<|im_start|>user\n{clean}<|im_end|>\n<|im_start|>assistant\n",
+                $"<|im_start|>system\n{instruction}<|im_end|>\n<|im_start|>user\n{clean}<|im_end|>\n<|im_start|>assistant\n{begun}",
                 new UTF8Encoding(false), cancellationToken).ConfigureAwait(false);
             var start = new ProcessStartInfo(Path.Combine(folder, "llama-completion.exe"))
             {
@@ -47,8 +49,8 @@ public static partial class AskPetal
                 RedirectStandardError = true,
                 StandardOutputEncoding = Encoding.UTF8,
             };
-            int threads = Math.Clamp(Environment.ProcessorCount - 1, 1, 8);
-            foreach (var arg in new[] { "-m", model, "-f", prompt, "-n", maxTokens.ToString(CultureInfo.InvariantCulture), "--temp", temperature.ToString("0.##", CultureInfo.InvariantCulture), "--repeat-penalty", "1.1",
+            int threads = Math.Clamp(Environment.ProcessorCount - (model is null ? 1 : 0), 1, 8);
+            foreach (var arg in new[] { "-m", weights, "-f", prompt, "-n", maxTokens.ToString(CultureInfo.InvariantCulture), "--temp", temperature.ToString("0.##", CultureInfo.InvariantCulture), "--repeat-penalty", "1.1",
                          "-no-cnv", "--no-display-prompt", "-c", "8192", "-t", threads.ToString(CultureInfo.InvariantCulture) })
                 start.ArgumentList.Add(arg);
             using var process = Process.Start(start) ?? throw new InvalidOperationException("The AI model didn't start.");
@@ -61,14 +63,14 @@ public static partial class AskPetal
             {
                 output.Append(buffer, 0, read);
                 if (partial is not null && !cancellationToken.IsCancellationRequested)
-                    partial(CleanAnswer(output.ToString()));
+                    partial(CleanAnswer(begun + output));
             }
             await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             _ = await errors.ConfigureAwait(false);
             if (process.ExitCode != 0)
                 throw new InvalidOperationException("The AI model stopped unexpectedly.");
-            return CleanAnswer(output.ToString());
+            return CleanAnswer(begun + output);
         }
         finally
         {

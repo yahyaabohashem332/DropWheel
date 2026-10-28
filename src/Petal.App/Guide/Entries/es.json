@@ -1044,6 +1044,30 @@
    "filler words"
   ]
  },
+ "tool:AskFile": {
+  "category": "documents",
+  "summary": "Responde preguntas sobre un PDF, un documento, una hoja de cálculo o una grabación con sus propias palabras, con la página, diapositiva o minuto de donde sale la respuesta.",
+  "details": "Preguntar a un archivo lee el archivo una vez, en este PC: un PDF página a página (las páginas escaneadas con el reconocimiento de texto integrado en Windows), un documento de Word o una presentación tal como se imprimen cuando Word, PowerPoint o LibreOffice está instalado (si no, por sus títulos y diapositivas), una hoja de cálculo unas filas a la vez, y una grabación o un video escuchándolo (Whisper). Escriba una pregunta y pulse Preguntar: DropWheel encuentra las partes del archivo que hablan de ella, por su sentido y por sus palabras, en árabe e inglés y de uno a otro, y el modelo de IA de este PC (Qwen3 4B, unos 2,5 GB, descargado una vez desde la ventana) escribe una respuesta breve solo con esas partes, en el idioma de la pregunta, con dónde lo dice el archivo: la página, la diapositiva, las filas o el minuto. Haga clic en un lugar para verlo: la página aparece con las palabras de donde sale la respuesta resaltadas, y una grabación se reproduce desde ese minuto. Cuando el archivo no lo dice, la respuesta lo dice y muestra las partes más cercanas en vez de inventar. Mientras el modelo de respuestas no esté descargado, cada pregunta muestra las partes del archivo que hablan de ella. Buscar necesita un modelo pequeño (unos 120 MB), descargado una vez. Un archivo leído una vez se guarda, así que volver a preguntarle más tarde empieza al instante, y nada sale del PC. Abrir el archivo lo abre en su propia aplicación.",
+  "how": "Arrastre un PDF, un documento, una hoja de cálculo o una grabación, toque Ctrl y suéltelo en PREGUNTAR; escriba una pregunta y pulse Preguntar.",
+  "examples": [
+   "Un contrato de 70 páginas: pregunte con cuántos días de aviso se puede cancelar y vea la página con la frase resaltada.",
+   "La grabación de una clase de dos horas: pregunte cuándo se habló del examen y reprodúzcala desde ese minuto.",
+   "Un PDF de normas en inglés preguntado en árabe y respondido en árabe, con la página de donde sale la respuesta."
+  ],
+  "worksOn": "Un archivo: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, texto, Markdown, HTML, EPUB, o una grabación de audio o video.",
+  "keywords": [
+   "preguntar a un pdf",
+   "chatear con un pdf",
+   "preguntas sobre un documento",
+   "preguntar a un archivo",
+   "en qué página",
+   "preguntar a una grabación",
+   "preguntar a un video",
+   "preguntar a una hoja de cálculo",
+   "ask a pdf",
+   "chat with pdf"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Reduce el tamaño de imágenes, videos, audio y PDF, con un ajuste predefinido, un tamaño objetivo, un porcentaje o el límite de una aplicación.",

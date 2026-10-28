@@ -72,6 +72,8 @@ public static class ToolRegistry
         new(Dub, "DUB", "Dub", "dub", true, ToolSelection.Single, "Dubbed", ToolOutputKind.FixedFormat, "mp4"),
         // A recording cut by taking words out of what was said.
         new(EditByText, "EDIT BY TEXT", "Edit by Text", "textCut", true, ToolSelection.Single, "Edited"),
+        // Questions about one document or recording, answered from its own words with the page or the minute.
+        new(AskFile, "ASK FILE", "Ask a File", "fileQuestion", true, ToolSelection.Single, ""),
         new(DescribePicture, "DESCRIBE", "Describe Picture", "eye", true, ToolSelection.Single, ""),
         new(TableFromImage, "TABLE", "Table to Excel", "sheet", false, ToolSelection.SingleOrBatch, "Table", ToolOutputKind.FixedFormat, "xlsx"),
         // Exactly two files: two versions of a document, or two pictures.
@@ -86,14 +88,14 @@ public static class ToolRegistry
     private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
     private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, AskFile, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, Watermark];
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
-    private static readonly ToolId[] PdfSingle = [Compress, Metadata, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
-    private static readonly ToolId[] DocumentTools = [ReadAloud];
+    private static readonly ToolId[] PdfSingle = [Compress, Metadata, AskFile, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
+    private static readonly ToolId[] DocumentTools = [AskFile, ReadAloud];
     private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
     private static readonly ToolId[] ArchiveTools = [ExtractArchive];
     private static readonly ToolId[] PhotoshopSingle = [ExportLayers, FileDetails, ExtractColours, SlimPhotoshop];
@@ -198,6 +200,7 @@ public static class ToolRegistry
             FormatFamily.Pdf => multi ? PdfMulti : PdfSingle,
             FormatFamily.Archive => ArchiveTools,
             FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => multi ? [] : DocumentTools,
+            FormatFamily.Slides or FormatFamily.Spreadsheet => multi ? [] : [AskFile],
             FormatFamily.Subtitle => SubtitleTools,
             FormatFamily.Project => ProjectTools(formats, multi),
             FormatFamily.Palette => multi ? [] : [Palette],

@@ -80,6 +80,12 @@ public partial class LocalizationTests
         // 1.12: the made-up lines of an interview Dub is drawn with in the design snapshots (the Arabic ones are written beside them).
         "I'm a very lucky person.", "I'm grateful every day, and I want more people to come up here to space.", "We need some good wings up here.",
         "I would love to go. Can you take me to space?", "I'd look down and say: I'm over Europe, and in twenty seconds I'll be on the West Coast.",
+        // 1.14: the made-up questions and answers Ask a File is drawn with in the design snapshots (the Arabic ones are written beside them).
+        "Is elementary education compulsory?", "Yes. Elementary education is compulsory, and it must be free, at least in the elementary and fundamental stages.",
+        "Everyone has the right to education. Education shall be free, at least in the elementary and fundamental stages. Elementary education shall be compulsory.",
+        "When was this declaration adopted?", "It was adopted by the United Nations General Assembly in Paris on 10 December 1948.",
+        "The United Nations General Assembly adopted the Universal Declaration of Human Rights in Paris on 10 December 1948.",
+        "On 10 December 1948 the General Assembly adopted this declaration.", "How long is the warranty?",
         // 1.13: the made-up words of an interview Edit by Text is drawn with in the design snapshots (the Arabic ones are written beside them).
         "So, um, I think the the best part of living up here is the view. | Every ninety minutes we see a sunrise. Uh, it never gets old. ~ My advice to anyone who dreams of flying: start today, and and don't wait. | The truth is actually pretty amazing. When we get into space, we all feel something strange, something hard to put into words.",
     };

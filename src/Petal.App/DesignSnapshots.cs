@@ -271,6 +271,12 @@ internal static class DesignSnapshots
             window.Loaded += (_, _) => then(window);
             return window;
         }
+        Window Ask(Action<Tools.Windows.AskFileWindow> then)
+        {
+            var window = new Tools.Windows.AskFileWindow(T(Petal.Core.Tools.ToolId.AskFile), file("album.pdf"), jobs, at);
+            window.Loaded += (_, _) => then(window);
+            return window;
+        }
         var audio = new[] { file("mixtape.mp3") };
         // The sample folder itself, dropped as a folder.
         var folder = Petal.Core.Jobs.FolderContents.Read([Path.GetDirectoryName(file("landscape.jpg"))!]);
@@ -396,6 +402,10 @@ internal static class DesignSnapshots
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
+            // 1.14
+            ("askfile", () => new Tools.Windows.AskFileWindow(T(Petal.Core.Tools.ToolId.AskFile), file("album.pdf"), jobs, at)),
+            ("askfilereading", () => Ask(window => window.ShowReadingForSnapshot(0.46))),
+            ("askfileanswers", () => Ask(window => window.ShowForSnapshot(SampleAnswers(), Localization.L.P(70, "{0} page", "{0} pages"), file("album.pdf")))),
             // 1.13
             ("editbytext", () => new Tools.Windows.EditByTextWindow(T(Petal.Core.Tools.ToolId.EditByText), video, jobs, at)),
             ("editbytextlistening", () => EditByText(window => window.ShowListeningForSnapshot(0.58, 1934))),
@@ -502,6 +512,28 @@ internal static class DesignSnapshots
             t += length + 0.08;
         }
         return words;
+    }
+
+    /// <summary>Questions about a declaration of rights, as Ask a File answers them, each with the page it comes from.</summary>
+    private static IReadOnlyList<(string, string, IReadOnlyList<Petal.Recipes.Questions.Passage>)> SampleAnswers()
+    {
+        static Petal.Recipes.Questions.Passage On(int page, string text) =>
+            new(page, new Petal.Engines.Documents.PlacedText(Petal.Engines.Documents.PlaceKind.Page, page, text), text);
+        return Localization.L.IsArabic
+            ?
+            [
+                ("هل التعليم الابتدائي إلزامي؟", "نعم. التعليم الابتدائي إلزامي، ويجب أن يكون مجانيًا في مراحله الأولى والأساسية على الأقل.",
+                    [On(1, "لكل شخص الحق في التعلم. ويجب أن يكون التعليم في مراحله الأولى والأساسية على الأقل بالمجان، وأن يكون التعليم الأولي إلزاميًا.")]),
+                ("متى اعتُمد هذا الإعلان؟", "اعتمدته الجمعية العامة للأمم المتحدة في باريس في 10 ديسمبر 1948.",
+                    [On(2, "اعتمدت الجمعية العامة للأمم المتحدة الإعلان العالمي لحقوق الإنسان في باريس في 10 كانون الأول/ديسمبر 1948."), On(4, "في 10 كانون الأول/ديسمبر 1948 اعتمدت الجمعية العامة هذا الإعلان.")]),
+            ]
+            :
+            [
+                ("Is elementary education compulsory?", "Yes. Elementary education is compulsory, and it must be free, at least in the elementary and fundamental stages.",
+                    [On(1, "Everyone has the right to education. Education shall be free, at least in the elementary and fundamental stages. Elementary education shall be compulsory.")]),
+                ("When was this declaration adopted?", "It was adopted by the United Nations General Assembly in Paris on 10 December 1948.",
+                    [On(2, "The United Nations General Assembly adopted the Universal Declaration of Human Rights in Paris on 10 December 1948."), On(4, "On 10 December 1948 the General Assembly adopted this declaration.")]),
+            ];
     }
 
     /// <summary>Made-up meeting notes in a scratch file.</summary>

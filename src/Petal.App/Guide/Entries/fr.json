@@ -1027,6 +1027,30 @@
    "filler words"
   ]
  },
+ "tool:AskFile": {
+  "category": "documents",
+  "summary": "Répond aux questions sur un PDF, un document, un tableur ou un enregistrement à partir de ses propres mots, avec la page, la diapositive ou la minute d'où vient la réponse.",
+  "details": "Interroger un fichier lit le fichier une fois, sur ce PC : un PDF page par page (les pages numérisées avec la reconnaissance de texte intégrée à Windows), un document Word ou une présentation tels qu'ils s'impriment quand Word, PowerPoint ou LibreOffice est installé (sinon par ses titres et ses diapositives), un tableur quelques lignes à la fois, et un enregistrement ou une vidéo en l'écoutant (Whisper). Tapez une question et appuyez sur Demander : DropWheel trouve les passages du fichier qui en parlent, par leur sens comme par leurs mots, en arabe et en anglais et de l'un à l'autre, et le modèle d'IA de ce PC (Qwen3 4B, environ 2,5 Go, téléchargé une fois depuis la fenêtre) écrit une réponse courte à partir de ces seuls passages, dans la langue de la question, avec l'endroit où le fichier le dit : la page, la diapositive, les lignes ou la minute. Cliquez sur un endroit pour le voir : la page s'affiche avec les mots d'où vient la réponse surlignés, et un enregistrement se lit à partir de cette minute. Quand le fichier ne le dit pas, la réponse le dit et montre les passages les plus proches au lieu d'inventer. Tant que le modèle de réponse n'est pas téléchargé, chaque question montre les passages du fichier qui en parlent. La recherche demande un petit modèle (environ 120 Mo), téléchargé une fois. Un fichier lu une fois est gardé : le réinterroger plus tard commence aussitôt, et rien ne quitte le PC. Ouvrir le fichier l'ouvre dans son application.",
+  "how": "Faites glisser un PDF, un document, un tableur ou un enregistrement, appuyez sur Ctrl et déposez-le sur INTERROGER ; tapez une question et appuyez sur Demander.",
+  "examples": [
+   "Un contrat de 70 pages : demandez quel préavis il faut pour le résilier, et voyez la page avec la phrase surlignée.",
+   "L'enregistrement d'un cours de deux heures : demandez quand l'examen a été évoqué et écoutez à partir de cette minute.",
+   "Un règlement en anglais au format PDF interrogé en arabe et répondu en arabe, avec la page d'où vient la réponse."
+  ],
+  "worksOn": "Un fichier : PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, texte, Markdown, HTML, EPUB, ou un enregistrement audio ou vidéo.",
+  "keywords": [
+   "interroger un pdf",
+   "discuter avec un pdf",
+   "questions sur un document",
+   "poser une question à un fichier",
+   "à quelle page",
+   "interroger un enregistrement",
+   "interroger une vidéo",
+   "interroger un tableur",
+   "ask a pdf",
+   "chat with pdf"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Réduit la taille des images, vidéos, fichiers audio et PDF, selon un préréglage, une taille cible, un pourcentage ou la limite d'une application.",

@@ -85,6 +85,30 @@ public static class ModelCatalog
         "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
         "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e", 1_117_320_736, "Apache-2.0");
 
+    /// <summary>
+    /// Qwen3 4B Instruct (2507), 4-bit (Apache-2.0; Unsloth's GGUF at a fixed revision): answers questions about a file from
+    /// its own words, in Arabic and English, for Ask a File. Run by llama.cpp.
+    /// </summary>
+    public static readonly ModelInfo QwenAnswers = new(
+        "qwen3-4b-instruct", "Qwen3 4B", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+        "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/a06e946bb6b655725eafa393f4a9745d460374c9/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+        "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597", 2_497_281_120, "Apache-2.0");
+
+    /// <summary>
+    /// multilingual-e5-small (intfloat, MIT), Xenova's 8-bit ONNX at a fixed revision: finds the passages of a file that
+    /// speak to a question by what they mean, in about a hundred languages and across them.
+    /// </summary>
+    public static readonly ModelInfo Passages = new(
+        "multilingual-e5-small", "multilingual-e5-small", "multilingual-e5-small-int8.onnx",
+        "https://huggingface.co/Xenova/multilingual-e5-small/resolve/761b726dd34fb83930e26aab4e9ac3899aa1fa78/onnx/model_int8.onnx",
+        "4d24e2bc01a447951524466ef533e52944bf48509e6552810bcee1a2711cb02c", 118_054_593, "MIT");
+
+    /// <summary>multilingual-e5-small's SentencePiece vocabulary (MIT).</summary>
+    public static readonly ModelInfo PassagesVocabulary = new(
+        "multilingual-e5-small-spm", "multilingual-e5-small vocabulary", "multilingual-e5-small.spm",
+        "https://huggingface.co/Xenova/multilingual-e5-small/resolve/761b726dd34fb83930e26aab4e9ac3899aa1fa78/sentencepiece.bpe.model",
+        "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865", 5_069_051, "MIT");
+
     /// <summary>SmolVLM 500M Instruct, 8-bit (Apache-2.0): says what a picture shows, for Describe Picture. Run by llama.cpp.</summary>
     public static readonly ModelInfo SmolVlm = new(
         "smolvlm-500m", "SmolVLM 500M", "SmolVLM-500M-Instruct-Q8_0.gguf",
@@ -253,7 +277,7 @@ public static class ModelCatalog
          ChatterboxEncoder, ChatterboxVocoder, ChatterboxFlowStart, ChatterboxLanguage, ChatterboxVocabulary, ChatterboxEmbeddings];
 
     public static IReadOnlyList<ModelInfo> All { get; } =
-        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen, SmolVlm, SmolVlmProjector,
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen, QwenAnswers, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
          ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Tiger, Lama,
          OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary,
          .. Chatterbox];

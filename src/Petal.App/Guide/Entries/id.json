@@ -1055,6 +1055,30 @@
    "filler words"
   ]
  },
+ "tool:AskFile": {
+  "category": "documents",
+  "summary": "Menjawab pertanyaan tentang PDF, dokumen, spreadsheet, atau rekaman dari kata-katanya sendiri, dengan halaman, slide, atau menit asal jawabannya.",
+  "details": "Tanya File membaca file sekali di PC ini: PDF halaman demi halaman (halaman hasil pindaian dengan pengenalan teks bawaan Windows), dokumen Word atau presentasi seperti saat dicetak bila Word, PowerPoint, atau LibreOffice terpasang (jika tidak, menurut judul dan slidenya), spreadsheet beberapa baris sekaligus, dan rekaman atau video dengan mendengarkannya (Whisper). Ketik pertanyaan lalu tekan Tanya: DropWheel menemukan bagian file yang membahasnya, menurut maknanya maupun kata-katanya, dalam bahasa Arab dan Inggris serta lintas keduanya, lalu model AI di PC ini (Qwen3 4B, sekitar 2,5 GB, diunduh sekali dari jendela) menulis jawaban singkat hanya dari bagian-bagian itu, dalam bahasa pertanyaan, beserta di mana file mengatakannya: halaman, slide, baris, atau menit. Klik tempatnya untuk melihat: halaman ditampilkan dengan kata-kata asal jawaban disorot, dan rekaman diputar dari menit itu. Bila file tidak menyebutkannya, jawabannya berkata demikian dan menampilkan bagian terdekat alih-alih mengarang. Sebelum model jawaban diunduh, setiap pertanyaan menampilkan bagian file yang membahasnya. Pencarian memerlukan model kecil (sekitar 120 MB) yang diunduh sekali. File yang sudah dibaca disimpan, jadi bertanya lagi nanti langsung dimulai, dan tidak ada yang keluar dari PC. Buka File membukanya di aplikasinya sendiri.",
+  "how": "Seret PDF, dokumen, spreadsheet, atau rekaman, ketuk Ctrl lalu jatuhkan di TANYA FILE; ketik pertanyaan lalu tekan Tanya.",
+  "examples": [
+   "Kontrak 70 halaman: tanyakan berapa hari pemberitahuan untuk membatalkannya, lalu lihat halamannya dengan kalimat yang disorot.",
+   "Rekaman kuliah dua jam: tanyakan kapan ujian dibahas dan putar dari menit itu.",
+   "PDF kebijakan berbahasa Inggris yang ditanya dalam bahasa Arab dan dijawab dalam bahasa Arab, dengan halaman asal jawabannya."
+  ],
+  "worksOn": "Satu file: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, teks, Markdown, HTML, EPUB, atau rekaman audio atau video.",
+  "keywords": [
+   "tanya pdf",
+   "chat dengan pdf",
+   "pertanyaan tentang dokumen",
+   "tanya file",
+   "di halaman mana",
+   "tanya rekaman",
+   "tanya video",
+   "tanya spreadsheet",
+   "ask a pdf",
+   "chat with pdf"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Memperkecil gambar, video, audio, dan PDF, dengan prasetel, ukuran target, persentase, atau batas sebuah aplikasi.",

@@ -1032,6 +1032,30 @@
    "filler words"
   ]
  },
+ "tool:AskFile": {
+  "category": "documents",
+  "summary": "Bir PDF, belge, elektronik tablo ya da kayıt hakkındaki soruları kendi sözleriyle, cevabın geldiği sayfa, slayt ya da dakikayla yanıtlar.",
+  "details": "Dosyaya Sor, dosyayı bu bilgisayarda bir kez okur: PDF'i sayfa sayfa (taranmış sayfaları Windows'un yerleşik metin tanımasıyla), Word belgesini ya da sunuyu Word, PowerPoint veya LibreOffice yüklüyse basıldığı gibi (değilse başlıklarına ve slaytlarına göre), elektronik tabloyu birkaç satır birkaç satır, kaydı ya da videoyu da dinleyerek (Whisper). Bir soru yazıp Sor'a basın: DropWheel dosyanın soruyla ilgili kısımlarını hem anlamlarına hem kelimelerine göre, Arapça ve İngilizcede ve ikisi arasında bulur; bu bilgisayardaki yapay zekâ modeli (Qwen3 4B, yaklaşık 2,5 GB, pencereden bir kez indirilir) yalnızca bu kısımlardan, sorunun dilinde kısa bir cevap yazar ve dosyanın bunu nerede söylediğini gösterir: sayfa, slayt, satırlar ya da dakika. Görmek için bir yere tıklayın: sayfa, cevabın geldiği kelimeler vurgulanmış olarak gösterilir; kayıt o dakikadan çalar. Dosya bunu söylemiyorsa cevap bunu söyler ve bir şey uydurmak yerine en yakın kısımları gösterir. Cevap modeli inene kadar her soru dosyanın onunla ilgili kısımlarını gösterir. Bulmak için küçük bir model (yaklaşık 120 MB) bir kez indirilir. Bir kez okunan dosya saklanır, böylece ona sonra yeniden sormak hemen başlar ve hiçbir şey bilgisayardan çıkmaz. Dosyayı Aç onu kendi uygulamasında açar.",
+  "how": "Bir PDF'i, belgeyi, elektronik tabloyu ya da kaydı sürükleyin, Ctrl'ye dokunun ve DOSYAYA SOR üzerine bırakın; bir soru yazıp Sor'a basın.",
+  "examples": [
+   "70 sayfalık bir sözleşme: feshetmek için kaç gün önceden bildirim gerektiğini sorun ve cümlesi vurgulanmış sayfayı görün.",
+   "İki saatlik bir ders kaydı: sınavdan ne zaman bahsedildiğini sorun ve o dakikadan çalın.",
+   "Arapça sorulup Arapça cevaplanan İngilizce bir politika PDF'i, cevabın geldiği sayfayla birlikte."
+  ],
+  "worksOn": "Tek dosya: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, metin, Markdown, HTML, EPUB ya da bir ses veya video kaydı.",
+  "keywords": [
+   "pdf'e soru sor",
+   "pdf ile sohbet",
+   "belge hakkında soru",
+   "dosyaya soru sor",
+   "hangi sayfada",
+   "kayda soru sor",
+   "videoya soru sor",
+   "tabloya soru sor",
+   "ask a pdf",
+   "chat with pdf"
+  ]
+ },
  "tool:Compress": {
   "category": "files",
   "summary": "Resimleri, videoları, sesleri ve PDF'leri bir hazır ayara, hedef boyuta, yüzdeye ya da bir uygulamanın sınırına göre küçültür.",
