@@ -6,5 +6,4 @@ testdata/*
 !testdata/.gitkeep
 tools/bin/
 *.petal-tmp
-dist/store/
-dist/Petal-arm64/
+dist/
