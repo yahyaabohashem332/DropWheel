@@ -76,7 +76,7 @@ internal static class SpeechLanguages
         else if (into != "en")
             // The language isn't known yet, or no model reads it: through Whisper's English.
             needed.AddRange(Translator.ModelsFor("en", into));
-        if (!known && !Transcriber.CanTranslate(speechModel.FileName) && TranslatingModel() is null)
+        if (!known && language != "auto" && !Transcriber.CanTranslate(speechModel.FileName) && TranslatingModel() is null)
             needed.Add(ModelCatalog.WhisperBalanced);
         return needed;
     }

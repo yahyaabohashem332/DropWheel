@@ -1,3 +1,4 @@
+using Petal.Core.Text;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -250,23 +251,8 @@ public static partial class AskFile
     /// <summary>"ar" or "en" for texts mostly in Arabic or Latin letters; "" otherwise.</summary>
     public static string LanguageOf(IEnumerable<string> texts)
     {
-        long arabic = 0, latin = 0, letters = 0;
-        foreach (var text in texts.Take(400))
-        {
-            foreach (var c in text)
-            {
-                if (!char.IsLetter(c))
-                    continue;
-                letters++;
-                if (c is >= (char)0x0600 and <= (char)0x06FF)
-                    arabic++;
-                else if (c is >= 'A' and <= 'z')
-                    latin++;
-            }
-        }
-        if (letters == 0)
-            return "";
-        return arabic * 2 >= letters ? "ar" : latin * 2 >= letters ? "en" : "";
+        var sample = string.Join(' ', texts.Take(40));
+        return LanguageGuess.Of(sample.Length > 8000 ? sample[..8000] : sample) ?? "en";
     }
 
     // ---------- finding ----------
@@ -279,15 +265,12 @@ public static partial class AskFile
     public static IReadOnlyList<Passage> Find(FileKnowledge file, string question, int count = 8)
     {
         var questions = new List<string> { question.Trim() };
-        var asked = LanguageOf([question]);
-        if (file.Language is "ar" or "en" && asked is "ar" or "en" && asked != file.Language)
+        var asked = LanguageGuess.Of(question) ?? file.Language;
+        if (asked != file.Language && Translator.ModelsFor(asked, file.Language).All(ModelStore.IsAvailable))
         {
             try
             {
-                if (file.Language == "ar" && Translator.IsReady)
-                    questions.Add(Translator.ToArabic(question, quick: true));
-                else if (file.Language == "en" && Translator.EnglishReady)
-                    questions.Add(Translator.ToEnglish(question, quick: true));
+                questions.Add(Translator.Line(question, asked, file.Language, quick: true));
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or Microsoft.ML.OnnxRuntime.OnnxRuntimeException)
             {
@@ -333,7 +316,7 @@ public static partial class AskFile
         for (int i = 0; i < given.Count; i++)
             prompt.Append('[').Append(i + 1).Append("] (").Append(Where(given[i].Place)).Append(") ").Append(given[i].Text.Replace("<|", "< |")).Append('\n');
         prompt.Append("\nQuestion: ").Append(question.Trim());
-        var instruction = string.Format(CultureInfo.InvariantCulture, Instruction, LanguageOf([question]) == "ar" ? "Arabic" : "the language of the question");
+        var instruction = string.Format(CultureInfo.InvariantCulture, Instruction, Translator.Languages.Any(l => l.Code == LanguageGuess.Of(question)) ? Translator.EnglishName(LanguageGuess.Of(question)!) : "the language of the question");
         var reply = await AskPetal.WriteAsync(instruction, prompt.ToString(), partial is null ? null : text => partial(Shown(text)), 260, cancellationToken,
             temperature: 0, model: ModelCatalog.QwenAnswers, begun: "Answer:").ConfigureAwait(false);
         return Read(reply, given, found);

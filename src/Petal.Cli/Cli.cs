@@ -126,8 +126,8 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                                     Takes noise out of speech in recordings and videos
           petal separate <files> [--four] [--out <folder>]
                                     Splits songs into vocals and music (or four parts)
-          petal translate <subtitles> [--out <folder>]
-                                    English subtitles (SRT, VTT) into Arabic
+          petal translate <subtitles> --to <language> [--from <language>] [--out <folder>]
+                                    Subtitles (SRT, VTT) into en, ar, tr, fa, ur, id, fr or es
           (These three use AI models DropWheel downloads once, from its windows.)
           petal searchable <pdfs or pictures> [--out <folder>]
                                     Scans get a text layer so they can be searched and copied

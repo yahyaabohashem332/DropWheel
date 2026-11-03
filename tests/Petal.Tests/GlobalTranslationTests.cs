@@ -237,7 +237,7 @@ public sealed class CloudAiTests : IDisposable
         Assert.Equal("Hola mundo", answer);
         var (url, key, body) = _seen.Single();
         Assert.Equal("/v1/messages", url);
-        Assert.Equal("c-key", key);
+        Assert.Equal("Bearer c-key", key);
         Assert.DoesNotContain("temperature", body);
         Assert.Contains("claude-opus-5-5", body);
     }

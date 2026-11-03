@@ -118,6 +118,7 @@ public static class ShortsMaker
         {
             "ar" => "Arabic",
             "en" => "English",
+            _ when Translator.Languages.Any(l => l.Code == language) => Translator.EnglishName(language),
             _ => CultureInfo.GetCultureInfo(language) is { } c && !string.IsNullOrEmpty(c.EnglishName) ? c.EnglishName : "the language of the clip",
         };
         return $"You name short video clips cut from a longer video. Write one catchy title for the clip whose words are below: at most 7 words, in {name}, " +

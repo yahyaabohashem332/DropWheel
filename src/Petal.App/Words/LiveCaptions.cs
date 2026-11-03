@@ -282,8 +282,7 @@ internal static class LiveCaptions
     /// <summary>
     /// Words in the language wanted, or null when they are in it already or nothing can translate them yet. The chosen
     /// cloud model takes finished sentences only: the sentence being said changes twice a second, and each pass would be
-    /// billed. On this PC a pair's own model is quick enough for the sentence being said; the larger model that knows every
-    /// language only takes finished ones. A language no model reads is put into English by Whisper from the sentence's own
+    /// billed. On this PC the sentence being said is translated too, following only the likeliest word. A language no model reads is put into English by Whisper from the sentence's own
     /// sound, and from there into the language wanted.
     /// </summary>
     private static async Task<string?> TranslateAsync(StreamingTranscriber engine, string target, string text, string language, StreamSentence? sentence, CancellationToken stop)
@@ -298,11 +297,7 @@ internal static class LiveCaptions
         {
             var models = Translator.ModelsFor(from, target);
             if (models.All(ModelStore.IsAvailable))
-            {
-                if (sentence is null && !Translator.QuickFor(from, target))
-                    return null;
                 return await Task.Run(() => Translator.Line(text, from, target, quick: sentence is null), stop);
-            }
             if (sentence is not null && _asked.Add((from, target)))
                 _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", models));
         }

@@ -48,13 +48,17 @@ public sealed class SpeechTextTests : IDisposable
         Assert.Equal(Ids(Translator.Models), Ids(SpeechLanguages.Needed(accurate, "en", "ar")));
         // Arabic speech into English: Opus-MT, whatever the accuracy.
         Assert.Equal(Ids(Translator.EnglishModels), Ids(SpeechLanguages.Needed(accurate, "ar", "en")));
-        Assert.Equal(Ids(Translator.EnglishModels), Ids(SpeechLanguages.Needed(ModelCatalog.WhisperFast, "auto", "en")));
-        // French into English with Accurate, which can't translate: a model that can, unless one is here.
-        Assert.Equal(["whisper-small"], Ids(SpeechLanguages.Needed(accurate, "fr", "en")));
-        Assert.Empty(SpeechLanguages.Needed(ModelCatalog.WhisperBalanced, "fr", "en"));
+        // Not known yet, into English: nothing to get ahead of time.
+        Assert.Empty(SpeechLanguages.Needed(ModelCatalog.WhisperFast, "auto", "en"));
+        // Every language of the interface has its translation, whatever the accuracy.
+        Assert.Contains("opus-mt-fr-en-encoder", Ids(SpeechLanguages.Needed(accurate, "fr", "en")));
+        Assert.Contains("m2m100-encoder", Ids(SpeechLanguages.Needed(accurate, "en", "tr")));
+        // A language no model reads goes through Whisper's English: with Accurate, which can't translate, a model that can.
+        Assert.Equal(["whisper-small"], Ids(SpeechLanguages.Needed(accurate, "pl", "en")));
+        Assert.Empty(SpeechLanguages.Needed(ModelCatalog.WhisperBalanced, "pl", "en"));
         Assert.Null(SpeechLanguages.TranslatingModel());
         Fake(ModelCatalog.WhisperFast);
-        Assert.Empty(SpeechLanguages.Needed(accurate, "fr", "en"));
+        Assert.Empty(SpeechLanguages.Needed(accurate, "pl", "en"));
         Assert.EndsWith(ModelCatalog.WhisperFast.FileName, SpeechLanguages.TranslatingModel());
         Fake(ModelCatalog.WhisperBalanced);
         Assert.EndsWith(ModelCatalog.WhisperBalanced.FileName, SpeechLanguages.TranslatingModel());

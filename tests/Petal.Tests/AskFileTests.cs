@@ -92,7 +92,7 @@ public sealed class AskFileTests(ITestOutputHelper output)
     {
         Assert.Equal("ar", AskFile.LanguageOf(["لكل شخص الحق في التعلم", "Article 26"]));
         Assert.Equal("en", AskFile.LanguageOf(["Everyone has the right to education."]));
-        Assert.Equal("", AskFile.LanguageOf(["Всеобщая декларация"]));
+        Assert.Equal("ru", AskFile.LanguageOf(["Всеобщая декларация"]));
     }
 
     /// <summary>With PETAL_ASK pointing at a models folder holding multilingual-e5-small: its pieces and meanings are the reference's.</summary>

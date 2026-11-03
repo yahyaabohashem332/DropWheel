@@ -429,6 +429,56 @@ public sealed class DubbingTests(ITestOutputHelper output)
         }
     }
 
+    /// <summary>
+    /// With PETAL_CHATTERBOX set, downloads what it needs into that folder, and a voice says a line in every language of the
+    /// interface, heard back by the most accurate Whisper. Persian, Urdu and Indonesian have no mark of their own in the model.
+    /// </summary>
+    [Fact]
+    public async Task A_voice_says_a_line_in_every_language_of_the_interface()
+    {
+        var folder = Environment.GetEnvironmentVariable("PETAL_CHATTERBOX");
+        if (folder is null)
+        {
+            output.WriteLine("Skipped: PETAL_CHATTERBOX isn't set.");
+            return;
+        }
+        var saved = ModelStore.Folder;
+        ModelStore.Folder = folder;
+        try
+        {
+            foreach (var model in ModelCatalog.Chatterbox.Append(ModelCatalog.WhisperAccurate))
+                await ModelStore.DownloadAsync(model);
+            using var cloner = new VoiceCloner(Path.GetDirectoryName(ModelStore.Find(ModelCatalog.ChatterboxEncoder))!);
+            var speech = await MediaPreview.DecodePcmAsync(Fixtures.Speech("Good morning everyone. Today we are going to talk about the stars, and how far away they really are."),
+                new PcmDecodeOptions(VoiceCloner.Rate, 1));
+            using var voice = cloner.Learn(speech.Samples);
+            var whisper = ModelStore.Find(ModelCatalog.WhisperAccurate)!;
+            foreach (var (language, text) in new[]
+            {
+                ("fr", "La réunion commencera demain matin."),
+                ("fr", "Nous parlerons des étoiles et de leur distance."),
+                ("fa", "جلسه فردا صبح شروع می‌شود."),
+                ("ur", "اجلاس کل صبح شروع ہوگا۔"),
+            })
+            {
+                // A dub says a line again when it comes out wrong: a line gets three tries here too.
+                for (int seed = 1; seed <= 3; seed++)
+                {
+                    var clock = Stopwatch.StartNew();
+                    var sound = DubTrack.Trim(cloner.Speak(text, language, voice, seed: seed), VoiceCloner.Rate);
+                    using var ears = new LiveTranscriber(whisper, language);
+                    var heard = await ears.TranscribeAsync(Resample(sound, VoiceCloner.Rate, 16000), false, CancellationToken.None);
+                    output.WriteLine($"{language} try {seed}, {sound.Length / (double)VoiceCloner.Rate:0.0}s in {clock.Elapsed.TotalSeconds:0}s said: {text} | heard: {heard.Text}");
+                    Assert.False(string.IsNullOrWhiteSpace(heard.Text));
+                }
+            }
+        }
+        finally
+        {
+            ModelStore.Folder = saved;
+        }
+    }
+
     private static float[] Resample(float[] sound, int from, int to)
     {
         var result = new float[(int)((long)sound.Length * to / from)];

@@ -8,11 +8,13 @@ namespace Petal.Tests;
 public sealed class DubbingRecipeTests
 {
     [Fact]
-    public void Arabic_goes_into_English_and_anything_else_into_Arabic()
+    public void A_dub_goes_into_English_and_from_English_into_the_language_given()
     {
         Assert.Equal("en", Dubbing.Opposite("ar"));
+        Assert.Equal("en", Dubbing.Opposite("fr"));
         Assert.Equal("ar", Dubbing.Opposite("en"));
-        Assert.Equal("ar", Dubbing.Opposite("fr"));
+        Assert.Equal("tr", Dubbing.Opposite("en", "tr"));
+        Assert.Equal(8, Dubbing.Languages.Count);
     }
 
     [Theory]

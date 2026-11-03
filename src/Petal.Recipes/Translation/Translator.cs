@@ -145,9 +145,6 @@ public static class Translator
         return through ?? throw new InvalidOperationException($"No translation from {from} into {to}.");
     }
 
-    /// <summary>The route is quick enough for words still being said: models made for the pair, not the large one for every language.</summary>
-    public static bool QuickFor(string from, string to) => from == to || Route(from, to).All(p => p.Files != TranslationCatalog.Universal);
-
     /// <summary>The models the route from one language to another needs, downloaded or not.</summary>
     public static IReadOnlyList<ModelInfo> ModelsFor(string from, string to) =>
         from == to ? [] : Route(from, to).SelectMany(p => p.Files).ToList();

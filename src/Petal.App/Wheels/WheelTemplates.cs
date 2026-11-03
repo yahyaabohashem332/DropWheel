@@ -81,8 +81,9 @@ public static class WheelTemplates
                 if (language is System.Globalization.CultureInfo { TwoLetterISOLanguageName: "ar" or "fa" or "ur" })
                     return true;
         }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (ex is InvalidOperationException or NullReferenceException)
         {
+            // No keyboards to ask about off the interface's thread.
         }
         return false;
     }

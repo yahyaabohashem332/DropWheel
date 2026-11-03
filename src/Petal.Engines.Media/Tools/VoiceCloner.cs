@@ -166,8 +166,20 @@ public sealed class VoiceCloner : IDisposable
     /// The text said in the voice, as 24 kHz mono samples. <paramref name="exaggeration"/> is how much feeling (0.5 is
     /// natural; more is livelier and a little quicker). Null when the model finds nothing to say.
     /// </summary>
+    /// <summary>
+    /// The language mark a text is said under. The model has none for Persian or Urdu but knows their letters, and reads
+    /// them as the Arabic script they are; Indonesian is said as Malay, its near twin.
+    /// </summary>
+    internal static string Mark(string language) => language switch
+    {
+        "fa" or "ur" => "ar",
+        "id" => "ms",
+        _ => language,
+    };
+
     public float[] Speak(string text, string language, ClonedVoice voice, double exaggeration = 0.5, int seed = 1, CancellationToken cancellationToken = default)
     {
+        language = Mark(language);
         var ids = _tokenizer.Encode(text, language);
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var tokens = Generate(ids, voice, (float)exaggeration, MostTokens(text), new Random(seed), cancellationToken);

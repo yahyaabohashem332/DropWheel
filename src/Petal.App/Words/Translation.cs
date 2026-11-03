@@ -36,8 +36,9 @@ internal static class Translation
                 if (language is System.Globalization.CultureInfo { TwoLetterISOLanguageName: var code } && code != "en" && Translator.Languages.Any(l => l.Code == code))
                     return code;
         }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (ex is InvalidOperationException or NullReferenceException)
         {
+            // No keyboards to ask about off the interface's thread.
         }
         return "es";
     }
