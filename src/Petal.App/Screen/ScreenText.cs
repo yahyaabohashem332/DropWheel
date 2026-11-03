@@ -168,7 +168,7 @@ internal sealed class ScreenTextWindow : ToolWindow
         }
         _model.Visibility = Visibility.Collapsed;
         _translate.IsEnabled = false;
-        _status.Text = L.T("Translating on this PC…");
+        _status.Text = Words.Translation.Working();
         try
         {
             var result = await Words.Translation.RunAsync(text);

@@ -89,7 +89,7 @@ public static partial class AskFile
 
     public static bool CanFind => PassageModel.Ready;
 
-    public static bool CanAnswer => AnsweringModels.All(ModelStore.IsAvailable);
+    public static bool CanAnswer => Cloud.CloudAi.CanWrite || AnsweringModels.All(ModelStore.IsAvailable);
 
     public static bool IsRecording(FileFormat format) => format.Family is FormatFamily.Audio || format.Family is FormatFamily.Video && format != Formats.Gif;
 

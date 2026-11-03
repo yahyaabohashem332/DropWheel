@@ -49,7 +49,7 @@ public static class ToolRegistry
         new(RemoveNoise, "DENOISE", "Remove Noise", "micVocal", true, ToolSelection.SingleOrBatch, "Clean"),
         new(SeparateVocals, "VOCALS", "Separate Vocals", "music", true, ToolSelection.SingleOrBatch, "Stems", ToolOutputKind.Folder),
         new(EraseObject, "ERASE", "Erase Object", "brush", true, ToolSelection.Single, "Erased"),
-        new(TranslateSubtitles, "ARABIC", "Translate to Arabic", "languages", true, ToolSelection.SingleOrBatch, "Arabic"),
+        new(TranslateSubtitles, "TRANSLATE", "Translate Subtitles", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
         new(ExportLayers, "LAYERS", "Export Layers", "layers", true, ToolSelection.SingleOrBatch, "Layers", ToolOutputKind.Folder),
         new(SlimPhotoshop, "HISTORY", "Remove Photoshop History", "history", false, ToolSelection.SingleOrBatch, "Slim"),
         new(FileDetails, "INFO", "File Info", "info", true, ToolSelection.Single, ""),

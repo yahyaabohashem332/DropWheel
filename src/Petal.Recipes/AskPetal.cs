@@ -27,7 +27,8 @@ public static partial class AskPetal
 {
     public static IReadOnlyList<ModelInfo> Models { get; } = [ModelCatalog.LlamaCpp, ModelCatalog.Qwen];
 
-    public static bool ModelReady => Models.All(ModelStore.IsAvailable);
+    /// <summary>The AI can write: its model is here, or a cloud model was chosen with the user's own key.</summary>
+    public static bool ModelReady => Cloud.CloudAi.CanWrite || Models.All(ModelStore.IsAvailable);
 
     // ---- Understanding by word clues ----
 
@@ -397,6 +398,13 @@ public static partial class AskPetal
 
     internal static async Task<IReadOnlyList<RecipeStep>> RunModelAsync(string request, IReadOnlyList<FileFormat> formats, CancellationToken ct)
     {
+        if (Cloud.CloudAi.CanWrite)
+        {
+            var reply = await Cloud.CloudAi.WriteAsync(Cloud.CloudAi.Writing!, SystemPrompt + "\nReply with JSON only, matching this schema:\n" + Schema,
+                $"Selected: {Describe(formats)}.\nRequest: {request.Trim()}", temperature: 0, cancellationToken: ct).ConfigureAwait(false);
+            int open = reply.IndexOf('{'), close = reply.LastIndexOf('}');
+            return open >= 0 && close > open ? Parse(reply[open..(close + 1)]) : [];
+        }
         var folder = RuntimeFolder();
         var model = ModelStore.Find(ModelCatalog.Qwen)!;
         var work = Path.Combine(Path.GetTempPath(), "Petal", $"ask-{Guid.NewGuid():N}");

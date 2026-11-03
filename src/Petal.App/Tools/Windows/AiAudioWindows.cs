@@ -128,43 +128,78 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
     private readonly IReadOnlyList<string> _files;
     private readonly JobRunner _jobs;
     private readonly ScreenPoint _at;
-    private readonly ModelPanel _model = new(Translator.Models);
+    private readonly LanguageChoice _from = new("auto", [("auto", "Detect automatically")]);
+    private readonly LanguageChoice _into = new(LanguageChoice.Interface);
+    private readonly ModelPanel _model;
 
     public TranslateSubtitlesWindow(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base(tool.Name, 420)
     {
         _files = files;
         _jobs = jobs;
         _at = at;
+        _from.Value = "auto";
+        string guessed = Guess(files[0]);
+        if (guessed == _into.Value)
+            _into.Value = guessed == "en" ? "es" : "en";
+        _model = new ModelPanel(Translator.ModelsFor(guessed, _into.Value));
         Body.Children.Add(Text(FileLabel(files), "Petal.Section"));
-        Body.Children.Add(Text("English subtitles become Arabic, cue by cue, with their timing unchanged. Saved beside the original with “.ar” in the name, so players offer them as Arabic.", "Petal.Body").WithMarginT(8));
+        Body.Children.Add(Text("The subtitles are translated cue by cue, with their timing unchanged. Saved beside the original with the language in the name, so players offer them.", "Petal.Caption").WithMarginT(6));
+        Body.Children.Add(Row("From", _from, 80, 12));
+        Body.Children.Add(Row("Into", _into, 80, 8));
         Body.Children.Add(_model);
-        Body.Children.Add(Text("For subtitles in another language, use Transcribe on the video with Arabic subtitles.", "Petal.Caption").WithMarginT(12));
+        _from.Changed += _ => Choose();
+        _into.Changed += _ => Choose();
         _model.Ready += Sync;
         PrimaryButton.Content = L.T("Translate");
         PrimaryButton.Click += (_, _) => Apply();
+        Choose();
+    }
+
+    /// <summary>The language a subtitle file is in, from its words.</summary>
+    private static string Guess(string file)
+    {
+        try
+        {
+            var text = File.ReadAllText(file);
+            return Petal.Core.Text.LanguageGuess.Of(text.Length > 4000 ? text[..4000] : text) ?? "en";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return "en";
+        }
+    }
+
+    private string From => _from.Value == "auto" ? Guess(_files[0]) : _from.Value;
+
+    private void Choose()
+    {
+        bool cloud = Petal.Recipes.Cloud.CloudAi.CanTranslate;
+        _model.Models = cloud ? [] : Translator.ModelsFor(From, _into.Value);
+        _model.Visibility = cloud ? Visibility.Collapsed : Visibility.Visible;
         Sync();
     }
 
-    /// <summary>"talk.srt" becomes "talk.ar.srt".</summary>
-    internal static string OutputFor(string file) =>
-        OutputNaming.Unique(OutputNaming.DirectoryFor(file), Path.GetFileNameWithoutExtension(file) + ".ar", OutputNaming.ExtensionOf(file));
+    /// <summary>"talk.srt" becomes "talk.es.srt".</summary>
+    internal static string OutputFor(string file, string into = "ar") =>
+        OutputNaming.Unique(OutputNaming.DirectoryFor(file), Path.GetFileNameWithoutExtension(file) + "." + into, OutputNaming.ExtensionOf(file));
 
     private void Sync()
     {
-        PrimaryButton.IsEnabled = _model.IsReady;
-        FooterNote = _files.Count == 1 ? Path.GetFileName(OutputFor(_files[0])) : L.P(_files.Count, "{0} file", "{0} files");
+        PrimaryButton.IsEnabled = Petal.Recipes.Cloud.CloudAi.CanTranslate || _model.IsReady;
+        FooterNote = _files.Count == 1 ? Path.GetFileName(OutputFor(_files[0], _into.Value)) : L.P(_files.Count, "{0} file", "{0} files");
     }
 
     private void Apply()
     {
+        var (from, into) = (_from.Value, _into.Value);
         Close();
         var work = _files.Select(file => new WorkItem(file, Path.GetFileName(file), async (p, ct) =>
         {
             var text = await File.ReadAllTextAsync(file, ct);
             var vtt = OutputNaming.ExtensionOf(file).Equals("vtt", StringComparison.OrdinalIgnoreCase);
-            var arabic = await Task.Run(() => Translator.TranslateSubtitles(text, vtt, p, ct), ct);
-            var output = OutputFor(file);
-            await File.WriteAllTextAsync(output, arabic, new UTF8Encoding(true), ct);
+            var translated = await Translator.TranslateSubtitlesAsync(text, vtt, from == "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "en" : from, into, p, ct);
+            var output = OutputFor(file, into);
+            await File.WriteAllTextAsync(output, translated, new UTF8Encoding(true), ct);
             return (IReadOnlyList<string>)[output];
         })).ToList();
         _ = _jobs.RunAsync("Translating", "Translated", work, _at);

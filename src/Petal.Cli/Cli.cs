@@ -632,21 +632,25 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
 
     private async Task<int> TranslateAsync(Arguments a, CancellationToken ct)
     {
-        a.Only("out");
+        a.Only("out", "to", "from");
         var files = a.Files();
         if (files.Any(f => F.FromPath(f)?.Family != FormatFamily.Subtitle))
             throw new UsageException("Name subtitle files (SRT or VTT).");
-        if (MissingModel(Petal.Recipes.Translation.Translator.Models, "Translate to Arabic") is not null)
-            return Failed;
+        string into = a.Get("to") ?? "ar";
+        if (Petal.Recipes.Translation.Translator.Languages.All(l => l.Code != into))
+            throw new UsageException("--to takes a language code: " + string.Join(", ", Petal.Recipes.Translation.Translator.Languages.Select(l => l.Code)) + ".");
         var outDir = a.OutputFolder();
         foreach (var file in files)
         {
             var text = await File.ReadAllTextAsync(file, ct);
             var vtt = OutputNaming.ExtensionOf(file).Equals("vtt", StringComparison.OrdinalIgnoreCase);
-            var arabic = Petal.Recipes.Translation.Translator.TranslateSubtitles(text, vtt, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+            var from = a.Get("from") ?? Petal.Core.Text.LanguageGuess.Of(text.Length > 4000 ? text[..4000] : text) ?? "en";
+            if (MissingModel(Petal.Recipes.Translation.Translator.ModelsFor(from, into), "Translate Subtitles") is not null)
+                return Failed;
+            var translated = await Petal.Recipes.Translation.Translator.TranslateSubtitlesAsync(text, vtt, from, into, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
             ClearProgress();
-            var path = OutputNaming.Unique(outDir ?? Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + ".ar", OutputNaming.ExtensionOf(file));
-            await File.WriteAllTextAsync(path, arabic, new System.Text.UTF8Encoding(true), ct);
+            var path = OutputNaming.Unique(outDir ?? Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + "." + into, OutputNaming.ExtensionOf(file));
+            await File.WriteAllTextAsync(path, translated, new System.Text.UTF8Encoding(true), ct);
             output.WriteLine(path);
         }
         return Ok;

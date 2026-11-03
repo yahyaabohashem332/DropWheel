@@ -104,7 +104,7 @@ internal sealed partial class CircleWindow
             NeedsModels(card, missing, "Translating on this PC needs a translation model, downloaded once.", () => _ = RunAsync("translate"));
             return;
         }
-        card.Busy("Translating on this PC…");
+        card.Busy(Words.Translation.Working());
         var blocks = c.Blocks;
         // A paragraph a line: the translation comes back a paragraph a line, ready to lay over each.
         var joined = string.Join("\n", blocks.Select(b => b.Text.Replace("\r", " ").Replace("\n", " ")));
@@ -122,7 +122,7 @@ internal sealed partial class CircleWindow
         _translation.Visibility = Visibility.Visible;
         _translation.BeginAnimation(OpacityProperty, Visuals.Motion.To(1, 200, Visuals.Motion.Standard, from: 0));
         card.Text = string.Join(Environment.NewLine + Environment.NewLine, lines.Where(l => l.Length > 0));
-        card.Done(L.T("Translated on this PC."));
+        card.Done(Petal.Recipes.Cloud.CloudAi.CanTranslate ? L.F("Translated by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Translating!.Provider)) : L.T("Translated on this PC."));
         card.CopyChip("Copy", () => card.Text);
         Border? original = null;
         original = card.Chip("eye", "Original", () =>
@@ -187,7 +187,7 @@ internal sealed partial class CircleWindow
                     answer = await AskPictureAsync(c, question, work.Token);
                 else
                 {
-                    answer = await AskPetal.WriteAsync(AskPetal.Instructions.Answer(KeyboardLayout.LooksArabicLanguage(question) ? "Arabic" : L.EnglishName), AskPetal.ScreenQuestion(c.Prose, history, question),
+                    answer = await AskPetal.WriteAsync(AskPetal.Instructions.Answer(Petal.Recipes.Translation.Translator.EnglishName(Petal.Core.Text.LanguageGuess.Of(question) ?? L.Code)), AskPetal.ScreenQuestion(c.Prose, history, question),
                         s => Dispatcher.BeginInvoke(() => { if (!work.IsCancellationRequested) card.Text = question + Environment.NewLine + Environment.NewLine + s; }), 450, work.Token, 0.3);
                 }
                 history.Add((question, answer));
@@ -211,8 +211,8 @@ internal sealed partial class CircleWindow
     private async Task<string> AskPictureAsync(CircleContent c, string question, CancellationToken ct)
     {
         var english = question;
-        if (KeyboardLayout.LooksArabic(question) && Petal.Recipes.Translation.Translator.EnglishReady)
-            english = await Task.Run(() => Petal.Recipes.Translation.Translator.ToEnglish(question, quick: false), ct);
+        if (Petal.Core.Text.LanguageGuess.Of(question) is { } asked && asked != "en" && Petal.Recipes.Translation.Translator.ReadyFor(asked, "en"))
+            english = (await Petal.Recipes.Translation.Translator.TranslateAsync([question], asked, "en", null, ct))[0];
         var path = Temporary(c.Picture);
         try
         {

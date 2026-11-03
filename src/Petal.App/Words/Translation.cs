@@ -1,55 +1,68 @@
+using Petal.App.Localization;
+using Petal.App.Settings;
 using Petal.Core.Models;
 using Petal.Core.Text;
 using Petal.Recipes;
+using Petal.Recipes.Cloud;
 using Petal.Recipes.Translation;
 
 namespace Petal.App.Words;
 
 /// <summary>
-/// Translating a piece of text on this PC: English into Arabic and Arabic into English with the translation
-/// models (Opus-MT), sentence by sentence; with the AI model when the translation model isn't here but the AI
-/// model is (measured on Arabic speech, Opus-MT's English is clearly the better). In Petal's other languages,
-/// text goes into the language Petal speaks (or, already in it, into English), with the AI model.
+/// Translating a piece of text: into the language chosen, or the one the interface speaks (and text already in it into
+/// another). With the cloud model chosen when there is one; on this PC with the translation models, sentence by
+/// sentence; or with the AI model when they aren't here but it is.
 /// </summary>
 internal static class Translation
 {
-    /// <summary>Arabic text goes into English; anything else into Arabic.</summary>
-    public static bool IntoEnglish(string text) => KeyboardLayout.LooksArabic(text);
+    public static string From(string text) => LanguageGuess.Of(text) ?? "en";
 
-    /// <summary>The interface language's English name when it is neither English nor Arabic; translations go into it.</summary>
-    private static string? Into => Localization.L.Code switch
+    /// <summary>The language a text goes into when nothing else was chosen.</summary>
+    public static string Into(string text)
     {
-        "tr" => "Turkish",
-        "fa" => "Persian",
-        "ur" => "Urdu",
-        "id" => "Indonesian",
-        "fr" => "French",
-        "es" => "Spanish",
-        _ => null,
-    };
-
-    /// <summary>The models a translation of this text needs, when they are not here yet; empty when it can run.</summary>
-    public static IReadOnlyList<ModelInfo> Missing(string text)
-    {
-        if (Into is not null)
-            return AskPetal.ModelReady ? [] : AskPetal.Models;
-        if (IntoEnglish(text) ? Translator.EnglishReady : Translator.IsReady)
-            return [];
-        if (AskPetal.ModelReady)
-            return [];
-        return IntoEnglish(text) ? Translator.EnglishModels : Translator.Models;
+        var settings = SettingsStore.Current;
+        string wanted = settings.TranslateInto is { Length: > 0 } chosen ? chosen : Tools.Parts.LanguageChoice.Interface;
+        if (From(text) != wanted)
+            return wanted;
+        return wanted == "en" ? Second() : "en";
     }
 
-    public static async Task<string> RunAsync(string text, CancellationToken cancellationToken = default)
+    /// <summary>Another language this person writes, for English text under an English interface.</summary>
+    private static string Second()
     {
-        if (Into is { } language)
-            return await AskPetal.WriteAsync(AskPetal.Instructions.TranslateInto(language), text, Math.Clamp(text.Length, 200, 1500), cancellationToken);
-        bool english = IntoEnglish(text);
-        if (english ? Translator.EnglishReady : Translator.IsReady)
-            return await Task.Run(() => BySentence(text, sentences => english
-                ? Translator.ToEnglish(sentences, null, cancellationToken)
-                : Translator.ToArabic(sentences, null, cancellationToken)), cancellationToken);
-        return await AskPetal.WriteAsync(AskPetal.Instructions.Translate(english), text, Math.Clamp(text.Length, 200, 1500), cancellationToken);
+        try
+        {
+            foreach (var language in System.Windows.Input.InputLanguageManager.Current.AvailableInputLanguages ?? Array.Empty<object>())
+                if (language is System.Globalization.CultureInfo { TwoLetterISOLanguageName: var code } && code != "en" && Translator.Languages.Any(l => l.Code == code))
+                    return code;
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        return "es";
+    }
+
+    /// <summary>The models this translation needs, when they are not here yet; empty when it can run.</summary>
+    public static IReadOnlyList<ModelInfo> Missing(string text, string? into = null)
+    {
+        into ??= Into(text);
+        string from = From(text);
+        if (from == into || CloudAi.CanTranslate || AskPetal.ModelReady)
+            return [];
+        return Translator.ModelsFor(from, into).Where(m => !ModelStore.IsAvailable(m)).ToList();
+    }
+
+    public static async Task<string> RunAsync(string text, CancellationToken cancellationToken = default, string? into = null)
+    {
+        into ??= Into(text);
+        string from = From(text);
+        if (from == into)
+            return text;
+        if (CloudAi.CanTranslate)
+            return await CloudAi.WriteAsync(CloudAi.Translating!, AskPetal.Instructions.TranslateInto(Translator.EnglishName(into)), text, cancellationToken: cancellationToken);
+        if (Translator.ModelsFor(from, into).All(ModelStore.IsAvailable))
+            return await Task.Run(() => BySentence(text, sentences => Translator.Lines(sentences, from, into, null, cancellationToken)), cancellationToken);
+        return await AskPetal.WriteAsync(AskPetal.Instructions.TranslateInto(Translator.EnglishName(into)), text, Math.Clamp(text.Length, 200, 1500), cancellationToken);
     }
 
     /// <summary>
@@ -73,7 +86,11 @@ internal static class Translation
     /// <summary>A line's sentences: they end at a full stop, a question or an exclamation mark followed by a space.</summary>
     internal static List<string> Sentences(string line)
     {
-        var parts = System.Text.RegularExpressions.Regex.Split(line.Trim(), @"(?<=[.!?\u061F\u06D4])\s+").Where(s => s.Length > 0).ToList();
+        var parts = System.Text.RegularExpressions.Regex.Split(line.Trim(), @"(?<=[.!?؟۔。])\s+").Where(s => s.Length > 0).ToList();
         return parts.Count > 0 ? parts : [""];
     }
+
+    /// <summary>"Translating on this PC…", or which cloud model it is going to, so nobody is told the wrong thing.</summary>
+    public static string Working() =>
+        CloudAi.CanTranslate ? L.F("Translating with {0}, on your own key…", CloudAi.Name(CloudAi.Translating!.Provider)) : L.T("Translating on this PC…");
 }

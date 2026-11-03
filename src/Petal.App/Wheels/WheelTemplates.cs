@@ -70,6 +70,23 @@ public static class WheelTemplates
     };
 
     /// <summary>What to do with the text selected in any app.</summary>
+    /// <summary>Arabic script is in use here: the interface, or a keyboard. The petals only it needs wait for that; every petal stays in the list to add.</summary>
+    private static bool ArabicInUse()
+    {
+        if (Localization.L.IsRightToLeft)
+            return true;
+        try
+        {
+            foreach (var language in System.Windows.Input.InputLanguageManager.Current.AvailableInputLanguages ?? Array.Empty<object>())
+                if (language is System.Globalization.CultureInfo { TwoLetterISOLanguageName: "ar" or "fa" or "ur" })
+                    return true;
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        return false;
+    }
+
     public static UserWheel Text() => new()
     {
         Kind = WheelKind.Custom,
@@ -77,10 +94,10 @@ public static class WheelTemplates
         Template = "text",
         Items =
         [
-            A("text.fixlayout"), A("text.translate"), A("text.dictate"),
+            .. ArabicInUse() ? [A("text.fixlayout")] : Array.Empty<WheelEntry>(), A("text.translate"), A("text.dictate"),
             Group("Case", "caseText", A("text.upper"), A("text.lower"), A("text.title"), A("text.sentence")),
             A("text.calculate"), A("text.count"),
-            Group("Tidy", "tidyText", A("text.tidy"), A("text.diacritics"), A("text.digits")),
+            ArabicInUse() ? Group("Tidy", "tidyText", A("text.tidy"), A("text.diacritics"), A("text.digits")) : A("text.tidy"),
             A("text.summarize"), A("text.rewrite"),
         ],
     };

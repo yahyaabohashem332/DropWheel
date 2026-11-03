@@ -69,10 +69,11 @@ public sealed partial class SettingsWindow : ToolWindow
         page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));
         page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
         page.Children.Add(Card("Your Petals", "Tools of your own on the tools wheel: a small file says which files a petal takes and which program it runs. DropWheel shows the command before a petal's first run.", PetalsSection()));
+        page.Children.Add(Card("AI Models", "Download a model and run it on this PC, or use your own API key from Gemini, ChatGPT or Claude at your own cost.", AiSection()));
         page.Children.Add(Card("Search by Meaning", "Find files by what they're about: the words in documents and screenshots, and what photos and videos show. DropWheel reads the folders below while the PC is idle; the index stays on this PC.", SearchSection()));
         page.Children.Add(Card("Results", null, OutputSection()));
         page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
-        page.Children.Add(Card("Helpers", "DropWheel uses these programs when they're installed. Everything runs on this PC.", EnginesSection()));
+        page.Children.Add(Card("Helpers", "DropWheel uses these programs when they're installed, on this PC.", EnginesSection()));
         page.Children.Add(Card("Statistics", "What DropWheel has done for you, counted on this PC only.", StatisticsSection()));
         page.Children.Add(Card("General", null, GeneralSection()));
         page.Children.Add(Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()));

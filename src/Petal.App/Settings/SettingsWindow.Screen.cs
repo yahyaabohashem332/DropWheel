@@ -41,13 +41,21 @@ public sealed partial class SettingsWindow
         panel.Children.Add(Row("", setup, 120, 8));
 
         panel.Children.Add(Text("Live captions", "Petal.Label").WithMargin(0, 18, 0, 0));
-        var show = Segments([("both", "Both"), ("arabic", "In Arabic"), ("original", "As spoken"), ("english", "In English")], _s.CaptionsShow);
+        Words.LiveCaptions.Settle(_s);
+        var show = Segments([("both", "Both"), ("translated", "Translation"), ("original", "As spoken")], _s.CaptionsShow);
         show.Changed += v =>
         {
             _s.CaptionsShow = v;
             Save();
         };
         panel.Children.Add(Row("Show", show, 120, 6));
+        var captionsInto = new Tools.Parts.LanguageChoice(_s.CaptionsInto.Length > 0 ? _s.CaptionsInto : Tools.Parts.LanguageChoice.Interface);
+        captionsInto.Changed += code =>
+        {
+            _s.CaptionsInto = code;
+            Save();
+        };
+        panel.Children.Add(Row("Translate into", captionsInto, 120, 6));
         var spoken = Choice(Languages(), _s.CaptionsLanguage);
         spoken.SelectionChanged += (_, _) =>
         {
@@ -55,7 +63,7 @@ public sealed partial class SettingsWindow
             Save();
         };
         panel.Children.Add(Row("Spoken in", spoken, 120, 8));
-        panel.Children.Add(Text("From the PC's sound or the microphone (a button on the captions switches). Arabic needs the translation model, which downloads the first time.", "Petal.Caption").WithMargin(120, 4, 0, 0));
+        panel.Children.Add(Text("From the PC's sound or the microphone (a button on the captions switches). A translation model downloads the first time it is needed.", "Petal.Caption").WithMargin(120, 4, 0, 0));
 
         panel.Children.Add(Text("Showing clicks and keys", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Show every key", "Typing shows too, not only shortcuts. Leave it off when typing passwords on screen.", _s.ShowEveryKey, v => _s.ShowEveryKey = v, top: 6));

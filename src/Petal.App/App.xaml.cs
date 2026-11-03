@@ -142,6 +142,7 @@ public partial class App : Application
             ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
         };
         Theme.Configure(settings.Theme, settings.AccentColour, settings.AccentCustom);
+        AiSetup.Apply(settings);
         ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
@@ -258,6 +259,7 @@ public partial class App : Application
             SettingsStore.Save();
         L.Configure(s.Language);
         Theme.Configure(s.Theme, s.AccentColour, s.AccentCustom);
+        AiSetup.Apply(s);
         if (_hotkey is not null)
         {
             var wanted = Input.Shortcut.Parse(s.QuickShortcut);

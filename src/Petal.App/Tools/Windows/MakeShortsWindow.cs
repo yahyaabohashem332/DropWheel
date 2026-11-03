@@ -46,7 +46,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
     private readonly WrapPanel _colours = new();
     private readonly Tools.Parts.CustomColourChip _ownColour;
     private string _highlight = AnimatedCaptionsWindow.Colours[0].Hex;
-    private readonly Segmented<string> _into;
+    private readonly LanguageChoice _into;
     private readonly CheckBox _headline = new() { IsChecked = true, Margin = new Thickness(0, 0, 18, 0) };
     private readonly CheckBox _pauses = new() { IsChecked = true };
     private readonly Segmented<int> _accuracy;
@@ -163,7 +163,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
         };
         _colours.Children.Add(_ownColour);
         _settings.Children.Add(Row("Lit word", _colours, 120, 8));
-        _into = Segments([("spoken", "As spoken"), ("en", "In English"), ("ar", "In Arabic")], "spoken");
+        _into = LanguageChoice.ForWords();
         _settings.Children.Add(Row("Words in", _into, 120, 8));
         _headline.Content = L.T("Headline at the start");
         _pauses.Content = L.T("Cut the pauses");

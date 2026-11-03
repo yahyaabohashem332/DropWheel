@@ -125,6 +125,7 @@ internal sealed class TextResultWindow : ToolWindow
     private readonly IntPtr _target;
     private readonly TextBox _result = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
     private readonly TextBlock _status;
+    private readonly Tools.Parts.LanguageChoice? _into;
     private readonly ModelPanel _model;
     private readonly Segmented<string>? _style;
     private CancellationTokenSource? _cts;
@@ -171,7 +172,28 @@ internal sealed class TextResultWindow : ToolWindow
         _status.Margin = new Thickness(0, 12, 0, 6);
         Body.Children.Add(_status);
         Body.Children.Add(_result);
-        var models = job == TextJob.Translate ? Translation.Missing(text) : AskPetal.ModelReady ? [] : AskPetal.Models;
+        if (job == TextJob.Translate)
+        {
+            _into = new Tools.Parts.LanguageChoice(Translation.Into(text));
+            _into.Changed += code =>
+            {
+                Settings.SettingsStore.Current.TranslateInto = code;
+                Settings.SettingsStore.Save();
+                var missing = Translation.Missing(_text, code);
+                if (missing.Count > 0)
+                {
+                    _model!.Models = missing;
+                    _model.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    _model!.Visibility = Visibility.Collapsed;
+                    _ = RunAsync();
+                }
+            };
+            Body.Children.Insert(Body.Children.IndexOf(_status), Row("Into", _into, 80, 12));
+        }
+        var models = job == TextJob.Translate ? Translation.Missing(text, _into!.Value) : AskPetal.ModelReady ? [] : AskPetal.Models;
         _model = new ModelPanel(models.Count > 0 ? models : AskPetal.Models) { Visibility = models.Count > 0 ? Visibility.Visible : Visibility.Collapsed };
         _model.Ready += () =>
         {
@@ -179,7 +201,10 @@ internal sealed class TextResultWindow : ToolWindow
             _ = RunAsync();
         };
         Body.Children.Add(_model);
-        Body.Children.Add(Text("Runs on this PC; the text isn't sent anywhere.", "Petal.Caption").WithMarginT(8));
+        var cloud = job == TextJob.Translate ? (Petal.Recipes.Cloud.CloudAi.CanTranslate ? Petal.Recipes.Cloud.CloudAi.Translating : null) : Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null;
+        Body.Children.Add(cloud is null
+            ? Text("Runs on this PC; the text isn't sent anywhere.", "Petal.Caption").WithMarginT(8)
+            : Text(L.F("The text goes to {0}, on your own API key.", Petal.Recipes.Cloud.CloudAi.Name(cloud.Provider)), "Petal.Caption").WithMarginT(8));
         _result.TextChanged += (_, _) =>
         {
             _result.FlowDirection = KeyboardLayout.LooksArabic(_result.Text) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
@@ -230,7 +255,7 @@ internal sealed class TextResultWindow : ToolWindow
         {
             string answer = _job switch
             {
-                TextJob.Translate => await Translation.RunAsync(_text, cts.Token),
+                TextJob.Translate => await Translation.RunAsync(_text, cts.Token, _into!.Value),
                 TextJob.Summarize => await AskPetal.WriteAsync(AskPetal.Instructions.Summary(_style!.Value == "points", KeyboardLayout.LooksArabicLanguage(_text)), _text, 500, cts.Token),
                 _ => await AskPetal.WriteAsync(AskPetal.Instructions.Rewrite(_style!.Value, KeyboardLayout.LooksArabicLanguage(_text)), _text, Math.Clamp(_text.Length, 200, 1200), cts.Token),
             };

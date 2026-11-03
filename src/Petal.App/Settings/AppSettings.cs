@@ -179,6 +179,22 @@ public sealed class AppSettings
     public string CaptionsShow { get; set; } = "both";
     public string CaptionsLanguage { get; set; } = "auto";
 
+    /// <summary>The language live captions are translated into; empty for the one the interface speaks.</summary>
+    public string CaptionsInto { get; set; } = "";
+
+    /// <summary>The language selected text is translated into; empty for the one the interface speaks.</summary>
+    public string TranslateInto { get; set; } = "";
+
+    /// <summary>What does the AI's jobs: "" for this PC, or a provider's name.</summary>
+    public string AiWriting { get; set; } = "";
+
+    public string AiTranslating { get; set; } = "";
+
+    public string AiSeeing { get; set; } = "";
+
+    /// <summary>The model chosen from each provider, by the provider's name.</summary>
+    public Dictionary<string, string> AiModels { get; set; } = [];
+
     /// <summary>Focus sessions: the length chosen last, the apps that wait, and whether the sound is muted.</summary>
     public int FocusMinutes { get; set; } = 25;
     public List<string> FocusApps { get; set; } = [];

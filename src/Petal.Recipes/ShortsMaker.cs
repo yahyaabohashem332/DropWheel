@@ -88,20 +88,18 @@ public static class ShortsMaker
     /// translated as they are (Arabic and English by the translation models, others by the language model when it is
     /// here). Left as it is when it can't be translated.
     /// </summary>
-    public static async Task<string> TitleInAsync(string title, string spoken, SpeechInto into, CancellationToken cancellationToken = default)
+    public static async Task<string> TitleInAsync(string title, string spoken, string into, CancellationToken cancellationToken = default)
     {
-        string wanted = into switch { SpeechInto.English => "en", SpeechInto.Arabic => "ar", _ => spoken };
+        string wanted = into == SpeechInto.Spoken ? spoken : into;
         if (into == SpeechInto.Spoken || wanted == spoken || string.IsNullOrWhiteSpace(title))
             return title;
         try
         {
-            if (wanted == "ar" && spoken == "en" && Translator.Models.All(Petal.Core.Models.ModelStore.IsAvailable))
-                return (await Task.Run(() => Translator.ToArabic([title], null, cancellationToken), cancellationToken).ConfigureAwait(false))[0].Trim();
-            if (wanted == "en" && spoken == "ar" && Translator.EnglishReady)
-                return (await Task.Run(() => Translator.ToEnglish([title], null, cancellationToken), cancellationToken).ConfigureAwait(false))[0].Trim();
+            if (SpeechText.KnownPair(spoken, wanted) && Translator.ReadyFor(spoken, wanted))
+                return (await Translator.TranslateAsync([title], spoken, wanted, null, cancellationToken).ConfigureAwait(false))[0].Trim();
             if (AskPetal.ModelReady)
             {
-                var written = await AskPetal.WriteAsync(AskPetal.Instructions.Translate(wanted == "en"), title, 60, cancellationToken, 0).ConfigureAwait(false);
+                var written = await AskPetal.WriteAsync(AskPetal.Instructions.TranslateInto(Translator.EnglishName(wanted)), title, 60, cancellationToken, 0).ConfigureAwait(false);
                 var line = written.Replace('\r', '\n').Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault() ?? "";
                 line = line.Trim('"', '\'', '“', '”', '«', '»', '`', ' ');
                 if (line.Length is > 0 and <= 100)
@@ -148,10 +146,10 @@ public static class ShortsMaker
     /// Whisper's English), each word of a sentence given its share of the sentence's time.
     /// </summary>
     /// <param name="translatingModel">A Whisper model that can translate, for a language the translation models don't read.</param>
-    public static async Task<IReadOnlyList<CaptionWord>> CaptionsAsync(ShortsSource source, Moment moment, SpeechInto into, string? translatingModel = null,
+    public static async Task<IReadOnlyList<CaptionWord>> CaptionsAsync(ShortsSource source, Moment moment, string into, string? translatingModel = null,
         CancellationToken cancellationToken = default)
     {
-        string wanted = into switch { SpeechInto.English => "en", SpeechInto.Arabic => "ar", _ => source.Language };
+        string wanted = into == SpeechInto.Spoken ? source.Language : into;
         if (into == SpeechInto.Spoken || wanted == source.Language)
             return moment.Words.Select(w => new CaptionWord(w.Text, TimeSpan.FromSeconds(w.Start), TimeSpan.FromSeconds(w.End))).ToList();
 
@@ -160,11 +158,11 @@ public static class ShortsMaker
             .Where(s => s.Words.Count > 0 && s.Words[^1].End > moment.Start && s.Words[0].Start < moment.End)
             .Select(s => new TranscriptSegment(TimeSpan.FromSeconds(s.Words[0].Start), TimeSpan.FromSeconds(s.Words[^1].End), s.Text))
             .ToList();
+        if (SpeechText.KnownPair(source.Language, wanted) && Translator.ReadyFor(source.Language, wanted))
+            return AnimatedCaptions.Words(await TranslateAsync(said, source.Language, wanted, cancellationToken).ConfigureAwait(false));
         List<TranscriptSegment> english;
         if (source.Language == "en")
             english = said;
-        else if (source.Language == "ar" && Translator.EnglishReady)
-            english = await TranslateAsync(said, "en", cancellationToken).ConfigureAwait(false);
         else
         {
             var model = translatingModel ?? throw new InvalidOperationException(SpeechText.NoTranslatingModel);
@@ -174,15 +172,13 @@ public static class ShortsMaker
             var offset = TimeSpan.FromSeconds(moment.Start);
             english = heard.Segments.Where(s => s.Text.Length > 0).Select(s => new TranscriptSegment(s.Start + offset, s.End + offset, s.Text)).ToList();
         }
-        var shown = wanted == "en" ? english : await TranslateAsync(english, "ar", cancellationToken).ConfigureAwait(false);
+        var shown = wanted == "en" ? english : await TranslateAsync(english, "en", wanted, cancellationToken).ConfigureAwait(false);
         return AnimatedCaptions.Words(shown);
     }
 
-    private static async Task<List<TranscriptSegment>> TranslateAsync(List<TranscriptSegment> segments, string into, CancellationToken cancellationToken)
+    private static async Task<List<TranscriptSegment>> TranslateAsync(List<TranscriptSegment> segments, string from, string into, CancellationToken cancellationToken)
     {
-        var lines = segments.Select(s => s.Text).ToList();
-        var translated = await Task.Run(() => into == "ar" ? Translator.ToArabic(lines, null, cancellationToken) : Translator.ToEnglish(lines, null, cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+        var translated = await Translator.TranslateAsync(segments.Select(s => s.Text).ToList(), from, into, null, cancellationToken).ConfigureAwait(false);
         return segments.Select((s, i) => s with { Text = translated[i] }).ToList();
     }
 

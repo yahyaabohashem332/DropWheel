@@ -126,7 +126,7 @@ public sealed class DescribePictureWindow : ToolWindow
                 else
                 {
                     _translation.Visibility = Visibility.Collapsed;
-                    _status.Text = L.T("Translating on this PC…");
+                    _status.Text = Words.Translation.Working();
                     text = await Words.Translation.RunAsync(english, running.Token);
                 }
             }

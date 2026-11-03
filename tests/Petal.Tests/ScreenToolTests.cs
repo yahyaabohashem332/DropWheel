@@ -116,8 +116,8 @@ public sealed class ScreenToolTests : IDisposable
     [Fact]
     public void Arabic_text_goes_into_English_and_the_rest_into_Arabic()
     {
-        Assert.True(Translation.IntoEnglish("مرحبا بالعالم"));
-        Assert.False(Translation.IntoEnglish("Hello world"));
+        Assert.Equal("ar", Translation.From("مرحبا بالعالم"));
+        Assert.Equal("en", Translation.From("Hello world and the people"));
     }
 
     [Fact]

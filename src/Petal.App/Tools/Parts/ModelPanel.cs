@@ -18,8 +18,13 @@ public sealed class ModelPanel : Border
     private readonly Button _download = new() { HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
     private readonly Border _track = new() { Height = 4, CornerRadius = new CornerRadius(2), Margin = new Thickness(0, 10, 0, 0), Visibility = Visibility.Collapsed };
     private readonly Border _fill = new() { Height = 4, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
+    private readonly Button _ownKey = new() { HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(8, 10, 0, 0) };
     private CancellationTokenSource? _cts;
     private IReadOnlyList<ModelInfo> _models;
+
+    /// <summary>A cloud model can do what these models do.</summary>
+    private bool CloudCanDoIt => _models.Any(m => m.Id.StartsWith("qwen", StringComparison.Ordinal) || m.Id.StartsWith("gemma", StringComparison.Ordinal) || m.Id.StartsWith("smolvlm", StringComparison.Ordinal)
+        || m.Id.StartsWith("opus-mt", StringComparison.Ordinal) || m.Id.StartsWith("m2m100", StringComparison.Ordinal));
 
     /// <summary>Raised when the model has arrived (or was already here when switching to it).</summary>
     public event Action? Ready;
@@ -42,7 +47,11 @@ public sealed class ModelPanel : Border
         _fill.SetResourceReference(Border.BackgroundProperty, "Petal.Accent");
         _track.Child = _fill;
         _download.Click += async (_, _) => await DownloadAsync();
-        Child = new StackPanel { Children = { _text, _track, _status, _download } };
+        // Instead of a download, a model in the cloud on the user's own key, for the jobs one can do.
+        _ownKey.Content = L.T("Use my own API key instead…");
+        _ownKey.Style = (Style)Application.Current.FindResource("Petal.SubtleButton");
+        _ownKey.Click += (_, _) => Settings.SettingsWindow.ShowSection("AI Models");
+        Child = new StackPanel { Children = { _text, _track, _status, new WrapPanel { Children = { _download, _ownKey } } } };
         Unloaded += (_, _) => _cts?.Cancel();
         Show();
     }
@@ -76,6 +85,7 @@ public sealed class ModelPanel : Border
     private void Show()
     {
         Visibility = IsReady ? Visibility.Collapsed : Visibility.Visible;
+        _ownKey.Visibility = CloudCanDoIt ? Visibility.Visible : Visibility.Collapsed;
         var missing = Missing;
         // The biggest file names the download; its companions (settings, a runtime) ride along.
         var main = missing.Count > 0 ? missing.MaxBy(m => m.Size)! : _models[0];

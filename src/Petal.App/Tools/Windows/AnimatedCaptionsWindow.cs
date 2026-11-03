@@ -37,7 +37,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
     private readonly Segmented<int> _accuracy;
     private readonly ModelPanel _model;
     private readonly ComboBox _language;
-    private readonly Segmented<string> _into;
+    private readonly LanguageChoice _into;
     // What the words in another language need besides the speech model (translation models).
     private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.Models);
     private readonly Segmented<CaptionStyle> _style;
@@ -108,7 +108,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         _language = Choice(languages, "auto");
         _language.SelectionChanged += (_, _) => Sync();
         Body.Children.Add(Row("Spoken in", _language, 110, 10));
-        _into = Segments([("spoken", "As spoken"), ("en", "In English"), ("ar", "In Arabic")], "spoken");
+        _into = LanguageChoice.ForWords();
         Body.Children.Add(Row("Words in", _into, 110, 10));
         Body.Children.Add(_helpers);
         _into.Changed += _ => Sync();

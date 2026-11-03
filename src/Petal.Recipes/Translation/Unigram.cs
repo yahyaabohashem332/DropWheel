@@ -6,7 +6,8 @@ namespace Petal.Recipes.Translation;
 /// <summary>
 /// A SentencePiece unigram tokenizer, read straight from a .spm model file: text is normalized
 /// (NFKC, single spaces shown as "▁", one in front), then split into the vocabulary pieces whose
-/// scores add up best (Viterbi). Matches SentencePiece's own segmentation for Marian models.
+/// scores add up best (Viterbi). Matches SentencePiece's own segmentation for Marian models. A model trained as BPE
+/// (M2M100's) is split SentencePiece's other way: from single letters, always joining the pair that scores best.
 /// </summary>
 internal sealed class Unigram
 {
@@ -15,6 +16,7 @@ internal sealed class Unigram
     private readonly Dictionary<string, int> _ids = new(StringComparer.Ordinal);
     private readonly int _longest;
     private readonly float _unknownScore;
+    private readonly bool _bpe;
 
     public Unigram(byte[] model)
     {
@@ -28,6 +30,22 @@ internal sealed class Unigram
             {
                 int length = (int)Varint(model, ref at);
                 ReadPiece(model.AsSpan(at, length));
+                at += length;
+            }
+            else if (field == 2 && wire == 2)
+            {
+                // TrainerSpec: field 3 is the kind of model, and 2 is BPE.
+                int length = (int)Varint(model, ref at);
+                var spec = model.AsSpan(at, length).ToArray();
+                int i = 0;
+                while (i < spec.Length)
+                {
+                    var (inner, kind) = Key(spec, ref i);
+                    if (inner == 3 && kind == 0)
+                        _bpe = Varint(spec, ref i) == 2;
+                    else
+                        Skip(spec, ref i, kind);
+                }
                 at += length;
             }
             else
@@ -138,9 +156,39 @@ internal sealed class Unigram
     }
 
     /// <summary>The pieces that score best overall; characters no piece covers stand alone (as unknown).</summary>
+    /// <summary>BPE: from single letters, the neighbouring pair whose joined piece scores best is joined, until none can be.</summary>
+    private List<string> Merge(string s)
+    {
+        var symbols = new List<string>(s.Length);
+        for (int i = 0; i < s.Length; i++)
+        {
+            bool pair = char.IsHighSurrogate(s[i]) && i + 1 < s.Length;
+            symbols.Add(pair ? s.Substring(i, 2) : s[i].ToString());
+            if (pair)
+                i++;
+        }
+        while (true)
+        {
+            int best = -1;
+            float score = float.NegativeInfinity;
+            for (int i = 0; i + 1 < symbols.Count; i++)
+                if (_pieces.TryGetValue(symbols[i] + symbols[i + 1], out var joined) && joined > score)
+                {
+                    best = i;
+                    score = joined;
+                }
+            if (best < 0)
+                return symbols;
+            symbols[best] += symbols[best + 1];
+            symbols.RemoveAt(best + 1);
+        }
+    }
+
     public List<string> Split(string text)
     {
         var s = Normalize(text);
+        if (_bpe)
+            return Merge(s);
         int n = s.Length;
         var best = new float[n + 1];
         var from = new int[n + 1];

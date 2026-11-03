@@ -279,7 +279,7 @@ public static class WheelActions
 
         // ---------- text in any app ----------
         Text("text.fixlayout", "FIX LAYOUT", "Fix Keyboard Layout", "keyboard", "Text typed with the wrong keyboard language put right: ؤشف becomes cat, and hgsghl becomes السلام."),
-        Text("text.translate", "TRANSLATE", "Translate", "languages", "The selected text in Arabic or English, translated on this PC."),
+        Text("text.translate", "TRANSLATE", "Translate", "languages", "The selected text, translated into your language."),
         Text("text.upper", "UPPER", "UPPERCASE", "caseUpper", "The selected text in capital letters."),
         Text("text.lower", "LOWER", "lowercase", "caseLower", "The selected text in small letters."),
         Text("text.title", "TITLE", "Title Case", "heading", "Every word starting with a capital."),
@@ -376,7 +376,7 @@ public static class WheelActions
             State = () => Words.MeetingRecorder.IsRecording,
             Run = Do(Words.MeetingRecorder.Toggle),
         },
-        new("work.captions", "CC", "Live Captions", "captions", "Captions for any video, call or lesson, translated into Arabic as they come, on this PC.", "Work")
+        new("work.captions", "CC", "Live Captions", "captions", "Captions for any video, call or lesson, translated as they come.", "Work")
         {
             State = () => Words.LiveCaptions.IsOn,
             Run = Do(Words.LiveCaptions.Toggle),

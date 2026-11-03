@@ -539,6 +539,17 @@ public sealed partial class SettingsWindow
         Closed += Unhook;
     }
 
+    /// <summary>Opens Settings at one of its cards.</summary>
+    public static void ShowSection(string title)
+    {
+        ShowSingle();
+        _open?.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+        {
+            if (_open?._cards.GetValueOrDefault(title) is { } card)
+                card.BringIntoView();
+        });
+    }
+
     // ---------- the tour ----------
 
     /// <summary>Opens Settings and starts the tour, as the welcome window offers.</summary>

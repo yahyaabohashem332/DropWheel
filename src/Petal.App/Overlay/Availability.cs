@@ -30,7 +30,6 @@ public static class Availability
         ToolId.RemoveNoise when !Petal.Engines.Media.VoiceCleaner.IsReady => Download(ModelCatalog.DeepFilter),
         ToolId.SeparateVocals when !Petal.Engines.Media.StemSplitter.IsReady => Download(ModelCatalog.Demucs),
         ToolId.EraseObject when !Petal.Engines.Imaging.ObjectEraser.IsReady => Download(ModelCatalog.Lama),
-        ToolId.TranslateSubtitles when !Petal.Recipes.Translation.Translator.IsReady => Download([.. Petal.Recipes.Translation.Translator.Models]),
         _ => null,
     };
 

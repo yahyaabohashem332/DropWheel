@@ -24,7 +24,7 @@ public sealed record DubSource(string Video, string Language, string Into, strin
 public sealed record DubOptions(bool KeepOriginal = false, bool Subtitles = true);
 
 /// <summary>
-/// Dub: a video's speech said again in another language (Arabic into English, English into Arabic) in each speaker's own
+/// Dub: a video's speech said again in another language (from and into <see cref="Languages"/>) in each speaker's own
 /// voice, with the music taken out and every other sound kept. Prepared once (<see cref="PrepareAsync"/>): the voices are
 /// separated from the rest of the sound by Demucs, written down with each word's time by Whisper, cut into lines and
 /// translated by the translation models, all on this PC, and kept so the same video opens again at once. Then dubbed
@@ -53,8 +53,11 @@ public static class Dubbing
     /// </summary>
     public static (double Separated, double Heard) Steps(bool natural) => natural ? (0.3, 0.6) : (0.45, 0.85);
 
-    /// <summary>The language a dub goes into from one spoken: Arabic into English, anything else into Arabic.</summary>
-    public static string Opposite(string spoken) => spoken == "ar" ? "en" : "ar";
+    /// <summary>A dub goes from and into every language of the interface.</summary>
+    public static IReadOnlyList<string> Languages { get; } = Translator.Languages.Select(l => l.Code).ToList();
+
+    /// <summary>The language a dub goes into from one spoken when none was chosen: English, and from English the one given.</summary>
+    public static string Opposite(string spoken, string fromEnglish = "ar") => spoken != "en" ? "en" : fromEnglish;
 
     // ---------- preparing ----------
 
@@ -63,7 +66,7 @@ public static class Dubbing
     /// language and translation).
     /// </summary>
     /// <param name="spoken">"auto", or the language spoken.</param>
-    /// <param name="into">"en" or "ar"; "auto" for the other of the two.</param>
+    /// <param name="into">A language's code; "auto" for English, or from English into Arabic.</param>
     /// <param name="natural">Translated by the AI model, by meaning (<see cref="DubTranslation"/>), rather than word for word.</param>
     public static async Task<DubSource> PrepareAsync(string video, string model, string spoken, string into, IProgress<double>? progress = null,
         CancellationToken cancellationToken = default, bool natural = false)
@@ -101,11 +104,11 @@ public static class Dubbing
         }
         progress?.Report(heardAt);
 
-        var target = into is "en" or "ar" ? into : Opposite(language);
+        var target = into != "auto" ? into : Opposite(language);
         if (target == language)
-            throw new InvalidOperationException(target == "ar" ? "This video is already in Arabic." : "This video is already in English.");
-        if (language is not ("ar" or "en"))
-            throw new InvalidOperationException("Dub works on speech in Arabic or English.");
+            throw new InvalidOperationException("This video is already in that language.");
+        if (!Languages.Contains(language) || !Languages.Contains(target))
+            throw new InvalidOperationException("Dub doesn't work on this language yet.");
         // Each kind of translation kept apart: the one by meaning doesn't take the word-for-word one's place, nor the other way.
         var by = natural ? "-" + DubTranslation.Writer.Id : "";
         var translations = Path.Combine(folder, $"lines-{Path.GetFileNameWithoutExtension(model)}-{spoken}-{target}{by}.json");
@@ -116,9 +119,7 @@ public static class Dubbing
             var originals = lines.Select(l => l.Original).ToList();
             IReadOnlyList<string> translated = natural
                 ? await DubTranslation.TranslateAsync(lines, language, target, Slice(progress, heardAt, 1), cancellationToken).ConfigureAwait(false)
-                : await Task.Run(() => target == "ar"
-                    ? Translator.ToArabic(originals, Slice(progress, heardAt, 1), cancellationToken)
-                    : Translator.ToEnglish(originals, Slice(progress, heardAt, 1), cancellationToken), cancellationToken).ConfigureAwait(false);
+                : await Translator.TranslateAsync(originals, language, target, Slice(progress, heardAt, 1), cancellationToken).ConfigureAwait(false);
             lines = lines.Select((l, i) => l with { Translation = translated[i].Trim() }).ToList();
             Write(translations, language, lines);
         }
@@ -266,7 +267,7 @@ public static class Dubbing
     }
 
     /// <summary>The original track's name in the dubbed file: the language it is in.</summary>
-    private static string OriginalTitle(string language) => language switch { "ar" => "Arabic (original)", "en" => "English (original)", _ => "Original" };
+    private static string OriginalTitle(string language) => language switch { "ar" => "Arabic (original)", "en" => "English (original)", not null when Translator.Languages.Any(l => l.Code == language) => Translator.EnglishName(language) + " (original)", _ => "Original" };
 
     /// <summary>
     /// A line on its way: its speaker's voice learnt from the line itself, what is to be said (its figures as words, its

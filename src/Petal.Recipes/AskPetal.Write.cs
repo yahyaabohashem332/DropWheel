@@ -27,6 +27,14 @@ public static partial class AskPetal
     public static async Task<string> WriteAsync(string instruction, string text, Action<string>? partial, int maxTokens = 700, CancellationToken cancellationToken = default,
         double temperature = 0.2, ModelInfo? model = null, string begun = "")
     {
+        if (Cloud.CloudAi.CanWrite)
+        {
+            // A cloud model can't be handed the start of its answer: it is asked to begin that way.
+            var told = begun.Length > 0 ? instruction + $" Begin your reply with exactly: {begun}" : instruction;
+            string WithStart(string words) => begun.Length == 0 || words.TrimStart().StartsWith(begun.Trim(), StringComparison.Ordinal) ? words : begun + words;
+            var answer = await Cloud.CloudAi.WriteAsync(Cloud.CloudAi.Writing!, told, text, partial is null ? null : words => partial(WithStart(words)), maxTokens, temperature, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return WithStart(answer);
+        }
         var folder = RuntimeFolder();
         var weights = ModelStore.Find(model ?? ModelCatalog.Qwen) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
         var work = Path.Combine(Path.GetTempPath(), "Petal", $"write-{Guid.NewGuid():N}");

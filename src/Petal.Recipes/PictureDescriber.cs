@@ -15,7 +15,7 @@ public static class PictureDescriber
 {
     public static IReadOnlyList<ModelInfo> Models { get; } = [ModelCatalog.LlamaCpp, ModelCatalog.SmolVlm, ModelCatalog.SmolVlmProjector];
 
-    public static bool ModelReady => Models.All(ModelStore.IsAvailable);
+    public static bool ModelReady => Cloud.CloudAi.CanSee || Models.All(ModelStore.IsAvailable);
 
     /// <summary>Pictures are made this small first: the model sees them at about this size anyway, and larger ones only cost time.</summary>
     public const int Side = 640;
@@ -33,6 +33,12 @@ public static class PictureDescriber
 
     private static async Task<string> RunAsync(string picture, string prompt, int tokens, CancellationToken cancellationToken)
     {
+        if (Cloud.CloudAi.CanSee)
+        {
+            var type = picture.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/jpeg";
+            return await Cloud.CloudAi.WriteAsync(Cloud.CloudAi.Seeing!, "Look at the picture and answer in English.", prompt, null, tokens, 0.1,
+                (await File.ReadAllBytesAsync(picture, cancellationToken).ConfigureAwait(false), type), cancellationToken).ConfigureAwait(false);
+        }
         var folder = AskPetal.RuntimeFolder();
         var program = Path.Combine(folder, "llama-mtmd-cli.exe");
         if (!File.Exists(program))

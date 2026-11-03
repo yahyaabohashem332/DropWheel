@@ -258,7 +258,7 @@ public static class Health
             L.T(s.LocalApi ? "Other programs can run petals" : "Other programs can't run petals"),
             L.T(Actions.PcDrop.Receiving ? "Receiving files from other PCs" : "Not receiving files from other PCs"),
         };
-        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("DropWheel goes online only to download a model you ask for, to look for updates when an address is set, or to fetch today's exchange rates when you convert a currency."));
+        return new HealthCheck("Connections", HealthState.Good, string.Join(" · ", parts), L.T("DropWheel goes online only to download a model you ask for, to use a cloud model you chose with your own key, to look for updates when an address is set, or to fetch today's exchange rates when you convert a currency."));
     }
 
     private static string Tail(string path, int bytes)

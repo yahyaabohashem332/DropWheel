@@ -3,12 +3,15 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.ML.OnnxRuntime;
 using Petal.Core.Models;
+using Petal.Core.Text;
 
 namespace Petal.Recipes.Translation;
 
 /// <summary>
-/// Translation on this PC with Opus-MT (Helsinki-NLP, Apache-2.0), a model made for each pair: English to
-/// Arabic, and Arabic to English. Beam search over four candidates. For subtitles and short texts.
+/// Translation on this PC. Opus-MT (Helsinki-NLP, CC-BY 4.0) has a quick model made for each pair: a pair it has is
+/// used, then two of them through English, and for every other pair M2M100 (Meta, MIT), one larger model that knows all
+/// the languages here. Beam search over a few candidates. With a cloud model chosen (<see cref="Cloud.CloudAi.Translating"/>),
+/// <see cref="TranslateAsync"/> uses that instead.
 /// </summary>
 public static class Translator
 {
@@ -66,6 +69,132 @@ public static class Translator
     /// <summary>One line (in Arabic) in English; quick as for <see cref="ToArabic(string, bool)"/>.</summary>
     public static string ToEnglish(string line, bool quick) => IntoEnglish.Line(line, quick);
 
+    // ---------- any language into any other ----------
+
+    /// <summary>The languages of the interface, each translated into and from all the others: code, English name, its own name.</summary>
+    public static IReadOnlyList<TranslationLanguage> Languages { get; } =
+    [
+        new("en", "English", "English"), new("ar", "Arabic", "العربية"), new("tr", "Turkish", "Türkçe"), new("fa", "Persian", "فارسی"),
+        new("ur", "Urdu", "اردو"), new("id", "Indonesian", "Bahasa Indonesia"), new("fr", "French", "Français"), new("es", "Spanish", "Español"),
+    ];
+
+    /// <summary>A language's English name, as models are told it; the code when it isn't one of these.</summary>
+    public static string EnglishName(string code) => Languages.FirstOrDefault(l => l.Code == code)?.EnglishName ?? code;
+
+    // Where each language's mark sits in M2M100's list, after its 128,004 pieces.
+    private static readonly Dictionary<string, long> UniversalMarks = new()
+    {
+        ["ar"] = 128006,
+        ["en"] = 128022,
+        ["es"] = 128023,
+        ["fr"] = 128028,
+        ["de"] = 128020,
+        ["it"] = 128045,
+        ["pt"] = 128075,
+        ["ru"] = 128077,
+        ["tr"] = 128093,
+        ["fa"] = 128025,
+        ["ur"] = 128095,
+        ["id"] = 128041,
+        ["zh"] = 128102,
+        ["hi"] = 128036,
+        ["ja"] = 128046,
+        ["ko"] = 128052,
+    };
+
+    private static readonly Dictionary<(string, string), Pair> Made = new()
+    {
+        [("en", "ar")] = IntoArabic,
+        [("ar", "en")] = IntoEnglish,
+    };
+
+    private static Pair? Direct(string from, string to)
+    {
+        lock (Made)
+        {
+            if (Made.TryGetValue((from, to), out var pair))
+                return pair;
+            if (TranslationCatalog.Pairs.FirstOrDefault(p => p.From == from && p.To == to) is not { } entry)
+                return null;
+            return Made[(from, to)] = new Pair(entry.Files, entry.Start, entry.Mark);
+        }
+    }
+
+    private static Pair Universal(string from, string to)
+    {
+        lock (Made)
+        {
+            var key = ("m2m:" + from, to);
+            return Made.TryGetValue(key, out var pair) ? pair
+                : Made[key] = new Pair(TranslationCatalog.Universal, 2, null, eos: 2, ban: 1, sourceMark: UniversalMarks[from], targetMark: UniversalMarks[to], width: 2);
+        }
+    }
+
+    /// <summary>The steps from one language to another on this PC, quickest first: a pair's own model, two through English, or M2M100.</summary>
+    private static List<Pair> Route(string from, string to)
+    {
+        if (Direct(from, to) is { } direct)
+            return [direct];
+        var through = Direct(from, "en") is { } first && Direct("en", to) is { } second ? new List<Pair> { first, second } : null;
+        bool universal = UniversalMarks.ContainsKey(from) && UniversalMarks.ContainsKey(to);
+        // Models already here come before a new download.
+        if (through is not null && (through.All(p => p.Ready) || !universal || !TranslationCatalog.Universal.All(ModelStore.IsAvailable)))
+            return through;
+        if (universal)
+            return [Universal(from, to)];
+        return through ?? throw new InvalidOperationException($"No translation from {from} into {to}.");
+    }
+
+    /// <summary>The route is quick enough for words still being said: models made for the pair, not the large one for every language.</summary>
+    public static bool QuickFor(string from, string to) => from == to || Route(from, to).All(p => p.Files != TranslationCatalog.Universal);
+
+    /// <summary>The models the route from one language to another needs, downloaded or not.</summary>
+    public static IReadOnlyList<ModelInfo> ModelsFor(string from, string to) =>
+        from == to ? [] : Route(from, to).SelectMany(p => p.Files).ToList();
+
+    /// <summary>Whether this translation can run now: its models are here, or a cloud model translates.</summary>
+    public static bool ReadyFor(string from, string to) =>
+        from == to || Cloud.CloudAi.CanTranslate || ModelsFor(from, to).All(ModelStore.IsAvailable);
+
+    /// <summary>Each line from one language into another, on this PC; empty lines stay empty.</summary>
+    public static IReadOnlyList<string> Lines(IReadOnlyList<string> lines, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (from == to)
+            return lines;
+        IReadOnlyList<string> current = lines;
+        var route = Route(from, to);
+        for (int i = 0; i < route.Count; i++)
+            current = route[i].Lines(current, progress is null ? null : new Step(progress, i, route.Count), cancellationToken);
+        return to == "ar" ? current.Select(Tidy).ToList() : current;
+    }
+
+    /// <summary>One line from one language into another on this PC; quick follows only the likeliest word at each step.</summary>
+    public static string Line(string line, string from, string to, bool quick = false)
+    {
+        if (from == to)
+            return line;
+        foreach (var pair in Route(from, to))
+            line = pair.Line(line, quick);
+        return to == "ar" ? Tidy(line) : line;
+    }
+
+    /// <summary>Each line translated by the cloud model chosen, or else on this PC; <paramref name="from"/> may be "auto" with a cloud model.</summary>
+    public static async Task<IReadOnlyList<string>> TranslateAsync(IReadOnlyList<string> lines, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (Cloud.CloudAi.CanTranslate)
+            return await Cloud.CloudAi.TranslateAsync(lines, to, progress, cancellationToken).ConfigureAwait(false);
+        if (from is "auto" or "")
+            from = LanguageGuess.Of(string.Join(' ', lines.Take(40))) ?? "en";
+        var source = from;
+        return await Task.Run(() => Lines(lines, source, to, progress, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>One step's share of the progress of a route of a few.</summary>
+    private sealed class Step(IProgress<double> inner, int index, int count) : IProgress<double>
+    {
+        public void Report(double value) => inner.Report((index + Math.Clamp(value, 0, 1)) / count);
+    }
+
     /// <summary>The pieces' ids for English to Arabic: the target language mark, the text, end of sentence.</summary>
     internal static long[] Encode(string text) => IntoArabic.Encode(text);
 
@@ -74,32 +203,61 @@ public static class Translator
 
     /// <summary>
     /// One translation model: its encoder and decoder, the source language's pieces, the shared vocabulary, the
-    /// padding id the decoder starts from, and the mark of the target language (when the model has several).
+    /// id the decoder starts from, and the mark of the target language (when the model has several). M2M100 marks both
+    /// languages by id: the source's before the text, the target's as the decoder's first word.
     /// </summary>
-    private sealed class Pair(IReadOnlyList<ModelInfo> files, long pad, string? mark)
+    private sealed class Pair(IReadOnlyList<ModelInfo> files, long pad, string? mark, long eos = Eos, long? ban = null, long? sourceMark = null, long? targetMark = null, int width = Beams)
     {
-        private readonly Lock _gate = new();
-        private InferenceSession? _encoder, _decoder;
-        private Unigram? _source;
-        private Dictionary<string, long>? _vocabulary;
-        private string[]? _pieces;
+        private Loaded? _loaded;
+
+        public IReadOnlyList<ModelInfo> Files => files;
+
+        public bool Ready => files.All(ModelStore.IsAvailable);
+
+        // One model's parts, shared by all the pairs that use it (M2M100 is one model for every pair).
+        private sealed class Loaded
+        {
+            public required InferenceSession Encoder { get; init; }
+            public required InferenceSession Decoder { get; init; }
+            public required Unigram Source { get; init; }
+            public required Dictionary<string, long> Vocabulary { get; init; }
+            public required string[] Pieces { get; init; }
+        }
+
+        private static readonly Dictionary<string, Loaded> Shared = [];
+
+        private InferenceSession? _encoder => _loaded?.Encoder;
+        private InferenceSession? _decoder => _loaded?.Decoder;
+        private Unigram? _source => _loaded?.Source;
+        private Dictionary<string, long>? _vocabulary => _loaded?.Vocabulary;
+        private string[]? _pieces => _loaded?.Pieces;
 
         private void Load()
         {
-            lock (_gate)
+            lock (Shared)
             {
-                if (_encoder is not null)
+                if (_loaded is not null)
                     return;
+                if (Shared.TryGetValue(files[0].Id, out var known))
+                {
+                    _loaded = known;
+                    return;
+                }
                 string Find(ModelInfo model) => ModelStore.Find(model) ?? throw new FileNotFoundException("The translation model isn't downloaded yet.");
                 var options = new SessionOptions { GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL, IntraOpNumThreads = Math.Clamp(Environment.ProcessorCount, 1, 8) };
-                _source = new Unigram(File.ReadAllBytes(Find(files[2])));
                 using var json = JsonDocument.Parse(File.ReadAllBytes(Find(files[3])));
-                _vocabulary = json.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt64(), StringComparer.Ordinal);
-                _pieces = new string[_vocabulary.Values.Max() + 1];
-                foreach (var (piece, id) in _vocabulary)
-                    _pieces[id] = piece;
-                _encoder = new InferenceSession(Find(files[0]), options);
-                _decoder = new InferenceSession(Find(files[1]), options);
+                var vocabulary = json.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt64(), StringComparer.Ordinal);
+                var pieces = new string[vocabulary.Values.Max() + 1];
+                foreach (var (piece, id) in vocabulary)
+                    pieces[id] = piece;
+                _loaded = Shared[files[0].Id] = new Loaded
+                {
+                    Source = new Unigram(File.ReadAllBytes(Find(files[2]))),
+                    Vocabulary = vocabulary,
+                    Pieces = pieces,
+                    Encoder = new InferenceSession(Find(files[0]), options),
+                    Decoder = new InferenceSession(Find(files[1]), options),
+                };
             }
         }
 
@@ -109,10 +267,12 @@ public static class Translator
             var vocabulary = _vocabulary!;
             long unknown = vocabulary.GetValueOrDefault("<unk>", 1);
             var ids = new List<long>();
+            if (sourceMark is { } own)
+                ids.Add(own);
             if (mark is not null)
                 ids.Add(vocabulary[mark]);
             ids.AddRange(_source!.Split(text).Take(250).Select(p => vocabulary.GetValueOrDefault(p, unknown)));
-            ids.Add(Eos);
+            ids.Add(eos);
             return ids.ToArray();
         }
 
@@ -124,7 +284,7 @@ public static class Translator
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var line = lines[i].Trim();
-                result[i] = line.Length == 0 || !line.Any(char.IsLetter) ? line : Translate(line, Beams);
+                result[i] = line.Length == 0 || !line.Any(char.IsLetter) ? line : Translate(line, width);
                 progress?.Report((i + 1.0) / lines.Count);
             }
             return result;
@@ -134,7 +294,7 @@ public static class Translator
         {
             Load();
             line = line.Trim();
-            return line.Length == 0 || !line.Any(char.IsLetter) ? line : Translate(line, quick ? 1 : Beams);
+            return line.Length == 0 || !line.Any(char.IsLetter) ? line : Translate(line, quick ? 1 : width);
         }
 
         private string Translate(string text, int width)
@@ -150,7 +310,8 @@ public static class Translator
                 hidden = encoded[0].GetTensorDataAsSpan<float>().ToArray();
             int size = hidden.Length / length;
 
-            var beams = new List<(List<long> Tokens, double Score)> { ([pad], 0) };
+            List<long> begin = targetMark is { } target ? [pad, target] : [pad];
+            var beams = new List<(List<long> Tokens, double Score)> { (begin, 0) };
             var finished = new List<(List<long> Tokens, double Score)>();
             int maxLength = Math.Min(256, length * 3 + 10);
             for (int step = 0; step < maxLength && beams.Count > 0; step++)
@@ -180,7 +341,7 @@ public static class Translator
                 for (int b = 0; b < batch; b++)
                 {
                     var row = logits.Slice((b * steps + steps - 1) * vocabulary, vocabulary).ToArray();
-                    row[pad] = float.NegativeInfinity;
+                    row[ban ?? pad] = float.NegativeInfinity;
                     // Log-softmax, then the best few continuations of this beam.
                     float max = row.Max();
                     double sum = 0;
@@ -193,7 +354,7 @@ public static class Translator
                 beams.Clear();
                 foreach (var candidate in candidates.OrderByDescending(c => c.Score / c.Tokens.Count))
                 {
-                    if (candidate.Tokens[^1] == Eos)
+                    if (candidate.Tokens[^1] == eos)
                         finished.Add(candidate);
                     else if (beams.Count < width)
                         beams.Add(candidate);
@@ -205,9 +366,9 @@ public static class Translator
             }
             var best = (finished.Count > 0 ? finished : beams).MaxBy(c => c.Score / c.Tokens.Count).Tokens;
             var words = new StringBuilder();
-            foreach (var token in best.Skip(1))
+            foreach (var token in best.Skip(begin.Count))
             {
-                if (token == Eos || token == pad || token >= _pieces!.Length || _pieces[token] is not { } piece || piece.StartsWith('<'))
+                if (token == eos || token == pad || token == ban || token >= _pieces!.Length || _pieces[token] is not { } piece || piece.StartsWith('<'))
                     continue;
                 words.Append(piece);
             }
@@ -231,13 +392,14 @@ public static class Translator
         return best;
     }
 
-    /// <summary>Subtitles in Arabic: the same cues and timing, the words translated.</summary>
-    public static string TranslateSubtitles(string text, bool vtt, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    /// <summary>Subtitles in another language: the same cues and timing, the words translated.</summary>
+    /// <param name="from">The language they are in; "auto" tells it from the words.</param>
+    public static async Task<string> TranslateSubtitlesAsync(string text, bool vtt, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         var cues = Petal.Engines.Files.Subtitles.SubtitleConverter.Parse(text);
         // A cue's lines are one sentence more often than not: translated together.
-        var arabic = ToArabic(cues.Select(c => string.Join(' ', c.Text.Split('\n').Select(StripTags))).ToList(), progress, cancellationToken);
-        var translated = cues.Select((c, i) => c with { Text = arabic[i] }).ToList();
+        var words = await TranslateAsync(cues.Select(c => string.Join(' ', c.Text.Split('\n').Select(StripTags))).ToList(), from, to, progress, cancellationToken).ConfigureAwait(false);
+        var translated = cues.Select((c, i) => c with { Text = words[i] }).ToList();
         return vtt ? Petal.Engines.Files.Subtitles.SubtitleConverter.WriteVtt(translated) : Petal.Engines.Files.Subtitles.SubtitleConverter.WriteSrt(translated);
     }
 
@@ -245,3 +407,6 @@ public static class Translator
     private static string StripTags(string line) =>
         System.Text.RegularExpressions.Regex.Replace(line, @"<[^>]{1,20}>|\{\\[^}]{1,20}\}", "").Trim();
 }
+
+/// <summary>A language translated into and from.</summary>
+public sealed record TranslationLanguage(string Code, string EnglishName, string NativeName);

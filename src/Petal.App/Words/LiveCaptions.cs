@@ -72,10 +72,8 @@ internal static class LiveCaptions
             return;
         }
         var settings = SettingsStore.Current;
-        if (NeedsArabic(settings.CaptionsShow) && !Translator.IsReady)
-            ModelDownloadWindow.Show("Arabic Captions", "The captions are translated into Arabic by a translation model on this PC. Until it is here, they show what was said.", Translator.Models);
-        else if (NeedsEnglish(settings))
-            ModelDownloadWindow.Show("English Captions", "Arabic speech is put into English by a translation model on this PC. Until it is here, Whisper translates it, not as well.", Translator.EnglishModels);
+        Settle(settings);
+        _asked.Clear();
         _window = new CaptionWindow();
         _window.Show();
         _stop = new CancellationTokenSource();
@@ -278,51 +276,66 @@ internal static class LiveCaptions
         }
     }
 
+    // The translations asked for already this time, so a missing model is offered once.
+    private static readonly HashSet<(string, string)> _asked = [];
+
     /// <summary>
-    /// Words in the language wanted, or null when they are in it already or the model for it isn't here. Arabic
-    /// comes from English; Arabic speech goes into English with Opus-MT, from its words (far better than Whisper's
-    /// own translation, and quick enough for the sentence being said); other languages are put into English by
-    /// Whisper from the sentence's own sound (only a finished one: the sentence being said waits until it is finished).
+    /// Words in the language wanted, or null when they are in it already or nothing can translate them yet. The chosen
+    /// cloud model takes finished sentences only: the sentence being said changes twice a second, and each pass would be
+    /// billed. On this PC a pair's own model is quick enough for the sentence being said; the larger model that knows every
+    /// language only takes finished ones. A language no model reads is put into English by Whisper from the sentence's own
+    /// sound, and from there into the language wanted.
     /// </summary>
     private static async Task<string?> TranslateAsync(StreamingTranscriber engine, string target, string text, string language, StreamSentence? sentence, CancellationToken stop)
     {
-        bool arabicAlready = language == "ar" || KeyboardLayout.LooksArabic(text);
-        bool englishAlready = language == "en";
-        if (target == "ar" && (arabicAlready || !Translator.IsReady) || target == "en" && englishAlready)
+        string from = language is "" or "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "en" : language;
+        if (from == target)
             return null;
-        if (target == "en" && arabicAlready && Translator.EnglishReady)
+        bool known = Translator.Languages.Any(l => l.Code == from);
+        if (Petal.Recipes.Cloud.CloudAi.CanTranslate && sentence is not null)
+            return (await Translator.TranslateAsync([text], from, target, null, stop))[0];
+        if (known)
         {
-            var arabic = text;
-            return await Task.Run(() => Translator.ToEnglish(arabic, quick: sentence is null), stop);
+            var models = Translator.ModelsFor(from, target);
+            if (models.All(ModelStore.IsAvailable))
+            {
+                if (sentence is null && !Translator.QuickFor(from, target))
+                    return null;
+                return await Task.Run(() => Translator.Line(text, from, target, quick: sentence is null), stop);
+            }
+            if (sentence is not null && _asked.Add((from, target)))
+                _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", models));
         }
-        string? english = englishAlready ? text : sentence is null ? null : await engine.ToEnglishAsync(sentence, stop);
+        if (sentence is null)
+            return null;
+        string? english = from == "en" ? text : await engine.ToEnglishAsync(sentence, stop);
         if (string.IsNullOrWhiteSpace(english))
             return null;
         if (target == "en")
             return english;
-        var line = english;
-        return await Task.Run(() => Translator.ToArabic(line, quick: sentence is null), stop);
+        var through = Translator.ModelsFor("en", target);
+        if (!through.All(ModelStore.IsAvailable))
+            return null;
+        return await Task.Run(() => Translator.Line(english, "en", target), stop);
     }
 
-    /// <summary>
-    /// Captions put into Arabic: chosen, or "both" in Arabic or English. In Petal's other languages "both"
-    /// shows what was said and its English, which needs no other model.
-    /// </summary>
-    private static bool NeedsArabic(string show) => show == "arabic" || show == "both" && BothMeansArabic;
+    /// <summary>Settings from before there was a choice of language: "In Arabic" and "In English" become the language chosen.</summary>
+    internal static void Settle(AppSettings settings)
+    {
+        if (settings.CaptionsShow is "arabic" or "english")
+        {
+            settings.CaptionsInto = settings.CaptionsShow == "arabic" ? "ar" : "en";
+            settings.CaptionsShow = "translated";
+        }
+    }
 
-    private static bool BothMeansArabic => Localization.L.Code is "ar" or "en";
-
-    /// <summary>English captions of what may be Arabic speech, without the translation model that does it best.</summary>
-    private static bool NeedsEnglish(AppSettings settings) =>
-        settings.CaptionsShow == "english" && settings.CaptionsLanguage is "ar" or "auto" or "" && !Translator.EnglishReady;
-
-    /// <summary>The language the captions are translated into ("ar", "en"), or null for what was said only.</summary>
+    /// <summary>The language the captions are translated into, or null for what was said only.</summary>
     internal static string? Target(string show) => show switch
     {
         "original" => null,
         "english" => "en",
-        "both" when !BothMeansArabic => "en",
-        _ => "ar",
+        "arabic" => "ar",
+        _ => SettingsStore.Current.CaptionsInto is { Length: > 0 } chosen ? chosen : LanguageChoice.Interface,
     };
 
     private static bool Listen(bool microphone)
@@ -472,17 +485,14 @@ internal static class LiveCaptions
         _window?.Refresh();
     }
 
-    /// <summary>Original, Arabic, English, or both: the next one.</summary>
+    /// <summary>The translation, what was said, or both: the next one.</summary>
     public static void NextShow()
     {
         var settings = SettingsStore.Current;
-        string[] order = ["both", "arabic", "original", "english"];
+        Settle(settings);
+        string[] order = ["both", "translated", "original"];
         settings.CaptionsShow = order[(Array.IndexOf(order, settings.CaptionsShow) + 1) % order.Length];
         SettingsStore.Save();
-        if (NeedsArabic(settings.CaptionsShow) && !Translator.IsReady)
-            ModelDownloadWindow.Show("Arabic Captions", "The captions are translated into Arabic by a translation model on this PC. Until it is here, they show what was said.", Translator.Models);
-        else if (NeedsEnglish(settings))
-            ModelDownloadWindow.Show("English Captions", "Arabic speech is put into English by a translation model on this PC. Until it is here, Whisper translates it, not as well.", Translator.EnglishModels);
         _window?.ClearTranslation();
         _window?.Refresh();
         if (Interlocked.Exchange(ref _partialWanted, 1) == 0)
@@ -538,7 +548,7 @@ internal sealed class CaptionWindow : Window
         _live = new TextBlock { FontSize = 23, Foreground = Dim, TextWrapping = TextWrapping.Wrap, FontFamily = UiFonts.Display, TextAlignment = TextAlignment.Center, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 4, 0, 0) };
         _status = new TextBlock { FontSize = 14, Foreground = new SolidColorBrush(Color.FromArgb(0xA0, 0xFF, 0xFF, 0xFF)), TextWrapping = TextWrapping.Wrap };
         _source = new StripButton("volume", "The PC's sound or the microphone", LiveCaptions.SwitchSource, null, 28);
-        _show = new StripButton("languages", "Arabic, the original, English, or both", LiveCaptions.NextShow, null, 28);
+        _show = new StripButton("languages", "The translation, the original, or both", LiveCaptions.NextShow, null, 28);
         _buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Opacity = 0, Margin = new Thickness(0, -6, -10, 0) };
         _buttons.Children.Add(_source);
         _buttons.Children.Add(_show);

@@ -34,8 +34,8 @@ public sealed class DubWindow : MediaToolWindow
     // ---------- the choices ----------
     private readonly StackPanel _settings = new();
     private readonly Image _frame = new() { Stretch = Stretch.UniformToFill };
-    private readonly Segmented<string> _into;
-    private readonly ComboBox _spoken;
+    private readonly LanguageChoice _into;
+    private readonly LanguageChoice _spoken;
     // The original sound has its music: left out unless asked for.
     private readonly CheckBox _original = new() { IsChecked = false, Margin = new Thickness(0, 0, 18, 0) };
     private readonly CheckBox _subtitles = new() { IsChecked = true };
@@ -73,9 +73,10 @@ public sealed class DubWindow : MediaToolWindow
         picture.Children.Add(_frame);
         _settings.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = picture, Margin = new Thickness(0, 0, 0, 10) });
         _settings.Children.Add(Text("Each line is said again in the other language, in the voice of the person who said it. The music is taken out; every other sound stays.", "Petal.Caption").WithMarginT(2));
-        _into = Segments([("en", "Into English"), ("ar", "Into Arabic")], L.IsArabic ? "en" : "ar");
-        _settings.Children.Add(Row("Dub", _into, 130, 12));
-        _spoken = Choice([("auto", "Detect automatically"), ("ar", NativeName("ar")), ("en", NativeName("en"))], "auto");
+        string home = Dubbing.Languages.Contains(LanguageChoice.Interface) && LanguageChoice.Interface != "en" ? LanguageChoice.Interface : "ar";
+        _into = new LanguageChoice(L.Code == "en" ? "es" : Dubbing.Opposite("ar", home) == LanguageChoice.Interface ? "en" : home, only: Dubbing.Languages);
+        _settings.Children.Add(Row("Dub into", _into, 130, 12));
+        _spoken = new LanguageChoice("auto", [("auto", "Detect automatically")], Dubbing.Languages);
         _settings.Children.Add(Row("Spoken in", _spoken, 130, 8));
         _original.Content = L.T("Keep the original sound as a second track");
         _subtitles.Content = L.T("Subtitles in the new language");
@@ -124,14 +125,14 @@ public sealed class DubWindow : MediaToolWindow
         // The language spoken is never the one dubbed into: choosing one turns the other round.
         _into.Changed += into =>
         {
-            if (ValueOf<string>(_spoken) == into)
-                _spoken.SelectedItem = _spoken.Items.OfType<ComboBoxItem>().First(item => (string)item.Tag == Dubbing.Opposite(into));
+            if (_spoken.Value == into)
+                _spoken.Value = Dubbing.Opposite(into, home);
             Sync();
         };
         _spoken.SelectionChanged += (_, _) =>
         {
-            if (ValueOf<string>(_spoken) is ("ar" or "en") and var spoken && spoken == _into.Value)
-                _into.Value = Dubbing.Opposite(spoken);
+            if (_spoken.Value == _into.Value)
+                _into.Value = Dubbing.Opposite(_spoken.Value, home);
             Sync();
         };
         PrimaryButton.Click += async (_, _) =>
@@ -177,7 +178,15 @@ public sealed class DubWindow : MediaToolWindow
     }
 
     /// <summary>The translation models the direction needs.</summary>
-    private IReadOnlyList<ModelInfo> Translation => _into.Value == "ar" ? Translator.Models : Translator.EnglishModels;
+    /// <summary>The translation models this dub needs; what is spoken may not be known yet, then as if English.</summary>
+    private IReadOnlyList<ModelInfo> Translation
+    {
+        get
+        {
+            string from = _spoken.Value != "auto" ? _spoken.Value : _into.Value == "en" ? "ar" : "en";
+            return Petal.Recipes.Cloud.CloudAi.CanTranslate ? [] : Translator.ModelsFor(from, _into.Value);
+        }
+    }
 
     private void Sync()
     {
@@ -187,7 +196,7 @@ public sealed class DubWindow : MediaToolWindow
         _finest.Visibility = _accuracy.Value == Finest ? Visibility.Visible : Visibility.Collapsed;
         bool working = _work is not null;
         PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && Translation.All(ModelStore.IsAvailable) && Info is { HasVideo: true, HasAudio: true }
-            && (_accuracy.Value != Finest || _writer.IsReady);
+            && (_accuracy.Value != Finest || _writer.IsReady || Petal.Recipes.Cloud.CloudAi.CanWrite);
         if (!working)
             FooterNote = Info is { HasAudio: false } ? L.T("This video has no sound to dub.")
                 : Dubbing.IsKnown(File) ? L.T("Prepared before: it opens again at once.")
@@ -234,7 +243,7 @@ public sealed class DubWindow : MediaToolWindow
         string? problem = null;
         try
         {
-            var (file, spoken, into) = (File, ValueOf<string>(_spoken), _into.Value);
+            var (file, spoken, into) = (File, _spoken.Value, _into.Value);
             bool natural = _accuracy.Value == Finest;
             var (separated, heard) = Dubbing.Steps(natural);
             var progress = new Progress<double>(p =>

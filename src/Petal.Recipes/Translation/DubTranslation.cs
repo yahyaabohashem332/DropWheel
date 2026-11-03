@@ -23,7 +23,7 @@ public static partial class DubTranslation
 
     public static IReadOnlyList<ModelInfo> Models => [ModelCatalog.LlamaCpp, Writer];
 
-    public static bool Ready => Models.All(ModelStore.IsAvailable);
+    public static bool Ready => Cloud.CloudAi.CanWrite || Models.All(ModelStore.IsAvailable);
 
     /// <summary>
     /// Each line's translation, in order. <paramref name="partial"/> hears how many lines are done; <paramref name="fallback"/>
@@ -89,7 +89,7 @@ public static partial class DubTranslation
         if (missing.Count > 0)
         {
             var originals = missing.Select(i => lines[i].Original).ToList();
-            var plain = fallback?.Invoke(originals) ?? (into == "ar" ? Translator.ToArabic(originals, null, cancellationToken) : Translator.ToEnglish(originals, null, cancellationToken));
+            var plain = fallback?.Invoke(originals) ?? (into is not ("ar" or "en") || from is not ("ar" or "en") ? Translator.Lines(originals, from, into, null, cancellationToken) : into == "ar" ? Translator.ToArabic(originals, null, cancellationToken) : Translator.ToEnglish(originals, null, cancellationToken));
             for (int k = 0; k < missing.Count; k++)
                 result[missing[k]] = plain[k];
         }
@@ -134,7 +134,7 @@ public static partial class DubTranslation
         return x.Intersect(y).Count() / (double)Math.Min(x.Count, y.Count);
     }
 
-    private static string Name(string language) => language == "ar" ? "Arabic" : "English";
+    private static string Name(string language) => Translator.EnglishName(language);
 
     /// <summary>What the model is told: the dubbing translator's job.</summary>
     internal static string Instruction(string from, string into)
@@ -215,7 +215,7 @@ public static partial class DubTranslation
     internal static bool Fits(string text, DubLine line, string from, string into)
     {
         int arabic = text.Count(c => c is >= (char)0x0600 and <= (char)0x06FF), latin = text.Count(char.IsAsciiLetter);
-        bool language = into == "ar" ? arabic > latin : latin > arabic;
+        bool language = into == "ar" ? arabic > latin : into == "en" ? latin > arabic : arabic <= latin;
         return language && Words(text) <= Target(line, from, into) * 2.5 + 3;
     }
 
