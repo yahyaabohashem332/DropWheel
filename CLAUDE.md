@@ -1,0 +1,378 @@
+# DropWheel — complete handoff for moving the project to another computer
+
+Written 2026-11-03 (10:40 UTC) at the end of a long session on the old PC, whose project drive (D:) is failing.
+Read all of it before touching anything. The user writes in Arabic. Write your final summaries to them in Arabic.
+
+> للمستخدم: هذا الملف كُتب لـ Claude على الحاسوب الجديد. افتح المشروع هناك ثم قل له: «اقرأ DropWheel-HANDOFF.md وتابع».
+> انسخ معه أيضاً مفتاح توقيع التحديثات (القسم 4). من دونه لن تقبل النسخ المثبتة أي تحديث.
+
+---
+
+## 1. What the project is
+
+- **DropWheel** (named **Petal** until 1.9.0): a Windows desktop app written in C#, .NET 10 and WPF.
+  - It is the Windows equivalent of the Mac app Tangerine. **Never use Tangerine's name or assets.**
+  - It is a zero-click file converter: start dragging a file, tap Shift (conversions), Ctrl (tools) or Alt (actions), and a wheel of "petals" opens under the pointer.
+  - It also has hundreds of tools: media, images, PDF and office files, screen recording, captions, on-device AI (Whisper, local LLMs, voice cloning) and more, in 8 languages.
+- **Owner:** the user, GitHub `yahyaabohashem332`, email yahya.abohashem3322@gmail.com.
+  - They grant full autonomy and say "time does not matter, only the result".
+  - They demand precision and verification, and want the app to make other tools unnecessary.
+- **Goal now:** sell DropWheel on the **Microsoft Store**. Everything it ships or downloads must be free of any licence or patent conflict with commercial use.
+  - The user's words: «راجع كل ما نستخدمه في التطبيق للتأكد من أن لا شيء يتعارض أبدا مع الاستخدام التجاري»
+  - and, about FFmpeg: «غير ما يجب تغييره بدقة لا نريد الوقوع في أي مأزق أو مطالبة في ما بعد … طبق هذه ولا يهم الوقت أو الجهد … المهم المنتج الخالي تماما من أي مشكلة».
+- **Internal names that still say Petal** (only what people see was renamed):
+  - Petal.exe, Petal.com and the `petal` command;
+  - the %APPDATA%\Petal and %LOCALAPPDATA%\Petal folders and PETAL_* environment variables;
+  - the .petalwheel and .petal formats, registry and pipe names, project and namespace names.
+  - The word "petal" for a wheel item stays.
+
+## 2. Where everything is
+
+- **Code:** private GitHub repository https://github.com/yahyaabohashem332/DropWheel.
+  - Branch `master`, HEAD `3e5569e` "DropWheel 1.16.0: Dub translates by meaning, and a licence audit for the Store", 44 commits.
+  - A fresh clone was checked with `git fsck` and came out clean.
+  - On the old PC the working copy was `D:\plugins\Tangerine` (now corrupt; don't use).
+  - **History was rewritten on 2026-11-03:**
+    - `dist/` is removed from every commit (git-filter-repo `--path dist/ --invert-paths --preserve-commit-hashes`).
+    - This matches a copy that had already been pushed on 2026-11-01, whose commit `dcc6614` "Keep build output out of the repository" puts `dist/` in `.gitignore`.
+    - Commit IDs from before the rewrite still appear in old notes and in commit messages, on purpose. Examples: 1.15.0 `bcdc270` is now `29f1c70`; 1.16.0 `2d91124` is now `3e5569e`.
+- **Git and GitHub accounts:**
+  - `gh` on the old PC was signed in as `yahyaabohashem332` (active) and `yahyaabohashemstu`. Repositories belong to `yahyaabohashem332`.
+  - Commit locally as `Petal Dev <yahya.abohashem3322@gmail.com>`. End every commit message with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+  - Until 2026-11-03 the rule was "never push". That day the user asked for the private GitHub copy and it was pushed. Ask before later pushes unless the user says to keep GitHub in step.
+  - On the old PC, pushes used a one-off credential helper and no global config:
+    `git -c credential.helper= -c "credential.helper=!gh auth git-credential" push`.
+- **FFmpeg build repository:** https://github.com/yahyaabohashem332/dropwheel-ffmpeg (private), `main` at `8a305e3`.
+  - Its workflow is "Build FFmpeg for DropWheel".
+  - Run `41619132547` was still in progress at handoff; check it with `gh run list -R yahyaabohashem332/dropwheel-ffmpeg`.
+  - Details are in section 9.
+- **GitHub Releases** of DropWheel: one per build that ever shipped (see section 8). 8 of 29 are uploaded.
+- **The original history with every installer** is only on the failing D: drive:
+  - `D:\plugins\DropWheel-original-2026-11-03.bundle` (6.8 GB, verified when made). It holds the full pre-rewrite history.
+  - `D:\plugins\DropWheel-release-assets\<tag>\` holds the 97 files extracted from it, plus `manifest.json`.
+- **`testdata/` is not in git** (the `testdata/*` rule in `.gitignore`); tests need it.
+  - A rescued copy is at `C:\Users\YAHYA\AppData\Local\Temp\claude\D--plugins-Tangerine\3131bbbb-9be3-4b7b-8421-b8bc97eb6aed\scratchpad\rescue\testdata`. It may hold bad bytes, since it was read from the failing disk.
+  - It has 15 files: `.gitkeep`, album.pdf, brand.ase, figures.png, "landscape 2.webp", landscape.heic, landscape.jpg, landscape.pdf, landscape.webp, layers.psd, leaflet.idml, mixtape.mp3, weekend.mov, weekend.mp4, weekend.srt.
+- **Memory notes** of earlier sessions (all summarised in this file) are on the old PC in `C:\Users\YAHYA\.claude\projects\D--plugins-Tangerine\memory\`.
+- **Data the app keeps** in %LOCALAPPDATA%\Petal: `models\` (downloaded AI models), `studio\` (recording projects) and the dub cache.
+  - The installed DropWheel on the old PC is `C:\Users\YAHYA\AppData\Local\Programs\Petal\Petal.exe`. Never touch the installed copy.
+
+## 3. Solution layout
+
+- `src/Petal.App`: WPF app. Contains:
+  - the wheel and overlay, tool windows (`Tools/Windows/*`), Settings (`Settings/SettingsWindow*.cs`);
+  - screen recording (`Screen/*`, `Screen/Studio/*`), captions and meetings (`Words/*`);
+  - Explorer integration, `Localization/Arabic.cs` + `Localization/Languages/{tr,fa,ur,id,fr,es}.json`;
+  - the Guide (`Guide/Entries/{en,ar,tr,fa,ur,id,fr,es}.json`), and `DesignSnapshots.cs` (snapshot cases).
+- `src/Petal.Core`: formats, the conversion matrix, the tool registry, jobs, `Models/ModelStore.cs` (ModelCatalog: every downloadable model with URL, SHA-256, exact size and licence), `Recording/*` (studio planning) and `Util/*` (ToolLocator, ProcessRunner, Updates).
+- `src/Petal.Engines.Media`: everything FFmpeg (`Internal/Ffmpeg.cs`, `FfmpegProcess.cs`, `MediaEncoder.cs`, `Containers.cs`), the media tools (`Tools/*`), MediaProbe and MediaPreview.
+- `src/Petal.Engines.Imaging`: Magick.NET-Q8-AnyCPU 15.0.0, our HEIC writer (`Codecs/Heif/*` + `Codecs/FfmpegStillEncoder.cs`) and the image tools.
+- `src/Petal.Engines.Documents` (PDF, Office, OCR), `src/Petal.Engines.Files`, and `src/Petal.Recipes` (multi-step features: Dubbing, ShortsMaker, TextEditing, Questions/AskFile, AskPetal, Translation).
+- `tests/Petal.Tests` (about 753 tests, run by build.ps1), `tests/Petal.Engines.Media.Tests`, `tests/Petal.Engines.Imaging.Tests`, and others.
+- `tools/scripts`:
+  - `build.ps1`: the release build.
+  - `build-store.ps1`: MSIX; out of scope for now.
+  - `fetch-tools.ps1`: downloads FFmpeg and ExifTool into `tools/bin`.
+  - `lucide2wpf.js` and `make_icon.py`.
+- `store/`: Store package files and `THIRD-PARTY-NOTICES.md`, plus `store/licenses/{Apache-2.0,GPL-3.0,CC-BY-4.0}.txt`.
+
+## 4. Building, testing, releasing
+
+- **Release:** `pwsh tools\scripts\build.ps1 -Version X.Y.Z -Notes "<what's new, English>"`.
+  - It runs `fetch-tools.ps1`, then `dotnet test tests\Petal.Tests -c Release`, then publishes self-contained ReadyToRun win-x64 to `dist\Petal`.
+  - It copies the licences, makes `dist\DropWheel-X.Y.Z-win-x64.zip`, and builds Inno Setup 6 (`ISCC.exe`) into `dist\DropWheel-Setup-X.Y.Z.exe`.
+  - It writes `dist\update.json`, signed with ECDSA P-256 (SHA-256, IEEE P1363) over `petal-update\n{version}\n{url}\n{SHA256 upper}\n{size}`.
+  - **The private signing key is `%USERPROFILE%\.petal\update-signing-key.pem`. Copy it from the old PC to the new one, same place, and keep a backup. A new key would make every installed copy refuse updates.**
+  - The public key is `Updates.PetalKey` in `src/Petal.Core/Util/Updates.cs`.
+- **Check a release** by verifying the hash, size and signature of `update.json` against the setup file (with .NET `ECDsa.ImportSubjectPublicKeyInfo` and `VerifyData` in PowerShell), and `dist\Petal\Petal.com version` should print "DropWheel X.Y.Z".
+- **Since the history rewrite, `dist/` is not tracked.**
+  - Release files (setup, zip, update.json) now go to a GitHub Release tagged `vX.Y.Z` on the release commit, instead of being committed.
+  - The old rule ("git rm the previous setup/zip, add the new ones") is obsolete.
+- **Order** if other builds are ever asked for: x64 `build.ps1`, then arm64 `-SkipTests`, then `build-store.ps1`, one at a time.
+  - The user currently wants **only the x64 exe**: «حاليا لا تعدل إلا تطبيق سطح المكتب … فقط تطبيق exe». No MSIX, arm64, README, web guide or Stream Deck work unless asked.
+  - `store/THIRD-PARTY-NOTICES.md` is still shipped in the exe build, as `licenses\THIRD-PARTY-NOTICES.txt`.
+- **Tests:** set `PETAL_SETTINGS_DIR` to a scratch `settings-test` folder so the real settings are untouched.
+  - Timing tests flake under load; rerun them alone: WheelPreviewTimingTests, WheelTextTests' 1-second test, PhotoEditTests.PreviewRendersFast, OfficeTests' hung-job test.
+  - Gated tests use env vars:
+    - PETAL_ASK and PETAL_ASK_DOCS / PETAL_ASK_KINDS (Ask a File);
+    - PETAL_DUB_LINES, PETAL_DUB_LIMIT and PETAL_DUB_MODEL (dub translation);
+    - PETAL_VOICES: a folder with `piper_windows_amd64.zip` + `en_US-ljspeech-medium.onnx` + `.onnx.json`;
+    - PETAL_TEXTCUT (Edit by Text).
+- **Snapshots** (checking UI by eye):
+  - Command: `Petal.exe --snapshot-tools <outdir> <repo>\testdata <case> --lang en|ar`, after rebuilding Petal.App. Always pass `--lang en` for English, because the PC's language is Arabic.
+  - Also `--snapshot-circle`. The first snapshot after a build can miss its video frame; render it again.
+  - Cases include dub, dubbest, dubpreparing, shorts, editbytext, askfile and many more (see DesignSnapshots.cs).
+- **Translations:**
+  - Every UI string needs an Arabic entry in Arabic.cs, as `["key"] = "value",` lines before the closing `};`. LocalizationTests enforces it; sample or technical strings go in its NotTranslated list.
+  - It also needs entries in the six JSON tables, rewritten with Python `json.dumps(table, ensure_ascii=False, indent=1, sort_keys=True) + "\n"`, CRLF line ends, no BOM.
+  - Guide entries are rewritten with `json.dumps(d, ensure_ascii=False, indent=1)` (unsorted), CRLF, in all 8 languages.
+  - The Guide's French puts a no-break space (U+00A0) before ; : ? ! and inside « ». Persian needs ZWNJ (U+200C) built with `chr(0x200C)`.
+  - Wheel labels in Arabic, Persian and Urdu are drawn at 10pt, so long Latin words don't fit. LocalizationTests misses all-caps strings of 6 letters or fewer.
+  - The keys READ ("مقروء") and ANSWER ("رد") are taken.
+- **Shell traps** in the Claude Code environment on the old PC (Git Bash + PowerShell):
+  - Backslashes inside Bash heredocs or inline scripts got mangled. Write scripts with the Write tool and run them with `python -I`.
+  - The Write tool turns `\uXXXX` into the character itself, so build such escapes with `chr(92)+"u200F"`.
+  - The repo mixes LF and CRLF. Never `sed -i` tracked sources. In Python use `open(p, encoding='utf-8', newline='')`, then check with `git --no-pager diff --stat`.
+  - Always `git --no-pager`.
+
+## 5. Standing rules from the user
+
+- **Reporting:** final summaries go to the user in Arabic.
+- **Scope:** the x64 exe only, as in section 4.
+- **Pace:** one thing at a time, each finished before the next («لا تخلط الأمور أبدا»).
+- **Done means all of these:**
+  - code and tests;
+  - Arabic plus 7 languages, and Guide entries;
+  - snapshots checked by eye in en and ar;
+  - an x64 release and a commit.
+- **The user's PC:**
+  - Don't install software on it or change its system or security settings.
+  - Don't touch the installed DropWheel.
+  - Never script input into Explorer and never move the user's mouse. The user declined computer-use control; check the UI with snapshots and in-process tests instead.
+  - A dev instance started with fresh settings writes to the real HKCU (the Explorer thumbnail handler pointing at the debug DLL). Afterwards run the dev exe with `--unregister-shell` and stop the COM Surrogate that holds Petal.Shell.dll.
+- **Hardware:**
+  - Never run TIGER on DirectML: it hung the GPU (TDR) on the user's PC.
+  - Keep heavy AI on the CPU unless measured otherwise.
+- **Releases:** never let a release build skip the tests.
+
+## 6. Release history (what each version brought)
+
+- **Petal 1.0.0 to 1.8.4** (2026-10-20 to 10-27):
+  - core wheel and converters, then tools, the Arabic interface, Explorer menu, on-device AI;
+  - 1.2: recipes, Ask Petal, search by meaning; 1.3: Adobe files; 1.4: folders; 1.5: wheels without files and the Store package;
+  - 1.6: screen and text tools; 1.7: command palette and captions; 1.8: eight languages; 1.8.x fixes.
+- **1.9.0:** renamed DropWheel.
+- **The six features** the user asked for on 2026-10-27, built strictly in order, all shipped:
+  - 1.10.0 Circle Anything (Ctrl+Win+C)
+  - 1.11.0 Make Shorts
+  - 1.12.0 Dub
+  - 1.13.0 Edit by Text
+  - 1.14.0 Ask a File
+  - 1.15.0 Recording Studio (cinematic recording)
+- **1.16.0** (2026-11-03):
+  - Dub's fourth level "Best" (الأدق), using Gemma 4 12B;
+  - the licence audit: lessac-based voices removed; Linda added; complete notices; Settings › Helpers has an "Open-source licences" button.
+
+## 7. What each big feature does, and what was learned (keep these)
+
+- **Make Shorts:**
+  - `Transcriber.TranscribeWordsAsync` feeds whisper.cpp pieces under 28 s, cut at pauses. DTW silently stops returning segments on long audio otherwise.
+  - Pipeline: ShortMoments, then SpeakerFraming (Windows FaceDetector + mouth movement), then ShortClip (one FFmpeg pass), with Recipes/ShortsMaker on top.
+- **Dub** (DubWindow, Recipes/Dubbing, DubTrack, VoiceCloner, SpokenText, MusicRemover):
+  - **Voice model:** Chatterbox Multilingual V3 (Resemble AI, MIT).
+    - `speech_encoder`, `embed_tokens`, `language_model_q4` and `tokenizer.json` from Masterx/chatterbox-multilingual-v3-ONNX at pinned commit `19b94afe…`.
+    - The voice maker from KitsuMate/chatterbox-multilingual-v3-onnx at `3f44461d…`, split into flow_prepare_slim + flow_step_slim + vocoder_slim. These load in about 7 s; the one-graph exports take 50–96 s.
+    - 10 flow steps on a cosine schedule, guidance 0.7. The flow step runs on DirectML, falling back to the CPU.
+  - **Hearing back:** Whisper large-v3-turbo judges each spoken line (WER ≤ 0.2). SpokenText writes numbers as words.
+  - **Music:**
+    - Brief (2026-10-28): the music is removed completely and other background sounds are kept.
+    - Pipeline: Demucs, then TIGER-DnR (audiojs tiger.int8.onnx, pinned `65072a21…`) on Demucs' "rest", middle channel only, mask = (effects power share)^4.
+    - TIGER runs on the CPU only: about 52 s per 12 s piece, 2 pieces at once when RAM ≥ 15 GB.
+  - **Translation levels:** Fast, Balanced and Accurate use Opus-MT (Helsinki-NLP, CC-BY 4.0, Xenova ONNX); Translator.Tidy cleans its Arabic.
+  - **Level 4, "Best", added in 1.16.0** (`src/Petal.Recipes/Translation/DubTranslation.cs`):
+    - Gemma 4 12B Instruct Q4_K_M (Google, Apache-2.0, unsloth GGUF pinned `fc034cff…`, 7.1 GB), run by llama.cpp b11763 through AskPetal.WriteAsync.
+    - The Gemma prompt format `<|turn>system\n…<turn|>\n<|turn>user\n…<turn|>\n<|turn>model\n` is used when the file name contains "gemma"; temperature 0, prefill "1.".
+    - It first writes a brief of the whole transcript, then translates batches of 8 lines with the 4 lines before as context.
+    - Target words per line = mean of (duration × rate: ar 2.1, en 2.6 words/s) and (original words × ratio: en→ar 0.8, ar→en 1.25).
+    - Replies are parsed by number and checked for script and length; any missing line falls back to Opus-MT.
+    - A translation that repeats an earlier one's words (overlap > 0.6) while the originals differ (< 0.4) is asked again alone.
+    - Measured on the i5-7600K for a 20-line sermon: Qwen3 4B took 96 s (weak); Gemma 4 E4B took 151 s; Gemma 4 12B took 552 s and was clearly best.
+    - The window shows level 4 only when Whisper turbo and the Gemma model are present. Its cache name includes the writer model id.
+  - **ModelStore.Find needs the exact file size**, so a test ModelInfo must carry the real length.
+- **Edit by Text** (TextCut, Recipes/TextEditing):
+  - FFmpeg expressions refuse more than 100 terms added in a row, so PauseRemover.Expression builds a search tree of `gte(t,S)*lt(t,E)` leaves.
+  - Cuts are half-open, and audio uses 32-sample blocks (PauseRemover.AudioSelect).
+  - Whisper's DTW word times are unreliable. Words are placed on runs of sound by a shortest path (TextCut.Place/Part), and candidate "uh" sounds are re-heard alone (CheckSoundsAsync) so speech is never deleted.
+  - Measure with the PETAL_TEXTCUT gated test.
+- **Ask a File** (Recipes/Questions):
+  - Qwen3-4B-Instruct-2507 Q4_K_M answers on the CPU (Qwen2.5-1.5B failed; don't fall back to it).
+  - multilingual-e5-small int8 + BM25, joined by reciprocal rank fusion, finds the passages; an Arabic↔English question is also searched translated.
+  - Places: page, slide, rows or minute. Highlights come from DocumentPlaces.Marks.
+  - The gated tests scored 10/10 and 7/7.
+- **Recording Studio** (Screen/Studio/*, Petal.Core/Recording/*):
+  - Flow: record with "Cinematic" on, then a project in %LOCALAPPDATA%\Petal\studio\<stamp>\, then StudioWindow.
+  - Capture: pointer sampled at 120 Hz; typing recorded by caret position, never letters.
+  - Planning: ZoomPlanner, CameraPlan (springs) and PointerPlan.
+  - Output: StudioRenderer (Skia, motion blur), then StudioExport (audio graph, then video). The preview is a WPF MediaElement, whose FlowDirection must be LTR. RecordingPolish remains for plain recordings with the camera.
+- **Read Aloud:** Windows voices plus one natural voice, "Linda" (Piper's LJSpeech voice, MIT, public-domain recordings).
+  - Kareem (Arabic) and Joe (English) were removed in 1.16.0 because they are fine-tuned from lessac, whose recordings are for research only. **Before adding any Piper voice, read its MODEL_CARD for its dataset and fine-tuning.**
+
+## 8. GitHub Releases upload (paused, unfinished)
+
+- **Uploaded so far:** v1.0.0-build.1 to v1.0.0-build.4 (prereleases), v1.0.0, v1.1.0, v1.2.0 and v1.3.0, each complete; v1.3.1 has only its zip.
+- **Left:** v1.3.1 (setup + update.json), v1.3.2, v1.4.0, v1.5.0–v1.5.2, v1.6.0, v1.7.0, v1.8.0–v1.8.4 (with arm64 zip/setup), v1.9.0–v1.16.0.
+- **Each release:**
+  - tag `vX.Y.Z` on the rewritten commit (map old to new with filter-repo's commit-map; 1.16.0 is `3e5569e`);
+  - title "Petal X.Y.Z" or "DropWheel X.Y.Z";
+  - assets: the zip, the setup, and the update.json / update-arm64.json that offered that build;
+  - notes: the update.json notes, then the commit subject and body, then "Built from commit <new> (originally <old7> before the build files were taken out of history)".
+  - Latest = v1.16.0. Builds of 1.0.0 before the last are `v1.0.0-build.N` prereleases.
+- **The scripts were in the old session's scratchpad** (`gh_assets.py` extracts by commit, `gh_releases.py` uploads and is resumable); they are gone with it, so rewrite them if needed.
+- **Integrity first:** the D: disk returns corrupted reads.
+  - Before uploading any file, check it against its git blob ID: SHA-1 of `"blob <size>\0" + content`, recorded in manifest.json and in the bundle's history.
+  - Re-check the 8 releases already uploaded against GitHub's asset digest.
+  - If D: is replaced, the bundle may be the only source. Run `git bundle verify` first, then clone it elsewhere, then extract.
+
+## 9. In progress: FFmpeg and images with no GPL and no patented codec
+
+**Decision (user, 2026-11-03), "All of it":**
+- a custom LGPL FFmpeg holding no implementation of any patent-pool codec;
+- Windows (Media Foundation) decodes and encodes H.264, HEVC and AAC;
+- a custom Magick.Native without libheif's HEVC/AVC parts (libde265, openh264, x265), with HEIC through Windows (WIC);
+- rubberband (GPL) replaced by atempo;
+- the user accepted that HEVC/HEIC need Windows' HEVC Video Extensions, as the Photos app does.
+
+The user ruled out the "Encoders only" option (BtbN's LGPL FFmpeg as-is).
+
+**Research facts** (from a research agent, 2026-11-03; a lawyer gives the final word):
+- BtbN's lgpl builds drop x264, x265, xvid, vidstab, rubberband, frei0r and similar. But they **still contain** FFmpeg's own H.264/HEVC/VVC/AAC decoders, the native AAC encoder, openh264, kvazaar, vvenc, opencore-amr and lcevc. Hence the custom build.
+- **FFmpeg's Media Foundation encoders** (libavcodec/mfenc.c):
+  - Encoders: h264_mf, hevc_mf, av1_mf, aac_mf, ac3_mf, mp3_mf.
+  - `rate_control`: default, cbr, pc_vbr, u_vbr, quality, ld_vbr, g_vbr, gld_vbr. `quality` 0–100 (MS default 70 ≈ QP 24); `scenario`; `hw_encoding` 0/1.
+  - **H.264 defaults to Baseline: pass `-profile:v 100` for High** (the text "high" fails to parse).
+  - Input: nv12 or yuv420p, even sizes. HEVC: Main 8-bit only, and only CBR or quality.
+  - Maximum resolution and 4K60 are undocumented, so test them.
+  - FFmpeg 8.1 doesn't set frame size or rate on the input type, which GPU-vendor encoders reject. This is fixed in **9.0**, hence n9.0.2.
+  - Windows N editions lack mfplat without the Media Feature Pack.
+- **aac_mf:** AAC-LC only, s16 input, **44.1 or 48 kHz**, 1, 2 or 6 channels, **96/128/160/192 kbps** only. Every input sample needs a duration.
+- **Patents:**
+  - H.264 (Via LA): last US patent 2030-11-26; units 1–100k a year free, but a licence must still be signed.
+  - HEVC (Access Advance plus the former Via LA pool, now Access Advance): no free tier.
+  - AAC (Via LA): still licensed.
+  - Expired: MP3 (2017), AC-3 (2017), MPEG-2 (2018), MPEG-4 Part 2 (2026-07-19).
+  - VC-1 pool still active. Apple calls FFmpeg's ProRes unauthorised.
+  - Microsoft's Windows licence covers the AVC, VC-1 and MPEG-4 Part 2 codecs "for personal and non-commercial use". **No explicit Microsoft statement covers apps calling Media Foundation**, though Firefox and others rely on it.
+  - D3D11VA decoding still runs FFmpeg's own H.264 decoder code, so it is not a way around.
+
+**Custom FFmpeg (repository `dropwheel-ffmpeg`, files `build.sh`, `.github/workflows/build.yml`, `README.md`):**
+- **Source:** FFmpeg tag `n9.0.2` (commit `946fcce07b6dcd0331c8cc609192aeff5e1924f8`), compiled inside BtbN's public image `ghcr.io/btbn/ffmpeg-builds/win64-lgpl-shared-9.0:latest`, which holds the prebuilt libraries. Only FFmpeg itself is configured.
+- **Licence:** LGPL **v2.1+** (no `--enable-version3`; no gmp, aribb24, opencore-amr or mbedtls). `--disable-autodetect`, pthreads.
+- **Enabled libraries:** mediafoundation, zlib, lzma, iconv, libxml2, dav1d, aom, svtav1, vpx, webp, mp3lame, opus, vorbis, soxr, zimg, libass, freetype, harfbuzz, fribidi, fontconfig.
+- **Allow-lists:** `--disable-decoders/encoders/parsers/bsfs` with explicit enables, plus `--disable-hwaccels --disable-outdevs --disable-indevs --enable-indev=lavfi`. Every name was checked against n9.0.2's source.
+  - **Decoders:**
+    - video: av1, libdav1d, vp8, vp9, theora, vp3, mpeg1/2video, mpeg4, h261, h263(i/p), flv, mjpeg(b), jpeg2000, jpegls, png, apng, gif, webp, bmp, tiff, pnm family, pcx, targa, sgi, qoi, hdr, dpx, ffv1, ffvhuff, huffyuv, utvideo, rawvideo, v210, yuv4, qtrle, msrle, msvideo1, cinepak, dirac, snow;
+    - audio: mp1/2/3 (+float), flac, alac, opus, vorbis, ac3(+fixed), ape, tta, wavpack, gsm(+ms), all pcm_*, adpcm ima_wav/ima_qt/ms/yamaha/swf/g726(le);
+    - subtitles: ass, ssa, srt, subrip, movtext, webvtt, text, microdvd, subviewer(1), sami, realtext, mpl2, pjs, jacosub, vplayer, stl, dvdsub, dvbsub, pgssub, xsub, ccaption.
+  - **Encoders:** h264_mf, hevc_mf, aac_mf, libaom_av1, libsvtav1, libvpx_vp8, libvpx_vp9, mpeg4, mjpeg, png, apng, gif, libwebp(+anim), ffv1, utvideo, rawvideo, bmp, tiff, wrapped_avframe (needed by `-f null`), libmp3lame, libopus, opus, libvorbis, flac, alac, pcm_*, ass, ssa, srt, subrip, movtext, webvtt, text.
+  - **Parsers:** ac3, av1, dirac, dvbsub, dvdsub, flac, gif, h261, h263, jpeg2000, mjpeg, mpeg4video, mpegaudio, mpegvideo, opus, png, pnm, vorbis, vp3, vp8, vp9, webp, bmp, qoi. **No** h264/hevc/aac parsers.
+  - **Bitstream filters:** aac_adtstoasc (header conversion for AAC stream copy), chomp, dump_extradata, null, setts, pgs_frame_merge, mpeg4_unpack_bframes, text2movsub, mov2textsub, vp9_*, av1_*. extract_extradata and filter_units were removed because they carry H.264/HEVC parsing code.
+- **Output** (workflow artifact `ffmpeg-win64`; a release when run with `release: true`): `ffmpeg-n9.0.2-dropwheel-win64.zip` (exe, DLLs, LICENSE.txt, configuration.txt, libraries.txt, BUILD.txt) plus `ffmpeg-n9.0.2-source.tar.gz`, needed for LGPL compliance.
+- **winarm64 is not built yet.** BtbN's arm64 image lacks libvpx and libaom, so its flags must differ.
+- **To do once it finishes:**
+  - Check `ffmpeg -decoders/-encoders/-parsers/-bsfs` lists nothing patented.
+  - Check that copying H.264 between MP4 and MKV still works without the h264 parser.
+  - Then make `fetch-tools.ps1` take this build: SHA-256 pinned, from the build repo's release.
+
+**Where FFmpeg runs today** (inventory, 2026-11-03; M = src/Petal.Engines.Media, A = src/Petal.App):
+- **Shared runners:**
+  - `M/Internal/FfmpegProcess.cs` (RunAsync, RunReadingStdoutAsync) and `M/Internal/Ffmpeg.cs` (RunAsync, EncodeAsync).
+  - `M/Internal/MediaEncoder.cs` (BuildArgs, an NVENC→libx264 fallback, two-pass, the GIF palette).
+  - `M/Internal/Containers.cs` (container specs, VideoEncoderArgs, AudioEncoderArgs).
+- **Own processes:** M/Tools/Reframer.cs:106, M/Tools/SpeakerFraming.cs:60, A/Screen/RecordingPolish.cs:180–190, A/Screen/ScreenRecorder.cs:234/529/561, A/Screen/CameraBubble.cs:395, A/Screen/Studio/StudioExport.cs:252, A/Screen/Studio/StudioWindow.cs:281, A/Words/MeetingRecorder.cs:185.
+  - Also src/Petal.Engines.Imaging/Codecs/FfmpegStillEncoder.cs via ProcessRunner (HEIC via libx265; AVIF via libaom/svtav1).
+- **libx264 / aac / rubberband in use:**
+  - Containers.cs:128–142 (h264_nvenc, libx264, `-crf`, `-preset`, `-profile:v high`), :176 (aac), :159/:185 (wmv2/wmav2);
+  - AudioTools.cs:222 (`-tune`); DubTrack.cs:218 (**rubberband, no fallback**), :282 (libx264), :287 (aac);
+  - VideoTools.cs:292/294 (Join forces H.264/AAC), :441–442 (rubberband if probed);
+  - ScreenRecorder.cs:244 (libx264 to video.mkv), :559 (aac); CameraBubble.cs:399; RecordingPolish.cs:194;
+  - StudioExport.cs:152–153; StudioWindow.cs:282; MeetingRecorder.cs:135 (m4a aac);
+  - MediaCapabilities.cs:21 (nvenc probe), :28 (rubberband probe);
+  - FfmpegStillEncoder.cs:14 (" libx265 " check), :42.
+- **Default encoders by container** (Containers.cs:41–69):
+  - mp4/mov/mkv: H.264 + AAC; m4a and .aac: AAC; wmv: wmv2 + wmav2; wma: wmav2; avi: mpeg4 (xvid tag) + mp3.
+  - webm (VP9 + Opus), mp3, wav, aiff, flac, ogg, opus and gif are patent-free already.
+- **Our own recordings are H.264 and get decoded later** (RecordingPolish, StudioExport, the studio waveform). They need either a royalty-free intermediate or the Windows decoder.
+- **Images:**
+  - Magick.NET reads HEIC/AVIF through libheif: `Engines.Imaging/Codecs/ImageLoader.cs:61`, `Common/ImageFormats.cs:23/42/95–103`, `ImagePreview.cs:28–63`.
+  - Our HEIC writer: `Codecs/Heif/HeifWriter.cs` + HevcBitstream + HeifMuxer, fed by libx265.
+  - `A/Tools/Parts/ImageLoader.cs:157` saves MagickFormat.Heic directly, which can't work since Magick has no HEVC encoder.
+  - WIC is already used in a few places: Engines.Documents/Util/ImageTools.cs, FileActionWindows.cs:262 (HEIC dates through WPF).
+- **Already decoded by Windows:** WPF MediaElement previews, MediaPlayer, Windows.Media (camera, faces, OCR, speech). NAudio is used only for capture, playback and WAV.
+- **Tests tied to codecs:** tests/Petal.Engines.Media.Tests/Fixtures.cs (makes the libx264/aac/wmv2/libx265 fixtures), ConverterTests, AudioToolTests, VideoToolTests, VoiceCleanerTests, DubbingTests, TranscribeTests, TextCut/ShortClip/AnimatedCaptions tests, Petal.Tests StudioRenderTests/PolishTests/DuplicateTests, and Imaging HeicTests/ConversionTests/ToolTests/PhotoEditTests/MetadataTests.
+
+**Planned design** (not started in code):
+1. **Windows decoding bridge**, new code in Engines.Media:
+   - Media Foundation Source Reader over COM interop (MFStartup, MFCreateSourceReaderFromURL, SetCurrentMediaType NV12 or P010 for video and Float for audio, ReadSample, SetCurrentPosition for seeking; crop to MF_MT_MINIMUM_DISPLAY_APERTURE; pass on MF_MT_VIDEO_ROTATION and the colour attributes).
+   - It writes a streaming Matroska: V_UNCOMPRESSED with ColourSpace "NV12", A_PCM/FLOAT/IEEE, unknown-size Segment and Clusters, SimpleBlocks.
+   - Delivery: a NamedPipeServerStream that FFmpeg reads with `-f matroska -i \\.\pipe\<name>`; rotation through FFmpeg 9's `-display_rotation`.
+   - **Argument rewriter** at every launch point:
+     - When an input file's video or audio codec isn't in our FFmpeg's decoder list and the command decodes it (not `-c copy`), keep the original input (for subtitles, cover art, chapters and copied streams) and append the bridge as a new last input.
+     - Move that input's `-ss/-t/-to/-sseof` into the bridge (decode from the keyframe, drop to the exact start, timestamps relative to it).
+     - Redirect `-map k:v…/k:a…/k:<index>` and `[k:v]`/`[k:a]` filter labels to the bridge input. Add explicit maps where the command relied on automatic selection.
+     - If the bridge fails (e.g. no HEVC extension), raise a clear error instead of a short output. Fail fast before starting FFmpeg.
+   - Check first, empirically, that FFmpeg's matroska demuxer reads V_UNCOMPRESSED NV12 from a pipe.
+2. **Encoders:**
+   - H.264: `h264_mf -profile:v 100 -rate_control quality -quality <from CRF, calibrate> -pix_fmt nv12`, with hardware tried first (`-hw_encoding 1`) and then software.
+   - Target size: `pc_vbr`/`cbr` with `-b:v`; MF has no two-pass.
+   - AAC: `aac_mf` with `-ar 48000 -sample_fmt s16`, the nearest of 96/128/160/192k, channels 1/2/6.
+   - Remove NVENC, `-tune`, `-preset`, the libx265 checks and the rubberband probe and uses; atempo chains instead.
+   - Recording intermediates: h264_mf, or a royalty-free fast codec. Measure 120 Hz capture.
+   - WMV/WMA output: drop, or write through a Media Foundation Sink Writer. Undecided; tell the user.
+3. **Images:**
+   - HEIC read and write through WIC / Windows.Graphics.Imaging. This needs the HEIF and HEVC Video Extensions; give a clear message when they are missing.
+   - A custom Magick.Native build (dlemstra/Magick.Native, private repo, GitHub Actions) without libde265, openh264 and x265, keeping libheif for AVIF with aom/dav1d. Or AVIF through FFmpeg.
+4. **Tests:** rebuild the fixtures with h264_mf/aac_mf, update the codec expectations, and add bridge tests (seeking, multiple audio tracks, rotation, an HEVC 10-bit file, a missing extension).
+5. **Notices and LGPL:**
+   - Update THIRD-PARTY-NOTICES:
+     - FFmpeg becomes LGPL-2.1+;
+     - list its libraries and their licences (lame, fribidi, soxr and iconv are LGPL; svt-av1 is BSD-3-Clause-Clear plus the AOM patent licence);
+     - offer FFmpeg's exact source;
+     - follow FFmpeg's legal checklist: https://ffmpeg.org/legal.html (DLLs not renamed, no ban on reverse engineering in the EULA, credit in About).
+   - Drop the GPL text if nothing GPL remains. Piper's espeak-ng is GPL and is downloaded from Piper's own release, not shipped in the exe.
+   - Update the Settings › Helpers FFmpeg "Get" link: it points to gyan.dev GPL builds.
+6. **Release** 1.17.0 to GitHub Releases, and update memory notes.
+
+**Other licence items still open:**
+- The Demucs ONNX (timcsy/demucs-web-onnx) states no licence (Meta's weights are MIT); re-export it ourselves, or accept it.
+- The Store's policy 11.16 asks for an AI-features declaration in Partner Center; the user does that.
+
+## 10. Licences already settled (1.16.0)
+
+- **Notices:** `store/THIRD-PARTY-NOTICES.md` lists every program, library and model with copyright and licence, and holds the MIT, BSD-2, BSD-3 and ISC texts.
+- **What build.ps1 ships:**
+  - the notices, as `licenses\THIRD-PARTY-NOTICES.txt`;
+  - `store/licenses/*.txt`;
+  - every NuGet package's own LICENSE/NOTICE files, found through `Petal.deps.json`, into `licenses\packages\`;
+  - FFmpeg.txt, ExifTool.txt, DirectML.txt and FFmpeg-version.txt.
+- **In the app:** Settings › Helpers opens the notices ("Open-source licences", translated).
+- **Opus-MT** is CC-BY 4.0 (ModelStore says so), credited with the note that Xenova's ONNX is quantized.
+- **NuGet packages** are all permissive. Keep SixLabors.Fonts pinned at 1.0.1 (later versions changed licence).
+- **Models and their licences:**
+  - BiRefNet: MIT
+  - Real-ESRGAN: BSD-3, shipped
+  - Whisper: MIT
+  - Qwen2.5 1.5B and Qwen3 4B: Apache-2.0
+  - Gemma 4 12B: Apache-2.0
+  - SmolVLM: Apache-2.0
+  - e5-small: MIT
+  - CLIP: MIT; multilingual CLIP: Apache-2.0
+  - Demucs: MIT
+  - TIGER: Apache-2.0
+  - LaMa: Apache-2.0
+  - Chatterbox: MIT
+  - DeepFilterNet: MIT/Apache
+  - Linda: MIT, public-domain data
+
+## 11. Next step on the new computer
+
+1. Install the .NET 10 SDK, Git, `gh` (sign in as yahyaabohashem332), PowerShell 7, Python 3 and Inno Setup 6.
+2. Clone https://github.com/yahyaabohashem332/DropWheel.
+3. Copy `testdata/` into it (from a backup, or the rescued copy on the old PC).
+4. Copy `%USERPROFILE%\.petal\update-signing-key.pem` from the old PC.
+5. Run `tools\scripts\fetch-tools.ps1` and a Release build of the solution.
+6. Run `dotnet test tests\Petal.Tests -c Release` with PETAL_SETTINGS_DIR set, to confirm the baseline (753 passed on the old PC at 1.16.0).
+7. Then check the `dropwheel-ffmpeg` Actions run (section 9) and continue the plan there, in order: verify the build, then the bridge, then the encoders, then the images, then notices and tests, then release.
+
+## 12. Be careful
+
+- **D: on the old PC** is a JMicron USB enclosure.
+  - Logs show event 153 (IO retried, constantly), 129 (UASP reset), 51 and 157 (surprise removal).
+  - It disconnected twice on 2026-11-03, and afterwards the repository's pack and the folders `dist/` and `tools/bin/exiftool` read back corrupted.
+  - Don't trust files read from it without checking them. The user also keeps Android SDK, Blender projects, WSL and more there.
+- **Paused and left behind on the old PC:**
+  - `D:\plugins\tmp-filter-test` is a throwaway clone and can be deleted.
+  - Releases upload: see section 8. Nothing else was running.
+- **Rewritten history:** never force-push GitHub's master; the history there is the rewritten one.
+- **gh_releases.py notes file:** it wrote `release-notes.md` into the asset folders. Write such files on a healthy disk instead.
+- **Git maintenance:** an automatic git maintenance repack started during a fetch and ran beside a big job. Pass `-c gc.auto=0 -c maintenance.auto=false` for heavy git work.
+- **`ToolLocator` (src/Petal.Core/Util) also finds an FFmpeg on PATH or from winget**, which may be a GPL build. The bundled one must win, and the bridge must not assume codecs that build lacks.
