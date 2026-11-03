@@ -50,6 +50,8 @@ public static class ToolRegistry
         new(SeparateVocals, "VOCALS", "Separate Vocals", "music", true, ToolSelection.SingleOrBatch, "Stems", ToolOutputKind.Folder),
         new(EraseObject, "ERASE", "Erase Object", "brush", true, ToolSelection.Single, "Erased"),
         new(TranslateSubtitles, "TRANSLATE", "Translate Subtitles", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
+        // A Word, PowerPoint, Excel or PDF file in another language, its formatting kept.
+        new(TranslateDocument, "TRANSLATE", "Translate Document", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
         new(ExportLayers, "LAYERS", "Export Layers", "layers", true, ToolSelection.SingleOrBatch, "Layers", ToolOutputKind.Folder),
         new(SlimPhotoshop, "HISTORY", "Remove Photoshop History", "history", false, ToolSelection.SingleOrBatch, "Slim"),
         new(FileDetails, "INFO", "File Info", "info", true, ToolSelection.Single, ""),
@@ -96,9 +98,11 @@ public static class ToolRegistry
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
-    private static readonly ToolId[] PdfSingle = [Compress, Metadata, AskFile, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
+    private static readonly ToolId[] PdfSingle = [Compress, Metadata, AskFile, TranslateDocument, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
     private static readonly ToolId[] DocumentTools = [AskFile, ReadAloud];
-    private static readonly ToolId[] PdfMulti = [Compress, Metadata, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
+    private static readonly ToolId[] TranslatedDocumentTools = [AskFile, TranslateDocument, ReadAloud];
+    private static readonly ToolId[] TranslatedSheetTools = [AskFile, TranslateDocument];
+    private static readonly ToolId[] PdfMulti = [Compress, Metadata, TranslateDocument, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
     private static readonly ToolId[] ArchiveTools = [ExtractArchive];
     private static readonly ToolId[] PhotoshopSingle = [ExportLayers, FileDetails, ExtractColours, SlimPhotoshop];
     private static readonly ToolId[] PhotoshopMulti = [ExportLayers, SlimPhotoshop, CreatePdf, CreateCollage];
@@ -201,8 +205,8 @@ public static class ToolRegistry
             FormatFamily.Video => multi ? VideoMulti : VideoSingle,
             FormatFamily.Pdf => multi ? PdfMulti : PdfSingle,
             FormatFamily.Archive => ArchiveTools,
-            FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => multi ? [] : DocumentTools,
-            FormatFamily.Slides or FormatFamily.Spreadsheet => multi ? [] : [AskFile],
+            FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => Translated(formats, TranslatedDocumentTools, multi ? [] : DocumentTools),
+            FormatFamily.Slides or FormatFamily.Spreadsheet => Translated(formats, TranslatedSheetTools, multi ? [] : [AskFile]),
             FormatFamily.Subtitle => SubtitleTools,
             FormatFamily.Project => ProjectTools(formats, multi),
             FormatFamily.Palette => multi ? [] : [Palette],
@@ -213,6 +217,14 @@ public static class ToolRegistry
             tools.Add(Get(CompareFiles));
         return tools;
     }
+
+    /// <summary>The kinds of Office file Translate Document takes, with their formatting.</summary>
+    private static bool Translatable(FileFormat format) =>
+        format == Formats.Formats.Docx || format == Formats.Formats.Odt || format == Formats.Formats.Rtf || format == Formats.Formats.Pptx || format == Formats.Formats.Xlsx;
+
+    /// <summary>The tools for files that can all be translated, of which several files together get only the translation; otherwise the others.</summary>
+    private static ToolId[] Translated(IReadOnlyCollection<FileFormat> formats, ToolId[] offered, ToolId[] others) =>
+        !formats.All(Translatable) ? others : formats.Count > 1 ? [TranslateDocument] : offered;
 
     /// <summary>Two documents with words in them, or two pictures (not drawings): what Compare Files takes.</summary>
     public static bool Comparable(IReadOnlyCollection<FileFormat> formats)

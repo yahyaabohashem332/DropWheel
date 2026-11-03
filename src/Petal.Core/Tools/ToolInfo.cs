@@ -66,6 +66,7 @@ public enum ToolId
     EditByText,
     AskFile,
     RecordingStudio,
+    TranslateDocument,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

@@ -327,6 +327,7 @@ internal static class DesignSnapshots
             ("separate", () => new Tools.Windows.SeparateVocalsWindow(T(Petal.Core.Tools.ToolId.SeparateVocals), audio, jobs, at)),
             ("erase", () => new Tools.Windows.EraseObjectWindow(T(Petal.Core.Tools.ToolId.EraseObject), file("landscape.jpg"), jobs, at)),
             ("translate", () => new Tools.Windows.TranslateSubtitlesWindow(T(Petal.Core.Tools.ToolId.TranslateSubtitles), [file("weekend.srt")], jobs, at)),
+            ("translatedocument", () => new Tools.Windows.TranslateDocumentWindow(T(Petal.Core.Tools.ToolId.TranslateDocument), [file("album.pdf")], jobs, at)),
             ("exportlayers", () => new Tools.Windows.ExportLayersWindow(T(Petal.Core.Tools.ToolId.ExportLayers), [file("layers.psd")], jobs, at)),
             ("fileinfo", () => new Tools.Windows.FileDetailsWindow(T(Petal.Core.Tools.ToolId.FileDetails), file("layers.psd"), jobs, at)),
             ("fileinfoidml", () => new Tools.Windows.FileDetailsWindow(T(Petal.Core.Tools.ToolId.FileDetails), file("leaflet.idml"), jobs, at)),

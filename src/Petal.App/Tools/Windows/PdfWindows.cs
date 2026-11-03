@@ -145,6 +145,7 @@ public static class PdfToolSetup
         ToolLauncher.RegisterWindow(ToolId.SeparateVocals, (t, f, j, a) => new SeparateVocalsWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.EraseObject, (t, f, j, a) => new EraseObjectWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.TranslateSubtitles, (t, f, j, a) => new TranslateSubtitlesWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.TranslateDocument, (t, f, j, a) => new TranslateDocumentWindow(t, f, j, a));
         ToolLauncher.RegisterDirect(ToolId.MakeSearchable, (tool, files, jobs, at) => jobs.RunAsync("Reading text", "Searchable PDF saved", SearchableWork(tool, files), at));
         ToolLauncher.RegisterDirect(ToolId.SplitPdf, (tool, files, jobs, at) => jobs.RunAsync("Splitting PDF", "PDF split",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>

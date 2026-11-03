@@ -3325,5 +3325,15 @@ internal static class Arabic
         ["DropWheel uses these programs when they're installed, on this PC."] = "يستخدم DropWheel هذه البرامج عند تثبيتها، على هذا الحاسوب.",
         ["Into"] = "إلى",
         ["Model"] = "النموذج",
+        ["Translate Document"] = "ترجمة مستند",
+        ["A new file is saved beside the original, with its formatting kept and the language in its name."] = "يُحفظ ملف جديد بجانب الأصلي، بتنسيقه نفسه واسم اللغة في اسمه.",
+        ["It runs on this PC: the file doesn't leave it."] = "يعمل على هذا الجهاز: لا يغادره الملف.",
+        ["The file is already in this language."] = "الملف بهذه اللغة أصلًا.",
+        ["This file has no text to translate."] = "لا يحتوي هذا الملف على نص لترجمته.",
+        ["This kind of file can't be translated."] = "لا يمكن ترجمة هذا النوع من الملفات.",
+        ["The translation came back incomplete."] = "عادت الترجمة ناقصة.",
+        ["The document has no main part."] = "لا يحتوي المستند على جزء رئيسي.",
+        ["The presentation has no slides."] = "لا يحتوي العرض التقديمي على شرائح.",
+        ["The workbook has no sheets."] = "لا يحتوي المصنف على أوراق.",
     };
 }

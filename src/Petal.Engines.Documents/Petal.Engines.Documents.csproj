@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Petal.Engines.Documents.Tests" />
+    <InternalsVisibleTo Include="Petal.Tests" />
   </ItemGroup>
 
   <!--

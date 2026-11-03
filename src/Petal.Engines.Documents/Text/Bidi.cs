@@ -34,6 +34,9 @@ internal static class Bidi
         // Persian and Urdu letters live in Presentation Forms-A.
         R('ٱ', 0xFB50); D('پ', 0xFB56); D('چ', 0xFB7A); R('ژ', 0xFB8A);
         D('ک', 0xFB8E); D('گ', 0xFB92); R('ۀ', 0xFBA4); D('ی', 0xFBFC);
+        // Urdu's own letters.
+        D('ٹ', 0xFB66); R('ڈ', 0xFB88); R('ڑ', 0xFB8C); R('ں', 0xFB9E);
+        D('ھ', 0xFBAA); D('ہ', 0xFBA6); R('ے', 0xFBAE); R('ۓ', 0xFBB0);
         map['ـ'] = new('ـ', 'ـ', 'ـ', 'ـ', Joining.Causing);
         return map;
     }

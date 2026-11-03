@@ -159,7 +159,7 @@ public sealed class WheelPowerTests
         // The usual tools stay on the ring.
         Assert.Contains(content.Items, i => i.Label == "TRIM");
         // Twelve or fewer are left alone.
-        var pdf = ToolRegistry.ToolsFor([F.Pdf]).Select(WheelItem.From).ToList();
-        Assert.Same(pdf, Petal.App.PetalController.Overflow(new WheelContent(pdf, "")).Items);
+        var pdfs = ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(WheelItem.From).ToList();
+        Assert.Same(pdfs, Petal.App.PetalController.Overflow(new WheelContent(pdfs, "")).Items);
     }
 }

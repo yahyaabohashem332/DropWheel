@@ -130,12 +130,13 @@ internal static class PdfFonts
 
     /// <summary>
     /// Breaks right-to-left text into lines no wider than <paramref name="width"/> points and returns
-    /// each line shaped and in visual order, ready to be drawn left to right.
+    /// each line shaped and in visual order, ready to be drawn left to right. The paragraph's direction is that of its
+    /// first strong letter unless <paramref name="rightToLeft"/> says otherwise.
     /// </summary>
-    public static List<string> BreakRtl(string text, string family, double size, bool bold, bool italic, double width)
+    public static List<string> BreakRtl(string text, string family, double size, bool bold, bool italic, double width, bool? rightToLeft = null)
     {
         var lines = new List<string>();
-        var rtl = Bidi.IsRtlParagraph(text);
+        var rtl = rightToLeft ?? Bidi.IsRtlParagraph(text);
         foreach (var hardLine in TextFile.NormalizeNewlines(text).Split('\n'))
         {
             var words = hardLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
