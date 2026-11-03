@@ -37,11 +37,14 @@ public sealed class SpeechTests(ITestOutputHelper output)
     public void A_natural_voice_already_here_is_preferred()
     {
         var windows = new SpeechVoice("w", "Microsoft Zira", "en-US", VoiceKind.Windows);
-        var voices = new[] { windows, Speech.Joe, Speech.Kareem };
-        // Neither natural voice is on a fresh PC: English falls back to Windows, Arabic to Kareem's download.
-        Assert.Same(Speech.Joe.IsReady ? Speech.Joe : windows, Speech.Choose("en", voices));
-        Assert.Same(Speech.Kareem, Speech.Choose("ar", voices));
+        var arabic = new SpeechVoice("h", "Microsoft Hoda", "ar-EG", VoiceKind.Windows);
+        var voices = new[] { windows, arabic, Speech.Linda };
+        // Linda isn't on a fresh PC: English falls back to Windows until she is; Arabic is Windows' own voice.
+        Assert.Same(Speech.Linda.IsReady ? Speech.Linda : windows, Speech.Choose("en", voices));
+        Assert.Same(arabic, Speech.Choose("ar", voices));
         Assert.Null(Speech.Choose("ja", voices));
+        // Only natural voices whose recordings may be used commercially are offered: none for Arabic.
+        Assert.DoesNotContain(Speech.NaturalVoices, v => v.Speaks("ar"));
     }
 
     private static string? Whisper() => ModelStore.Find(ModelCatalog.WhisperFast);
@@ -72,11 +75,10 @@ public sealed class SpeechTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// With PETAL_VOICES pointing at a folder holding Piper and its voices (as ModelStore would
-    /// download them), the natural voices speak Arabic and English.
+    /// With PETAL_VOICES pointing at a folder holding Piper and its voice (as ModelStore would download them), the natural
+    /// voice speaks English.
     /// </summary>
     [Theory]
-    [InlineData("ar", "مرحبا بكم في بتلة. هذا الملف يقرأ بصوت عربي طبيعي.", "بكم")]
     [InlineData("en", "Welcome to Petal. This document is read aloud with a natural voice.", "natural voice")]
     public async Task A_natural_voice_reads_text_into_an_mp3(string language, string text, string heard)
     {
@@ -91,7 +93,7 @@ public sealed class SpeechTests(ITestOutputHelper output)
         ModelStore.Folder = voices;
         try
         {
-            var voice = language == "ar" ? Speech.Kareem : Speech.Joe;
+            var voice = Speech.Linda;
             Assert.True(voice.IsReady, $"{voice.Name} isn't in {voices}");
             var mp3 = Path.Combine(Fixtures.NewDir(), $"{language}.mp3");
             await Speech.SpeakToFileAsync(text, voice, 1.0, mp3, "Test");

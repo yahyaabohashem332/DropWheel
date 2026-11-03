@@ -33,22 +33,17 @@ public sealed record SpeechVoice(string Id, string Name, string Language, VoiceK
 }
 
 /// <summary>
-/// Text to speech, saved as audio: Windows' own voices, or Piper's natural voices (Arabic
-/// included), run on this PC. Long texts are spoken in pieces and joined into one MP3.
+/// Text to speech, saved as audio: Windows' own voices (Arabic among them), or Piper's natural English voice, run on
+/// this PC. Long texts are spoken in pieces and joined into one MP3.
 /// </summary>
 public static class Speech
 {
-    public static readonly SpeechVoice Kareem = new("piper-ar-kareem", "Kareem", "ar-JO", VoiceKind.Natural)
+    public static readonly SpeechVoice Linda = new("piper-en-ljspeech", "Linda", "en-US", VoiceKind.Natural)
     {
-        Models = [ModelCatalog.Piper, ModelCatalog.VoiceKareem, ModelCatalog.VoiceKareemSettings],
+        Models = [ModelCatalog.Piper, ModelCatalog.VoiceLinda, ModelCatalog.VoiceLindaSettings],
     };
 
-    public static readonly SpeechVoice Joe = new("piper-en-joe", "Joe", "en-US", VoiceKind.Natural)
-    {
-        Models = [ModelCatalog.Piper, ModelCatalog.VoiceJoe, ModelCatalog.VoiceJoeSettings],
-    };
-
-    public static IReadOnlyList<SpeechVoice> NaturalVoices { get; } = [Kareem, Joe];
+    public static IReadOnlyList<SpeechVoice> NaturalVoices { get; } = [Linda];
 
     /// <summary>The voices installed in Windows; none when speech isn't available.</summary>
     public static IReadOnlyList<SpeechVoice> WindowsVoices()

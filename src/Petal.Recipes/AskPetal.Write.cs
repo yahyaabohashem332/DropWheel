@@ -37,8 +37,11 @@ public static partial class AskPetal
             if (clean.Length > MaxWritingText)
                 clean = clean[..MaxWritingText];
             var prompt = Path.Combine(work, "prompt.txt");
-            await File.WriteAllTextAsync(prompt,
-                $"<|im_start|>system\n{instruction}<|im_end|>\n<|im_start|>user\n{clean}<|im_end|>\n<|im_start|>assistant\n{begun}",
+            // Gemma marks its turns its own way; Qwen the ChatML way.
+            bool gemma = Path.GetFileName(weights).Contains("gemma", StringComparison.OrdinalIgnoreCase);
+            await File.WriteAllTextAsync(prompt, gemma
+                    ? $"<|turn>system\n{instruction}<turn|>\n<|turn>user\n{clean}<turn|>\n<|turn>model\n{begun}"
+                    : $"<|im_start|>system\n{instruction}<|im_end|>\n<|im_start|>user\n{clean}<|im_end|>\n<|im_start|>assistant\n{begun}",
                 new UTF8Encoding(false), cancellationToken).ConfigureAwait(false);
             var start = new ProcessStartInfo(Path.Combine(folder, "llama-completion.exe"))
             {
@@ -132,7 +135,7 @@ public static partial class AskPetal
     /// <summary>The answer without the marks the model ends with.</summary>
     internal static string CleanAnswer(string output)
     {
-        foreach (var mark in new[] { "<|im_end|>", "<|endoftext|>", "[end of text]", "<|im_start|>" })
+        foreach (var mark in new[] { "<|im_end|>", "<|endoftext|>", "[end of text]", "<|im_start|>", "<turn|>", "<|turn>" })
         {
             int at = output.IndexOf(mark, StringComparison.Ordinal);
             if (at >= 0)

@@ -402,6 +402,7 @@ internal static class DesignSnapshots
             ("shortsreview", () => Shorts(window => window.ShowForSnapshot(SampleMoments(),
                 new Petal.Recipes.ShortsSource(video[0], Localization.L.IsArabic ? "ar" : "en", [], new Petal.Engines.Media.SoundLevels([]))))),
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
+            ("dubbest", () => Dub(window => window.FinestForSnapshot())),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
             // 1.15

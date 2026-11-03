@@ -83,9 +83,24 @@ Copy-Item (Join-Path $root 'tools\bin\exiftool\README.txt') (Join-Path $licences
 $directml = Get-ChildItem (Join-Path $env:USERPROFILE '.nuget\packages\microsoft.ai.directml') -Directory -ErrorAction SilentlyContinue |
     Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
 if ($directml) { Copy-Item (Join-Path $directml.FullName 'LICENSE.txt') (Join-Path $licences 'DirectML.txt') }
-# Which FFmpeg build ships, for anyone who wants its source; and the list of everything Petal is built on.
+# Which FFmpeg build ships, for anyone who wants its source; and the list of everything Petal is built on, as a text
+# file that Settings opens in Notepad, with the full texts of the licences it names.
 & (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -version | Select-Object -First 2 | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
-Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.md')
+Remove-Item (Join-Path $licences 'THIRD-PARTY-NOTICES.md') -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.txt')
+Copy-Item (Join-Path $root 'store\licenses\*.txt') $licences
+# Every package the app is built with, at the version it ships: its own licence and notice files, as its authors wrote them.
+$deps = Get-Content (Join-Path $publish 'Petal.deps.json') -Raw | ConvertFrom-Json
+$packages = Join-Path $licences 'packages'
+New-Item -ItemType Directory -Force $packages | Out-Null
+foreach ($library in $deps.libraries.PSObject.Properties) {
+    if ($library.Value.type -ne 'package') { continue }
+    $folder = Join-Path $env:USERPROFILE ('.nuget\packages\' + $library.Value.path)
+    $files = Get-ChildItem $folder -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^(licen[cs]e|notice|third-?party-?notices)' }
+    foreach ($file in $files) {
+        Copy-Item $file.FullName (Join-Path $packages (($library.Name -replace '/.*$', '') + ' - ' + $file.Name))
+    }
+}
 
 # The Stream Deck plugin as Stream Deck installs it: its folder in a ZIP named .streamDeckPlugin, with
 # Petal's version. Settings opens it from here.

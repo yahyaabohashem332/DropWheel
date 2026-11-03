@@ -59,7 +59,7 @@ public sealed class ReadAloudWindow : ToolWindow
         _rate = Segments(Rates.Select(r => (r, r.ToString("0.##", CultureInfo.InvariantCulture) + "×")), 1.0);
         Body.Children.Add(Row("Speed", _rate, 110, 12));
 
-        _download = new ModelPanel(Speech.Kareem.Models);
+        _download = new ModelPanel(Speech.Linda.Models);
         _download.Ready += Sync;
         Body.Children.Add(_download);
 

@@ -1008,7 +1008,7 @@
  "tool:Dub": {
   "category": "video",
   "summary": "Mengucapkan ulang ucapan dalam video ke bahasa lain, dari Arab ke Inggris atau dari Inggris ke Arab, dengan suara masing-masing pembicara; musiknya dihapus dan semua suara lainnya tetap ada.",
-  "details": "Sulih Suara memisahkan suara pembicara dari suara lainnya (Demucs), menuliskan apa yang diucapkan beserta waktu setiap kata (Whisper), lalu menerjemahkannya kalimat demi kalimat, semuanya di PC ini. Pilih bahasa tujuan Sulih Suara (Ke bahasa Inggris atau Ke bahasa Arab), bahasa yang Diucapkan dalam (atau Deteksi otomatis) dan Akurasi pendengarannya, lalu pilih Siapkan Sulih Suara. Kalimat-kalimat muncul beserta terjemahannya: periksa, ubah yang perlu, dan putar sebuah kalimat untuk mendengar cara kalimat itu diucapkan. Lalu pilih Sulih Suara. Pertama, musik dihapus dari suara lainnya (dengan TIGER, yang dibuat untuk memisahkan suara film menjadi ucapan, musik, dan efek), sehingga langkah kaki, hujan, angin, dan dengung ruangan tetap ada sementara musiknya hilang; ini memakan waktu pada kali pertama, lalu disimpan. Kemudian setiap kalimat diucapkan ulang oleh model suara di PC ini (Chatterbox) dengan suara orang yang mengucapkannya, dipelajari dari kalimat itu sendiri; kalimat itu didengarkan kembali dan diucapkan ulang bila hasilnya salah, dimuat dalam waktu yang dipakai kalimat aslinya (diucapkan hingga 1,3 kali lebih cepat bila lebih panjang), dan diletakkan di atas suara lainnya sekeras kalimat aslinya. Video baru disimpan di samping aslinya sebagai 'nama Arabic.mp4' atau 'nama English.mp4', gambarnya tidak diubah. Simpan suara asli sebagai trek kedua menambahkan suara asli beserta musiknya untuk pemutar yang bisa berganti trek, dan Subtitel dalam bahasa baru menaruh terjemahan di dalam file sebagai subtitel. File itu menyebutkan bahwa suaranya dibuat dengan AI. Video yang sudah disiapkan sekali langsung terbuka lagi. Sulihsuarakan hanya video yang pembicaranya setuju suaranya dipakai.",
+  "details": "Sulih Suara memisahkan suara pembicara dari suara lainnya (Demucs), menuliskan apa yang diucapkan beserta waktu setiap kata (Whisper), lalu menerjemahkannya kalimat demi kalimat, semuanya di PC ini. Pilih bahasa tujuan Sulih Suara (Ke bahasa Inggris atau Ke bahasa Arab), bahasa yang Diucapkan dalam (atau Deteksi otomatis) dan Akurasi pendengarannya, lalu pilih Siapkan Sulih Suara. Paling akurat mendengar dengan model paling akurat dan meminta model AI besar di PC ini (Gemma 4 12B, sekitar 7 GB, diunduh sekali) menerjemahkan maknanya, bukan kata demi kata, seperti penerjemah sulih suara setelah membaca seluruh video: ungkapan keagamaan, puisi, dan dialek keluar sesuai maksudnya, dan setiap baris kira-kira sepanjang aslinya; butuh beberapa menit untuk setiap menit ucapan. Kalimat-kalimat muncul beserta terjemahannya: periksa, ubah yang perlu, dan putar sebuah kalimat untuk mendengar cara kalimat itu diucapkan. Lalu pilih Sulih Suara. Pertama, musik dihapus dari suara lainnya (dengan TIGER, yang dibuat untuk memisahkan suara film menjadi ucapan, musik, dan efek), sehingga langkah kaki, hujan, angin, dan dengung ruangan tetap ada sementara musiknya hilang; ini memakan waktu pada kali pertama, lalu disimpan. Kemudian setiap kalimat diucapkan ulang oleh model suara di PC ini (Chatterbox) dengan suara orang yang mengucapkannya, dipelajari dari kalimat itu sendiri; kalimat itu didengarkan kembali dan diucapkan ulang bila hasilnya salah, dimuat dalam waktu yang dipakai kalimat aslinya (diucapkan hingga 1,3 kali lebih cepat bila lebih panjang), dan diletakkan di atas suara lainnya sekeras kalimat aslinya. Video baru disimpan di samping aslinya sebagai 'nama Arabic.mp4' atau 'nama English.mp4', gambarnya tidak diubah. Simpan suara asli sebagai trek kedua menambahkan suara asli beserta musiknya untuk pemutar yang bisa berganti trek, dan Subtitel dalam bahasa baru menaruh terjemahan di dalam file sebagai subtitel. File itu menyebutkan bahwa suaranya dibuat dengan AI. Video yang sudah disiapkan sekali langsung terbuka lagi. Sulihsuarakan hanya video yang pembicaranya setuju suaranya dipakai.",
   "how": "Seret sebuah video, ketuk Ctrl, lalu lepaskan di SULIH SUARA; pilih bahasa tujuan, pilih Siapkan Sulih Suara, periksa terjemahannya, lalu pilih Sulih Suara.",
   "examples": [
    "Pelajaran berbahasa Inggris yang disulihsuarakan ke bahasa Arab dengan suara gurunya sendiri, musik latarnya dihapus dan suara kelas tetap ada.",
@@ -1028,7 +1028,8 @@
    "kloning suara",
    "dubbing ai",
    "hapus musik",
-   "tanpa musik"
+   "tanpa musik",
+   "terjemahan alami"
   ]
  },
  "tool:EditByText": {
@@ -1372,12 +1373,12 @@
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Mengubah PDF, file Word, e-book, atau teks menjadi buku audio MP3 yang dibacakan di PC ini.",
-  "details": "Bacakan membaca teks dokumen dan menampilkan jumlah katanya dan kira-kira berapa menit waktu yang diperlukan. Alat ini memilih suara untuk bahasa dokumen: salah satu suara bawaan Windows, atau suara alami Kareem (Arab) dan Joe (Inggris), yang diunduh sekali dari jendela (masing-masing sekitar 85 MB). Pilih Kecepatan (0,75×, 1×, 1,25×, atau 1,5×), tekan Dengarkan untuk mendengar kalimat-kalimat pertama, lalu Simpan Audio untuk menulis 'nama Audio.mp3' di samping dokumen. Jika tidak ada suara terpasang yang berbicara dalam bahasa dokumen, Buka Pengaturan Ucapan memungkinkan Windows menambahkannya; teksnya tidak pernah meninggalkan PC.",
+  "details": "Bacakan membaca teks dokumen dan menampilkan jumlah katanya dan kira-kira berapa menit waktu yang diperlukan. Alat ini memilih suara untuk bahasa dokumen: salah satu suara bawaan Windows, atau suara alami bahasa Inggris Linda, yang diunduh sekali dari jendela (sekitar 85 MB); bahasa Arab dibacakan oleh suara Arab bawaan Windows. Pilih Kecepatan (0,75×, 1×, 1,25×, atau 1,5×), tekan Dengarkan untuk mendengar kalimat-kalimat pertama, lalu Simpan Audio untuk menulis 'nama Audio.mp3' di samping dokumen. Jika tidak ada suara terpasang yang berbicara dalam bahasa dokumen, Buka Pengaturan Ucapan memungkinkan Windows menambahkannya; teksnya tidak pernah meninggalkan PC.",
   "how": "Seret dokumen, ketuk Ctrl, lalu lepaskan di DENGAR; pilih suara dan kecepatan, lalu tekan Simpan Audio.",
   "worksOn": "Satu file: PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT, atau EPUB.",
   "examples": [
    "Bab PDF 25 halaman untuk didengarkan di bus: simpan sebagai MP3 pada 1,25×.",
-   "Artikel berbahasa Arab di Word yang dibacakan oleh suara alami Kareem.",
+   "Artikel berbahasa Arab di Word yang dibacakan oleh suara Arab bawaan Windows.",
    "Novel EPUB yang diubah menjadi buku audio untuk perjalanan jauh dengan mobil."
   ],
   "keywords": [

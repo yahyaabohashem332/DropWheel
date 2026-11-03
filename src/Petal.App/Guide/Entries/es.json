@@ -997,7 +997,7 @@
  "tool:Dub": {
   "category": "video",
   "summary": "Vuelve a decir lo que se habla en un video en el otro idioma, del árabe al inglés o del inglés al árabe, con la propia voz de cada persona; la música se quita y todos los demás sonidos se conservan.",
-  "details": "Doblaje separa las voces del resto del sonido (Demucs), escribe lo que se dice con el momento de cada palabra (Whisper) y lo traduce frase por frase, todo en este PC. Elige el idioma del Doblaje (Al inglés o Al árabe), el idioma Hablado en (o Detectar automáticamente) y la Precisión de la escucha, y luego elige Preparar el doblaje. Las frases aparecen con sus traducciones: revísalas, cambia las que lo necesiten y reproduce una frase para oír cómo se dijo. Luego elige Doblaje. Primero se quita la música del resto del sonido (con TIGER, hecho para separar el sonido de las películas en habla, música y efectos), así que los pasos, la lluvia, el viento y el murmullo de una sala se quedan y la música se va; la primera vez tarda un poco y después se guarda. Luego el modelo de voz de este PC (Chatterbox) vuelve a decir cada frase con la voz de la persona que la dijo, aprendida de esa misma frase; la frase se vuelve a escuchar y se repite si salió mal, se ajusta al tiempo que ocupaba la original (se dice hasta 1,3 veces más rápido si es más larga) y se coloca sobre los demás sonidos tan fuerte como se dijo la original. El nuevo video se guarda junto al original como 'nombre Arabic.mp4' o 'nombre English.mp4', con la imagen intacta. Conservar el sonido original como segunda pista añade el sonido original, con su música, para los reproductores que cambian de pista, y Subtítulos en el nuevo idioma pone la traducción en el archivo como subtítulos. El archivo indica que sus voces se crearon con IA. Un video preparado una vez se vuelve a abrir al instante. Dobla solo videos cuyas personas estarían de acuerdo en que se use su voz.",
+  "details": "Doblaje separa las voces del resto del sonido (Demucs), escribe lo que se dice con el momento de cada palabra (Whisper) y lo traduce frase por frase, todo en este PC. Elige el idioma del Doblaje (Al inglés o Al árabe), el idioma Hablado en (o Detectar automáticamente) y la Precisión de la escucha, y luego elige Preparar el doblaje. Muy preciso escucha con el modelo más preciso y hace que un gran modelo de IA en este PC (Gemma 4 12B, unos 7 GB, descargado una vez) traduzca por el sentido y no palabra por palabra, como un traductor de doblaje después de leer todo el video: las expresiones religiosas, la poesía y el dialecto salen con lo que quieren decir, y cada línea queda más o menos tan larga como la original; tarda unos minutos por cada minuto de habla. Las frases aparecen con sus traducciones: revísalas, cambia las que lo necesiten y reproduce una frase para oír cómo se dijo. Luego elige Doblaje. Primero se quita la música del resto del sonido (con TIGER, hecho para separar el sonido de las películas en habla, música y efectos), así que los pasos, la lluvia, el viento y el murmullo de una sala se quedan y la música se va; la primera vez tarda un poco y después se guarda. Luego el modelo de voz de este PC (Chatterbox) vuelve a decir cada frase con la voz de la persona que la dijo, aprendida de esa misma frase; la frase se vuelve a escuchar y se repite si salió mal, se ajusta al tiempo que ocupaba la original (se dice hasta 1,3 veces más rápido si es más larga) y se coloca sobre los demás sonidos tan fuerte como se dijo la original. El nuevo video se guarda junto al original como 'nombre Arabic.mp4' o 'nombre English.mp4', con la imagen intacta. Conservar el sonido original como segunda pista añade el sonido original, con su música, para los reproductores que cambian de pista, y Subtítulos en el nuevo idioma pone la traducción en el archivo como subtítulos. El archivo indica que sus voces se crearon con IA. Un video preparado una vez se vuelve a abrir al instante. Dobla solo videos cuyas personas estarían de acuerdo en que se use su voz.",
   "how": "Arrastra un video, toca Ctrl y suéltalo en DOBLAJE; elige el idioma del doblaje, elige Preparar el doblaje, revisa las traducciones y luego elige Doblaje.",
   "examples": [
    "Una clase en inglés doblada al árabe con la propia voz del profesor, sin la música de fondo y con los sonidos del aula.",
@@ -1017,7 +1017,8 @@
    "doblaje con ia",
    "quitar música",
    "sin música",
-   "dub"
+   "dub",
+   "traducción natural"
   ]
  },
  "tool:EditByText": {
@@ -1361,12 +1362,12 @@
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Convierte un PDF, un archivo de Word, un libro electrónico o un texto en un audiolibro MP3 narrado en este PC.",
-  "details": "Leer en voz alta lee el texto del documento y muestra cuántas palabras tiene y cuántos minutos llevará, más o menos. Elige una voz para el idioma del documento: una de las voces propias de Windows, o las voces naturales Kareem (árabe) y Joe (inglés), que se descargan una sola vez desde la ventana (unos 85 MB cada una). Elige Velocidad (0.75×, 1×, 1.25× o 1.5×), pulsa Escuchar para oír las primeras frases y luego Guardar audio para escribir «nombre Audio.mp3» junto al documento. Si ninguna voz instalada habla el idioma del documento, Abrir configuración de voz deja que Windows añada una; el texto nunca sale del PC.",
+  "details": "Leer en voz alta lee el texto del documento y muestra cuántas palabras tiene y cuántos minutos llevará, más o menos. Elige una voz para el idioma del documento: una de las voces propias de Windows, o la voz natural en inglés Linda, que se descarga una sola vez desde la ventana (unos 85 MB); el árabe lo leen las voces árabes de Windows. Elige Velocidad (0.75×, 1×, 1.25× o 1.5×), pulsa Escuchar para oír las primeras frases y luego Guardar audio para escribir «nombre Audio.mp3» junto al documento. Si ninguna voz instalada habla el idioma del documento, Abrir configuración de voz deja que Windows añada una; el texto nunca sale del PC.",
   "how": "Arrastra el documento, pulsa Ctrl y suéltalo sobre ESCUCHAR; elige una voz y una velocidad y pulsa Guardar audio.",
   "worksOn": "Un archivo: PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT o EPUB.",
   "examples": [
    "Un capítulo en PDF de 25 páginas para escucharlo en el autobús: guárdalo como MP3 a 1.25×.",
-   "Un artículo en árabe en Word leído por la voz natural Kareem.",
+   "Un artículo en árabe en Word leído por la voz árabe de Windows.",
    "Una novela en EPUB convertida en audiolibro para un viaje largo en coche."
   ],
   "keywords": [

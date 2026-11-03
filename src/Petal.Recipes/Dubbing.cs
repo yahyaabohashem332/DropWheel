@@ -47,6 +47,12 @@ public static class Dubbing
 
     public static bool Ready => Models.All(ModelStore.IsAvailable);
 
+    /// <summary>
+    /// Where preparing's steps end on its way from 0 to 1: separating the voices, then listening, then translating. A
+    /// translation by the AI model takes a good while, so it is given more of the way.
+    /// </summary>
+    public static (double Separated, double Heard) Steps(bool natural) => natural ? (0.3, 0.6) : (0.45, 0.85);
+
     /// <summary>The language a dub goes into from one spoken: Arabic into English, anything else into Arabic.</summary>
     public static string Opposite(string spoken) => spoken == "ar" ? "en" : "ar";
 
@@ -58,9 +64,12 @@ public static class Dubbing
     /// </summary>
     /// <param name="spoken">"auto", or the language spoken.</param>
     /// <param name="into">"en" or "ar"; "auto" for the other of the two.</param>
+    /// <param name="natural">Translated by the AI model, by meaning (<see cref="DubTranslation"/>), rather than word for word.</param>
     public static async Task<DubSource> PrepareAsync(string video, string model, string spoken, string into, IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool natural = false)
     {
+        natural &= DubTranslation.Ready;
+        var (separatedAt, heardAt) = Steps(natural);
         var folder = Path.Combine(CacheFolder, Key(video));
         Directory.CreateDirectory(folder);
         Touch(folder);
@@ -70,9 +79,9 @@ public static class Dubbing
         {
             foreach (var old in Directory.GetFiles(folder, "*.wav"))
                 File.Delete(old);
-            await StemSplitter.SplitAsync(video, folder, "wav", new SplitStemsOptions(StemSet.VocalsAndMusic), Slice(progress, 0, 0.45), cancellationToken).ConfigureAwait(false);
+            await StemSplitter.SplitAsync(video, folder, "wav", new SplitStemsOptions(StemSet.VocalsAndMusic), Slice(progress, 0, separatedAt), cancellationToken).ConfigureAwait(false);
         }
-        progress?.Report(0.45);
+        progress?.Report(separatedAt);
         // The voice model loads while the rest is prepared and checked: ready when the dub starts.
         Voices.WarmUp();
 
@@ -85,27 +94,31 @@ public static class Dubbing
         {
             var speech = (await MediaPreview.DecodePcmAsync(vocals, new PcmDecodeOptions(16000, 1), cancellationToken).ConfigureAwait(false)).Samples;
             var transcript = await Transcriber.TranscribeWordsAsync(speech, new TranscribeOptions(model, spoken, WordTimes: true), null,
-                Slice(progress, 0.45, 0.85), cancellationToken).ConfigureAwait(false);
+                Slice(progress, separatedAt, heardAt), cancellationToken).ConfigureAwait(false);
             language = transcript.Language;
             lines = DubTrack.Lines(transcript.Segments);
             Write(heard, language, lines);
         }
-        progress?.Report(0.85);
+        progress?.Report(heardAt);
 
         var target = into is "en" or "ar" ? into : Opposite(language);
         if (target == language)
             throw new InvalidOperationException(target == "ar" ? "This video is already in Arabic." : "This video is already in English.");
         if (language is not ("ar" or "en"))
             throw new InvalidOperationException("Dub works on speech in Arabic or English.");
-        var translations = Path.Combine(folder, $"lines-{Path.GetFileNameWithoutExtension(model)}-{spoken}-{target}.json");
+        // Each kind of translation kept apart: the one by meaning doesn't take the word-for-word one's place, nor the other way.
+        var by = natural ? "-" + DubTranslation.Writer.Id : "";
+        var translations = Path.Combine(folder, $"lines-{Path.GetFileNameWithoutExtension(model)}-{spoken}-{target}{by}.json");
         if (Read(translations) is { } done && done.Lines.Count == lines.Count)
             lines = done.Lines;
         else
         {
             var originals = lines.Select(l => l.Original).ToList();
-            var translated = await Task.Run(() => target == "ar"
-                ? Translator.ToArabic(originals, Slice(progress, 0.85, 1), cancellationToken)
-                : Translator.ToEnglish(originals, Slice(progress, 0.85, 1), cancellationToken), cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<string> translated = natural
+                ? await DubTranslation.TranslateAsync(lines, language, target, Slice(progress, heardAt, 1), cancellationToken).ConfigureAwait(false)
+                : await Task.Run(() => target == "ar"
+                    ? Translator.ToArabic(originals, Slice(progress, heardAt, 1), cancellationToken)
+                    : Translator.ToEnglish(originals, Slice(progress, heardAt, 1), cancellationToken), cancellationToken).ConfigureAwait(false);
             lines = lines.Select((l, i) => l with { Translation = translated[i].Trim() }).ToList();
             Write(translations, language, lines);
         }

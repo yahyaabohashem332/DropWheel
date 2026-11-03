@@ -48,27 +48,20 @@ public static class ModelCatalog
         "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
         "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea", 22_477_236, "MIT");
 
-    /// <summary>Piper's Kareem (piper-voices, MIT): a natural Arabic voice.</summary>
-    public static readonly ModelInfo VoiceKareem = new(
-        "piper-ar-kareem", "Kareem (Arabic voice)", "ar_JO-kareem-medium.onnx",
-        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx",
-        "9e95cab07b679da603bba17c4dec7ab3111320571964ee95c0379603c086491e", 63_201_294, "MIT");
+    /// <summary>
+    /// Piper's LJSpeech voice, "Linda" (piper-voices, MIT): a natural English voice trained from scratch on the LJ Speech
+    /// recordings, which are in the public domain. (Piper's other voices, Arabic's Kareem among them, were fine-tuned from
+    /// the lessac voice, whose recordings may be used for research only: they aren't offered.)
+    /// </summary>
+    public static readonly ModelInfo VoiceLinda = new(
+        "piper-en-ljspeech", "Linda (English voice)", "en_US-ljspeech-medium.onnx",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx",
+        "6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22", 63_531_379, "MIT");
 
-    public static readonly ModelInfo VoiceKareemSettings = new(
-        "piper-ar-kareem-config", "Kareem settings", "ar_JO-kareem-medium.onnx.json",
-        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx.json",
-        "ea6d9b9d9076dbdb6bf5c98c6a141ef154959d2359709b37855727964e7d6c4d", 5_024, "MIT");
-
-    /// <summary>Piper's Joe (piper-voices, MIT; recordings CC0): a natural English voice.</summary>
-    public static readonly ModelInfo VoiceJoe = new(
-        "piper-en-joe", "Joe (English voice)", "en_US-joe-medium.onnx",
-        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/joe/medium/en_US-joe-medium.onnx",
-        "58afce0321b8d9c46d7cdf9c16500cc55a793b4220212dba6b70fb788b3baf06", 63_201_294, "MIT");
-
-    public static readonly ModelInfo VoiceJoeSettings = new(
-        "piper-en-joe-config", "Joe settings", "en_US-joe-medium.onnx.json",
-        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/joe/medium/en_US-joe-medium.onnx.json",
-        "3d6d5410b3795cb1950595247ef8f06190719e6fdbfa3a2356d8ec368e1aad33", 4_794, "MIT");
+    public static readonly ModelInfo VoiceLindaSettings = new(
+        "piper-en-ljspeech-config", "Linda settings", "en_US-ljspeech-medium.onnx.json",
+        "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx.json",
+        "141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860", 4_972, "MIT");
 
     /// <summary>llama.cpp b11763, CPU build (MIT): runs the language model below on any PC; the ARM64 build on ARM64 PCs.</summary>
     public static readonly ModelInfo LlamaCpp = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64
@@ -93,6 +86,16 @@ public static class ModelCatalog
         "qwen3-4b-instruct", "Qwen3 4B", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
         "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/a06e946bb6b655725eafa393f4a9745d460374c9/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
         "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597", 2_497_281_120, "Apache-2.0");
+
+    /// <summary>
+    /// Gemma 4 12B Instruct, 4-bit (Google, Apache-2.0; Unsloth's GGUF at a fixed revision): translates a dub's lines by
+    /// their meaning, knowing classical Arabic, religious language and poetry far better than the smaller models, for Dub's
+    /// most accurate level. Run by llama.cpp.
+    /// </summary>
+    public static readonly ModelInfo GemmaTranslator = new(
+        "gemma-4-12b", "Gemma 4 12B", "gemma-4-12b-it-Q4_K_M.gguf",
+        "https://huggingface.co/unsloth/gemma-4-12b-it-GGUF/resolve/fc034cfff751157913579611efad8462ac1be606/gemma-4-12b-it-Q4_K_M.gguf",
+        "0a270ec9fe6b34f4a0d33992b6135117b484ebc4766ab76b51d4ae8c457e4c42", 7_121_861_440, "Apache-2.0");
 
     /// <summary>
     /// multilingual-e5-small (intfloat, MIT), Xenova's 8-bit ONNX at a fixed revision: finds the passages of a file that
@@ -170,47 +173,47 @@ public static class ModelCatalog
         "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx",
         "1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6", 208_044_816, "Apache-2.0");
 
-    /// <summary>Opus-MT English → Arabic (Helsinki-NLP, Apache-2.0), 8-bit ONNX: translates subtitles into Arabic.</summary>
+    /// <summary>Opus-MT English → Arabic (Helsinki-NLP, CC-BY 4.0: free to use, also commercially, with credit), 8-bit ONNX: translates subtitles into Arabic.</summary>
     public static readonly ModelInfo OpusEnArEncoder = new(
         "opus-mt-en-ar-encoder", "Opus-MT English → Arabic encoder", "opus-mt-en-ar-encoder-quantized.onnx",
         "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/encoder_model_quantized.onnx",
-        "53c354d87ced44b39085fe8a46a25f09ea4578d442dbce9663f3977228f8a04e", 51_773_854, "Apache-2.0");
+        "53c354d87ced44b39085fe8a46a25f09ea4578d442dbce9663f3977228f8a04e", 51_773_854, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArDecoder = new(
         "opus-mt-en-ar-decoder", "Opus-MT English → Arabic", "opus-mt-en-ar-decoder-quantized.onnx",
         "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/decoder_model_quantized.onnx",
-        "94e6bdf90866151787d014b7b77be0adb0f036418ee04d235ec01238aa8426b9", 58_707_418, "Apache-2.0");
+        "94e6bdf90866151787d014b7b77be0adb0f036418ee04d235ec01238aa8426b9", 58_707_418, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArSource = new(
         "opus-mt-en-ar-source", "Opus-MT English pieces", "opus-mt-en-ar-source.spm",
         "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/source.spm",
-        "81ac8f4d4ee271f4109eac67560a31f9c2d555463ba5eb95c32c6deee8ae819d", 801_074, "Apache-2.0");
+        "81ac8f4d4ee271f4109eac67560a31f9c2d555463ba5eb95c32c6deee8ae819d", 801_074, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArVocabulary = new(
         "opus-mt-en-ar-vocab", "Opus-MT vocabulary", "opus-mt-en-ar-vocab.json",
         "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/vocab.json",
-        "8b74af9e4c1ec122b8d06362db6c38795e10ca2b0156b2110cf08d4716744b76", 2_243_581, "Apache-2.0");
+        "8b74af9e4c1ec122b8d06362db6c38795e10ca2b0156b2110cf08d4716744b76", 2_243_581, "CC-BY-4.0");
 
-    /// <summary>Opus-MT Arabic → English (Helsinki-NLP, Apache-2.0), 8-bit ONNX: puts Arabic speech's words into English.</summary>
+    /// <summary>Opus-MT Arabic → English (Helsinki-NLP, CC-BY 4.0: free to use, also commercially, with credit), 8-bit ONNX: puts Arabic speech's words into English.</summary>
     public static readonly ModelInfo OpusArEnEncoder = new(
         "opus-mt-ar-en-encoder", "Opus-MT Arabic → English encoder", "opus-mt-ar-en-encoder-quantized.onnx",
         "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/onnx/encoder_model_quantized.onnx",
-        "d9b0d612acff86cf87634b49bda566d1ef39b312837de549786ea18fecefc708", 51_790_238, "Apache-2.0");
+        "d9b0d612acff86cf87634b49bda566d1ef39b312837de549786ea18fecefc708", 51_790_238, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnDecoder = new(
         "opus-mt-ar-en-decoder", "Opus-MT Arabic → English", "opus-mt-ar-en-decoder-quantized.onnx",
         "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/onnx/decoder_model_quantized.onnx",
-        "66f2be0af1ad3d875315f7e8ad2de4f8248fba75dc7173b1a93bf48023041e80", 58_723_930, "Apache-2.0");
+        "66f2be0af1ad3d875315f7e8ad2de4f8248fba75dc7173b1a93bf48023041e80", 58_723_930, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnSource = new(
         "opus-mt-ar-en-source", "Opus-MT Arabic pieces", "opus-mt-ar-en-source.spm",
         "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/source.spm",
-        "484f7210e5f4466f7e5b99b660717c6ef2a6f90746196daba507795b69dc02a2", 917_407, "Apache-2.0");
+        "484f7210e5f4466f7e5b99b660717c6ef2a6f90746196daba507795b69dc02a2", 917_407, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnVocabulary = new(
         "opus-mt-ar-en-vocab", "Opus-MT Arabic → English vocabulary", "opus-mt-ar-en-vocab.json",
         "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/vocab.json",
-        "87b78c097c331672ca22a522c3ba24c5dc2cdff90495dcb52cf742635439a3a0", 2_257_246, "Apache-2.0");
+        "87b78c097c331672ca22a522c3ba24c5dc2cdff90495dcb52cf742635439a3a0", 2_257_246, "CC-BY-4.0");
 
     /// <summary>
     /// Chatterbox Multilingual V3 (Resemble AI, MIT): speech in someone's own voice in Arabic, English and 21 other
@@ -277,7 +280,7 @@ public static class ModelCatalog
          ChatterboxEncoder, ChatterboxVocoder, ChatterboxFlowStart, ChatterboxLanguage, ChatterboxVocabulary, ChatterboxEmbeddings];
 
     public static IReadOnlyList<ModelInfo> All { get; } =
-        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceKareem, VoiceKareemSettings, VoiceJoe, VoiceJoeSettings, LlamaCpp, Qwen, QwenAnswers, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceLinda, VoiceLindaSettings, LlamaCpp, Qwen, QwenAnswers, GemmaTranslator, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
          ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Tiger, Lama,
          OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary,
          .. Chatterbox];

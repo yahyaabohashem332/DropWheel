@@ -427,6 +427,15 @@ public sealed partial class SettingsWindow : ToolWindow
         panel.Children.Add(Engine("ExifTool", "Detailed metadata for every file type", ToolLocator.ExifTool, "https://exiftool.org/"));
         panel.Children.Add(Engine("Microsoft Office", "Exact layout for Word, Excel and PowerPoint files", OfficePath(), null));
         panel.Children.Add(Engine("LibreOffice", "Slides and office files when Office isn't installed", ToolLocator.LibreOffice, "https://www.libreoffice.org/download/"));
+        // Who DropWheel is built on, with each licence's full text (the build puts them beside the app).
+        var notices = Path.Combine(AppContext.BaseDirectory, "licenses", "THIRD-PARTY-NOTICES.txt");
+        if (File.Exists(notices))
+        {
+            panel.Children.Add(Text("DropWheel is built on open-source programs, libraries and AI models; each keeps its own licence.", "Petal.Caption").WithMargin(0, 12, 0, 0));
+            var licences = new Button { Content = L.T("Open-source licences"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 0) };
+            licences.Click += (_, _) => Process.Start(new ProcessStartInfo(notices) { UseShellExecute = true });
+            panel.Children.Add(licences);
+        }
         return panel;
     }
 

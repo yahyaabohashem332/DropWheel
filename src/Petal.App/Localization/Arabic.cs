@@ -1056,8 +1056,6 @@ internal static class Arabic
         ["Open Search"] = "فتح البحث",
         ["Index Now"] = "الفهرسة الآن",
         // Model names in the download panel (product names stay in Latin script).
-        ["Kareem (Arabic voice)"] = "كريم (صوت عربي)",
-        ["Joe (English voice)"] = "Joe (صوت إنجليزي)",
         ["Multilingual CLIP text model"] = "نموذج CLIP النصي متعدد اللغات",
         ["Opus-MT English → Arabic"] = "Opus-MT للترجمة من الإنجليزية إلى العربية",
         ["Scans"] = "الممسوحات الضوئية",
@@ -3277,5 +3275,11 @@ internal static class Arabic
         ["The video couldn't be made"] = "تعذّر إنشاء الفيديو",
         ["Stop making the video and close?"] = "إيقاف إنشاء الفيديو والإغلاق؟",
         ["Save the video before closing? If you don't, this recording isn't saved."] = "حفظ الفيديو قبل الإغلاق؟ إن لم تفعل فلن يُحفظ هذا التسجيل.",
+        ["dub:Best"] = "الأدق",
+        ["Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech."] = "يُترجَم بالمعنى لا حرفيًا، بنموذج ذكاء اصطناعي كبير على هذا الحاسوب يعرف لغة الدين والشعر واللهجات. ويستغرق وقتًا: بضع دقائق لكل دقيقة كلام.",
+        ["Translating by meaning…"] = "جارٍ الترجمة بالمعنى…",
+        ["Linda (English voice)"] = "Linda (صوت إنجليزي)",
+        ["Open-source licences"] = "تراخيص المصادر المفتوحة",
+        ["DropWheel is built on open-source programs, libraries and AI models; each keeps its own licence."] = "بُني DropWheel على برامج ومكتبات ونماذج ذكاء اصطناعي مفتوحة المصدر، ولكلٍّ منها ترخيصه الخاص.",
     };
 }

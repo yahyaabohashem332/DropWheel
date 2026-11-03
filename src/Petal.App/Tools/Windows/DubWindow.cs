@@ -28,6 +28,9 @@ public sealed class DubWindow : MediaToolWindow
 {
     private static readonly ModelInfo[] Models = [ModelCatalog.WhisperFast, ModelCatalog.WhisperBalanced, ModelCatalog.WhisperAccurate];
 
+    /// <summary>The level that hears with the most accurate model and translates by meaning with the AI model.</summary>
+    private const int Finest = 3;
+
     // ---------- the choices ----------
     private readonly StackPanel _settings = new();
     private readonly Image _frame = new() { Stretch = Stretch.UniformToFill };
@@ -40,6 +43,9 @@ public sealed class DubWindow : MediaToolWindow
     private readonly ModelPanel _model;
     private readonly ModelPanel _voices = new(Dubbing.Models);
     private readonly ModelPanel _helpers = new(Translator.Models);
+    // The finest level's translator, and what it is.
+    private readonly ModelPanel _writer = new(DubTranslation.Models);
+    private readonly StackPanel _finest = new() { Visibility = Visibility.Collapsed };
 
     // ---------- preparing ----------
     private readonly StackPanel _working = new() { Visibility = Visibility.Collapsed };
@@ -74,10 +80,14 @@ public sealed class DubWindow : MediaToolWindow
         _original.Content = L.T("Keep the original sound as a second track");
         _subtitles.Content = L.T("Subtitles in the new language");
         _settings.Children.Add(Row("", new WrapPanel { Children = { _original, _subtitles } }, 130, 10));
-        int preferred = Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 2;
-        _accuracy = Segments([(0, "Fast"), (1, "Balanced"), (2, "Accurate")], preferred);
+        int preferred = ModelStore.IsAvailable(Models[2]) && DubTranslation.Ready ? Finest
+            : Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 2;
+        _accuracy = Segments([(0, "Fast"), (1, "Balanced"), (2, "Accurate"), (Finest, L.T("Best", "dub"))], preferred);
         _settings.Children.Add(Row("Accuracy", _accuracy, 130, 12));
-        _model = new ModelPanel(Models[preferred]);
+        _finest.Children.Add(Text("Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech.", "Petal.Caption").WithMarginT(6));
+        _finest.Children.Add(_writer);
+        _settings.Children.Add(_finest);
+        _model = new ModelPanel(Models[Math.Min(preferred, 2)]);
         _settings.Children.Add(_model);
         _settings.Children.Add(_voices);
         _settings.Children.Add(_helpers);
@@ -106,8 +116,9 @@ public sealed class DubWindow : MediaToolWindow
         _review.Children.Add(new ScrollViewer { MaxHeight = 440, Margin = new Thickness(0, 10, 0, 0), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _list });
         Body.Children.Add(_review);
 
-        _accuracy.Changed += i => { _model.Model = Models[i]; Sync(); };
+        _accuracy.Changed += i => { _model.Model = Models[Math.Min(i, 2)]; Sync(); };
         _model.Ready += Sync;
+        _writer.Ready += Sync;
         _voices.Ready += Sync;
         _helpers.Ready += Sync;
         // The language spoken is never the one dubbed into: choosing one turns the other round.
@@ -173,8 +184,10 @@ public sealed class DubWindow : MediaToolWindow
         if (_reviewing || _into is null)
             return;
         _helpers.Models = Translation;
+        _finest.Visibility = _accuracy.Value == Finest ? Visibility.Visible : Visibility.Collapsed;
         bool working = _work is not null;
-        PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && Translation.All(ModelStore.IsAvailable) && Info is { HasVideo: true, HasAudio: true };
+        PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && Translation.All(ModelStore.IsAvailable) && Info is { HasVideo: true, HasAudio: true }
+            && (_accuracy.Value != Finest || _writer.IsReady);
         if (!working)
             FooterNote = Info is { HasAudio: false } ? L.T("This video has no sound to dub.")
                 : Dubbing.IsKnown(File) ? L.T("Prepared before: it opens again at once.")
@@ -222,12 +235,14 @@ public sealed class DubWindow : MediaToolWindow
         try
         {
             var (file, spoken, into) = (File, ValueOf<string>(_spoken), _into.Value);
+            bool natural = _accuracy.Value == Finest;
+            var (separated, heard) = Dubbing.Steps(natural);
             var progress = new Progress<double>(p =>
             {
                 if (!cancel.IsCancellationRequested)
-                    Progress(p, p < 0.45 ? "Separating the voices…" : p < 0.85 ? "Listening to what is said…" : "Translating…");
+                    Progress(p, p < separated ? "Separating the voices…" : p < heard ? "Listening to what is said…" : natural ? "Translating by meaning…" : "Translating…");
             });
-            _source = await Task.Run(() => Dubbing.PrepareAsync(file, model, spoken, into, progress, cancel.Token), cancel.Token);
+            _source = await Task.Run(() => Dubbing.PrepareAsync(file, model, spoken, into, progress, cancel.Token, natural), cancel.Token);
             if (_source.Lines.Count == 0)
                 problem = "No speech was found in this file.";
             else
@@ -366,6 +381,9 @@ public sealed class DubWindow : MediaToolWindow
     }
 
     /// <summary>The preparing stage, part of the way through, for the design snapshots.</summary>
+    /// <summary>The finest level chosen, for the design snapshots.</summary>
+    internal void FinestForSnapshot() => _accuracy.Value = Finest;
+
     internal void ShowPreparingForSnapshot(double share)
     {
         _work = new CancellationTokenSource();
