@@ -697,9 +697,9 @@ internal static class DesignSnapshots
         {
             var captions = new Words.CaptionWindow();
             if (Localization.L.IsArabic)
-                captions.Show("We'll move the launch to next Thursday.", "سننقل الإطلاق إلى الخميس القادم.");
+                captions.Show("We'll move the launch to next Thursday.", "سننقل الإطلاق إلى الخميس القادم.", "وسنخبر الفريق");
             else
-                captions.Show("سننقل الإطلاق إلى الخميس القادم.", "We'll move the launch to next Thursday.");
+                captions.Show("سننقل الإطلاق إلى الخميس القادم.", "We'll move the launch to next Thursday.", "And we'll tell the team");
             return captions;
         }),
         ("focuspill", () => new Screen.FocusPill()),
@@ -1169,10 +1169,10 @@ internal static class DesignSnapshots
             await Task.Delay(250);
             if (window.IsLoaded && window.Left > -10000)
                 window.Left = -20000;
-            var (small, main) = window.Shown;
-            var line = small + " || " + main;
+            var (small, main, live) = window.Shown;
+            var line = small + " || " + main + " || " + live;
             if (line != last)
-                log.AppendLine($"{clock.Elapsed.TotalSeconds:0.00}\t{small}\t{main}");
+                log.AppendLine($"{clock.Elapsed.TotalSeconds:0.00}\t{small}\t{main}\t{live}");
             last = line;
             if (clock.Elapsed.TotalSeconds > (picture + 1) * 8 && window.Content is FrameworkElement content && content.ActualWidth > 0)
             {

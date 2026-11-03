@@ -491,17 +491,20 @@ internal static class LiveCaptions
 }
 
 /// <summary>
-/// The caption bar: two lines that roll as the talk goes on, the final words bright and the newest (which may
-/// still change) dimmer. With a translation, it is large and what was said is small above it.
+/// The caption bar: what was said rolls as the talk goes on, the final words bright and the newest (which may
+/// still change) dimmer. A translation has two lines of its own, because many languages can't be put right until
+/// their sentence ends: the first holds the last finished sentence, translated properly; the second, under it, the
+/// sentence being said, translated as it comes. When that sentence ends, it moves up to the first line.
+/// What was said is small above them.
 /// </summary>
 internal sealed class CaptionWindow : Window
 {
-    private readonly TextBlock _main, _small, _status;
+    private readonly TextBlock _main, _live, _small, _status;
     private readonly StackPanel _buttons, _text;
     private readonly StripButton _source, _show;
     private StreamState? _talk;
-    // The translation: the finished sentences' (the latest last) and the sentence being said.
-    private readonly List<string> _translated = [];
+    // The translation: the last finished sentence's and the sentence being said.
+    private string _sentence = "";
     private string _partial = "";
     // The number of the sentence the partial translation is of, and of the latest finished one translated.
     private int _partialFor, _shownFinal;
@@ -532,6 +535,7 @@ internal sealed class CaptionWindow : Window
         L.Apply(this);
         _small = new TextBlock { FontSize = 16, Foreground = SmallBright, TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 0, 4), TextAlignment = TextAlignment.Center };
         _main = new TextBlock { FontSize = 27, FontWeight = FontWeights.SemiBold, Foreground = Bright, TextWrapping = TextWrapping.Wrap, FontFamily = UiFonts.Display, TextAlignment = TextAlignment.Center };
+        _live = new TextBlock { FontSize = 23, Foreground = Dim, TextWrapping = TextWrapping.Wrap, FontFamily = UiFonts.Display, TextAlignment = TextAlignment.Center, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 4, 0, 0) };
         _status = new TextBlock { FontSize = 14, Foreground = new SolidColorBrush(Color.FromArgb(0xA0, 0xFF, 0xFF, 0xFF)), TextWrapping = TextWrapping.Wrap };
         _source = new StripButton("volume", "The PC's sound or the microphone", LiveCaptions.SwitchSource, null, 28);
         _show = new StripButton("languages", "Arabic, the original, English, or both", LiveCaptions.NextShow, null, 28);
@@ -539,7 +543,7 @@ internal sealed class CaptionWindow : Window
         _buttons.Children.Add(_source);
         _buttons.Children.Add(_show);
         _buttons.Children.Add(new StripButton("x", "Turn off captions", LiveCaptions.Stop, null, 28));
-        _text = new StackPanel { Children = { _status, _small, _main }, Margin = new Thickness(0, 0, 90, 0) };
+        _text = new StackPanel { Children = { _status, _small, _main, _live }, Margin = new Thickness(0, 0, 90, 0) };
         var grid = new Grid { Children = { _text, _buttons } };
         var card = new Border
         {
@@ -623,11 +627,7 @@ internal sealed class CaptionWindow : Window
         {
             _shownFinal = Math.Max(_shownFinal, number);
             if (!string.IsNullOrWhiteSpace(text))
-            {
-                _translated.Add(text.Trim());
-                if (_translated.Count > 3)
-                    _translated.RemoveAt(0);
-            }
+                _sentence = text.Trim();
             if (_partialFor <= number)
                 _partial = "";
         }
@@ -641,7 +641,7 @@ internal sealed class CaptionWindow : Window
 
     public void ClearTranslation()
     {
-        _translated.Clear();
+        _sentence = "";
         _partial = "";
     }
 
@@ -652,11 +652,16 @@ internal sealed class CaptionWindow : Window
             return;
         var said = (Join(talk.Previous, talk.Current), talk.Draft);
         bool translating = LiveCaptions.Target(SettingsStore.Current.CaptionsShow) is not null;
-        bool hasTranslation = translating && (_translated.Count > 0 || _partial.Length > 0);
+        bool hasTranslation = translating && (_sentence.Length > 0 || _partial.Length > 0);
         bool both = SettingsStore.Current.CaptionsShow == "both";
         if (hasTranslation)
         {
-            Fill(_main, (string.Join(' ', _translated.TakeLast(2)), _partial), Bright, Dim, 2);
+            // Both lines keep their room even while one is empty, so the bar doesn't jump at each sentence.
+            Fill(_main, (_sentence, ""), Bright, Dim, 3);
+            Fill(_live, (_partial, ""), Dim, Dim, 2);
+            _main.MinHeight = _main.FontSize * _main.FontFamily.LineSpacing;
+            _live.MinHeight = _live.FontSize * _live.FontFamily.LineSpacing;
+            _live.Visibility = Visibility.Visible;
             _small.Visibility = both ? Visibility.Visible : Visibility.Collapsed;
             if (both)
                 Fill(_small, said, SmallBright, SmallDim, 2);
@@ -664,25 +669,31 @@ internal sealed class CaptionWindow : Window
         else
         {
             _small.Visibility = Visibility.Collapsed;
+            _live.Visibility = Visibility.Collapsed;
+            _main.MinHeight = 0;
             Fill(_main, said, Bright, Dim, 2);
         }
     }
 
-    /// <summary>What the lines show now (for tests).</summary>
-    internal (string Small, string Main) Shown =>
-        (_small.Visibility == Visibility.Visible ? new TextRange(_small.ContentStart, _small.ContentEnd).Text : "", new TextRange(_main.ContentStart, _main.ContentEnd).Text);
+    /// <summary>What the lines show now (for tests): what was said, the first line and the second.</summary>
+    internal (string Small, string Main, string Live) Shown =>
+        (_small.Visibility == Visibility.Visible ? new TextRange(_small.ContentStart, _small.ContentEnd).Text : "",
+            new TextRange(_main.ContentStart, _main.ContentEnd).Text,
+            _live.Visibility == Visibility.Visible ? new TextRange(_live.ContentStart, _live.ContentEnd).Text : "");
 
     private static string Join(string a, string b) => a.Length == 0 ? b : b.Length == 0 ? a : a + " " + b;
 
-    public void Show(string original, string? translated)
+    public void Show(string original, string? translated, string? saying = null)
     {
-        // For pictures of the window: a finished sentence and its translation.
+        // For pictures of the window: a finished sentence and its translation, and the sentence being said.
         _talk = new StreamState(original, "", "", "", -1);
         _status.Visibility = Visibility.Collapsed;
         if (translated is not null)
             ShowTranslation(translated, final: true, 1);
         else
             Render();
+        if (saying is not null)
+            ShowTranslation(saying, final: false, 2);
     }
 
     /// <summary>

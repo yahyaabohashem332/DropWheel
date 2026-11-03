@@ -59,7 +59,7 @@ public partial class LocalizationTests
         // Made-up windows, snippets, PCs, notes and captions in the design snapshots of 1.7 (the Arabic ones are written beside them).
         "Spotify", "WINWORD", "Code", "petal-site — Visual Studio Code", "Project board - Google Chrome", "Landing page – Figma",
         ";addr", ";thx", "14 Harbour Road, Bristol BS1 5TT", "Thanks so much, {cursor}. Best wishes.", "Office PC", "Sara's laptop", "Study",
-        "[00:00] Morning all, let's start with the launch date.\n[00:06] The translation isn't finished yet.", "We'll move the launch to next Thursday.",
+        "[00:00] Morning all, let's start with the launch date.\n[00:06] The translation isn't finished yet.", "We'll move the launch to next Thursday.", "And we'll tell the team",
         "Petal clipboard", "Petal screen recording", "Clipboard Viewer Ignore", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "Windows.UI.Core.CoreWindow", "WPF / C#",
         // 1.8: thread names, keycaps, UI Automation control kinds the step words are chosen by, a date pattern, a format name,
         // the support report (kept in English for whoever reads it), polite words a spoken command drops, and a font sample's letters.
