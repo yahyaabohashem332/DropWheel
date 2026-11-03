@@ -28,6 +28,21 @@ internal static class PetalTints
     {
         var row = new WrapPanel();
         var rings = new List<(string? Hex, Ellipse Ring)>();
+        bool ownNow = current is not null && !All.Any(a => string.Equals(a.Hex, current, StringComparison.OrdinalIgnoreCase));
+        var own = new Tools.Parts.CustomColourChip(24, () => Tools.Parts.ColourMath.TryParseHex(current, out var c) ? c : Colors.White)
+        {
+            Chosen = ownNow,
+            Colour = ownNow && Tools.Parts.ColourMath.TryParseHex(current, out var shown) ? shown : null,
+        };
+        own.Picked += c =>
+        {
+            foreach (var (_, r) in rings)
+                r.Visibility = Visibility.Hidden;
+            current = Tools.Parts.ColourMath.Hex(c);
+            own.Chosen = true;
+            own.Colour = c;
+            chosen(current);
+        };
         foreach (var (hex, name) in All)
         {
             var swatch = new Grid { Width = 24, Height = 24 };
@@ -51,10 +66,13 @@ internal static class PetalTints
             {
                 foreach (var (h, r) in rings)
                     r.Visibility = h == hex ? Visibility.Visible : Visibility.Hidden;
+                current = hex;
+                own.Chosen = false;
                 chosen(hex);
             };
             row.Children.Add(button);
         }
+        row.Children.Add(own);
         return row;
     }
 }

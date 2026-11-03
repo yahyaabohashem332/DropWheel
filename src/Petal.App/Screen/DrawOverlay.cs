@@ -604,6 +604,8 @@ internal sealed class DrawToolbar : Window
     private readonly DrawOverlay _draw;
     private readonly Dictionary<DrawTool, StripButton> _tools = [];
     private readonly List<(Color Colour, StripButton Button)> _colours = [];
+    private readonly Ellipse _ownColourDot = new() { Width = 16, Height = 16, Stroke = new SolidColorBrush(Color.FromArgb(0x70, 0xFF, 0xFF, 0xFF)), StrokeThickness = 1 };
+    private StripButton _ownColour = null!;
     private readonly List<StripButton> _sizes = [];
     private readonly Dictionary<DrawBoard, StripButton> _boards = [];
     private StripButton _undo = null!, _redo = null!, _through = null!;
@@ -672,6 +674,9 @@ internal sealed class DrawToolbar : Window
             _colours.Add((colour, button));
             row.Children.Add(button);
         }
+        _ownColourDot.Fill = Tools.Parts.CustomColourChip.Rainbow();
+        _ownColour = new StripButton(null, "Any colour…", () => Tools.Parts.ColourWindow.Pick(_draw.Colour, _draw.SetColour, owner: _draw), _ownColourDot, 28);
+        row.Children.Add(_ownColour);
         row.Children.Add(ScreenUi.Divider());
         for (int i = 0; i < DrawOverlay.Sizes.Length; i++)
         {
@@ -741,6 +746,10 @@ internal sealed class DrawToolbar : Window
             button.Accent = Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF);
             button.IsOn = colour == _draw.Colour;
         }
+        bool own = !DrawOverlay.Colours.Contains(_draw.Colour);
+        _ownColour.Accent = Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF);
+        _ownColour.IsOn = own;
+        _ownColourDot.Fill = own ? new SolidColorBrush(_draw.Colour) : Tools.Parts.CustomColourChip.Rainbow();
         for (int i = 0; i < _sizes.Count; i++)
         {
             _sizes[i].Accent = Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF);

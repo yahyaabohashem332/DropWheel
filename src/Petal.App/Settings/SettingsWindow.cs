@@ -313,7 +313,7 @@ public sealed partial class SettingsWindow : ToolWindow
         theme.Changed += t =>
         {
             _s.Theme = t;
-            Theme.Configure(t, _s.UseWindowsAccent);
+            Theme.Configure(t, _s.AccentColour, _s.AccentCustom);
             Save();
         };
         panel.Children.Add(Row("Theme", theme, 150, 12));

@@ -643,6 +643,11 @@ internal sealed class StudioWindow : ToolWindow
         var blurred = new LinearGradientBrush(Color.FromRgb(0x9C, 0xA3, 0xAF), Color.FromRgb(0x4B, 0x55, 0x63), 45);
         swatches.Children.Add(Swatch("blur", "The recording, blurred", blurred, look.Background == "blur", () => Set(look with { Background = "blur" }), "blend"));
         swatches.Children.Add(Swatch("none", "None: the recording fills the frame", Brushes.Black, look.Background == "none", () => Set(look with { Background = "none" }), "maximize"));
+        bool own = Tools.Parts.ColourMath.TryParseHex(look.Background, out var ownColour);
+        var start = own ? ownColour : Colors.White;
+        swatches.Children.Add(Swatch("custom", "Any colour…", own ? Palette.Brush(ownColour) : Tools.Parts.CustomColourChip.Rainbow(), own, () => Tools.Parts.ColourWindow.Pick(start,
+            c => Set(look with { Background = Tools.Parts.ColourMath.Hex(c) }),
+            c => Slide(look with { Background = c == start ? look.Background : Tools.Parts.ColourMath.Hex(c) }), owner: this), own ? null : "palette"));
         Add(swatches);
 
         if (look.Framed)

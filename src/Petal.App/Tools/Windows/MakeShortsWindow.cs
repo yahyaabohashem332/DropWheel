@@ -44,6 +44,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
     private readonly Segmented<ShortFraming> _framing;
     private readonly Segmented<string> _captions;
     private readonly WrapPanel _colours = new();
+    private readonly Tools.Parts.CustomColourChip _ownColour;
     private string _highlight = AnimatedCaptionsWindow.Colours[0].Hex;
     private readonly Segmented<string> _into;
     private readonly CheckBox _headline = new() { IsChecked = true, Margin = new Thickness(0, 0, 18, 0) };
@@ -154,6 +155,13 @@ public sealed class MakeShortsWindow : MediaToolWindow
             };
             _colours.Children.Add(swatch);
         }
+        _ownColour = new Tools.Parts.CustomColourChip(32, () => Tools.Parts.ColourMath.TryParseHex(_highlight, out var c) ? c : Colors.White);
+        _ownColour.Changing += c =>
+        {
+            _highlight = Tools.Parts.ColourMath.Hex(c);
+            DrawPreview();
+        };
+        _colours.Children.Add(_ownColour);
         _settings.Children.Add(Row("Lit word", _colours, 120, 8));
         _into = Segments([("spoken", "As spoken"), ("en", "In English"), ("ar", "In Arabic")], "spoken");
         _settings.Children.Add(Row("Words in", _into, 120, 8));
@@ -305,7 +313,10 @@ public sealed class MakeShortsWindow : MediaToolWindow
     private void DrawPreview()
     {
         _overlay.Children.Clear();
-        foreach (Border swatch in _colours.Children)
+        bool own = !_colours.Children.OfType<Border>().Any(b => (string)b.Tag == _highlight);
+        _ownColour.Chosen = own;
+        _ownColour.Colour = own && Tools.Parts.ColourMath.TryParseHex(_highlight, out var mine) ? mine : null;
+        foreach (var swatch in _colours.Children.OfType<Border>())
         {
             swatch.BorderThickness = new Thickness((string)swatch.Tag == _highlight ? 3 : 0);
             swatch.SetResourceReference(Border.BorderBrushProperty, "Petal.Text");

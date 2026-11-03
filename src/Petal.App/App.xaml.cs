@@ -141,7 +141,7 @@ public partial class App : Application
             BuildTrayMenu();
             ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
         };
-        Theme.Configure(settings.Theme, settings.AccentColour);
+        Theme.Configure(settings.Theme, settings.AccentColour, settings.AccentCustom);
         ThemeResources.Install(this);
         SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
@@ -257,7 +257,7 @@ public partial class App : Application
         if (Wheels.WheelTemplates.Upgrade(s))
             SettingsStore.Save();
         L.Configure(s.Language);
-        Theme.Configure(s.Theme, s.AccentColour);
+        Theme.Configure(s.Theme, s.AccentColour, s.AccentCustom);
         if (_hotkey is not null)
         {
             var wanted = Input.Shortcut.Parse(s.QuickShortcut);

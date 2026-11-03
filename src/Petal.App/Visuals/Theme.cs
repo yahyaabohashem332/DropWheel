@@ -20,6 +20,7 @@ public enum AccentChoice
     Rose,
     Amber,
     Graphite,
+    Custom,
 }
 
 /// <summary>Colours for the current light/dark appearance. Brushes are frozen and shared.</summary>
@@ -68,6 +69,7 @@ public static class Theme
 
     public static ThemePreference Preference { get; private set; } = ThemePreference.System;
     public static AccentChoice Accent { get; private set; } = AccentChoice.Violet;
+    private static Color _custom = BrandAccent;
     public static bool UseWindowsAccent => Accent == AccentChoice.Windows;
 
     public static Palette Current { get; private set; } = Build(IsSystemDark(), BrandAccent);
@@ -75,10 +77,13 @@ public static class Theme
     public static void Configure(ThemePreference preference, bool useWindowsAccent) =>
         Configure(preference, useWindowsAccent ? AccentChoice.Windows : AccentChoice.Violet);
 
-    public static void Configure(ThemePreference preference, AccentChoice accent)
+    /// <param name="custom">The colour for <see cref="AccentChoice.Custom"/>, as #RRGGBB.</param>
+    public static void Configure(ThemePreference preference, AccentChoice accent, string? custom = null)
     {
         Preference = preference;
         Accent = accent;
+        if (Tools.Parts.ColourMath.TryParseHex(custom, out var chosen))
+            _custom = chosen;
         Refresh();
     }
 
@@ -91,6 +96,7 @@ public static class Theme
         AccentChoice.Rose => Color.FromRgb(0xE0, 0x45, 0x7B),
         AccentChoice.Amber => Color.FromRgb(0xE0, 0x88, 0x24),
         AccentChoice.Graphite => Color.FromRgb(0x5A, 0x62, 0x70),
+        AccentChoice.Custom => _custom,
         _ => BrandAccent,
     };
 
@@ -172,7 +178,7 @@ public static class Theme
                 AccentSoft = A(0x40, accent),
                 Text = Color.FromRgb(0xF4, 0xF4, 0xF6),
                 TextSecondary = Color.FromRgb(0xA4, 0xA6, 0xAE),
-                TextOnAccent = white,
+                TextOnAccent = Tools.Parts.ColourMath.Readable(accent),
                 GlassTint = Color.FromArgb(0x8C, 0x22, 0x23, 0x28),
                 GlassEdge = Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF),
                 PetalTop = Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF),
@@ -200,7 +206,7 @@ public static class Theme
                 AccentSoft = A(0x2E, accent),
                 Text = Color.FromRgb(0x16, 0x16, 0x1A),
                 TextSecondary = Color.FromRgb(0x6E, 0x70, 0x78),
-                TextOnAccent = white,
+                TextOnAccent = Tools.Parts.ColourMath.Readable(accent),
                 GlassTint = Color.FromArgb(0x8A, 0xF6, 0xF6, 0xF8),
                 GlassEdge = Color.FromArgb(0xB0, 0xFF, 0xFF, 0xFF),
                 PetalTop = Color.FromArgb(0xC4, 0xFF, 0xFF, 0xFF),

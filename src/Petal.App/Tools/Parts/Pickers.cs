@@ -111,7 +111,7 @@ public sealed class OrderList : StackPanel
     }
 }
 
-/// <summary>A capsule showing a colour; click for swatches and a custom hex value.</summary>
+/// <summary>A capsule showing a colour; a click opens the colour panel: a free palette, the hex code and swatches.</summary>
 public sealed class ColorWell : Button
 {
     private static readonly Color[] Swatches =
@@ -123,7 +123,8 @@ public sealed class ColorWell : Button
 
     private readonly Border _chip = new() { CornerRadius = new CornerRadius(8), Width = 38, Height = 18, BorderThickness = new Thickness(1) };
     private readonly Popup _popup = new() { StaysOpen = false, AllowsTransparency = true, Placement = PlacementMode.Bottom, VerticalOffset = 4 };
-    private Color _color;
+    private ColourPanel? _panel;
+    private Color _color, _opened;
 
     public event Action<Color>? Changed;
 
@@ -136,8 +137,19 @@ public sealed class ColorWell : Button
         Content = _chip;
         Color = initial;
         _popup.PlacementTarget = this;
-        _popup.Child = BuildPalette();
-        Click += (_, _) => _popup.IsOpen = !_popup.IsOpen;
+        _popup.Closed += (_, _) => Settle();
+        Click += (_, _) =>
+        {
+            if (_popup.IsOpen)
+            {
+                _popup.IsOpen = false;
+                return;
+            }
+            // Built each time: it opens on the colour now, with the colours used lately.
+            _opened = _color;
+            _popup.Child = BuildPalette();
+            _popup.IsOpen = true;
+        };
         HorizontalAlignment = HorizontalAlignment.Left;
     }
 
@@ -153,40 +165,20 @@ public sealed class ColorWell : Button
 
     private UIElement BuildPalette()
     {
-        var grid = new UniformGrid { Columns = 4, Margin = new Thickness(0, 0, 0, 8) };
-        foreach (var c in Swatches)
+        _panel = new ColourPanel(_color, Swatches);
+        _panel.Changing += c => Color = c;
+        _panel.Settled += c =>
         {
-            var swatch = new Border
-            {
-                Width = 26,
-                Height = 26,
-                Margin = new Thickness(3),
-                CornerRadius = new CornerRadius(13),
-                Background = Palette.Brush(c),
-                BorderThickness = new Thickness(1),
-                Cursor = Cursors.Hand,
-            };
-            swatch.SetResourceReference(Border.BorderBrushProperty, "Petal.ControlBorder");
-            var color = c;
-            swatch.MouseLeftButtonUp += (_, _) => Pick(color);
-            grid.Children.Add(swatch);
-        }
-        var hex = new TextBox { Text = Hex(_color), Width = 130 };
-        hex.KeyDown += (_, e) =>
-        {
-            if (e.Key == Key.Enter && TryParse(hex.Text, out var c))
-                Pick(c);
+            Color = c;
+            Settle();
         };
-        var panel = new StackPanel();
-        panel.Children.Add(grid);
-        panel.Children.Add(hex);
         var border = new Border
         {
-            Padding = new Thickness(10),
+            Padding = new Thickness(12),
             Margin = new Thickness(8, 0, 8, 14),
             CornerRadius = new CornerRadius(12),
             BorderThickness = new Thickness(1),
-            Child = panel,
+            Child = _panel,
             Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 4, Direction = 270, Opacity = 0.2 },
         };
         border.SetResourceReference(Border.BackgroundProperty, "Petal.Popup");
@@ -194,11 +186,14 @@ public sealed class ColorWell : Button
         return border;
     }
 
-    private void Pick(Color c)
+    /// <summary>A colour that has settled and differs from the last one told goes out once.</summary>
+    private void Settle()
     {
-        Color = c;
-        _popup.IsOpen = false;
-        Changed?.Invoke(c);
+        if (_color == _opened)
+            return;
+        _opened = _color;
+        ColourPanel.Remember(_color);
+        Changed?.Invoke(_color);
     }
 
     public static string Hex(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";

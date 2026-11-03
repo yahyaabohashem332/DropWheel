@@ -307,8 +307,11 @@ internal static class StudioBackgrounds
         ("snow", "Snow", new SKColor(0xF1, 0xF5, 0xF9), new SKColor(0xCB, 0xD5, 0xE1)),
     ];
 
+    /// <summary>A background's two colours; a colour of your own (#RRGGBB) is both.</summary>
     public static (SKColor From, SKColor To)? Gradient(string key)
     {
+        if (key.StartsWith('#') && SKColor.TryParse(key, out var own))
+            return (own, own);
         foreach (var g in Gradients)
             if (g.Key == key)
                 return (g.From, g.To);

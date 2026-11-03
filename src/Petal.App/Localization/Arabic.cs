@@ -3281,5 +3281,9 @@ internal static class Arabic
         ["Linda (English voice)"] = "Linda (صوت إنجليزي)",
         ["Open-source licences"] = "تراخيص المصادر المفتوحة",
         ["DropWheel is built on open-source programs, libraries and AI models; each keeps its own licence."] = "بُني DropWheel على برامج ومكتبات ونماذج ذكاء اصطناعي مفتوحة المصدر، ولكلٍّ منها ترخيصه الخاص.",
+        ["Any colour…"] = "أي لون…",
+        ["Choose a Colour"] = "اختر لونًا",
+        ["The colour before"] = "اللون السابق",
+        ["Used lately"] = "المستخدمة مؤخرًا",
     };
 }

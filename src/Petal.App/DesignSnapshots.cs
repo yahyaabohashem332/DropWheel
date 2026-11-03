@@ -683,6 +683,7 @@ internal static class DesignSnapshots
     private static IEnumerable<(string Name, Func<Window> Create)> FloatingCases() =>
     [
         ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
+        ("colourpanel", () => Tools.Parts.ColourWindow.ForSnapshot(Color.FromRgb(0x2E, 0x8B, 0xC4), [Colors.Black, Colors.White, Color.FromRgb(0xEB, 0x4D, 0x47), Color.FromRgb(0xFF, 0xD2, 0x3F), Color.FromRgb(0x34, 0xC7, 0x59), Color.FromRgb(0x3B, 0x82, 0xF6)])),
         ("progresscard", () => Hud.HudCard.ProgressForSnapshot("Adding captions", "lesson.mp4 · 37%", 0.37)),
         ("savedshot", () => Hud.HudCard.SavedForSnapshot("Screenshot saved and copied", Path.Combine(Wheels.Screenshots.Folder, "Screenshot 2026-10-23 09.41.12.png"))),
         ("guidecard", () => Guide.GuideCard.ForSnapshot("tool:Compress")),

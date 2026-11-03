@@ -96,6 +96,35 @@ public sealed partial class SettingsWindow
             swatch.Tag = key;
             backgrounds.Children.Add(swatch);
         }
+        var ownBackground = new Border
+        {
+            Width = 30,
+            Height = 22,
+            CornerRadius = new CornerRadius(6),
+            Margin = new Thickness(0, 0, 6, 0),
+            Cursor = Cursors.Hand,
+            ToolTip = L.T("Any colour…"),
+            Tag = _s.PolishBackground.StartsWith('#') ? _s.PolishBackground : "",
+            BorderThickness = new Thickness(_s.PolishBackground.StartsWith('#') ? 2.5 : 1),
+            Background = Tools.Parts.ColourMath.TryParseHex(_s.PolishBackground, out var ownColour) ? Visuals.Palette.Brush(ownColour) : Tools.Parts.CustomColourChip.Rainbow(),
+        };
+        ownBackground.SetResourceReference(Border.BorderBrushProperty, _s.PolishBackground.StartsWith('#') ? "Petal.Accent" : "Petal.ControlBorder");
+        ownBackground.MouseLeftButtonUp += (_, _) => Tools.Parts.ColourWindow.Pick(Tools.Parts.ColourMath.TryParseHex(_s.PolishBackground, out var from) ? from : Colors.White, c =>
+        {
+            var hex = Tools.Parts.ColourMath.Hex(c);
+            _s.PolishBackground = hex;
+            ownBackground.Tag = hex;
+            ownBackground.Background = Visuals.Palette.Brush(c);
+            Screen.Studio.StudioSettings.FromSettings();
+            Save();
+            foreach (var other in backgrounds.Children.OfType<Border>())
+            {
+                bool on = (string)other.Tag == hex;
+                other.BorderThickness = new Thickness(on ? 2.5 : 1);
+                other.SetResourceReference(Border.BorderBrushProperty, on ? "Petal.Accent" : "Petal.ControlBorder");
+            }
+        }, owner: this);
+        backgrounds.Children.Add(ownBackground);
         panel.Children.Add(Row("Background", backgrounds, 150, 10));
         var zoom = Segments([(1.0, "Off"), (1.5, "Gentle"), (1.8, "Medium"), (2.3, "Strong")], _s.PolishZoom switch { <= 1.01 => 1.0, < 1.7 => 1.5, < 2.1 => 1.8, _ => 2.3 });
         zoom.Changed += v =>

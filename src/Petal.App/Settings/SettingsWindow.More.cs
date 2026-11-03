@@ -243,6 +243,23 @@ public sealed partial class SettingsWindow
             (AccentChoice.Mint, "Mint"), (AccentChoice.Rose, "Rose"), (AccentChoice.Amber, "Amber"), (AccentChoice.Graphite, "Graphite"),
         };
         var rings = new List<(AccentChoice Choice, Ellipse Ring)>();
+        var own = new Tools.Parts.CustomColourChip(26, () => Theme.ColourOf(_s.AccentColour))
+        {
+            Chosen = _s.AccentColour == AccentChoice.Custom,
+            Colour = _s.AccentColour == AccentChoice.Custom ? Theme.ColourOf(AccentChoice.Custom) : null,
+        };
+        own.Picked += c =>
+        {
+            _s.Accent = AccentChoice.Custom;
+            _s.AccentCustom = Tools.Parts.ColourMath.Hex(c);
+            _s.UseWindowsAccent = false;
+            Theme.Configure(_s.Theme, AccentChoice.Custom, _s.AccentCustom);
+            Save();
+            foreach (var (_, r) in rings)
+                r.Visibility = Visibility.Hidden;
+            own.Chosen = true;
+            own.Colour = c;
+        };
         foreach (var (choice, name) in choices)
         {
             var colour = Theme.ColourOf(choice);
@@ -269,9 +286,11 @@ public sealed partial class SettingsWindow
                 Save();
                 foreach (var (c, r) in rings)
                     r.Visibility = c == choice ? Visibility.Visible : Visibility.Hidden;
+                own.Chosen = false;
             };
             row.Children.Add(button);
         }
+        row.Children.Add(own);
         return row;
     }
 

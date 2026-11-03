@@ -191,9 +191,20 @@ public static class StickyNotes
 
     internal static (Color Paper, Color Band) Paint(string key)
     {
+        if (Tools.Parts.ColourMath.TryParseHex(key, out var own))
+            return (own, Darker(own));
         var c = Colours.FirstOrDefault(c => c.Key == key);
         return c.Key is null ? (Colours[0].Paper, Colours[0].Band) : (c.Paper, c.Band);
     }
+
+    /// <summary>What a note keeps for a colour: the name of a ready-made one, or its hex code.</summary>
+    internal static string KeyOf(Color paper)
+    {
+        var c = Colours.FirstOrDefault(c => c.Paper == paper);
+        return c.Key ?? Tools.Parts.ColourMath.Hex(paper);
+    }
+
+    private static Color Darker(Color c) => Color.FromRgb((byte)(c.R * 0.86), (byte)(c.G * 0.86), (byte)(c.B * 0.86));
 }
 
 /// <summary>A note on the screen: a coloured paper with a band to drag it by and its buttons on the band.</summary>
@@ -252,7 +263,7 @@ internal sealed class NoteWindow : Window
         Direction();
         _buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Opacity = 0.35 };
         _buttons.Children.Add(BandButton("plus", "New note", StickyNotes.New));
-        _buttons.Children.Add(BandButton("palette", "Colour", NextColour));
+        _buttons.Children.Add(BandButton("palette", "Colour", ChooseColour));
         _pin.Content = Icons.Create("pin", 13, new SolidColorBrush(Color.FromArgb(0xB0, 0, 0, 0)), 2);
         var pin = BandButton(null, "Keep on top", ToggleOnTop, _pin);
         _buttons.Children.Add(pin);
@@ -318,12 +329,19 @@ internal sealed class NoteWindow : Window
         return button;
     }
 
-    private void NextColour()
+    /// <summary>The note's own colours and any other, from the colour panel; the note changes as you choose.</summary>
+    private void ChooseColour()
     {
-        int at = Array.FindIndex(StickyNotes.Colours, c => c.Key == _note.Colour);
-        _note.Colour = StickyNotes.Colours[(at + 1) % StickyNotes.Colours.Length].Key;
-        Recolour();
-        StickyNotes.SaveSoon();
+        void Show(Color paper)
+        {
+            _note.Colour = StickyNotes.KeyOf(paper);
+            Recolour();
+        }
+        Tools.Parts.ColourWindow.Pick(StickyNotes.Paint(_note.Colour).Paper, paper =>
+        {
+            Show(paper);
+            StickyNotes.SaveSoon();
+        }, Show, StickyNotes.Colours.Select(c => c.Paper).ToList(), this);
     }
 
     private void Recolour()
@@ -331,6 +349,10 @@ internal sealed class NoteWindow : Window
         var (paper, band) = StickyNotes.Paint(_note.Colour);
         _paper.Background = new SolidColorBrush(paper);
         _band.Background = new SolidColorBrush(band);
+        // Dark paper takes light words.
+        var ink = new SolidColorBrush(Tools.Parts.ColourMath.Readable(paper) == Colors.White ? Colors.White : Color.FromRgb(0x2A, 0x26, 0x1C));
+        _text.Foreground = ink;
+        _text.CaretBrush = ink;
     }
 
     private void ToggleOnTop()

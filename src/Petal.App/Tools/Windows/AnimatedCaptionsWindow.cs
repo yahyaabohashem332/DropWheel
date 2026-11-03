@@ -44,6 +44,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
     private readonly Segmented<CaptionPlace> _place;
     private readonly Segmented<double> _size;
     private readonly WrapPanel _colours = new();
+    private readonly Tools.Parts.CustomColourChip _ownColour;
     private string _highlight = Colours[0].Hex;
     private readonly Grid _preview = new() { Height = 200, ClipToBounds = true, Margin = new Thickness(0, 0, 0, 12) };
     private readonly Image _frame = new() { Stretch = Stretch.UniformToFill };
@@ -86,6 +87,13 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
             };
             _colours.Children.Add(swatch);
         }
+        _ownColour = new Tools.Parts.CustomColourChip(34, () => Tools.Parts.ColourMath.TryParseHex(_highlight, out var c) ? c : Colors.White);
+        _ownColour.Changing += c =>
+        {
+            _highlight = Tools.Parts.ColourMath.Hex(c);
+            ShowSample();
+        };
+        _colours.Children.Add(_ownColour);
         Body.Children.Add(Row("Lit word", _colours, 110, 8));
 
         int preferred = Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 1;
@@ -168,7 +176,10 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
             if (i < shown.Length - 1)
                 _sample.Inlines.Add(new System.Windows.Documents.Run(" "));
         }
-        foreach (Border swatch in _colours.Children)
+        bool own = !_colours.Children.OfType<Border>().Any(b => (string)b.Tag == _highlight);
+        _ownColour.Chosen = own;
+        _ownColour.Colour = own && Tools.Parts.ColourMath.TryParseHex(_highlight, out var mine) ? mine : null;
+        foreach (var swatch in _colours.Children.OfType<Border>())
         {
             bool on = (string)swatch.Tag == _highlight;
             swatch.BorderThickness = new Thickness(on ? 3 : 0);

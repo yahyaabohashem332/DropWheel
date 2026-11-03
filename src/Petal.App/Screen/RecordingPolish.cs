@@ -22,6 +22,9 @@ internal sealed record PolishOptions(string Background, double Zoom, double Curs
         return new PolishOptions(s.PolishBackground, s.PolishZoom, s.PolishLargeCursor ? 1.6 : 1.15, s.PolishClickRings);
     }
 
+    /// <summary>What a background key paints: two colours, corner to corner; none for "none", which fills the frame.</summary>
+    public static (SKColor From, SKColor To)? Fill(string key) => Studio.StudioBackgrounds.Gradient(key);
+
     /// <summary>The backgrounds offered, by key: two colours each, corner to corner; "none" fills the frame.</summary>
     public static readonly (string Key, string Name, SKColor From, SKColor To)[] Backgrounds =
     [
@@ -46,15 +49,15 @@ internal static class RecordingPolish
     public static void Compose(SKCanvas canvas, SKImage frame, int width, int height, CameraFrame camera, double time,
         IReadOnlyList<ClickSample> clicks, PolishOptions options)
     {
-        var background = PolishOptions.Backgrounds.FirstOrDefault(b => b.Key == options.Background);
-        bool framed = background.Key is not null and not "none";
+        var background = PolishOptions.Fill(options.Background);
+        bool framed = background is not null;
         canvas.Clear(SKColors.Black);
         var (content, scale) = Content(width, height, options);
         float pad = framed ? MathF.Round(Math.Min(width, height) * 0.06f) : 0;
         float radius = framed ? Math.Min(width, height) * 0.022f : 0;
         if (framed)
         {
-            using var shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(width, height), [background.From, background.To], SKShaderTileMode.Clamp);
+            using var shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(width, height), [background!.Value.From, background.Value.To], SKShaderTileMode.Clamp);
             using var fill = new SKPaint { Shader = shader };
             canvas.DrawRect(0, 0, width, height, fill);
             using var shadow = new SKPaint
@@ -87,7 +90,7 @@ internal static class RecordingPolish
     /// <summary>Where the recording sits in the finished frame, and how much smaller it is drawn there.</summary>
     public static (SKRect Content, float Scale) Content(int width, int height, PolishOptions options)
     {
-        bool framed = options.Background != "none" && PolishOptions.Backgrounds.Any(b => b.Key == options.Background);
+        bool framed = PolishOptions.Fill(options.Background) is not null;
         float pad = framed ? MathF.Round(Math.Min(width, height) * 0.06f) : 0;
         float scale = framed ? Math.Min((width - 2 * pad) / width, (height - 2 * pad) / height) : 1;
         return (SKRect.Create((width - width * scale) / 2, (height - height * scale) / 2, width * scale, height * scale), scale);

@@ -31,6 +31,12 @@ public sealed class AppSettings
 
     public AccentChoice AccentColour => Accent ?? (UseWindowsAccent ? AccentChoice.Windows : AccentChoice.Violet);
 
+    /// <summary>The accent colour chosen freely, as #RRGGBB, for <see cref="AccentChoice.Custom"/>.</summary>
+    public string? AccentCustom { get; set; }
+
+    /// <summary>The colours used lately in the colour panel, newest first.</summary>
+    public List<string> RecentColours { get; set; } = [];
+
     // ---------- the wheel ----------
 
     public Overlay.WheelStyle WheelStyle { get; set; } = Overlay.WheelStyle.Glass;
