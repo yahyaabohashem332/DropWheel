@@ -18,6 +18,8 @@ public sealed class LanguageChoice : ComboBox
     /// <param name="only">Only these languages; all those translated when null.</param>
     public LanguageChoice(string initial, IEnumerable<(string Code, string Words)>? first = null, IReadOnlyCollection<string>? only = null)
     {
+        // A class of its own doesn't pick up the app's look for combo boxes by itself.
+        SetResourceReference(StyleProperty, typeof(ComboBox));
         MinWidth = 180;
         foreach (var (code, words) in first ?? [])
             Items.Add(new ComboBoxItem { Content = L.T(words), Tag = code });

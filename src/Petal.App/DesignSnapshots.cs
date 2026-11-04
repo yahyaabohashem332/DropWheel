@@ -953,7 +953,7 @@ internal static class DesignSnapshots
             }
             // The whole Settings page, every card, for reviewing the lower sections.
             var full = CreateSettings();
-            Save(RenderWindow(full, 6400), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
+            Save(RenderWindow(full, 9600), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
             full.Close();
             foreach (var mode in Enum.GetValues<WheelMode>())
             {
