@@ -272,6 +272,27 @@
    "ülkeye göre fotoğraf boyutu"
   ]
  },
+ "tool:TraceToSvg": {
+  "category": "pictures",
+  "summary": "Logo, simge veya düz çizimi her boyutta keskin kalan bir SVG'ye dönüştürür.",
+  "details": "Resim, kendiliğinden bulunan ya da 2 ile 16 arasında seçilen birkaç düz renge indirilir; her rengin kenarı izlenir ve köşeleri korunarak düz çizgiler ve eğrilerle uydurulur. Yumuşaklık, eğrinin kenardan ne kadar uzaklaşabileceğini belirler; Arka planı çıkar, kenardaki rengi saydam yapar; saydam resim saydam kalır. Pencere sonucu SVG'den çizerek, renk ve şekil sayısıyla gösterir. Bu bilgisayarda çalışır, indirme gerekmez. Düz çizimler içindir: fotoğraf renk lekeleri, geçişler bantlar olarak çıkar. SVG Kaydet 'ad Traced.svg' yazar; birkaç resim aynı ayarlarla dönüştürülür.",
+  "how": "Bir resmi sürükleyin, Ctrl'ye dokunun ve SVG'YE üzerine bırakın; isterseniz ayarlayın, sonra SVG Kaydet.",
+  "worksOn": "Bir resim veya aynı ayarlarla birkaç resim.",
+  "examples": [
+   "Yalnızca küçük PNG'si olan bir logo, tabela için hazır.",
+   "Taranmış imza, belgelere yerleştirmek için vektör.",
+   "Çizim programında yapılmış simge, SVG isteyen bir site için."
+  ],
+  "keywords": [
+   "resim svg",
+   "png svg",
+   "vektöre çevir",
+   "logo vektör",
+   "logo izleme",
+   "bitmap vektör",
+   "svg"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Resimdeki metni bulunduğu yerde çevirir: menü, tabela, slayt, ekran görüntüsü.",

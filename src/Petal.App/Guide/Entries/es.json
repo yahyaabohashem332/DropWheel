@@ -278,6 +278,26 @@
    "tamaño de foto por país"
   ]
  },
+ "tool:TraceToSvg": {
+  "category": "pictures",
+  "summary": "Convierte un logotipo, icono o dibujo plano en un SVG que se mantiene nítido a cualquier tamaño.",
+  "details": "La imagen se reduce a unos pocos colores planos, encontrados solos o elegidos de 2 a 16, y el contorno de cada color se sigue y se ajusta con rectas y curvas, conservando sus esquinas. Suavidad indica cuánto puede apartarse una curva del borde, y Quitar el fondo hace transparente el color del borde de la imagen; una imagen ya transparente sigue siéndolo. La ventana muestra el resultado dibujado desde el propio SVG, con cuántos colores y formas lleva. Funciona en este PC, sin descargas. Está hecho para arte plano: una foto sale como manchas de color y los degradados como bandas. Guardar SVG escribe 'nombre Traced.svg'.",
+  "how": "Arrastra una imagen, pulsa Ctrl y suéltala en A SVG; ajusta si quieres y luego Guardar SVG.",
+  "worksOn": "Una imagen, o varias con los mismos ajustes.",
+  "examples": [
+   "Un logotipo que solo tienes como PNG pequeño, listo para un rótulo.",
+   "Una firma escaneada como vector para tus documentos.",
+   "Un icono de un programa de dibujo para una web que pide SVG."
+  ],
+  "keywords": [
+   "imagen a svg",
+   "png a svg",
+   "vectorizar",
+   "logotipo vectorial",
+   "trazar logotipo",
+   "svg"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Traduce el texto de una imagen en el lugar donde está: un menú, un cartel, una diapositiva, una captura.",

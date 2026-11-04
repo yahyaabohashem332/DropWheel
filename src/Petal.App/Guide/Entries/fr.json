@@ -273,6 +273,26 @@
    "taille de photo par pays"
   ]
  },
+ "tool:TraceToSvg": {
+  "category": "pictures",
+  "summary": "Transforme un logo, une icône ou un dessin en aplats en SVG qui reste net à toute taille.",
+  "details": "L’image est réduite à quelques couleurs en aplats, trouvées seules ou choisies de 2 à 16, et le contour de chaque couleur est suivi et ajusté par des droites et des courbes, en gardant ses angles. Lissage indique à quel point une courbe peut s’écarter du bord, et Retirer le fond rend transparente la couleur du bord de l’image ; une image déjà transparente le reste. La fenêtre montre le résultat dessiné à partir du SVG, avec le nombre de couleurs et de formes. L’outil fonctionne sur ce PC, sans téléchargement. Il est fait pour les aplats : une photo devient des taches de couleur, les dégradés des bandes. Enregistrer le SVG écrit « nom Traced.svg ».",
+  "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur EN SVG ; réglez si besoin, puis Enregistrer le SVG.",
+  "worksOn": "Une image, ou plusieurs avec les mêmes réglages.",
+  "examples": [
+   "Un logo que vous n’avez qu’en petit PNG, prêt pour une enseigne.",
+   "Une signature numérisée en vecteur pour vos documents.",
+   "Une icône de logiciel de dessin pour un site qui demande du SVG."
+  ],
+  "keywords": [
+   "image en svg",
+   "png en svg",
+   "vectoriser",
+   "logo vectoriel",
+   "tracer un logo",
+   "svg"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Traduit le texte d’une image là où il se trouve : menu, panneau, diapositive, capture d’écran.",

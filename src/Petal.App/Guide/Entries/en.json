@@ -266,6 +266,29 @@
    "schengen photo"
   ]
  },
+ "tool:TraceToSvg": {
+  "category": "pictures",
+  "summary": "Turns a logo, icon or flat drawing into an SVG that stays sharp at any size.",
+  "details": "The picture comes down to a few flat colours, found by themselves or chosen from 2 to 16, and each colour's outline is followed and fitted with straight lines and curves, with its corners kept. Smoothness says how far a curve may stray from the edge, and Leave out the background makes the colour around the picture's edge transparent; a picture already transparent stays so. The window shows the result drawn from the SVG itself, with how many colours and shapes it took. It runs on this PC and needs no download. It is made for flat artwork: a photograph comes out as patches of colour, and gradients as bands. Save SVG writes 'name Traced.svg'; several pictures are traced with the same settings.",
+  "how": "Drag a picture, tap Ctrl and drop on TO SVG; adjust if you like, then Save SVG.",
+  "examples": [
+   "A logo you only have as a small PNG, ready for a sign or a banner.",
+   "A scanned signature as a vector to place in documents.",
+   "An icon made in a paint program, for a website that wants SVG."
+  ],
+  "worksOn": "One picture, or several with the same settings.",
+  "keywords": [
+   "image to svg",
+   "png to svg",
+   "jpg to svg",
+   "vectorize",
+   "trace logo",
+   "vector logo",
+   "convert logo to vector",
+   "bitmap to vector",
+   "svg"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Translates the text on a picture where it stands: a menu, a sign, a slide, a screenshot.",

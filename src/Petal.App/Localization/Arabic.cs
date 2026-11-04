@@ -3593,5 +3593,16 @@ internal static class Arabic
         ["This font file is damaged."] = "ملف الخط هذا تالف.",
         ["This is a collection of several fonts: DropWheel converts single fonts."] = "هذه مجموعة من عدة خطوط: يحوّل DropWheel الخطوط المفردة.",
         ["This font uses CFF2 variable outlines, which DropWheel can't convert."] = "يستخدم هذا الخط مخططات CFF2 المتغيرة، ولا يستطيع DropWheel تحويلها.",
+        ["Trace to SVG"] = "تحويل إلى SVG",
+        ["TO SVG"] = "إلى SVG",
+        ["Find them"] = "اكتشافها",
+        ["Choose"] = "اختيارها",
+        ["Leave out the background"] = "استبعاد الخلفية",
+        ["Best for logos, icons and flat drawings. A photograph comes out as patches of colour."] = "الأفضل للشعارات والأيقونات والرسوم المسطحة. تخرج الصورة الفوتوغرافية بقعًا من الألوان.",
+        ["Save SVG"] = "حفظ SVG",
+        ["SVG saved"] = "حُفظ ملف SVG",
+        ["Tracing"] = "جارٍ التحويل",
+        ["Tracing…"] = "جارٍ التحويل…",
+        ["{0} colours, {1} shapes, {2} KB."] = "{0} ألوان، {1} شكلًا، {2} KB.",
     };
 }

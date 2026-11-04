@@ -274,6 +274,26 @@
    "ukuran foto negara"
   ]
  },
+ "tool:TraceToSvg": {
+  "category": "pictures",
+  "summary": "Mengubah logo, ikon, atau gambar datar menjadi SVG yang tetap tajam di ukuran apa pun.",
+  "details": "Gambar diturunkan menjadi beberapa warna datar, ditemukan sendiri atau dipilih 2 sampai 16, dan tepi tiap warna diikuti lalu dicocokkan dengan garis lurus dan kurva dengan sudut yang terjaga. Kehalusan menentukan seberapa jauh kurva boleh menyimpang, dan Hilangkan latar membuat warna di tepi gambar transparan; gambar transparan tetap transparan. Jendela menampilkan hasil yang digambar dari SVG itu sendiri beserta jumlah warna dan bentuk. Berjalan di PC ini tanpa unduhan. Dibuat untuk gambar datar: foto menjadi bercak warna dan gradien menjadi pita. Simpan SVG menulis 'nama Traced.svg'.",
+  "how": "Seret gambar, ketuk Ctrl, dan lepaskan di KE SVG; sesuaikan bila perlu, lalu Simpan SVG.",
+  "worksOn": "Satu gambar, atau beberapa dengan pengaturan sama.",
+  "examples": [
+   "Logo yang hanya ada sebagai PNG kecil, siap untuk spanduk.",
+   "Tanda tangan hasil pindai sebagai vektor untuk dokumen.",
+   "Ikon dari program gambar untuk situs yang meminta SVG."
+  ],
+  "keywords": [
+   "gambar ke svg",
+   "png ke svg",
+   "vektorisasi",
+   "logo vektor",
+   "telusuri logo",
+   "svg"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Menerjemahkan teks pada gambar di tempatnya: menu, papan tanda, slide, tangkapan layar.",

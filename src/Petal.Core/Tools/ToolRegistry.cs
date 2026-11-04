@@ -58,6 +58,8 @@ public static class ToolRegistry
         // A passport, visa or residence photo at the exact size a country asks for, and a sheet of them to print.
         new(IdPhoto, "ID PHOTO", "ID Photo", "scanFace", true, ToolSelection.Single, "ID Photo", ToolOutputKind.FixedFormat, "jpg"),
         // A summary, cards and a quiz from a lecture or a document, and a deck for Anki.
+        // A logo or flat drawing as a vector that stays sharp at any size.
+        new(TraceToSvg, "TO SVG", "Trace to SVG", "spline", true, ToolSelection.SingleOrBatch, "Traced", ToolOutputKind.FixedFormat, "svg"),
         // Faces and number plates found and followed through a video, and covered.
         new(AutoBlur, "AUTO BLUR", "Blur Faces and Plates", "scanFace", true, ToolSelection.Single, "Blurred"),
         new(StudyNotes, "STUDY", "Study Notes", "book", true, ToolSelection.Single, "Study", ToolOutputKind.FixedFormat, "md"),
@@ -98,8 +100,8 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, TranslatePicture, IdPhoto, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
-    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, TranslatePicture, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, TranslatePicture, IdPhoto, TraceToSvg, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
+    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, TranslatePicture, TraceToSvg, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
     private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, StudyNotes, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
