@@ -59,7 +59,6 @@ public sealed partial class SettingsWindow
             captionsWay.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(code == "en" ? "es" : "en", code));
         };
         panel.Children.Add(Row("Translate into", captionsInto, 120, 6));
-        panel.Children.Add(captionsWay);
         var spoken = Choice(Languages(), _s.CaptionsLanguage);
         spoken.SelectionChanged += (_, _) =>
         {
@@ -68,6 +67,7 @@ public sealed partial class SettingsWindow
         };
         panel.Children.Add(Row("Spoken in", spoken, 120, 8));
         panel.Children.Add(Text("From the PC's sound or the microphone (a button on the captions switches). A translation model downloads the first time it is needed.", "Petal.Caption").WithMargin(120, 4, 0, 0));
+        panel.Children.Add(captionsWay);
 
         panel.Children.Add(Text("Showing clicks and keys", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Show every key", "Typing shows too, not only shortcuts. Leave it off when typing passwords on screen.", _s.ShowEveryKey, v => _s.ShowEveryKey = v, top: 6));

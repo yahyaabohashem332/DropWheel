@@ -460,6 +460,18 @@ internal static class DesignSnapshots
             ("shortsreview", () => Shorts(window => window.ShowForSnapshot(SampleMoments(),
                 new Petal.Recipes.ShortsSource(video[0], Localization.L.IsArabic ? "ar" : "en", [], new Petal.Engines.Media.SoundLevels([]))))),
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
+            ("main0", () => Settings.SettingsWindow.ForPage(0)),
+            ("main1", () => Settings.SettingsWindow.ForPage(1)),
+            ("main2", () => Settings.SettingsWindow.ForPage(2)),
+            ("main3", () => Settings.SettingsWindow.ForPage(3)),
+            ("main4", () => Settings.SettingsWindow.ForPage(4)),
+            ("main5", () => Settings.SettingsWindow.ForPage(5)),
+            ("main6", () => Settings.SettingsWindow.ForPage(6)),
+            ("main7", () => Settings.SettingsWindow.ForPage(7)),
+            ("main8", () => Settings.SettingsWindow.ForPage(8)),
+            ("main9", () => Settings.SettingsWindow.ForPage(9)),
+            ("mainsmall", () => Settings.SettingsWindow.ForPage(1, 960, 700)),
+            ("mainmid", () => Settings.SettingsWindow.ForPage(5, 1320, 880)),
             ("dubbest", () => Dub(window => window.FinestForSnapshot())),
             ("dubbestmissing", () => Dub(window => window.FinestMissingForSnapshot(false))),
             ("dubbestkey", () => Dub(window => window.FinestMissingForSnapshot(true))),
@@ -955,10 +967,13 @@ internal static class DesignSnapshots
                 Save(RenderWindow(window), Path.Combine(output, $"{(dark ? "dark" : "light")}-{name}.png"));
                 window.Close();
             }
-            // The whole Settings page, every card, for reviewing the lower sections.
-            var full = CreateSettings();
-            Save(RenderWindow(full, 9600), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-full.png"));
-            full.Close();
+            // Every page of the main window, for reviewing what is further down.
+            for (int page = 0; page < Settings.SettingsWindow.PageCount; page++)
+            {
+                var full = Settings.SettingsWindow.ForPage(page);
+                Save(RenderWindow(full), Path.Combine(output, $"{(dark ? "dark" : "light")}-settings-page{page}.png"));
+                full.Close();
+            }
             foreach (var mode in Enum.GetValues<WheelMode>())
             {
                 foreach (int? highlight in new int?[] { null, 1 })

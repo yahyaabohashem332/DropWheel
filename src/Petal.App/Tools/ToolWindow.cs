@@ -25,6 +25,11 @@ public abstract class ToolWindow : Window
     private readonly DockPanel _footer = new();
     private readonly TextBlock _footerNote = new();
     private bool _translucent;
+    private bool _full;
+    private readonly Grid _header = new() { Height = 44 };
+    private readonly Button _close;
+    private readonly ContentControl _bodyHost = new() { Focusable = false };
+    private readonly Border _footerLine;
 
     protected ToolWindow(string title, double width = 400)
     {
@@ -58,7 +63,7 @@ public abstract class ToolWindow : Window
         _layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         // Header
-        var header = new Grid { Height = 44 };
+        var header = _header;
         _title.Text = L.T(title);
         _title.Style = (Style)Application.Current.FindResource("Petal.Title");
         _title.HorizontalAlignment = HorizontalAlignment.Center;
@@ -69,6 +74,7 @@ public abstract class ToolWindow : Window
         close.HorizontalAlignment = HorizontalAlignment.Right;
         close.Margin = new Thickness(0, 0, 8, 0);
         close.Click += (_, _) => Close();
+        _close = close;
         WindowChrome.SetIsHitTestVisibleInChrome(close, true);
         header.Children.Add(close);
         _layout.Children.Add(header);
@@ -78,11 +84,12 @@ public abstract class ToolWindow : Window
         _layout.Children.Add(divider);
 
         Body = new StackPanel { Margin = new Thickness(18, 14, 18, 16) };
-        var bodyHost = new ContentControl { Content = Body, Focusable = false };
-        Grid.SetRow(bodyHost, 2);
-        _layout.Children.Add(bodyHost);
+        _bodyHost.Content = Body;
+        Grid.SetRow(_bodyHost, 2);
+        _layout.Children.Add(_bodyHost);
 
         var footerDivider = Divider();
+        _footerLine = footerDivider;
         Grid.SetRow(footerDivider, 3);
         _layout.Children.Add(footerDivider);
 
@@ -122,7 +129,8 @@ public abstract class ToolWindow : Window
             // Without the system menu, Windows stops drawing its own close glyph in the glass
             // frame under ours. Esc and the header button close the window.
             var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-            SetWindowLongPtr(hwnd, GWL_STYLE, (IntPtr)((long)GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_SYSMENU));
+            if (!_full)
+                SetWindowLongPtr(hwnd, GWL_STYLE, (IntPtr)((long)GetWindowLongPtr(hwnd, GWL_STYLE) & ~WS_SYSMENU));
             ApplyTheme();
         };
         Theme.Changed += OnThemeChanged;
@@ -130,6 +138,69 @@ public abstract class ToolWindow : Window
     }
 
     protected StackPanel Body { get; }
+
+    /// <summary>
+    /// Makes this the app's main window rather than a small tool: solid, resizable, with minimize and maximize, its own
+    /// name at the top, and <paramref name="content"/> in place of the body and the footer.
+    /// </summary>
+    protected void BecomeFullWindow(UIElement content)
+    {
+        _full = true;
+        SizeToContent = SizeToContent.Manual;
+        ResizeMode = ResizeMode.CanResize;
+        WindowChrome.SetWindowChrome(this, new WindowChrome
+        {
+            CaptionHeight = 44,
+            ResizeBorderThickness = new Thickness(6),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(8),
+            UseAeroCaptionButtons = false,
+        });
+        _footer.Visibility = _footerLine.Visibility = Visibility.Collapsed;
+        PrimaryButton.IsDefault = false;
+        _bodyHost.Content = content;
+        _bodyHost.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        _bodyHost.VerticalContentAlignment = VerticalAlignment.Stretch;
+
+        // The name at the start of the bar, the window's buttons at the end.
+        _header.Children.Remove(_title);
+        var icon = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 22, Height = 22, Source = AppIcon.Large, Margin = new Thickness(0, 0, 10, 0) };
+        RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
+        _title.Margin = new Thickness(0);
+        _title.Text = Title;
+        _title.HorizontalAlignment = HorizontalAlignment.Left;
+        _header.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(16, 0, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Children = { icon, _title } });
+        var minimize = IconButton("minus", "Minimize", 15);
+        minimize.Click += (_, _) => SystemCommands.MinimizeWindow(this);
+        var maximize = IconButton("square", "Maximize", 13);
+        maximize.Click += (_, _) =>
+        {
+            if (WindowState == WindowState.Maximized)
+                SystemCommands.RestoreWindow(this);
+            else
+                SystemCommands.MaximizeWindow(this);
+        };
+        _header.Children.Remove(_close);
+        _close.ToolTip = L.T("Close");
+        _close.Margin = new Thickness(0);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), Children = { minimize, maximize, _close } };
+        foreach (var button in new[] { minimize, maximize, _close })
+        {
+            button.Margin = new Thickness(2, 0, 0, 0);
+            WindowChrome.SetIsHitTestVisibleInChrome(button, true);
+        }
+        _header.Children.Add(buttons);
+
+        // A maximized window reaches past the edges of the screen by its frame: the content stays within them.
+        void Fit()
+        {
+            double frame = WindowState == WindowState.Maximized ? Math.Max(0, (SystemParameters.MaximizedPrimaryScreenWidth - SystemParameters.WorkArea.Width) / 2) : 0;
+            _surface.Margin = new Thickness(frame);
+            maximize.ToolTip = L.T(WindowState == WindowState.Maximized ? "Restore" : "Maximize");
+        }
+        StateChanged += (_, _) => Fit();
+        Loaded += (_, _) => Fit();
+    }
 
     /// <summary>Esc closes the window, unless it has a use for the key first (and says so by returning true).</summary>
     protected virtual bool OnEscape() => false;
@@ -154,6 +225,12 @@ public abstract class ToolWindow : Window
     private void ApplyTheme()
     {
         var p = Theme.Current;
+        if (_full)
+        {
+            Background = Palette.Brush(p.WindowBackground);
+            _surface.Background = Palette.Brush(p.WindowBackground);
+            return;
+        }
         _translucent = Backdrop.Apply(this, p.IsDark);
         // Over a blur the content gets a wash so text stays readable on busy wallpapers: a light one over
         // Windows 11's acrylic, which brings its own tint, and the whole tint over Windows 10's plain blur.

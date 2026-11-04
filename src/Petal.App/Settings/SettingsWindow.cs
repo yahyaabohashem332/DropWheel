@@ -16,7 +16,7 @@ using Petal.App.Localization;
 
 namespace Petal.App.Settings;
 
-/// <summary>Petal's only "main" window. Every change is saved immediately.</summary>
+/// <summary>The app's main window: its settings and its ways in, page by page. Every change is saved immediately.</summary>
 public sealed partial class SettingsWindow : ToolWindow
 {
     private static SettingsWindow? _open;
@@ -37,48 +37,17 @@ public sealed partial class SettingsWindow : ToolWindow
         _open.Activate();
     }
 
-    private SettingsWindow() : base("DropWheel Settings", 560)
+    private SettingsWindow() : base("DropWheel", 1320)
     {
+        var work = SystemParameters.WorkArea;
+        Width = Math.Min(1320, work.Width - 40);
+        Height = Math.Min(880, work.Height - 40);
+        MinWidth = 940;
+        MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        SizeToContent = SizeToContent.Manual;
-        Height = Math.Min(780, SystemParameters.WorkArea.Height - 40);
-        PrimaryButton.Content = L.T("Done");
-        PrimaryButton.Click += (_, _) => Close();
-        FooterNote = L.F("DropWheel {0} · {1} conversions · {2} tools · {3} actions", Version, ConversionMatrix.TotalPaths, ToolRegistry.All.Count, Petal.Core.Actions.FileActionRegistry.All.Count);
-
-        var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-18, -14, -18, -16) };
-        var page = new StackPanel { Margin = new Thickness(18, 14, 18, 18) };
-        scroll.Content = page;
-        Body.Children.Add(scroll);
-        Body.SizeChanged += (_, _) => { };
-        // Let the scroll viewer fill the window height.
-        Loaded += (_, _) =>
-        {
-            scroll.Height = Math.Max(200, ActualHeight - 44 - 1 - 1 - 56);
-        };
-
-        page.Children.Add(Hero());
-        page.Children.Add(Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()));
-        page.Children.Add(Card("Wheels", "Wheels that need no files: quick actions, what's playing, shortcuts for the app in front, and your own. The quick shortcut opens them when nothing is selected; Tab or the mouse wheel goes to the next.", WheelsSection()));
-        page.Children.Add(Card("Appearance", null, AppearanceSection()));
-        page.Children.Add(Card("The Wheel", "How the wheel behaves under the pointer.", BehaviourSection()));
-        page.Children.Add(Card("Screen & Text", "Dictation and live captions, showing clicks and keys, screen recording, and the clipboard history.", ScreenTextSection()));
-        page.Children.Add(Card("Work & Sharing", "The command palette, snippets, workspaces, and receiving files from other PCs.", WorkSection()));
-        page.Children.Add(Card("Actions Wheel", "The actions on the wheel itself (the rest are under More), and folders that dropped files are copied or moved to.", ActionsWheelSection()));
-        page.Children.Add(Card("Favourites", "Conversions you use often, with their size and quality. They come first on the conversion wheel, with a star.", FavouritesSection()));
-        page.Children.Add(Card("Recipes", "Several steps in one petal on the tools wheel: remove a background, resize, add a watermark, save as WEBP and zip, in one go.", RecipesSection()));
-        page.Children.Add(Card("Automations", "Watch a folder and convert what arrives in it, such as new pictures in Downloads.", AutomationsSection()));
-        page.Children.Add(Card("Your Petals", "Tools of your own on the tools wheel: a small file says which files a petal takes and which program it runs. DropWheel shows the command before a petal's first run.", PetalsSection()));
-        page.Children.Add(Card("AI Models", "Download a model and run it on this PC, or use your own API key from Gemini, ChatGPT or Claude at your own cost.", AiSection()));
-        page.Children.Add(Card("Search by Meaning", "Find files by what they're about: the words in documents and screenshots, and what photos and videos show. DropWheel reads the folders below while the PC is idle; the index stays on this PC.", SearchSection()));
-        page.Children.Add(Card("Results", null, OutputSection()));
-        page.Children.Add(Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection()));
-        page.Children.Add(Card("Helpers", "DropWheel uses these programs when they're installed, on this PC.", EnginesSection()));
-        page.Children.Add(Card("Statistics", "What DropWheel has done for you, counted on this PC only.", StatisticsSection()));
-        page.Children.Add(Card("General", null, GeneralSection()));
-        page.Children.Add(Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()));
-        page.Children.Add(Card("Updates", null, UpdatesSection()));
-        _scroll = scroll;
+        WindowState = WindowState.Maximized;
+        _scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        BecomeFullWindow(Build());
         WatchForChanges();
     }
 
@@ -87,55 +56,6 @@ public sealed partial class SettingsWindow : ToolWindow
     private static void Save() => SettingsStore.Save();
 
     // ---------- sections ----------
-
-    private UIElement Hero()
-    {
-        var grid = new Grid { Margin = new Thickness(2, 2, 2, 16) };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var icon = new Image { FlowDirection = FlowDirection.LeftToRight, Width = 56, Height = 56, Source = AppIcon.Large, Margin = new Thickness(0, 0, 16, 0) };
-        RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
-        grid.Children.Add(icon);
-        var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-        Grid.SetColumn(text, 1);
-        var title = Text("DropWheel", "Petal.Title");
-        title.FontSize = 22;
-        text.Children.Add(title);
-        text.Children.Add(Text("The zero-click file converter. Drag a file, tap Shift, and drop.", "Petal.Caption"));
-        var how = new Button { Content = L.T("How it works"), Style = (Style)FindResource("Petal.SubtleButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(-8, 4, 0, 0) };
-        how.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        how.Click += (_, _) => Onboarding.WelcomeWindow.ShowSingle();
-        var qr = new Button { Content = L.T("Create QR Code"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
-        qr.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        qr.Click += (_, _) => Tools.Windows.QrWindow.ShowSingle();
-        var history = new Button { Content = L.T("History"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
-        history.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        history.Click += (_, _) => Tools.Windows.HistoryWindow.ShowSingle();
-        var practice = new Button { Content = L.T("Practice"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
-        practice.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        practice.Click += (_, _) => Onboarding.PracticeWindow.ShowSingle();
-        if (Shell.Packaged.Current is { Trial: true } trial)
-        {
-            var buy = new Button { Content = L.T("Buy DropWheel"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(-8, 4, 0, 0) };
-            buy.SetResourceReference(ForegroundProperty, "Petal.Accent");
-            buy.Click += async (_, _) => await Shell.Packaged.BuyAsync(new System.Windows.Interop.WindowInteropHelper(this).Handle);
-            var days = (int)Math.Ceiling(trial.TrialLeft.TotalDays);
-            text.Children.Add(new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Children = { Text(L.P(days, "Trial: {0} day left", "Trial: {0} days left"), "Petal.Caption").WithMargin(0, 6, 12, 0), buy },
-            });
-        }
-        var tour = new Button { Content = L.T("Take the Tour"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
-        tour.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        tour.Click += (_, _) => StartTour();
-        var guide = new Button { Content = L.T("Tools Guide"), Style = (Style)FindResource("Petal.SubtleButton"), Margin = new Thickness(4, 4, 0, 0) };
-        guide.SetResourceReference(ForegroundProperty, "Petal.Accent");
-        guide.Click += (_, _) => Guide.GuideWindow.ShowSingle();
-        text.Children.Add(new WrapPanel { Orientation = Orientation.Horizontal, Children = { how, guide, practice, tour, qr, history } });
-        grid.Children.Add(text);
-        return grid;
-    }
 
     private UIElement KeysSection()
     {
@@ -193,7 +113,7 @@ public sealed partial class SettingsWindow : ToolWindow
     /// </summary>
     private UIElement ShortcutPicker()
     {
-        var hotkey = App.Current.Hotkey;
+        var hotkey = App.Current?.Hotkey;
         var saved = Shortcut.Parse(_s.QuickShortcut);
         bool recording = false;
         var record = new Button { MinWidth = 180, ToolTip = L.T("Click, then press the keys you want.") };
@@ -308,6 +228,7 @@ public sealed partial class SettingsWindow : ToolWindow
                 (_open.Left, _open.Top) = (left, top);
             }
         };
+        panel.Children.Add(Text("Language & Colours", "Petal.Label"));
         panel.Children.Add(Row("Language", language, 150, 0));
         panel.Children.Add(Text("Automatic follows the Windows display language.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         var theme = Segments([(ThemePreference.System, "System"), (ThemePreference.Light, "Light"), (ThemePreference.Dark, "Dark")], _s.Theme);
@@ -321,7 +242,8 @@ public sealed partial class SettingsWindow : ToolWindow
         panel.Children.Add(Row("Accent colour", AccentPicker(), 150, 10));
         var style = Segments([(Overlay.WheelStyle.Glass, "Glass"), (Overlay.WheelStyle.Solid, "Solid"), (Overlay.WheelStyle.Mono, "Mono")], _s.WheelStyle);
         style.Changed += v => { _s.WheelStyle = v; Save(); };
-        panel.Children.Add(Row("Wheel", style, 150, 10));
+        panel.Children.Add(Text("The Wheel's Look", "Petal.Label"));
+        panel.Children.Add(Row("Wheel", style, 150, 0));
         panel.Children.Add(Text("Glass shows what is behind the wheel, frosted. Mono leaves out the accent colour.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         var motion = Choice([(Overlay.WheelMotion.Bloom, "Bloom"), (Overlay.WheelMotion.Pop, "Pop"), (Overlay.WheelMotion.Fade, "Fade"), (Overlay.WheelMotion.Unfold, "Unfold"), (Overlay.WheelMotion.None, "None")], _s.WheelMotion);
         motion.SelectionChanged += (_, _) => { _s.WheelMotion = ValueOf<Overlay.WheelMotion>(motion); Save(); };
@@ -333,6 +255,7 @@ public sealed partial class SettingsWindow : ToolWindow
         var colours = new Button { Content = L.T("Petal Colours…"), HorizontalAlignment = HorizontalAlignment.Left };
         colours.Click += (_, _) => new PetalColoursWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
         panel.Children.Add(Row("Colours", colours, 150, 10));
+        panel.Children.Add(Text("Sounds & Hints", "Petal.Label"));
         panel.Children.Add(Switch("Sounds", "A soft tick as you move across the wheel.", _s.Sounds, v => _s.Sounds = v));
         var sound = Segments([(Overlay.SoundStyle.Soft, "Soft"), (Overlay.SoundStyle.Crisp, "Crisp"), (Overlay.SoundStyle.Wood, "Wood")], _s.SoundStyle);
         sound.Changed += v =>
@@ -1056,7 +979,7 @@ public sealed partial class SettingsWindow : ToolWindow
         {
             CornerRadius = new CornerRadius(12),
             Padding = new Thickness(18, 16, 18, 18),
-            Margin = new Thickness(0, 0, 0, 12),
+            Margin = new Thickness(0, 0, 0, 14),
             BorderThickness = new Thickness(1),
             Child = stack,
         };

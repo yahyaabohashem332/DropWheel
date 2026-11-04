@@ -18,7 +18,7 @@ namespace Petal.App.Settings;
 /// <summary>Settings for the wheels without files, the wheel's behaviour, the actions wheel, statistics and backup.</summary>
 public sealed partial class SettingsWindow
 {
-    private ScrollViewer? _scroll;
+    private readonly ScrollViewer _scroll;
     private readonly Dictionary<string, FrameworkElement> _cards = [];
 
     // ---------- the wheels without files ----------
@@ -522,7 +522,7 @@ public sealed partial class SettingsWindow
         void Reloaded(AppSettings _) => Dispatcher.BeginInvoke(() =>
         {
             if (!IsLoaded) return;
-            var (left, top, offset) = (Left, Top, _scroll?.VerticalOffset ?? 0);
+            var (left, top, width, height, state, offset) = (Left, Top, Width, Height, WindowState, _scroll.VerticalOffset);
             Closed -= Unhook;
             SettingsStore.Reloaded -= Reloaded;
             Close();
@@ -530,8 +530,8 @@ public sealed partial class SettingsWindow
             if (_open is not null)
             {
                 _open.WindowStartupLocation = WindowStartupLocation.Manual;
-                (_open.Left, _open.Top) = (left, top);
-                _open.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => _open._scroll?.ScrollToVerticalOffset(offset));
+                (_open.Left, _open.Top, _open.Width, _open.Height, _open.WindowState) = (left, top, width, height, state);
+                _open.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => _open._scroll.ScrollToVerticalOffset(offset));
             }
         });
         void Unhook(object? sender, EventArgs e) => SettingsStore.Reloaded -= Reloaded;
@@ -546,7 +546,7 @@ public sealed partial class SettingsWindow
         _open?.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
         {
             if (_open?._cards.GetValueOrDefault(title) is { } card)
-                card.BringIntoView();
+                _open.Show(card);
         });
     }
 
@@ -560,7 +560,9 @@ public sealed partial class SettingsWindow
     }
 
     /// <summary>Cards that point at each part of Settings in turn, with Next and Back.</summary>
-    private void StartTour()
+    internal void StartTour() => _ = BeginTour();
+
+    internal TourOverlay BeginTour()
     {
         var stops = new (string Card, string Title, string Text)[]
         {
@@ -574,6 +576,13 @@ public sealed partial class SettingsWindow
             ("Statistics", "Statistics", "What DropWheel has done for you, on this PC only."),
             ("Backup", "Backup", "Everything in one file, for another PC."),
         };
-        new TourOverlay(this, _scroll!, stops.Where(s => _cards.ContainsKey(s.Card)).Select(s => (_cards[s.Card], s.Title, s.Text)).ToList()).Start();
+        var tour = new TourOverlay(this, _scroll, stops.Where(s => _cards.ContainsKey(s.Card)).Select(s => (_cards[s.Card], s.Title, s.Text)).ToList(), target =>
+        {
+            if (_pageOfCard.GetValueOrDefault(target) is { } page && page != _current)
+                Go(page);
+            UpdateLayout();
+        });
+        tour.Start();
+        return tour;
     }
 }

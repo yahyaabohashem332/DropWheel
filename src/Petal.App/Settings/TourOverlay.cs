@@ -9,9 +9,9 @@ namespace Petal.App.Settings;
 
 /// <summary>
 /// A guided tour of a window: a small card on each part in turn, with what it is for, Back and Next. The part
-/// is scrolled into view and outlined in the accent colour.
+/// is brought up (its page, <paramref name="reveal"/>), scrolled into view and outlined in the accent colour.
 /// </summary>
-internal sealed class TourOverlay(Window owner, ScrollViewer scroll, IReadOnlyList<(FrameworkElement Target, string Title, string Text)> stops)
+internal sealed class TourOverlay(Window owner, ScrollViewer scroll, IReadOnlyList<(FrameworkElement Target, string Title, string Text)> stops, Action<FrameworkElement> reveal)
 {
     private TourAdorner? _current;
     private int _index;
@@ -25,11 +25,21 @@ internal sealed class TourOverlay(Window owner, ScrollViewer scroll, IReadOnlyLi
         Show(0);
     }
 
+    /// <summary>The next stop, as its button goes there; false after the last.</summary>
+    internal bool Next()
+    {
+        if (_index + 1 >= stops.Count)
+            return false;
+        Show(_index + 1);
+        return true;
+    }
+
     private void Show(int index)
     {
         Remove();
         _index = index;
         var (target, title, text) = stops[index];
+        reveal(target);
         // Scroll so the part starts near the top of the page.
         var top = target.TransformToAncestor((Visual)scroll.Content).Transform(new Point(0, 0)).Y;
         scroll.ScrollToVerticalOffset(Math.Max(0, top - 12));

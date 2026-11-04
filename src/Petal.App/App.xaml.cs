@@ -22,7 +22,7 @@ public partial class App : Application
     private GlobalHotkey? _hotkey;
     private Shell.WheelHotkeys? _wheelKeys;
 
-    public static new App Current => (App)Application.Current;
+    public static new App Current => (Application.Current as App)!;
 
     public PetalController Controller => _controller!;
 
