@@ -104,6 +104,7 @@ public sealed class WorkFeatureTests : IDisposable
         Assert.Equal([("GB82 WEST 1234 5698 7654 32", PrivateKind.Iban)], Found("IBAN GB82 WEST 1234 5698 7654 32"));
         Assert.Equal([("SA0380000000608010167519", PrivateKind.Iban)], Found("الآيبان SA0380000000608010167519"));
         Assert.Equal([("+966 50 123 4567", PrivateKind.Phone)], Found("Call +966 50 123 4567 now"));
+        Assert.Equal([("+966 50 123 4567", PrivateKind.Phone)], Found("Call +966 50 123 4567."));
         Assert.Equal([("٠٥٠١٢٣٤٥٦٧", PrivateKind.Phone)], Found("جوال ٠٥٠١٢٣٤٥٦٧"));
         Assert.Equal([("192.168.1.20", PrivateKind.Address)], Found("Server 192.168.1.20 is up"));
         Assert.Equal([("hunter22", PrivateKind.Secret)], Found("Password: hunter22"));

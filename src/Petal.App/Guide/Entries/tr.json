@@ -29,7 +29,7 @@
  "tool:AnnotatePhoto": {
   "category": "pictures",
   "summary": "Bir resmin üzerine ok, metin, kutu, vurgu ve numaralı adımlar çizer ve işaretlenmiş bir PNG kopyası kaydeder.",
-  "details": "Fotoğrafı İşaretle, resmi dokuz araçlık bir şeritle gösterir: Ok, Vurgulayıcı, Metin, Dikdörtgen, Elips, Çiz, Numaralı adım, Büyüteç ve Resim ekle (başka bir resmi üste yerleştirir). Renk kutusundan bir renk seç; bir işareti taşımak için sürükle, metni düzenlemek için ona çift tıkla, hataları düzeltmek için Geri Al (Ctrl+Z) ya da Seçileni sil (Del) kullan. Sıfırla eklediğin her şeyi temizler. İşaretlenmiş Kopyayı Kaydet sonucu her zaman PNG olarak, orijinalin yanına 'ad Annotated.png' adıyla kaydeder.",
+  "details": "Fotoğrafı İşaretle, resmi dokuz araçlık bir şeritle gösterir: Ok, Vurgulayıcı, Metin, Dikdörtgen, Elips, Çiz, Numaralı adım, Büyüteç ve Resim ekle (başka bir resmi üste yerleştirir). Renk kutusundan bir renk seç; bir işareti taşımak için sürükle, metni düzenlemek için ona çift tıkla, hataları düzeltmek için Geri Al (Ctrl+Z) ya da Seçileni sil (Del) kullan. Sıfırla eklediğin her şeyi temizler. İşaretlenmiş Kopyayı Kaydet sonucu her zaman PNG olarak, orijinalin yanına 'ad Annotated.png' adıyla kaydeder. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir resmi sürükle, Ctrl'ye dokun ve İŞARETLE yaprağına bırak; bir araç seç, resmin üzerine çiz ve İşaretlenmiş Kopyayı Kaydet'i seç.",
   "worksOn": "Tek seferde bir resim.",
   "examples": [
@@ -54,7 +54,7 @@
  "tool:AddBackground": {
   "category": "pictures",
   "summary": "Bir resmi kenar boşluğu, yuvarlak köşeler ve gölgeyle bir degrade, renk ya da resim arka planının üzerine yerleştirir.",
-  "details": "Arka Plan Ekle, resmi canlı önizlemeyle bir arka planın üzerine koyar. On iki yumuşak degradeden birini (Şafak, Lagün, Kuzey Işıkları, Şeftali, Ultraviyole, Nane, Gökyüzü, Kor, Gece, Pudra, Narenciye, Grafit), on sekiz düz renkten birini, kendi rengini ya da kendi resmini seç; kendi resmin için bir de Bulanıklık kaydırıcısı gelir. Kenar boşluğu, Köşeler ve Gölge resme uyan boyutlarda başlar; Oran Otomatik, 1:1, 16:9, 4:5 veya 9:16 olabilir. Arka Planla Kaydet sonucu aynı biçimde orijinalin yanına 'ad Background' adıyla kaydeder; Sıfırla varsayılanlara döner.",
+  "details": "Arka Plan Ekle, resmi canlı önizlemeyle bir arka planın üzerine koyar. On iki yumuşak degradeden birini (Şafak, Lagün, Kuzey Işıkları, Şeftali, Ultraviyole, Nane, Gökyüzü, Kor, Gece, Pudra, Narenciye, Grafit), on sekiz düz renkten birini, kendi rengini ya da kendi resmini seç; kendi resmin için bir de Bulanıklık kaydırıcısı gelir. Kenar boşluğu, Köşeler ve Gölge resme uyan boyutlarda başlar; Oran Otomatik, 1:1, 16:9, 4:5 veya 9:16 olabilir. Arka Planla Kaydet sonucu aynı biçimde orijinalin yanına 'ad Background' adıyla kaydeder; Sıfırla varsayılanlara döner. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir resmi sürükle, Ctrl'ye dokun ve ZEMİN EKLE yaprağına bırak; bir arka plan seç, Kenar boşluğu, Köşeler ve Gölge'yi ayarla, sonra Arka Planla Kaydet'i seç.",
   "worksOn": "Tek seferde bir resim.",
   "examples": [
@@ -103,7 +103,7 @@
  "tool:RedactPhoto": {
   "category": "pictures",
   "summary": "Bir resimdeki özel bilgileri, yüzleri ya da metni düz kutularla veya geri alınamayan bir bulanıklıkla kapatır.",
-  "details": "Fotoğrafı Karart açılır açılmaz özel bilgileri (e-posta adresleri, telefon numaraları, kart numaraları, IBAN'lar, IP adresleri ve parolalar) arar ve kapatır; Yüzler ve Metin düğmeleri de yüzleri ve metin satırlarını aynı şekilde bulur; hepsi bu bilgisayarda, Windows'un kendi algılamasıyla yapılır. Ayrıca fotoğrafın üzerinde sürükleyerek herhangi bir alanı kapatabilir, bir kutuyu sürükleyerek taşıyabilir, köşesini sürükleyerek boyutunu değiştirebilir ve Delete'e basarak kaldırabilirsin. Stil, Düz (ilk başta siyah, istediğin herhangi bir renk) veya geri döndürülemeyecek şekilde yapılan Bulanıklık'tır. Karartılmış Kopyayı Kaydet sonucu orijinalin yanına 'ad Redacted' adıyla kaydeder; orijinal olduğu gibi kalır.",
+  "details": "Fotoğrafı Karart açılır açılmaz özel bilgileri (e-posta adresleri, telefon numaraları, kart numaraları, IBAN'lar, IP adresleri ve parolalar) arar ve kapatır; Yüzler ve Metin düğmeleri de yüzleri ve metin satırlarını aynı şekilde bulur; hepsi bu bilgisayarda, Windows'un kendi algılamasıyla yapılır. Ayrıca fotoğrafın üzerinde sürükleyerek herhangi bir alanı kapatabilir, bir kutuyu sürükleyerek taşıyabilir, köşesini sürükleyerek boyutunu değiştirebilir ve Delete'e basarak kaldırabilirsin. Stil, Düz (ilk başta siyah, istediğin herhangi bir renk) veya geri döndürülemeyecek şekilde yapılan Bulanıklık'tır. Karartılmış Kopyayı Kaydet sonucu orijinalin yanına 'ad Redacted' adıyla kaydeder; orijinal olduğu gibi kalır. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir resmi sürükle, Ctrl'ye dokun ve KARART yaprağına bırak; kutuları kontrol et, kendi kutularını ekle ve Karartılmış Kopyayı Kaydet'i seç. Ekran çarkındaki GİZLİ GÖRÜNTÜ onu yeni bir ekran görüntüsüyle açar.",
   "worksOn": "Tek seferde bir resim.",
   "examples": [
@@ -154,7 +154,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Metnini ya da logonu resimlere, bir videonun her karesine veya bir PDF'nin her sayfasına yerleştirir.",
-  "details": "Filigran Ekle'nin iki türü vardır: Renk ayarıyla (ilk başta beyaz) Metin (Arapça dahil; ilk başta '© yıl') veya seçtiğin bir logo olan Resim. Boyut %5 ile %90 arasındadır (ilk başta %30), Opaklık %10 ile %100 arasındadır (ilk başta %60). Konum dokuz noktadan biridir (ilk başta sağ alt) ya da resmin tamamını kaplamak için Resim boyunca tekrarla'yı işaretle. Önizleme ilk dosyayı gösterir ve DropWheel son filigranını bir dahaki sefer için hatırlar. Her sonuç orijinalinin yanına 'ad Watermarked' adıyla kaydedilir.",
+  "details": "Filigran Ekle'nin iki türü vardır: Renk ayarıyla (ilk başta beyaz) Metin (sağdan sola yazılan diller dahil; ilk başta '© yıl') veya seçtiğin bir logo olan Resim. Boyut %5 ile %90 arasındadır (ilk başta %30), Opaklık %10 ile %100 arasındadır (ilk başta %60). Konum dokuz noktadan biridir (ilk başta sağ alt) ya da resmin tamamını kaplamak için Resim boyunca tekrarla'yı işaretle. Önizleme ilk dosyayı gösterir ve DropWheel son filigranını bir dahaki sefer için hatırlar. Her sonuç orijinalinin yanına 'ad Watermarked' adıyla kaydedilir. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Dosyaları sürükle, Ctrl'ye dokun ve FİLİGRAN yaprağına bırak; metni ya da resmi, boyutu ve konumu ayarla, sonra Filigran Ekle'yi seç.",
   "worksOn": "Resimler, videolar (GIF'ler hariç) ve PDF'ler; tek dosya ya da birçok dosya. Bırakılan bir klasördeki dosyalar da.",
   "examples": [
@@ -179,13 +179,13 @@
  "tool:CopyText": {
   "category": "pictures",
   "summary": "Bir resimdeki metni ya da içindeki QR kodun veya barkodun söylediğini anında panoya kopyalar.",
-  "details": "Metni veya QR Kodunu Kopyala pencere gerektirmez. Önce QR kodları ve barkodları arar ve içeriklerini kopyalar; kod bir web bağlantısı içeriyorsa karta tıklamak onu açar. Kod yoksa resmin metnini Windows'un kendi metin tanımasıyla okur; Windows'ta yüklü her dili dener ve en temiz okumayı tutar, bu yüzden hem Arapça hem İngilizce çalışır. Bir kart kaç satır kopyalandığını ve ilk sözcükleri gösterir. Hiçbir şey bulunamazsa daha net bir resim kullanmayı ya da dili Windows Ayarları › Saat ve dil bölümünden eklemeyi önerir.",
+  "details": "Metni veya QR Kodunu Kopyala pencere gerektirmez. Önce QR kodları ve barkodları arar ve içeriklerini kopyalar; kod bir web bağlantısı içeriyorsa karta tıklamak onu açar. Kod yoksa resmin metnini Windows'un kendi metin tanımasıyla okur; Windows'ta yüklü her dili dener ve en temiz okumayı tutar, bu yüzden Windows'un okuyabildiği her dil çalışır. Bir kart kaç satır kopyalandığını ve ilk sözcükleri gösterir. Hiçbir şey bulunamazsa daha net bir resim kullanmayı ya da dili Windows Ayarları › Saat ve dil bölümünden eklemeyi önerir.",
   "how": "Bir resmi sürükle, Ctrl'ye dokun ve METİN · QR yaprağına bırak; metin panodadır, Ctrl+V ile yapıştırmaya hazırdır.",
   "worksOn": "Bir resim (JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP ve benzerleri).",
   "examples": [
    "Bir hata mesajının ekran görüntüsü: bırak ve metni bir aramaya ya da e-postaya yapıştır.",
    "Kafede masadaki bir Wi-Fi QR kodunun fotoğrafı: kodun içeriği hemen kopyalanır.",
-   "Basılı bir Arapça tarifin fotoğrafı: bırak ve sözcükleri bir nota yapıştır."
+   "Basılı bir tarifin fotoğrafı: bırak ve sözcükleri bir nota yapıştır."
   ],
   "keywords": [
    "resimden metin",
@@ -204,7 +204,7 @@
  "tool:RemoveBackground": {
   "category": "pictures",
   "summary": "Bir fotoğraftaki nesneyi, saçlar dahil, kesip saydam, beyaz veya renkli bir arka plana alır.",
-  "details": "Arka Planı Kaldır bu bilgisayarda BiRefNet lite YZ modelini kullanır; 224 MB'lık model ilk seferde aracın penceresinden bir kez indirilir. Arka plan Saydam (varsayılan), Beyaz veya Renk olabilir; Nesneye göre kırp boş kenarları keser. Saydam bir sonuç, orijinal zaten PNG veya WebP değilse PNG olarak kaydedilir; her sonuç orijinalinin yanına 'ad No Background' adıyla gider. İşlemcide çalıştığı için eski bilgisayarlarda resim başına yarım dakikayı bulabilir. Model indirildikten sonra, bırakmadan önce yaprağın üzerinde durursan kesilmiş hâli çarkın ortasında görünür.",
+  "details": "Arka Planı Kaldır bu bilgisayarda BiRefNet lite YZ modelini kullanır; 224 MB'lık model ilk seferde aracın penceresinden bir kez indirilir. Arka plan Saydam (varsayılan), Beyaz veya Renk olabilir; Nesneye göre kırp boş kenarları keser. Saydam bir sonuç, orijinal zaten PNG veya WebP değilse PNG olarak kaydedilir; her sonuç orijinalinin yanına 'ad No Background' adıyla gider. İşlemcide çalıştığı için eski bilgisayarlarda resim başına yarım dakikayı bulabilir. Model indirildikten sonra, bırakmadan önce yaprağın üzerinde durursan kesilmiş hâli çarkın ortasında görünür. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir veya daha fazla resmi sürükle, Ctrl'ye dokun ve ZEMİNİ SİL yaprağına bırak; arka planı seç ve Arka Planı Kaldır'a bas.",
   "worksOn": "Resimler; bir tane ya da aynı anda birçok tane. Bırakılan bir klasördeki resimler de.",
   "examples": [
@@ -373,7 +373,7 @@
  "tool:CreateCollage": {
   "category": "pictures",
   "summary": "Birkaç resmi ızgara, satır, sütun veya öne çıkan düzende tek bir kolaj resminde birleştirir.",
-  "details": "Kolaj Oluştur canlı önizleme gösterir. Stil; Izgara (1 ile 6 arası Sütunlar ile), Satır, Sütun veya solda büyük bir resim ve sağda üst üste dizilmiş diğerleriyle Öne çıkan olabilir. Tuval; Kare · 1:1 (varsayılan), Dikey · 4:5, Hikâye · 9:16, Yatay · 16:9 veya Fotoğraf · 3:2 olabilir; Genişlik 1.080, 2.048 (varsayılan), 3.000 veya 4.096 px'dir. Resim yerleşimi hücreleri kenarları kırparak doldurur ya da resimlerin tamamını sığdırır. Aralık ve arka plan altında Aralık (24 px), Köşeler (16 px) ve Arka plan rengini (beyaz) ayarlarsın; Resim sırası altında sırayı değiştirirsin. Kolaj Oluştur, ilk resmin adını taşıyan bir PNG kaydeder: 'ad Collage.png'.",
+  "details": "Kolaj Oluştur canlı önizleme gösterir. Stil; Izgara (1 ile 6 arası Sütunlar ile), Satır, Sütun veya solda büyük bir resim ve sağda üst üste dizilmiş diğerleriyle Öne çıkan olabilir. Tuval; Kare · 1:1 (varsayılan), Dikey · 4:5, Hikâye · 9:16, Yatay · 16:9 veya Fotoğraf · 3:2 olabilir; Genişlik 1.080, 2.048 (varsayılan), 3.000 veya 4.096 px'dir. Resim yerleşimi hücreleri kenarları kırparak doldurur ya da resimlerin tamamını sığdırır. Aralık ve arka plan altında Aralık (24 px), Köşeler (16 px) ve Arka plan rengini (beyaz) ayarlarsın; Resim sırası altında sırayı değiştirirsin. Kolaj Oluştur, ilk resmin adını taşıyan bir PNG kaydeder: 'ad Collage.png'. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "İki veya daha fazla resmi sürükle, Ctrl'ye dokun ve KOLAJ yaprağına bırak; bir stil ve tuval seç, sonra Kolaj Oluştur'a bas.",
   "worksOn": "Aynı anda iki veya daha fazla resim; Photoshop, RAW, SVG, Illustrator ve EPS dosyaları dahil.",
   "examples": [
@@ -397,7 +397,7 @@
  "tool:DescribePicture": {
   "category": "pictures",
   "summary": "Bir resmin ne gösterdiğini tek cümlelik alternatif metin ya da bir paragraf olarak, bu bilgisayardaki küçük bir YZ modeliyle yazar.",
-  "details": "Resmi Betimle bu bilgisayarda SmolVLM resim modelini kullanır; ilk seferde model pencereden bir kez indirilir (onu çalıştıran programla birlikte yaklaşık 570 MB). Uzunluk Bir cümle (varsayılan) veya Bir paragraf'tır. Sözcükler değiştirebileceğin bir kutuda belirir; İngilizce dışındaki bir dilde, bir kerelik çeviri modeli indirildikten sonra bu bilgisayarda çevrilir. Kopyala metni panoya koyar; Resme Kaydet ise JPG, PNG ve WebP dosyalarında metni resmin kendi bilgilerine yazar, resmi değiştirmez. Yayımlamadan önce sözcükleri kontrol et.",
+  "details": "Resmi Betimle bu bilgisayarda SmolVLM resim modelini kullanır; ilk seferde model pencereden bir kez indirilir (onu çalıştıran programla birlikte yaklaşık 570 MB) ya da Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarının modeli resme bakar ve resim o zaman o şirkete gider. Uzunluk Bir cümle (varsayılan) veya Bir paragraf'tır. Sözcükler değiştirebileceğin bir kutuda belirir; İngilizce dışındaki bir dilde, bir kerelik çeviri modeli indirildikten sonra çevrilir. Kopyala metni panoya koyar; Resme Kaydet ise JPG, PNG ve WebP dosyalarında metni resmin kendi bilgilerine yazar, resmi değiştirmez. Yayımlamadan önce sözcükleri kontrol et.",
   "how": "Bir resmi sürükle, Ctrl'ye dokun ve BETİMLE yaprağına bırak; sözcükleri bekle, gerekirse düzenle ve Kopyala'ya bas.",
   "worksOn": "Tek seferde bir resim; Resme Kaydet JPG, PNG ve WebP için çalışır.",
   "examples": [
@@ -421,7 +421,7 @@
  "tool:TableFromImage": {
   "category": "pictures",
   "summary": "Bir resimdeki ya da ekran görüntüsündeki tabloyu satırları, sütunları ve gerçek sayılarıyla bir Excel sayfasına okur.",
-  "details": "Tablodan Excel'e pencere açmadan hemen çalışır. Resmi Windows'a yerleşik metin tanımayla okur: birbirine yakın sözcükler bir hücre olur, hizalanan hücreler bir sütun olur. Sayılar sayı olarak kaydedilir, Arapça tablolar sağdan sola sıralarını korur ve boş hücreler tek başlarına ikinci kez okunur. Her sayfa resminin yanına 'ad Table.xlsx' adıyla kaydedilir. Tablo yoksa kart 'Bu resimde tablo bulunamadı.' der.",
+  "details": "Tablodan Excel'e pencere açmadan hemen çalışır. Resmi Windows'a yerleşik metin tanımayla okur: birbirine yakın sözcükler bir hücre olur, hizalanan hücreler bir sütun olur. Sayılar sayı olarak kaydedilir, sağdan sola yazılan tablolar sıralarını korur ve boş hücreler tek başlarına ikinci kez okunur. Her sayfa resminin yanına 'ad Table.xlsx' adıyla kaydedilir. Tablo yoksa kart 'Bu resimde tablo bulunamadı.' der.",
   "how": "Bir veya daha fazla resmi sürükle, Ctrl'ye dokun ve TABLO yaprağına bırak; Excel dosyası her resmin yanında belirir.",
   "worksOn": "Resimler; bir tane ya da aynı anda birçok tane. Bırakılan bir klasördeki resimler de.",
   "examples": [
@@ -544,7 +544,7 @@
  "tool:AudioVisualizer": {
   "category": "audio",
   "summary": "Bir şarkıyı ya da kaydı hareketli dalga çubukları veya durağan bir resimle MP4 videoya dönüştürür.",
-  "details": "Ses Görselleştirici, yalnızca video kabul eden yerler için sesten video yapar. Stil Dalga biçimi (siyah üzerinde seçtiğin renkte hareketli çubuklar) veya Durağan resim'dir (Resim seç… ile seçtiğin bir resim kareyi doldurur; PNG, JPG, WEBP veya BMP). Şekil 16:9 (1920 × 1080), 9:16 (1080 × 1920) veya 1:1 (1080 × 1080) olabilir; önizleme şekli ve rengi gösterir. Görselleştirme Oluştur'u seç: sonuç, ses kadar uzun, saniyede 30 kare bir MP4'tür (AAC sesli H.264) ve 'ad Visualizer.mp4' adıyla kaydedilir.",
+  "details": "Ses Görselleştirici, yalnızca video kabul eden yerler için sesten video yapar. Stil Dalga biçimi (siyah üzerinde seçtiğin renkte hareketli çubuklar) veya Durağan resim'dir (Resim seç… ile seçtiğin bir resim kareyi doldurur; PNG, JPG, WEBP veya BMP). Şekil 16:9 (1920 × 1080), 9:16 (1080 × 1920) veya 1:1 (1080 × 1080) olabilir; önizleme şekli ve rengi gösterir. Görselleştirme Oluştur'u seç: sonuç, ses kadar uzun, saniyede 30 kare bir MP4'tür (AAC sesli H.264) ve 'ad Visualizer.mp4' adıyla kaydedilir. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir ses dosyasını sürükle, Ctrl'ye dokun ve GÖRSEL yaprağına bırak; bir stil, şekil ve renk seç, sonra Görselleştirme Oluştur'u seç.",
   "worksOn": "Bir ses dosyası.",
   "examples": [
@@ -736,7 +736,7 @@
  "tool:RedactVideo": {
   "category": "video",
   "summary": "Bir videodaki yüzleri, plakaları ya da metni, seçtiğin süre boyunca düz bir kutu veya güçlü bir bulanıklıkla gizler.",
-  "details": "Videoyu Karart, videonun görüntüsüne kutular çizmeni sağlar. Stil Düz (seçtiğin bir renkte, varsayılan siyah) veya yüzlerin ve metnin seçilemeyeceği kadar güçlü olan Bulanıklık'tır. Her kutunun Karartmalar altında kendi şeridi vardır: kutunun ne zaman görüneceğini seçmek için uçlarını sürükle; ilk başta videonun tamamını kapsar. Kutular çizdiğin yerde kalır; hareket eden şeyleri takip etmez. Sıfırla tüm kutuları kaldırır; Karartılmış Kopyayı Kaydet sesi koruyarak 'ad Redacted' dosyasını aynı biçimde kaydeder.",
+  "details": "Videoyu Karart, videonun görüntüsüne kutular çizmeni sağlar. Stil Düz (seçtiğin bir renkte, varsayılan siyah) veya yüzlerin ve metnin seçilemeyeceği kadar güçlü olan Bulanıklık'tır. Her kutunun Karartmalar altında kendi şeridi vardır: kutunun ne zaman görüneceğini seçmek için uçlarını sürükle; ilk başta videonun tamamını kapsar. Kutular çizdiğin yerde kalır; hareket eden şeyleri takip etmez. Sıfırla tüm kutuları kaldırır; Karartılmış Kopyayı Kaydet sesi koruyarak 'ad Redacted' dosyasını aynı biçimde kaydeder. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir videoyu sürükle, Ctrl'ye dokun ve KARART yaprağına bırak; gizlenecek şeyin üzerine bir kutu çiz, şeridini ayarla ve Karartılmış Kopyayı Kaydet'i seç.",
   "worksOn": "Bir video.",
   "examples": [
@@ -785,12 +785,12 @@
  "tool:Transcribe": {
   "category": "video",
   "summary": "Bir kayıtta ya da videoda söylenenleri, bu bilgisayardaki Whisper ile altyazı veya metin olarak yazar.",
-  "details": "Yazıya Dök bilgisayarındaki Whisper konuşma modelini kullanır: Doğruluk Hızlı, Dengeli veya Hassas'tır (bir kerelik yaklaşık 60 MB, 190 MB ve 574 MB indirme); Arapça, aksanlar ve gürültülü kayıtlar için en iyisi Hassas'tır. Dil Otomatik algıla veya 22 dilden biridir; Altyazı dili Konuşulduğu gibi, İngilizce veya Arapça'dır: konuşma zaten istenen dildeyse söylendiği gibi yazılır; Arapça İngilizceye, İngilizce Arapçaya Opus-MT çeviri modelleriyle çevrilir (her biri bir kerelik yaklaşık 114 MB indirme), diğer diller ise Whisper'ın kendi çevirisiyle İngilizceye çevrilir (Hassas çeviremez, bu yüzden Dengeli ya da Hızlı çevirir) ve gerekirse oradan Arapçaya. Farklı kaydet; Altyazılar (.srt dosyası), Metin (.txt dosyası) veya İkisi de verir; dosyalar orijinal gibi adlandırılır (talk.srt), böylece video oynatıcılar altyazıları kendiliğinden yükler. Videolarda Videoda seçeneği altyazıları bir kopyaya da ekleyebilir: Parça olarak (oynatıcıda açılıp kapatılır) veya Görüntüye gömülü (görüntünün parçası); kopya 'ad Subtitled' adıyla kaydedilir. Ekran kartı mümkün olduğunda işi hızlandırır ve aynı anda birçok dosya işleyebilirsin.",
+  "details": "Yazıya Dök bilgisayarındaki Whisper konuşma modelini kullanır: Doğruluk Hızlı, Dengeli veya Hassas'tır (bir kerelik yaklaşık 60 MB, 190 MB ve 574 MB indirme); aksanlar, gürültülü kayıtlar ve İngilizce dışındaki diller için en iyisi Hassas'tır. Dil Otomatik algıla veya 22 dilden biridir; Altyazı dili Konuşulduğu gibi ya da DropWheel'in çevirdiği sekiz dilden biridir (İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca ve İspanyolca): konuşma zaten istenen dildeyse söylendiği gibi yazılır, değilse yazılır ve sonra bir kez indirilen modellerle bu bilgisayarda (yaklaşık 110 MB'tan yaklaşık 630 MB'a kadar; pencere neyin gerektiğini gösterir) ya da Ayarlar › Yapay Zekâ Modelleri'nde seçtiysen kendi API anahtarının modeliyle çevrilir, bu durumda sözcükler o şirkete gider; konuşulan dil için hazır bir çeviri modeli yoksa Whisper'ın kendi çevirisiyle İngilizceye (Hassas çeviremez, bu yüzden Dengeli ya da Hızlı çevirir), oradan da istenen dile geçer. Farklı kaydet; Altyazılar (.srt dosyası), Metin (.txt dosyası) veya İkisi de verir; dosyalar orijinal gibi adlandırılır (talk.srt), böylece video oynatıcılar altyazıları kendiliğinden yükler. Videolarda Videoda seçeneği altyazıları bir kopyaya da ekleyebilir: Parça olarak (oynatıcıda açılıp kapatılır) veya Görüntüye gömülü (görüntünün parçası); kopya 'ad Subtitled' adıyla kaydedilir. Ekran kartı mümkün olduğunda işi hızlandırır ve aynı anda birçok dosya işleyebilirsin.",
   "how": "Bir kaydı ya da videoyu sürükle, Ctrl'ye dokun ve ALTYAZILAR yaprağına bırak; doğruluğu, dili ve neyin kaydedileceğini seç, sonra Yazıya Dök'e bas. İlk seferde modeli almak için penceredeki İndir'i seç.",
   "worksOn": "Ses ve video dosyaları; bir tane ya da aynı anda birçok tane.",
   "examples": [
    "Telefonla kaydedilmiş 1 saatlik bir röportaj, alıntı yapmak için metin dosyasına dönüşsün: Farklı kaydet › Metin.",
-   "Yurt dışındaki akrabalar için İngilizce altyazılı Arapça bir aile videosu: Altyazı dili › İngilizce, Videoda › Görüntüye gömülü.",
+   "Yurt dışındaki akrabalar için İngilizce altyazılı bir aile videosu: Altyazı dili › English, Videoda › Görüntüye gömülü.",
    "Öğrencilerin açıp kapatabileceği altyazılı bir ders videosu: Videoda › Parça olarak."
   ],
   "keywords": [
@@ -803,7 +803,7 @@
    "whisper",
    "söyleneni yaz",
    "video çevirisi",
-   "arapça altyazı",
+   "başka dilde altyazı",
    "toplantı kaydı",
    "sesi yazıya dök"
   ]
@@ -860,26 +860,52 @@
  },
  "tool:TranslateSubtitles": {
   "category": "video",
-  "summary": "İngilizce altyazı dosyalarını, her satırın zamanlamasını koruyarak bu bilgisayarda Arapçaya çevirir.",
-  "details": "Arapçaya Çevir, İngilizce bir SRT veya VTT altyazı dosyasını okur ve yaklaşık 114 MB'lık bir kerelik indirme olan Opus-MT modeliyle satır satır çevirir. Zamanlama değişmez; biçimlendirme etiketleri çeviriye alınmaz. Sonuç orijinalin yanına adında '.ar' ile kaydedilir (talk.srt, talk.ar.srt olur), böylece oynatıcılar onu Arapça olarak sunar. Yalnızca İngilizceden çevirir; başka dildeki bir video için Altyazı dili › Arapça ile Yazıya Dök'ü kullan.",
-  "how": "Bir veya daha fazla .srt ya da .vtt dosyasını sürükle, Ctrl'ye dokun ve ARAPÇA yaprağına bırak, sonra Çevir'i seç. Komut isteminden: petal translate <altyazılar>.",
+  "summary": "Altyazı dosyalarını, DropWheel'in sekiz dilinden herhangi birinden diğerine, her satırın zamanlamasını koruyarak çevirir.",
+  "details": "Altyazıları Çevir, bir SRT veya VTT dosyasını okur ve satır satır çevirir. Kaynak (Otomatik algıla ya da İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca veya İspanyolca) ve Hedef'i seç. Bu bilgisayarda, bir kez indirilen modellerle çalışır; pencere bu çift için neyin gerektiğini gösterir: o çifte özel bir model (yaklaşık 110 MB), İngilizce üzerinden iki model ya da her dili bilen daha büyük bir model (yaklaşık 630 MB ve daha yavaş). Ayarlar › Yapay Zekâ Modelleri'nde kendi API anahtarını seçtiysen hiçbir şey indirmen gerekmez ve altyazıların sözcükleri o şirkete gider. Zamanlama değişmez; biçimlendirme etiketleri çeviriye alınmaz. Sonuç orijinalin yanına adında dilin koduyla kaydedilir (talk.srt, talk.es.srt olur), böylece oynatıcılar onu kendi diliyle sunar. Henüz altyazısı olmayan bir video için Yazıya Dök'ü kullan.",
+  "how": "Bir veya daha fazla .srt ya da .vtt dosyasını sürükle, Ctrl'ye dokun ve ÇEVİR yaprağına bırak; Kaynak ve Hedef'i seç, sonra Çevir'e bas. Komut isteminden: petal translate <altyazılar> --to es (kodlar en, ar, tr, fa, ur, id, fr ve es; altyazıların dilini belirtmek için --from ekle).",
   "worksOn": "Altyazı dosyaları (SRT ve VTT); bir tane ya da aynı anda birçok tane.",
   "examples": [
-   "Bir film için indirilmiş İngilizce altyazılar, Arapça okuyan annen ya da baban için çevrildi.",
-   "Bir kursun VTT biçimindeki ders altyazıları, Arapça konuşan öğrenciler için çevrildi.",
-   "Daha önce Yazıya Dök ile yaptığın İngilizce altyazılar, sonradan Arapçaya dönüştürüldü."
+   "Bir film için indirilmiş altyazılar, başka bir dil okuyan annen ya da baban için çevrildi.",
+   "Bir kursun VTT biçimindeki ders altyazıları, öğrencilerin için İngilizceden Endonezceye çevrildi.",
+   "Daha önce Yazıya Dök ile yaptığın altyazılar, sonradan Fransızcaya dönüştürüldü."
   ],
   "keywords": [
    "altyazı çevir",
-   "arapça altyazı",
-   "ingilizceden arapçaya",
+   "altyazıları çevir",
+   "kendi dilimde altyazı",
    "srt",
    "vtt",
    "çeviri",
    "altyazı çevirici",
-   "arapça alt yazı",
    "altyazı tercümesi",
-   "film altyazısı"
+   "film altyazısı",
+   "ingilizceden türkçeye"
+  ]
+ },
+ "tool:TranslateDocument": {
+  "category": "documents",
+  "summary": "Bir Word, PowerPoint, Excel veya PDF dosyasını başka bir dile çevirir; biçimi korunmuş yeni bir dosya olarak orijinalin yanına kaydeder.",
+  "details": "Belgeyi Çevir, DropWheel'in sekiz dilinden herhangi ikisi arasında çalışır: İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca ve İspanyolca. Kaynak (Otomatik algıla ya da bir dil) ve Hedef'i seç; sonuç orijinalin yanına adında dilin koduyla kaydedilir, yani report.docx, report.es.docx olur. Bir paragraf bütün olarak çevrilir ve sözcüklerinin çoğunun görünümünü alır; stiller, tablolar, bağlantılar, resimler, alanlar ve formüller kalır. Word'ün üst ve alt bilgileri, dipnotları ve metin kutuları, PowerPoint'in tabloları ve konuşmacı notları ve Excel hücrelerindeki sözcükler de çevrilir; sayılar, tarihler, sayfa adları ve Excel tablolarının başlıkları çevrilmez. Arapça, Farsça veya Urducaya çevrilirken paragraflar, tablolar ve sayfalar sağdan sola döner, bu dillerden çevrilirken de geri döner. Bu bilgisayarda, bir kez indirilen çeviri modelleriyle çalışır (pencere bu çift için neyin gerektiğini gösterir) ya da Ayarlar › Yapay Zekâ Modelleri'nde seçilen kendi API anahtarınla; bu durumda metin o şirkete gider ve pencere hangisi olduğunu söyler. Sınırları vardır. Bir PDF'te çevrilen sözcükler, kendi renklerinde ve sığabildiği kadar büyük, her paragrafın üzerine çizilir. Özgün sözcükler, güvenle yapılabildiği yerde sayfadan çıkarılır; taranmış bir sayfada ve yapılamadığı yerde çevirinin altında gizli kalır, yani arama onları hâlâ bulur ve içlerindeki gizli bir şey hâlâ oradadır. Taranmış bir PDF sayfası önce Windows'un metin tanımasıyla okunur; parolalı bir PDF'in önce kilidi açılmalıdır. Grafikler ve SmartArt çevrilmez. ODT ve RTF dosyaları DOCX olarak çıkar. Eski PPT ve XLS dosyaları alınmaz: önce PPTX veya XLSX olarak kaydet.",
+  "how": "Aynı türden bir veya daha fazla dosyayı sürükle, Ctrl'ye dokun ve ÇEVİR yaprağına bırak; Kaynak ve Hedef'i seç, sonra Çevir'e bas.",
+  "worksOn": "Word (DOCX, ODT, RTF), PowerPoint (PPTX), Excel (XLSX) ve PDF dosyaları; bir tane ya da aynı türden aynı anda birçok tane.",
+  "examples": [
+   "Word'deki bir sözleşme Fransızcadan İngilizceye çevrildi; başlıkları, tabloları ve sayfa numaraları olduğu gibi.",
+   "İngilizce bir slayt sunusu, konuşmacı notlarıyla birlikte bir müşteri için İspanyolca yapıldı.",
+   "Excel'deki bir fiyat listesi Arapçaya çevrildi: sayfa sağdan sola döner, sayılar ve formüller kalır."
+  ],
+  "keywords": [
+   "belge çevir",
+   "belgeyi çevir",
+   "pdf çevir",
+   "word çevir",
+   "powerpoint çevir",
+   "excel çevir",
+   "biçimi koru",
+   "belge çevirici",
+   "docx",
+   "pptx",
+   "xlsx",
+   "sağdan sola"
   ]
  },
  "tool:RemovePauses": {
@@ -909,13 +935,13 @@
  "tool:AnimatedCaptions": {
   "category": "video",
   "summary": "Bir videoya, kısa videolardaki gibi, söylenen sözcüğü vurgulayarak birkaç sözcükte bir değişen hareketli altyazılar gömer.",
-  "details": "Hareketli Altyazılar videoyu bilgisayarındaki Whisper konuşma modeliyle dinler ve sözcükleri görüntünün içine çizer. Stil Sözcük sözcük (söylenen sözcüğün vurgulanıp biraz büyüdüğü kısa bir satır), Tek sözcük (her seferinde beliren tek büyük bir sözcük) veya Satırlar'dır (sade kalın satırlar); Konum Alt, Orta veya Üst; Boyut Küçük, Orta veya Büyük; Vurgulu sözcük sarı, yeşil, pembe, mor veya mavidir. Videodan bir kare, altyazıların nasıl görüneceğini gösterir. Doğruluk (Hızlı, Dengeli veya Hassas: yaklaşık 60, 190 ve 574 MB indirme), Konuşma dili ve Sözcüklerin dili (Konuşulduğu gibi, İngilizce veya Arapça; ilk seferde yaklaşık 114 MB'lık bir çeviri modeliyle) Yazıya Dök'teki gibi çalışır. Altyazı Ekle'yi seç; sonuç sesi korunarak 'ad Captioned' adıyla kaydedilir; Arapça sağdan sola okunur. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
+  "details": "Hareketli Altyazılar videoyu bilgisayarındaki Whisper konuşma modeliyle dinler ve sözcükleri görüntünün içine çizer. Stil Sözcük sözcük (söylenen sözcüğün vurgulanıp biraz büyüdüğü kısa bir satır), Tek sözcük (her seferinde beliren tek büyük bir sözcük) veya Satırlar'dır (sade kalın satırlar); Konum Alt, Orta veya Üst; Boyut Küçük, Orta veya Büyük; Vurgulu sözcük sarı, yeşil, pembe, mor veya mavidir. Videodan bir kare, altyazıların nasıl görüneceğini gösterir. Doğruluk (Hızlı, Dengeli veya Hassas: yaklaşık 60, 190 ve 574 MB indirme), Konuşma dili ve Sözcüklerin dili (Konuşulduğu gibi ya da DropWheel'in çevirdiği sekiz dilden biri; ilk seferde bir çeviri modeliyle) Yazıya Dök'teki gibi çalışır. Altyazı Ekle'yi seç; sonuç sesi korunarak 'ad Captioned' adıyla kaydedilir; Arapça, Farsça ve Urduca sağdan sola okunur. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir veya daha fazla videoyu sürükle, Ctrl'ye dokun ve ALTYAZI EKLE yaprağına bırak; bir stil, konum ve renk seç, sonra Altyazı Ekle'yi seç.",
   "worksOn": "Videolar; bir tane ya da aynı anda birçok tane.",
   "examples": [
    "Sen konuştukça sarı sözcüklerin yandığı, TikTok için konuşan kafa klibi: Sözcük sözcük, Alt.",
    "Çoğu kişinin sesi kapalı izlediği bir Reel: Tek sözcük, Orta, Büyük.",
-   "Körfez'deki müşteriler için Arapça altyazılı İngilizce bir ürün videosu: Sözcüklerin dili › Arapça."
+   "Meksika'daki müşteriler için İspanyolca altyazılı İngilizce bir ürün videosu: Sözcüklerin dili › Español."
   ],
   "keywords": [
    "altyazı",
@@ -959,12 +985,12 @@
  "tool:MakeShorts": {
   "category": "video",
   "summary": "Uzun bir videoyu (konuşma, röportaj, podcast, ders) Reels, Shorts ve TikTok için hazır kısa kliplere dönüştürür: en iyi anlarını bulur, çerçeveler ve altyazısını ekler.",
-  "details": "Kısa Videolar, videonun tamamını bu bilgisayarda dinler (her sözcüğün zamanıyla Whisper) ve kendi başına anlam taşıyan anları bulur: her biri bir cümlenin başladığı yerde başlar ve bir düşüncenin bittiği yerde biter. Anlar izleyiciyi tutan şeylere göre sıralanır: ilgi çeken bir açılış (bir soru, “düşünün ki…”), canlı anlatım, bir hikâye, tavsiye, rakamlar, duygu ya da kahkaha, baştan sona tek bir konu ve istenen uzunluk. Klipler sayısını (3, 5 veya 8), Uzunluğu (30 sn'ye kadar, 30–60 sn veya 60–90 sn), Şekli (Dikey 9:16, Kare veya Çekildiği gibi) ve Çerçeveyi seçin. Konuşanı izle, yüzleri Windows'un kendi yüz algılayıcısıyla bulur, konuşan kişiyi kadrajda tutar, hareket ettikçe kayar ve başkası konuştuğunda kesme yapar; net bir yüz yoksa (slaytlar, bir sahne) görüntünün tamamını bulanık bir kopyasının üzerinde gösterir, Resmin tamamı'nın her zaman yaptığı gibi. Altyazı Sözcük sözcük (söylenen sözcük seçilen renkte yanar), Tek sözcük veya Satırlar olarak videoya yazılır; Sözcüklerin dili konuşulan dil, İngilizce veya Arapçadır. Başta başlık ilk saniyelerin üzerine bir başlık koyar; Duraklamaları kes cümleler arasındaki sessizlikleri kısaltır. En İyi Anları Bul'u seçin: anlar en iyisi önce, her biri 100 üzerinden bir puan ve neden seçildiğiyle görünür. Kontrol etmek için birini oynatın, başlığını değiştirin (başlıkları, varsa bu bilgisayardaki yapay zekâ modeli yazar ve yalnızca söylenene sadık olanlar tutulur), istemediklerinizin işaretini kaldırın, sonra kısa videoları yap düğmesini seçin. Klipler 'ad Shorts' adlı yeni bir klasöre, numaralı ve başlıklı olarak, 1080 × 1920 MP4 biçiminde ve sesi uygulamaların çaldığı düzeyde kaydedilir. Bir kez dinlenen video sonra hemen açılır. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
+  "details": "Kısa Videolar, videonun tamamını bu bilgisayarda dinler (her sözcüğün zamanıyla Whisper) ve kendi başına anlam taşıyan anları bulur: her biri bir cümlenin başladığı yerde başlar ve bir düşüncenin bittiği yerde biter. Anlar izleyiciyi tutan şeylere göre sıralanır: ilgi çeken bir açılış (bir soru, “düşünün ki…”), canlı anlatım, bir hikâye, tavsiye, rakamlar, duygu ya da kahkaha, baştan sona tek bir konu ve istenen uzunluk. Klipler sayısını (3, 5 veya 8), Uzunluğu (30 sn'ye kadar, 30–60 sn veya 60–90 sn), Şekli (Dikey 9:16, Kare veya Çekildiği gibi) ve Çerçeveyi seçin. Konuşanı izle, yüzleri Windows'un kendi yüz algılayıcısıyla bulur, konuşan kişiyi kadrajda tutar, hareket ettikçe kayar ve başkası konuştuğunda kesme yapar; net bir yüz yoksa (slaytlar, bir sahne) görüntünün tamamını bulanık bir kopyasının üzerinde gösterir, Resmin tamamı'nın her zaman yaptığı gibi. Altyazı Sözcük sözcük (söylenen sözcük seçilen renkte yanar), Tek sözcük veya Satırlar olarak videoya yazılır; Sözcüklerin dili Konuşulduğu gibi ya da DropWheel'in çevirdiği sekiz dilden biridir. Başta başlık ilk saniyelerin üzerine bir başlık koyar; Duraklamaları kes cümleler arasındaki sessizlikleri kısaltır. En İyi Anları Bul'u seçin: anlar en iyisi önce, her biri 100 üzerinden bir puan ve neden seçildiğiyle görünür. Kontrol etmek için birini oynatın, başlığını değiştirin (başlıkları, varsa bu bilgisayardaki yapay zekâ modeli ya da Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarınızın modeli yazar ve yalnızca söylenene sadık olanlar tutulur), istemediklerinizin işaretini kaldırın, sonra kısa videoları yap düğmesini seçin. Klipler 'ad Shorts' adlı yeni bir klasöre, numaralı ve başlıklı olarak, 1080 × 1920 MP4 biçiminde ve sesi uygulamaların çaldığı düzeyde kaydedilir. Bir kez dinlenen video sonra hemen açılır. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Bir videoyu sürükleyin, Ctrl'ye dokunun ve KISA VİDEO üzerine bırakın; kliplerin sayısını, uzunluğunu, şeklini ve altyazısını seçin, En İyi Anları Bul'u seçin, anları kontrol edin, sonra kısa videoları yap düğmesini seçin.",
   "worksOn": "Konuşma içeren tek bir video, her uzunlukta.",
   "examples": [
    "Bir saatlik bir podcast, TikTok için her biri bir soruyla açılan ve sözcük sözcük altyazılı sekiz adet 60 saniyelik klibe dönüşür.",
-   "Arapça bir ders, Arapça altyazılı ve başlıklı, duraklamaları kesilmiş beş Reels'e dönüşür.",
+   "Bir ders, altyazılı ve başlıklı, duraklamaları kesilmiş beş Reels'e dönüşür.",
    "Slaytlı kayıtlı bir web semineri: Resmin tamamı slaytları okunur tutar, altında İngilizce altyazıyla."
   ],
   "keywords": [
@@ -984,22 +1010,22 @@
  },
  "tool:Dub": {
   "category": "video",
-  "summary": "Bir videodaki konuşmayı diğer dilde, Arapçadan İngilizceye ya da İngilizceden Arapçaya, her konuşmacının kendi sesiyle yeniden söyler; müzik çıkarılır, diğer tüm sesler korunur.",
-  "details": "Dublaj, konuşmacıların seslerini diğer seslerden ayırır (Demucs), söyleneni her kelimenin zamanıyla yazıya döker (Whisper) ve cümle cümle çevirir; hepsi bu bilgisayarda. Dublaj dilini (İngilizceye veya Arapçaya), Konuşma dilini (veya Otomatik algıla) ve dinlemenin Doğruluğunu seçin, sonra Dublajı Hazırla'yı seçin. En hassas, en doğru modelle dinler ve bu bilgisayardaki büyük bir yapay zekâ modeline (Gemma 4 12B, yaklaşık 7 GB, bir kez indirilir) tüm videoyu okuduktan sonra çalışan bir dublaj çevirmeni gibi, kelimesi kelimesine değil anlamına göre çevirtir: dini ifadeler, şiir ve lehçe kastedildiği gibi çıkar, her satır aslına yakın uzunlukta kalır; konuşmanın her dakikası için birkaç dakika sürer. Cümleler çevirileriyle birlikte görünür: kontrol edin, gerekenleri değiştirin ve nasıl söylendiğini duymak için bir cümleyi oynatın. Sonra Dublaj'ı seçin. Önce müzik diğer seslerden çıkarılır (film seslerini konuşma, müzik ve efektlere ayırmak için yapılmış TIGER ile); böylece adımlar, yağmur, rüzgâr ve odanın uğultusu kalır, müzik gider. Bu ilk seferde biraz sürer, sonra saklanır. Ardından her cümle, bu bilgisayardaki ses modeli (Chatterbox) tarafından onu söyleyen kişinin sesiyle yeniden söylenir; ses, o cümlenin kendisinden öğrenilir. Cümle geri dinlenir ve yanlış çıktıysa yeniden söylenir, orijinalin sürdüğü zamana sığdırılır (daha uzunsa 1,3 kata kadar hızlı söylenir) ve orijinal ne kadar yüksek söylendiyse o kadar yüksek diğer seslerin üzerine yerleştirilir. Yeni video orijinalin yanına 'ad Arabic.mp4' veya 'ad English.mp4' olarak kaydedilir; görüntüsüne dokunulmaz. Orijinal sesi ikinci parça olarak tut, parça değiştirebilen oynatıcılar için orijinal sesi müziğiyle birlikte ekler; Yeni dilde altyazı, çeviriyi dosyaya altyazı olarak ekler. Dosya, seslerinin yapay zekâ ile yapıldığını belirtir. Bir kez hazırlanan video sonra hemen açılır. Yalnızca konuşmacılarının seslerinin kullanılmasına razı olacağı videoları dublajlayın.",
+  "summary": "Bir videodaki konuşmayı başka bir dilde, DropWheel'in sekiz dilinden birinden diğerine, her konuşmacının kendi sesiyle yeniden söyler; müzik çıkarılır, diğer tüm sesler korunur.",
+  "details": "Dublaj, konuşmacıların seslerini diğer seslerden ayırır (Demucs), söyleneni her kelimenin zamanıyla yazıya döker (Whisper) ve bu bilgisayarda cümle cümle çevirir. Şu dile dublaj ve Konuşma dili (veya Otomatik algıla) seçeneklerini, her biri İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca veya İspanyolca olarak, ve dinlemenin Doğruluğunu seçin, sonra Dublajı Hazırla'yı seçin. En hassas, en doğru modelle dinler ve bu bilgisayardaki büyük bir yapay zekâ modeline (Gemma 4 12B, yaklaşık 7 GB, bir kez indirilir) tüm videoyu okuduktan sonra çalışan bir dublaj çevirmeni gibi, kelimesi kelimesine değil anlamına göre çevirtir: dini ifadeler, şiir ve lehçe kastedildiği gibi çıkar, her satır aslına yakın uzunlukta kalır; konuşmanın her dakikası için birkaç dakika sürer. Çeviriyi bunun yerine, Ayarlar › Yapay Zekâ Modelleri'nde seçilen kendi API anahtarınızın modeli de yapabilir: cümlelerin sözcükleri o şirkete gider ve onlar için bir şey indirmek gerekmez; dinleme ve sesler her zaman bu bilgisayarda kalır. Cümleler çevirileriyle birlikte görünür: kontrol edin, gerekenleri değiştirin ve nasıl söylendiğini duymak için bir cümleyi oynatın. Sonra Dublaj'ı seçin. Önce müzik diğer seslerden çıkarılır (film seslerini konuşma, müzik ve efektlere ayırmak için yapılmış TIGER ile); böylece adımlar, yağmur, rüzgâr ve odanın uğultusu kalır, müzik gider. Bu ilk seferde biraz sürer, sonra saklanır. Ardından her cümle, bu bilgisayardaki ses modeli (Chatterbox) tarafından onu söyleyen kişinin sesiyle yeniden söylenir; ses, o cümlenin kendisinden öğrenilir. Cümle geri dinlenir ve yanlış çıktıysa yeniden söylenir, orijinalin sürdüğü zamana sığdırılır (daha uzunsa 1,3 kata kadar hızlı söylenir) ve orijinal ne kadar yüksek söylendiyse o kadar yüksek diğer seslerin üzerine yerleştirilir. Ses modeli Farsça, Urduca ve Endonezce için yapılmadı: onları Arapça ve Malayca gibi okur, bu yüzden daha az doğal duyulabilirler; en çok da Urduca. Yeni video orijinalin yanına diliyle adlandırılarak ('ad Spanish.mp4') kaydedilir; görüntüsüne dokunulmaz. Orijinal sesi ikinci parça olarak tut, parça değiştirebilen oynatıcılar için orijinal sesi müziğiyle birlikte ekler; Yeni dilde altyazı, çeviriyi dosyaya altyazı olarak ekler. Dosya, seslerinin yapay zekâ ile yapıldığını belirtir. Bir kez hazırlanan video sonra hemen açılır. Yalnızca konuşmacılarının seslerinin kullanılmasına razı olacağı videoları dublajlayın.",
   "how": "Bir videoyu sürükleyin, Ctrl'ye dokunun ve DUBLAJ üzerine bırakın; dublaj dilini seçin, Dublajı Hazırla'yı seçin, çevirileri kontrol edin, sonra Dublaj'ı seçin.",
   "examples": [
-   "Öğretmenin kendi sesiyle Arapçaya dublajlanmış bir İngilizce ders; arka plan müziği çıkarılmış, sınıfın sesleri korunmuş.",
-   "İngilizceye dublajlanmış Arapça bir röportaj; İngilizce altyazı eklenmiş.",
-   "İngilizce bir ürün videosu müziksiz olarak Arapça yapılır; dublajdan önce iki çeviri düzeltilir."
+   "Öğretmenin kendi sesiyle başka bir dile dublajlanmış bir ders; arka plan müziği çıkarılmış, sınıfın sesleri korunmuş.",
+   "İngilizceye dublajlanmış İspanyolca bir röportaj; İngilizce altyazı eklenmiş.",
+   "Bir ürün videosu müziksiz olarak Fransızca yapılır; dublajdan önce iki çeviri düzeltilir."
   ],
-  "worksOn": "Arapça veya İngilizce konuşma içeren tek bir video, en fazla 30 dakika.",
+  "worksOn": "İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca veya İspanyolca konuşma içeren tek bir video, en fazla 30 dakika.",
   "keywords": [
    "dublaj",
    "seslendirme",
    "video çevirisi",
    "ses çevirisi",
-   "arapçadan ingilizceye",
-   "ingilizceden arapçaya",
+   "türkçeden ingilizceye",
+   "ingilizceden türkçeye",
    "ses klonlama",
    "yapay zekâ dublaj",
    "müziği kaldır",
@@ -1036,12 +1062,12 @@
  "tool:AskFile": {
   "category": "documents",
   "summary": "Bir PDF, belge, elektronik tablo ya da kayıt hakkındaki soruları kendi sözleriyle, cevabın geldiği sayfa, slayt ya da dakikayla yanıtlar.",
-  "details": "Dosyaya Sor, dosyayı bu bilgisayarda bir kez okur: PDF'i sayfa sayfa (taranmış sayfaları Windows'un yerleşik metin tanımasıyla), Word belgesini ya da sunuyu Word, PowerPoint veya LibreOffice yüklüyse basıldığı gibi (değilse başlıklarına ve slaytlarına göre), elektronik tabloyu birkaç satır birkaç satır, kaydı ya da videoyu da dinleyerek (Whisper). Bir soru yazıp Sor'a basın: DropWheel dosyanın soruyla ilgili kısımlarını hem anlamlarına hem kelimelerine göre, Arapça ve İngilizcede ve ikisi arasında bulur; bu bilgisayardaki yapay zekâ modeli (Qwen3 4B, yaklaşık 2,5 GB, pencereden bir kez indirilir) yalnızca bu kısımlardan, sorunun dilinde kısa bir cevap yazar ve dosyanın bunu nerede söylediğini gösterir: sayfa, slayt, satırlar ya da dakika. Görmek için bir yere tıklayın: sayfa, cevabın geldiği kelimeler vurgulanmış olarak gösterilir; kayıt o dakikadan çalar. Dosya bunu söylemiyorsa cevap bunu söyler ve bir şey uydurmak yerine en yakın kısımları gösterir. Cevap modeli inene kadar her soru dosyanın onunla ilgili kısımlarını gösterir. Bulmak için küçük bir model (yaklaşık 120 MB) bir kez indirilir. Bir kez okunan dosya saklanır, böylece ona sonra yeniden sormak hemen başlar ve hiçbir şey bilgisayardan çıkmaz. Dosyayı Aç onu kendi uygulamasında açar.",
+  "details": "Dosyaya Sor, dosyayı bu bilgisayarda bir kez okur: PDF'i sayfa sayfa (taranmış sayfaları Windows'un yerleşik metin tanımasıyla), Word belgesini ya da sunuyu Word, PowerPoint veya LibreOffice yüklüyse basıldığı gibi (değilse başlıklarına ve slaytlarına göre), elektronik tabloyu birkaç satır birkaç satır, kaydı ya da videoyu da dinleyerek (Whisper). Bir soru yazıp Sor'a basın: DropWheel dosyanın soruyla ilgili kısımlarını hem anlamlarına hem kelimelerine göre, dosyanın dilinde ve diller arasında bulur; bu bilgisayardaki yapay zekâ modeli (Qwen3 4B, yaklaşık 2,5 GB, pencereden bir kez indirilir) ya da kendi API anahtarınızın modeli (Ayarlar › Yapay Zekâ Modelleri; soru ve bu kısımlar o zaman o şirkete gider) yalnızca bu kısımlardan, sorunun dilinde kısa bir cevap yazar ve dosyanın bunu nerede söylediğini gösterir: sayfa, slayt, satırlar ya da dakika. Görmek için bir yere tıklayın: sayfa, cevabın geldiği kelimeler vurgulanmış olarak gösterilir; kayıt o dakikadan çalar. Dosya bunu söylemiyorsa cevap bunu söyler ve bir şey uydurmak yerine en yakın kısımları gösterir. Cevap modeli inene kadar her soru dosyanın onunla ilgili kısımlarını gösterir. Bulmak için küçük bir model (yaklaşık 120 MB) bir kez indirilir. Bir kez okunan dosya saklanır, böylece ona sonra yeniden sormak hemen başlar ve kendi anahtarınızı seçmediyseniz hiçbir şey bilgisayardan çıkmaz. Dosyayı Aç onu kendi uygulamasında açar.",
   "how": "Bir PDF'i, belgeyi, elektronik tabloyu ya da kaydı sürükleyin, Ctrl'ye dokunun ve DOSYAYA SOR üzerine bırakın; bir soru yazıp Sor'a basın.",
   "examples": [
    "70 sayfalık bir sözleşme: feshetmek için kaç gün önceden bildirim gerektiğini sorun ve cümlesi vurgulanmış sayfayı görün.",
    "İki saatlik bir ders kaydı: sınavdan ne zaman bahsedildiğini sorun ve o dakikadan çalın.",
-   "Arapça sorulup Arapça cevaplanan İngilizce bir politika PDF'i, cevabın geldiği sayfayla birlikte."
+   "Kendi dilinde sorulup kendi dilinde cevaplanan İngilizce bir politika PDF'i, cevabın geldiği sayfayla birlikte."
   ],
   "worksOn": "Tek dosya: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, metin, Markdown, HTML, EPUB ya da bir ses veya video kaydı.",
   "keywords": [
@@ -1106,6 +1132,32 @@
    "discord sınırı",
    "yükleme sınırı",
    "mb düşür"
+  ]
+ },
+ "tool:EditPdf": {
+  "category": "pdf",
+  "summary": "Bir PDF'i tek pencerede doldurur, üzerine yazar, işaretler ve gerçekten karartır; orijinalin yanına yeni bir dosya olarak kaydeder.",
+  "details": "PDF Düzenle sayfaları bir araç şeridiyle açar; Kaydet, orijinalin yanına 'ad Edited.pdf' dosyasını yazar ve orijinal asla değişmez. Form alanları yerlerinde doldurulur (metin, onay kutuları, seçenek düğmeleri, açılır ve liste kutuları); Arapça, Farsça veya Urduca değerler doğru şekillendirilir. Metin yaz sözcükleri her yere koyar; Bugünün tarihi, Onay işareti, Çarpı ve Nokta bir tıklamayla konur. PDF'in metnini düzenle, PDF'in kendi metninden bir satıra tıklayıp yeniden yazmanı sağlar: eski sözcükler dosyadan çıkar. Vurgula, Altı Çizili, Üstünü çiz ve Yorum, başka PDF okuyucuların değiştirebileceği gerçek açıklamalardır; Kalem, Çizgi, Ok, Dikdörtgen, Elips, Beyaz örtü, Resim yerleştir ve İmza sayfaya çizer. Karart gerçekten kaldırır: kutular çiz, sözcükler seç, bir sözcük ya da ifade yazıp tüm sayfalar için Bul ve işaretle'ye bas ya da Özel bilgileri bul'a bas (e-posta adresleri, telefon numaraları, kart numaraları, IBAN'lar, IP adresleri ve parolalar; taranmış sayfalar da okunur). Kutular kaydedene kadar kırmızı görünür; sonra altlarındaki şey örtülmez, dosyadan çıkarılır ve Dosyanın gizli bilgilerini kaldır işaretini kaldırmadıysan dosyanın gizli bilgileri de gider. Düzleştir, alanları ve açıklamaları sayfalara gömer, böylece değiştirilemezler. Ctrl+Z geri alır, Ctrl+Y yineler, Ctrl+S kaydeder, Delete seçili öğeyi siler ve Esc Seç ve taşı'ya döner. Parolalı bir dosya parolasını sorar; yazarının kilitlediği bir form ancak yazarının izin verdiği kadar değiştirilebilir. Sınırları vardır. Sözcükleri tek tek çıkarılamayan bir sayfa (kutunun altında resim ya da çizim, alışılmadık yazı tipleri) resim olarak yeniden çizilir; kutuların dışındaki sözcükler aranabilir kalır. Beyaz örtü yalnızca gizler: örttüğü şey dosyada kalır, kaldırmak için Karart'ı kullan. Böyle bir yazı tipinde yeniden yazılan satır bir örtünün altında kalır ve pencere bunu söyler. Yalnızca XFA ile yapılmış formları, alan betiklerini, sertifikaya dayalı dijital imzaları, paragrafları yeniden akıtmayı ve dosyada zaten olan yorumları düzenlemeyi yapmaz. Dijital olarak imzalanmış bir dosyanın imzası değişikliklerden sonra artık geçerli olmaz.",
+  "how": "Bir PDF'yi sürükle, Ctrl'ye dokun ve DÜZENLE yaprağına bırak; şeritten bir araç seç, sayfalarda çalış ve Kaydet'e bas.",
+  "worksOn": "Bir PDF.",
+  "examples": [
+   "Bir vize başvuru formu: alanlarına yaz, kutuları işaretle, imzanı yerleştir ve kaydet.",
+   "Bir üniversitenin istediği banka ekstresi: Özel bilgileri bul kart ve telefon numaralarını işaretler, kalanını sen karartırsın, kaydetmek onları dosyadan çıkarır.",
+   "Bir rapordaki yanlış tarih: PDF'in metnini düzenle'yi seç, satıra tıkla ve yeniden yaz."
+  ],
+  "keywords": [
+   "pdf düzenle",
+   "pdf düzenleyici",
+   "pdf form doldur",
+   "form doldur",
+   "pdf üzerine yaz",
+   "pdf karart",
+   "özel bilgileri kaldır",
+   "pdf metnini değiştir",
+   "pdf vurgula",
+   "beyaz örtü",
+   "pdf düzleştir",
+   "pdf yorum"
   ]
  },
  "tool:CreatePdf": {
@@ -1328,13 +1380,13 @@
  "tool:MakeSearchable": {
   "category": "pdf",
   "summary": "Taranmış PDF'leri ve sayfa fotoğraflarını Windows OCR ile okur; böylece metinleri aranabilir ve kopyalanabilir.",
-  "details": "Aranabilir Yap hemen çalışır: kendi metni olmayan her sayfa Windows'a yerleşik OCR ile okunur (Arapça dahil, yüklü her dil denenir) ve sözcüklerin tam üzerine görünmez bir metin katmanı alır. Sayfa aynı görünür ama artık arama, seçme ve kopyalama çalışır. Her PDF 'ad Searchable.pdf' olarak kaydedilir; birlikte bırakılan birkaç resim, ilk resmin adını taşıyan tek bir aranabilir PDF'nin sayfaları olur. Tüm sayfalarında zaten metin olan bir PDF'ye dokunulmaz; hiç metin bulunamazsa kart daha net bir tarama yapmayı ya da dilini Windows Ayarları › Saat ve dil bölümünden eklemeyi önerir.",
+  "details": "Aranabilir Yap hemen çalışır: kendi metni olmayan her sayfa Windows'a yerleşik OCR ile okunur (yüklü her dil denenir) ve sözcüklerin tam üzerine görünmez bir metin katmanı alır. Sayfa aynı görünür ama artık arama, seçme ve kopyalama çalışır. Her PDF 'ad Searchable.pdf' olarak kaydedilir; birlikte bırakılan birkaç resim, ilk resmin adını taşıyan tek bir aranabilir PDF'nin sayfaları olur. Tüm sayfalarında zaten metin olan bir PDF'ye dokunulmaz; hiç metin bulunamazsa kart daha net bir tarama yapmayı ya da dilini Windows Ayarları › Saat ve dil bölümünden eklemeyi önerir.",
   "how": "Taranmış PDF'yi (ya da sayfaların birkaç fotoğrafını) sürükle, Ctrl'ye dokun ve OCR yaprağına bırak.",
   "worksOn": "PDF'ler (bir tane ya da birçok tane ya da bırakılan bir PDF klasörü) veya iki ya da daha fazla resim.",
   "examples": [
    "Taranmış 30 sayfalık bir sözleşme: aranabilir yap, sonra Ctrl+F ile 'fesih' sözcüğünün geçtiği her yeri bul.",
    "Kitap sayfalarının beş telefon fotoğrafı, alıntı kopyalayabileceğin tek bir PDF olur.",
-   "PDF olarak taranmış Arapça bir mektup: metni artık Word'e kopyalanabilir."
+   "PDF olarak taranmış bir mektup: metni artık Word'e kopyalanabilir."
   ],
   "keywords": [
    "ocr",
@@ -1345,19 +1397,19 @@
    "pdf'de ara",
    "taranmış belge",
    "pdf'de metin seç",
-   "arapça ocr",
+   "her dilde ocr",
    "yazı tanıma"
   ]
  },
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Bir PDF'yi, Word dosyasını, e-kitabı ya da metni bu bilgisayarda seslendirilen bir MP3 sesli kitaba dönüştürür.",
-  "details": "Sesli Oku belgenin metnini okur, kaç sözcük olduğunu ve yaklaşık kaç dakika süreceğini gösterir. Belgenin dili için bir ses seçer: Windows'un kendi seslerinden biri ya da pencereden bir kez indirilen (yaklaşık 85 MB) doğal İngilizce Linda sesi; Arapçayı Windows'un kendi Arapça sesleri okur. Hız'ı (0,75×, 1×, 1,25× veya 1,5×) seç, ilk cümleleri duymak için Dinle'ye bas, sonra belgenin yanına 'ad Audio.mp3' yazmak için Sesi Kaydet'e bas. Belgenin dilini konuşan yüklü bir ses yoksa Konuşma Ayarlarını Aç, Windows'un bir tane eklemesini sağlar; metin bilgisayardan hiç çıkmaz.",
+  "details": "Sesli Oku belgenin metnini okur, kaç sözcük olduğunu ve yaklaşık kaç dakika süreceğini gösterir. Belgenin dili için bir ses seçer: Windows'un kendi seslerinden biri ya da pencereden bir kez indirilen (yaklaşık 85 MB) doğal İngilizce Linda sesi. Hız'ı (0,75×, 1×, 1,25× veya 1,5×) seç, ilk cümleleri duymak için Dinle'ye bas, sonra belgenin yanına 'ad Audio.mp3' yazmak için Sesi Kaydet'e bas. Belgenin dilini konuşan yüklü bir ses yoksa Konuşma Ayarlarını Aç, Windows'un bir tane eklemesini sağlar; metin bilgisayardan hiç çıkmaz.",
   "how": "Belgeyi sürükle, Ctrl'ye dokun ve DİNLE yaprağına bırak; bir ses ve hız seç ve Sesi Kaydet'e bas.",
   "worksOn": "Bir dosya: PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT veya EPUB.",
   "examples": [
    "Otobüste dinlenecek 25 sayfalık bir PDF bölüm: 1,25× hızında MP3 olarak kaydet.",
-   "Word'deki Arapça bir makale, Windows'un Arapça sesiyle okunur.",
+   "Word'deki Fransızca bir makale, Windows'un Fransızca sesiyle okunur.",
    "Uzun bir yolculuk için sesli kitaba dönüştürülmüş bir EPUB roman."
   ],
   "keywords": [
@@ -1370,7 +1422,7 @@
    "belgeden mp3",
    "ses",
    "seslendirme",
-   "arapça ses",
+   "her dilde ses",
    "metin okuma"
   ]
  },
@@ -1571,8 +1623,8 @@
  },
  "action:Ask": {
   "category": "files",
-  "summary": "Dosyalarla ne istediğini İngilizce ya da Arapça, kendi sözlerinle söylersin; adımları gösterdikten sonra yapar.",
-  "details": "DropWheel'e Sor, ne yapılacağını yazdığın (ya da mikrofon düğmesiyle söylediğin) bir kutu açar, örneğin 'make them 1080 px WEBP and zip them' ya da 'put them in one searchable PDF'. DropWheel anladığı adımları 'DropWheel şunları yapacak:' altında listeler ve dosyalara uymadıklarında uyarır; Çalıştır'a basana kadar hiçbir şey çalışmaz. Sık yapılan istekler bir model olmadan anlaşılır; YZ modeliyle (Qwen2.5 1.5B, yaklaşık 1,1 GB, pencereden bir kez indirilir) serbestçe ifade edilen istekler de anlaşılır; hepsi bu bilgisayarda. Tarif Olarak Kaydet… adımları araçlar çarkında bir yaprak olarak saklar; sonuçlar orijinallerin yanına 'ad' artı tarifin adıyla kaydedilir.",
+  "summary": "Dosyalarla ne istediğini kendi sözlerinle söylersin; adımları gösterdikten sonra yapar.",
+  "details": "DropWheel'e Sor, ne yapılacağını yazdığın (ya da mikrofon düğmesiyle söylediğin) bir kutu açar, örneğin 'make them 1080 px WEBP and zip them' ya da 'put them in one searchable PDF'. DropWheel anladığı adımları 'DropWheel şunları yapacak:' altında listeler ve dosyalara uymadıklarında uyarır; Çalıştır'a basana kadar hiçbir şey çalışmaz. İngilizce ya da Arapça sık yapılan istekler bir model olmadan anlaşılır; YZ modeliyle (Qwen2.5 1.5B, yaklaşık 1,1 GB, pencereden bir kez indirilir) serbestçe ifade edilen istekler de, başka dillerde de anlaşılır, hepsi bu bilgisayarda; ya da Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarının modeli bunu yapar, bu durumda dosyalar değil isteğin o şirkete gider. Tarif Olarak Kaydet… adımları araçlar çarkında bir yaprak olarak saklar; sonuçlar orijinallerin yanına 'ad' artı tarifin adıyla kaydedilir.",
   "how": "Dosyaları sürükle, Alt'a dokun ve SOR yaprağına bırak; ne istediğini yaz, Sor'a bas, adımları kontrol et ve Çalıştır'a bas.",
   "worksOn": "Dosyalar; bir tane ya da birçok tane.",
   "examples": [
@@ -1585,7 +1637,7 @@
    "doğal dil",
    "ne yapacağını söyle",
    "kendi sözlerimle",
-   "arapça istek",
+   "kendi dilimde istek",
    "yz asistanı",
    "yapay zeka",
    "sesli istek",
@@ -2687,7 +2739,7 @@
  "do:screen.circle": {
   "category": "screen",
   "summary": "Ekrandaki herhangi bir şeyi (bir cümle, bir sayı, bir tarih, bir resim, bir QR kod) daire içine alın; çark, onunla yapılabileceklerle açılır, hepsi bu bilgisayarda.",
-  "details": "Ctrl+Win+C'ye basın, ekran parlayan bir kenarla durur. Herhangi bir şeyi daire içine alın, bir kelimenin üzerini karalayın, bir cümlenin boyunca çizgi çekin ya da bir paragrafa veya resme tıklayın; işaretçi, tıklamanın alacağı paragrafı aydınlatır. DropWheel aldığınızı okur (Windows'un yerleşik metin tanımasıyla; QR kodları ve barkodları da) ve çark onun üzerinde açılır. Sözcükler için: METNİ KOPYALA, ÇEVİR (çeviri, özgün metnin üzerine paragraf paragraf ve kendi renkleriyle yerleştirilir; karşılaştırmak için Orijinal), AÇIKLA, SOR (sohbeti sürdüren bir soru kutusu), ÖZET, ARA, SESLİ OKU ve sözcükler satır ve sütunlarda durduğunda TABLO veya EXCEL. Önce metnin içerdikleri gelir: BAĞLANTI, E-POSTA, TELEFON, tarih için TAKVİM (her takvimin açtığı bir etkinlik dosyası), başka bir saat diliminde verilmiş saat için SAATİNİZ, birimler için DÖNÜŞTÜR (kilometre ve mil, kilo ve pound, °C ve °F, fit ve inç, feddan), bugünkü kurlarla DÖVİZ, bir işlem için SONUÇ, bir renk kodu için RENK. Bir resim için: BETİMLE, SOR, RESMİ KOPYALA, KAYDET, DEKUPE (saydam kenarlı nesne), SABİTLE, RENKLER ve tüm dönüştürmeler için ARAÇLAR. Bir yanıt olduğunda çarkın ortası onu hemen gösterir: bir dönüşüm, bir sonuç, sizdeki saat. Açıklama, soru ve betimleme bu bilgisayardaki, bir kez indirilen yapay zekâ modellerini kullanır; yalnızca DÖVİZ internete bağlanır ve yalnızca onu seçtiğinizde, bugünkü kurları almak için. Esc ya da sağ tık ekranı geri getirir.",
+  "details": "Ctrl+Win+C'ye basın, ekran parlayan bir kenarla durur. Herhangi bir şeyi daire içine alın, bir kelimenin üzerini karalayın, bir cümlenin boyunca çizgi çekin ya da bir paragrafa veya resme tıklayın; işaretçi, tıklamanın alacağı paragrafı aydınlatır. DropWheel aldığınızı okur (Windows'un yerleşik metin tanımasıyla; QR kodları ve barkodları da) ve çark onun üzerinde açılır. Sözcükler için: METNİ KOPYALA, ÇEVİR (çeviri, özgün metnin üzerine paragraf paragraf ve kendi renkleriyle yerleştirilir; karşılaştırmak için Orijinal), AÇIKLA, SOR (sohbeti sürdüren bir soru kutusu), ÖZET, ARA, SESLİ OKU ve sözcükler satır ve sütunlarda durduğunda TABLO veya EXCEL. Önce metnin içerdikleri gelir: BAĞLANTI, E-POSTA, TELEFON, tarih için TAKVİM (her takvimin açtığı bir etkinlik dosyası), başka bir saat diliminde verilmiş saat için SAATİNİZ, birimler için DÖNÜŞTÜR (kilometre ve mil, kilo ve pound, °C ve °F, fit ve inç, feddan), bugünkü kurlarla DÖVİZ, bir işlem için SONUÇ, bir renk kodu için RENK. Bir resim için: BETİMLE, SOR, RESMİ KOPYALA, KAYDET, DEKUPE (saydam kenarlı nesne), SABİTLE, RENKLER ve tüm dönüştürmeler için ARAÇLAR. Bir yanıt olduğunda çarkın ortası onu hemen gösterir: bir dönüşüm, bir sonuç, sizdeki saat. Çeviri, açıklama, soru ve betimleme bu bilgisayardaki, bir kez indirilen modelleri ya da Ayarlar › Yapay Zekâ Modelleri'nde seçtiyseniz kendi API anahtarınızı kullanır; bu durumda aldığınız şey o şirkete gider; bunun dışında yalnızca DÖVİZ internete bağlanır ve yalnızca onu seçtiğinizde, bugünkü kurları almak için. Esc ya da sağ tık ekranı geri getirir.",
   "how": "Ctrl+Win+C'ye basın (ya da hiçbir şey seçili değilken Ctrl+Win+Z'ye basıp Ekran çarkında DAİRE'yi seçin), istediğinizi daire içine alın, sonra bir yaprak seçin. Kısayol Ayarlar › Ekran ve Metin bölümünden değiştirilebilir.",
   "examples": [
    "Dolar cinsinden bir fiyatı daire içine alın, bugünkü kurla kendi para biriminizde görün.",
@@ -2810,7 +2862,7 @@
  "do:screen.text": {
   "category": "screen",
   "summary": "Ekranın herhangi bir kısmındaki sözcükleri, resimlerde ve videolarda bile kopyalar; QR kodları da okur.",
-  "details": "Metnin üzerine sürükle; Ekrandan Metin penceresi bir önizleme ve bulunan sözcükleri gösterir; Metni Kopyala'ya basmadan önce onları değiştirebilirsin. Düğmeler şunları yapmanı sağlar: bu bilgisayarda Arapça ile İngilizce arasında Çevir (çeviri modeli bir kez indirilir), Klavye Düzenini Düzelt, ekranın böldüğü satırlar için Satırları Birleştir, Web'de Ara, Excel'e hücre hücre yapıştırmak için Tablo Olarak Kopyala ya da tabloyu Belgeler'e kaydedip açan Excel olarak kaydet. Alandaki QR kodları ve barkodlar Kopyala ile, web adresleri için de Bağlantıyı Aç ile listelenir. Okuma Windows'a yerleşik metin tanımayı kullanır, bu yüzden metin okuyabilen bir Windows dili yüklü olmalıdır; hiç yoksa pencere Ayarlar › Saat ve dil › Dil altında nasıl ekleneceğini söyler.",
+  "details": "Metnin üzerine sürükle; Ekrandan Metin penceresi bir önizleme ve bulunan sözcükleri gösterir; Metni Kopyala'ya basmadan önce onları değiştirebilirsin. Düğmeler şunları yapmanı sağlar: kendi diline Çevir (bir kerelik model indirmesinin ardından bu bilgisayarda ya da Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarınla), Klavye Düzenini Düzelt, ekranın böldüğü satırlar için Satırları Birleştir, Web'de Ara, Excel'e hücre hücre yapıştırmak için Tablo Olarak Kopyala ya da tabloyu Belgeler'e kaydedip açan Excel olarak kaydet. Alandaki QR kodları ve barkodlar Kopyala ile, web adresleri için de Bağlantıyı Aç ile listelenir. Okuma Windows'a yerleşik metin tanımayı kullanır, bu yüzden metin okuyabilen bir Windows dili yüklü olmalıdır; hiç yoksa pencere Ayarlar › Saat ve dil › Dil altında nasıl ekleneceğini söyler.",
   "how": "Hiçbir şey seçili değilken Ctrl+Win+Z'ye bas ve Ekran çarkında METNİ KOPYALA'yı seç (ya da bildirim alanı menüsünde Ekrandan Metin), sonra sözcüklerin üzerine sürükle.",
   "worksOn": "",
   "examples": [
@@ -3317,7 +3369,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Ne istediğini yazdığın bir arama kutusu açar: herhangi bir eylem, seçili dosyalar için bir yaprak, bir uygulama, bir dosya ya da bir hesap.",
-  "details": "Komut Paleti öndeki pencerenin üzerinde açılır ve sen yazdıkça İngilizce ya da Arapça olarak bulur: her çarkın her eylemi, her çarkın kendisi, Dosya Gezgini'nde seçili dosyalar için her yaprak, DropWheel'in pencereleri, bilgisayardaki uygulamalar, son kopyaladıkların, Anlama Göre Ara ile bulunan dosyalar, metin parçaları ve çalışma alanları. 12% of 340 ya da 5 km in mi gibi bir hesap veya birim dönüştürme yaz; Enter yanıtı kopyalar. Seçmek için ok tuşlarını, çalıştırmak için Enter'ı, diğer eylem için (örneğin bir dosyanın klasörünü açmak) Ctrl+Enter'ı, kapatmak için Esc'yi kullan. Mikrofon düğmesi komutu söylemeni sağlar. Hiçbir şey uymazsa web'de aramayı önerir.",
+  "details": "Komut Paleti öndeki pencerenin üzerinde açılır ve sen yazdıkça DropWheel'in konuştuğu dilde ya da İngilizce olarak bulur: her çarkın her eylemi, her çarkın kendisi, Dosya Gezgini'nde seçili dosyalar için her yaprak, DropWheel'in pencereleri, bilgisayardaki uygulamalar, son kopyaladıkların, Anlama Göre Ara ile bulunan dosyalar, metin parçaları ve çalışma alanları. 12% of 340 ya da 5 km in mi gibi bir hesap veya birim dönüştürme yaz; Enter yanıtı kopyalar. Seçmek için ok tuşlarını, çalıştırmak için Enter'ı, diğer eylem için (örneğin bir dosyanın klasörünü açmak) Ctrl+Enter'ı, kapatmak için Esc'yi kullan. Mikrofon düğmesi komutu söylemeni sağlar. Hiçbir şey uymazsa web'de aramayı önerir.",
   "how": "Ctrl+Win+K'ye bas, Çalışma çarkında KOMUTLAR'ı seç ya da bildirim alanı menüsünde Komut Paleti'ni seç.",
   "worksOn": "Varsa Dosya Gezgini'nde seçili dosyalar, onların yapraklarını sunmak için; yoksa hiçbir şey.",
   "examples": [
@@ -3390,7 +3442,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Dosyaları ne hakkında olduklarına göre bulur: içlerindeki sözcükler, adları ya da bir fotoğrafın veya videonun gösterdiği şey.",
-  "details": "Anlama Göre Ara, 'eczaneden fiş' ya da 'plaj fotoğrafları' gibi şeyler yazmanı sağlar ve Resimler, Belgeler, Masaüstü, İndirilenler ve Videolar klasörlerindeki eşleşen dosyaları bulur. Aç'a basana kadar kapalıdır; sonra DropWheel bu klasörleri bilgisayar boştayken okur ve dizini bu bilgisayarda tutar. Fotoğrafları ve videoları gösterdikleri şeye göre bulmak için DropWheel'in bir kez indirilen resim modelleri gerekir. Enter ilk sonucu açar; herhangi bir sonucu başka bir uygulamaya sürükleyebilirsin. Bir soru yazdığında Dosyalarına Sor, belgelerinin söylediklerinden, kaynak dosyalarla birlikte yanıt verir; bunun için bir kez indirilen YZ modeli gerekir.",
+  "details": "Anlama Göre Ara, 'eczaneden fiş' ya da 'plaj fotoğrafları' gibi şeyler yazmanı sağlar ve Resimler, Belgeler, Masaüstü, İndirilenler ve Videolar klasörlerindeki eşleşen dosyaları bulur. Aç'a basana kadar kapalıdır; sonra DropWheel bu klasörleri bilgisayar boştayken okur ve dizini bu bilgisayarda tutar. Fotoğrafları ve videoları gösterdikleri şeye göre bulmak için DropWheel'in bir kez indirilen resim modelleri gerekir. Enter ilk sonucu açar; herhangi bir sonucu başka bir uygulamaya sürükleyebilirsin. Bir soru yazdığında Dosyalarına Sor, belgelerinin söylediklerinden, kaynak dosyalarla birlikte yanıt verir; bunun için bir kez indirilen YZ modeli ya da Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarın gerekir; anahtarla soru ve bulunan parçalar o şirkete gider.",
   "how": "İlk başta bir çarkta değildir: bildirim alanı menüsünde Anlama Göre Ara'yı seç ya da komut paletine (Ctrl+Win+K) 'ara' yaz.",
   "worksOn": "",
   "examples": [
@@ -3438,7 +3490,7 @@
  "do:petal.qr": {
   "category": "petal",
   "summary": "Metin, bağlantı ya da Wi-Fi ağı için PNG veya SVG olarak kaydedilebilen ya da kopyalanabilen bir QR kod yapar.",
-  "details": "QR Kodu Oluştur, sen yazdıkça kodu çizer. Metin veya bağlantı'yı ya da Ağ ve Parola girip gerekirse Gizli ağ'ı işaretlediğin Wi-Fi'yi seç; kodu tarayan telefonlar parolayı yazmadan bağlanır. İki Renk'i ve Güç'ü (Standart, Güçlü, En güçlü) değiştirebilirsin: daha güçlü kodlar çizildiğinde ya da kısmen kapandığında bile okunur ama daha yoğundur. Resmi Kopyala kodu kopyalar; Kaydet onu Resimler'den başlayarak PNG veya SVG olarak kaydeder. Fazla uzun metin 'Bu, bir QR kod için fazla uzun bir metin.' mesajıyla reddedilir.",
+  "details": "QR Kodu Oluştur, sen yazdıkça kodu çizer. Metin veya bağlantı'yı ya da Ağ ve Parola girip gerekirse Gizli ağ'ı işaretlediğin Wi-Fi'yi seç; kodu tarayan telefonlar parolayı yazmadan bağlanır. İki Renk'i ve Güç'ü (Standart, Güçlü, En güçlü) değiştirebilirsin: daha güçlü kodlar çizildiğinde ya da kısmen kapandığında bile okunur ama daha yoğundur. Resmi Kopyala kodu kopyalar; Kaydet onu Resimler'den başlayarak PNG veya SVG olarak kaydeder. Fazla uzun metin 'Bu, bir QR kod için fazla uzun bir metin.' mesajıyla reddedilir. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "İlk başta bir çarkta değildir: bildirim alanı menüsünde QR Kodu Oluştur'u seç, komut paletine (Ctrl+Win+K) 'qr' yaz ya da bir bağlantı kopyalayıp Hızlı çarkında PANO'yu seç.",
   "worksOn": "",
   "examples": [
@@ -3486,12 +3538,12 @@
  "do:petal.settings": {
   "category": "petal",
   "summary": "DropWheel'in ayarlar penceresini açar.",
-  "details": "DropWheel Ayarları, DropWheel'in ana penceresidir ve her değişiklik hemen kaydedilir. Şu bölümleri vardır: Tuşlar, Çarklar (çarkları ve yapraklarını değiştirmek, eklemek ya da kapatmak için), Görünüm, Çark, Ekran ve Metin, Çalışma ve Paylaşım, Eylemler Çarkı, Favoriler, Tarifler, Otomasyonlar, Yaprakların, Anlama Göre Ara, Sonuçlar, Kalite, Yardımcılar, İstatistikler, Genel, Yedek ve Güncellemeler. Yaptığın yeni bir çark bu yaprakla başlar.",
+  "details": "DropWheel Ayarları, DropWheel'in ana penceresidir ve her değişiklik hemen kaydedilir. Şu bölümleri vardır: Tuşlar, Çarklar (çarkları ve yapraklarını değiştirmek, eklemek ya da kapatmak için), Görünüm, Çark, Ekran ve Metin, Çalışma ve Paylaşım, Eylemler Çarkı, Favoriler, Tarifler, Otomasyonlar, Yaprakların, Yapay Zekâ Modelleri, Anlama Göre Ara, Sonuçlar, Kalite, Yardımcılar, İstatistikler, Genel, Yedek ve Güncellemeler. Yapay Zekâ Modelleri; yazma ve yanıtlar, çeviri ve resimleri betimleme için bu bilgisayara indirilen bir model (varsayılan; hiçbir şey bilgisayardan çıkmaz) ile Gemini, ChatGPT veya Claude'dan kendi API anahtarın arasında seçim yaptırır: anahtarı yapıştır, Anahtarı Kaydet'e bas ve her işin yanında onu seç. Kullandığın kadarını doğrudan o şirkete ödersin ve işin üzerinde çalıştığı şey ona gider; abonelik de DropWheel'e ait bir sunucu da yoktur, anahtar bu bilgisayarda şifreli saklanır ve yedeklere girmez. Bu modellerden birini isteyen bir pencere, bu kartı açan Bunun yerine kendi API anahtarımı kullan… seçeneğini de sunar. Yaptığın yeni bir çark bu yaprakla başlar.",
   "how": "Bildirim alanı menüsünde Ayarlar'ı seç, eklediğin bir çarkta DROPWHEEL'ı seç ya da komut paletine (Ctrl+Win+K) 'ayarlar' yaz.",
   "worksOn": "",
   "examples": [
    "Dönüştürme çarkını açan tuşu Shift'ten başka bir tuşa değiştir.",
-   "Çarklar altında Canlı Bölge yaprağını Ekran çarkına ekle.",
+   "Yapay Zekâ Modelleri altında kendi Gemini, ChatGPT veya Claude API anahtarını ekle; çeviri ve özetleme indirme gerektirmesin.",
    "Yeni bir bilgisayara geçmeden önce tüm çarklarının ve favorilerinin yedeğini al."
   ],
   "keywords": [
@@ -3504,7 +3556,13 @@
    "özelleştir",
    "ayarları yedekle",
    "kurulum",
-   "ayarlar"
+   "ayarlar",
+   "yapay zekâ modelleri",
+   "api anahtarı",
+   "kendi anahtarım",
+   "gemini",
+   "chatgpt",
+   "claude"
   ]
  },
  "do:petal.pause": {
@@ -3535,7 +3593,7 @@
   "category": "text",
   "summary": "Yanlış klavye diliyle yazılmış metni düzeltir: ؤشف cat olur, hgsghl de السلام olur.",
   "details": "Herhangi bir uygulamada bozuk metni seç ve bu yaprağı seç. DropWheel hatanın hangi yönde olduğunu görür: çoğunlukla Arapça harflerden oluşan metin altlarındaki İngilizce tuşlara, İngilizce harfler de yazılmak istenen Arapça harflere dönüşür (ABD İngilizcesi ve Arapça 101 düzenleri). Düzeltilmiş metin seçimin üzerine yapıştırılır; iki düzen de yüklüyse klavye ardından kastettiğin dile geçer, böylece yazmaya devam edebilirsin. DropWheel seçimi uygulamaya Windows UI Automation ile sorarak ya da Ctrl+C ile kopyalayarak alır ve sonra panonu eski hâline getirir. Bu arada öndeki uygulama değiştiyse sonuç onun yerine panoya gider ('Bunun yerine kopyalandı').",
-  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Metin çarkı görünene kadar Tab'a bas ve KLAVYE'yi seç.",
+  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Metin çarkı görünene kadar Tab'a bas ve KLAVYE'yi seç. Arayüz ya da bir klavye Arap alfabesi kullanıyorsa çarktadır; değilse DropWheel Ayarları'nda Çarklar altında ekle.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
    "Klavye hâlâ Arapçadayken bir WhatsApp Web mesajı yazdın ve ؤشف çıktı: seç, KLAVYE onu cat'e çevirir.",
@@ -3557,26 +3615,26 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Seçili metni bu bilgisayarda çevirir: Arapça ile İngilizce arasında iki yönde ya da DropWheel'in konuştuğu dile; seçimin yerine koymak ya da kopyalamak için.",
-  "details": "Herhangi bir uygulamada metin seç ve ÇEVİR'i seç: orijinalin başını ve çeviriyi hâlâ düzenleyebileceğin bir kutuda gösteren bir Çevir penceresi açılır. Arapça metin İngilizceye, diğer her şey Arapçaya çevrilir; DropWheel'in kendisi Türkçe, Farsça, Urduca, Endonezce, Fransızca ya da İspanyolca olarak ayarlıysa metin bunun yerine o dile çevrilir (zaten o dildeyse İngilizceye). İngilizceden Arapçaya ve Arapçadan İngilizceye çeviri, indirilmişlerse Opus-MT çeviri modellerini (her biri yaklaşık 114 MB) cümle cümle kullanır; aksi hâlde ve diğer diller için YZ modeli Qwen2.5 1.5B (yaklaşık 1,1 GB) çevirir; pencere ilk seferde indirmeyi önerir. Seçimi Değiştir çeviriyi orijinal metnin üzerine yapıştırır, Kopyala onu panoya koyar. Bu bilgisayarda çalışır; metin hiçbir yere gönderilmez.",
+  "summary": "Seçili metni, DropWheel'in sekiz dilinden herhangi birinden diğerine, seçtiğin dile çevirir; seçimin yerine koymak ya da kopyalamak için.",
+  "details": "Herhangi bir uygulamada metin seç ve ÇEVİR'i seç: orijinalin başını ve çeviriyi hâlâ düzenleyebileceğin bir kutuda gösteren bir Çevir penceresi açılır. DropWheel metnin dilini kendi anlar; Hedef istediğin dildir: İngilizce, Arapça, Türkçe, Farsça, Urduca, Endonezce, Fransızca veya İspanyolca. Son seçtiğin dille ya da DropWheel'in konuştuğu dille başlar; metin zaten o dildeyse başka bir dille. Bu bilgisayarda, bir kez indirilen modellerle cümle cümle çalışır; pencere bu çift için gerekeni önerir: o çifte özel bir model (yaklaşık 110 MB), İngilizce üzerinden iki model ya da her dili bilen daha büyük bir model (yaklaşık 630 MB ve daha yavaş); YZ modeli bu bilgisayarda zaten varsa onlar gelene kadar o çevirir. Seçimi Değiştir çeviriyi orijinal metnin üzerine yapıştırır, Kopyala onu panoya koyar. Bu bilgisayarda metin hiçbir yere gönderilmez; Ayarlar › Yapay Zekâ Modelleri'nde kendi API anahtarını seçtiysen o şirkete gider ve pencere bunu söyler.",
   "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç ve ÇEVİR'i seç; sonra Seçimi Değiştir'e ya da Kopyala'ya bas.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
-   "Outlook'ta bir tedarikçiden gelen İngilizce bir e-posta: seç, ÇEVİR'i seç ve Arapça oku.",
-   "Teams'te İngilizce konuşan bir iş arkadaşına Arapça bir yanıt yazdın: ÇEVİR, sonra Seçimi Değiştir İngilizcesini yerine koyar.",
-   "Bir alışveriş sitesindeki bir paragraf İngilizce: tarayıcıda seç ve Arapça çeviriyi notlarına kopyala."
+   "Outlook'ta bir tedarikçiden gelen başka dilde bir e-posta: seç, ÇEVİR'i seç ve kendi dilinde oku.",
+   "Teams'te yurt dışındaki bir iş arkadaşına kendi dilinde bir yanıt yazdın: ÇEVİR, Hedef'te onun dilini seç, sonra Seçimi Değiştir yerine koyar.",
+   "Bir alışveriş sitesindeki bir paragraf okuyamadığın bir dilde: tarayıcıda seç ve çeviriyi notlarına kopyala."
   ],
   "keywords": [
    "çevir",
    "çeviri",
-   "arapçadan ingilizceye",
-   "ingilizceden arapçaya",
+   "her dile çevir",
+   "ingilizceden türkçeye",
    "çevrim dışı çeviri",
    "e-postayı çevir",
    "mesajı çevir",
    "google çeviri",
    "başka dil",
-   "ingilizceyi anla",
+   "yabancı dil",
    "tercüme"
   ]
  },
@@ -3680,7 +3738,7 @@
   "category": "text",
   "summary": "Seçili Arapça metinden harekeleri (teşkil), Kur'an işaretlerini ve tatvili kaldırır.",
   "details": "Herhangi bir uygulamada Arapça metin seç ve HAREKE'yi seç; kısa ünlü işaretleri (fetha, damme, kesra, sükûn, şedde ve tenvin), küçük Kur'an işaretleri ve uzatma işareti tatvil çıkarılır, harfler kalır. Temizlenmiş metin seçimin üzerine geri yapıştırılır ve panon eski hâline getirilir. Bu işaretlerden hiçbiri olmayan metin 'Değiştirilecek bir şey yok' kartı verir. Arama yapmadan, sıralamadan ya da işaretleri iyi işlemeyen bir alana metin yapıştırmadan önce işe yarar.",
-  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç, TOPARLA grubunu aç ve HAREKE'yi seç.",
+  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç, TOPARLA grubunu aç ve HAREKE'yi seç. Arayüz ya da bir klavye Arap alfabesi kullanıyorsa grupta yer alır; değilse DropWheel Ayarları'nda Çarklar altında ekle.",
   "worksOn": "Herhangi bir uygulamada seçtiğin Arapça metin; dosya yok.",
   "examples": [
    "Bir web sitesinden Word'e kopyalanmış tam harekeli bir şiir: HAREKE, düzenlemesi daha kolay sade harfler bırakır.",
@@ -3704,7 +3762,7 @@
   "category": "text",
   "summary": "Seçili metindeki rakamları değiştirir: Arapça ١٢٣ 123 olur ya da 123 ١٢٣ olur.",
   "details": "Herhangi bir uygulamada metin seç ve RAKAMLAR'ı seç. Metinde herhangi bir Arap-Hint (ya da Farsça) rakam varsa hepsi 0–9 olur; Arapça ondalık ve binlik işaretleri nokta ve virgül olur; hiç yoksa 0–9 ٠–٩ olur. Metin seçimin üzerine geri yapıştırılır ve panon sonra eski hâline getirilir. Diğer karakterler olduğu gibi kalır.",
-  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç, TOPARLA grubunu aç ve RAKAMLAR'ı seç.",
+  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç, TOPARLA grubunu aç ve RAKAMLAR'ı seç. Arayüz ya da bir klavye Arap alfabesi kullanıyorsa grupta yer alır; değilse DropWheel Ayarları'nda Çarklar altında ekle.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
    "٠٥٠١٢٣٤٥٦٧ diye yazılmış bir telefon numarası bir web formuna girmiyor: RAKAMLAR onu 0501234567 yapar.",
@@ -3728,7 +3786,7 @@
   "category": "text",
   "summary": "Seçili metni temizler: çift boşluklar, satır sonlarındaki boşluklar ve fazla boş satırlar kaldırılır.",
   "details": "Herhangi bir uygulamada metin seç ve TOPARLA'yı seç. Art arda gelen boşluklar ve sekmeler tek boşluk olur, her satırın başındaki ve sonundaki boşluklar gider, arka arkaya en fazla bir boş satır tutulur, baştaki ve sondaki boş satırlar kaldırılır. Satır başlarındaki boşluklar da gittiği için girintiler kaybolur. Toparlanmış metin seçimin üzerine geri yapıştırılır ve panon eski hâline getirilir.",
-  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç, TOPARLA grubunu aç ve TOPARLA'yı seç.",
+  "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç ve TOPARLA'yı seç (arayüz ya da bir klavye Arap alfabesi kullanıyorsa TOPARLA grubunun içindedir).",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
    "Bir PDF'den Word'e kopyalanan metin çift boşluklar ve boşluklarla geliyor: TOPARLA tek seferde düzenler.",
@@ -3751,7 +3809,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Seçili metindeki sözcükleri, karakterleri, satırları ve cümleleri sayar ve bir kartta gösterir.",
-  "details": "Herhangi bir uygulamada metin seç ve SAY'ı seç; bir kart sözcük sayısını, sonra karakterleri, boşluksuz karakterleri, satırları ve cümleleri gösterir. Metinde hiçbir şey değişmez. Arapça ve İngilizce sözcüklerin ikisi de sayılır; emojiler tek karakter sayılır. DropWheel seçimi Windows UI Automation ile ya da kopyalayarak okur ve sonra panonu eski hâline getirir.",
+  "details": "Herhangi bir uygulamada metin seç ve SAY'ı seç; bir kart sözcük sayısını, sonra karakterleri, boşluksuz karakterleri, satırları ve cümleleri gösterir. Metinde hiçbir şey değişmez. Her dildeki sözcükler sayılır; emojiler tek karakter sayılır. DropWheel seçimi Windows UI Automation ile ya da kopyalayarak okur ve sonra panonu eski hâline getirir.",
   "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç ve SAY'ı seç.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
@@ -3800,7 +3858,7 @@
  "do:text.summarize": {
   "category": "text",
   "summary": "Seçili metnin kısa bir özetini bu bilgisayardaki YZ modeliyle yazar; yerine koymak ya da kopyalamak için.",
-  "details": "Herhangi bir uygulamada metin seç ve ÖZET'i seç: bir Özetle penceresi açılır ve YZ modeli Qwen2.5 1.5B özeti bu bilgisayarda yazar. Biçim anahtarı Birkaç satır (2 ya da 3 cümle, varsayılan) veya Önemli noktalar (3 ile 6 madde) seçer; değiştirmek özeti yeniden yazar. Arapça metin Arapça, diğer metinler İngilizce özetlenir. İlk seferde pencere model indirmesini önerir (çalıştırıcısıyla birlikte yaklaşık 1,1 GB). Sonucu düzenleyebilirsin; sonra Seçimi Değiştir onu orijinalin üzerine yapıştırır ya da Kopyala panoya koyar; metin hiçbir yere gönderilmez.",
+  "details": "Herhangi bir uygulamada metin seç ve ÖZET'i seç: bir Özetle penceresi açılır ve YZ modeli Qwen2.5 1.5B özeti bu bilgisayarda yazar. Biçim anahtarı Birkaç satır (2 ya da 3 cümle, varsayılan) veya Önemli noktalar (3 ile 6 madde) seçer; değiştirmek özeti yeniden yazar. Özet, metnin dilinde gelir. İlk seferde pencere model indirmesini (çalıştırıcısıyla birlikte yaklaşık 1,1 GB) ya da Ayarlar › Yapay Zekâ Modelleri'ni açan Bunun yerine kendi API anahtarımı kullan… seçeneğini önerir; bir anahtar seçiliyse metin o şirkete gider. Sonucu düzenleyebilirsin; sonra Seçimi Değiştir onu orijinalin üzerine yapıştırır ya da Kopyala panoya koyar; bu bilgisayarda metin hiçbir yere gönderilmez.",
   "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç ve ÖZET'i seç; Birkaç satır ya da Önemli noktalar'ı seç, sonra Seçimi Değiştir ya da Kopyala.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
@@ -3825,7 +3883,7 @@
  "do:text.rewrite": {
   "category": "text",
   "summary": "Seçili metni bu bilgisayarda daha net, daha kısa, daha resmî, daha samimi ya da hataları düzeltilmiş olarak yeniden yazar.",
-  "details": "Herhangi bir uygulamada metin seç ve YENİDEN YAZ'ı seç: bir Yeniden Yaz penceresi açılır ve YZ modeli Qwen2.5 1.5B metni bu bilgisayarda yeniden yazar. Şöyle yap anahtarı Daha net (varsayılan), Daha kısa, Resmî, Samimi ve yazım, dil bilgisi ve noktalamayı düzeltip başka hiçbir şeyi değiştirmeyen Hataları düzelt seçeneklerini sunar; başka birini seçmek yeniden yazar. Arapça metin Arapça, diğer metinler İngilizce yeniden yazılır. İlk seferde pencere model indirmesini önerir (çalıştırıcısıyla birlikte yaklaşık 1,1 GB). İstersen sonucu düzenle, sonra Seçimi Değiştir onu orijinalin üzerine yapıştırır ya da Kopyala panoya koyar.",
+  "details": "Herhangi bir uygulamada metin seç ve YENİDEN YAZ'ı seç: bir Yeniden Yaz penceresi açılır ve YZ modeli Qwen2.5 1.5B metni bu bilgisayarda yeniden yazar. Şöyle yap anahtarı Daha net (varsayılan), Daha kısa, Resmî, Samimi ve yazım, dil bilgisi ve noktalamayı düzeltip başka hiçbir şeyi değiştirmeyen Hataları düzelt seçeneklerini sunar; başka birini seçmek yeniden yazar. Yeni metin, orijinalin dilinde gelir. İlk seferde pencere model indirmesini (çalıştırıcısıyla birlikte yaklaşık 1,1 GB) ya da Ayarlar › Yapay Zekâ Modelleri'ni açan Bunun yerine kendi API anahtarımı kullan… seçeneğini önerir; bir anahtar seçiliyse metin o şirkete gider. İstersen sonucu düzenle, sonra Seçimi Değiştir onu orijinalin üzerine yapıştırır ya da Kopyala panoya koyar.",
   "how": "Metni seç, Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Metin çarkına geç ve YENİDEN YAZ'ı seç; Şöyle yap altında bir stil seç, sonra Seçimi Değiştir.",
   "worksOn": "Herhangi bir uygulamada seçtiğin metin; dosya yok.",
   "examples": [
@@ -3849,14 +3907,14 @@
  },
  "do:text.dictate": {
   "category": "text",
-  "summary": "Söylediklerini herhangi bir uygulamada imlecin olduğu yere Arapça, İngilizce ve daha birçok dilde yazar.",
-  "details": "Sözcüklerin gideceği yere tıkla, sonra dikteyi başlat: DropWheel dinlerken ekranın altında küçük bir hap şeklindeki kutucuk bir ses düzeyi göstergesi ve süreyi gösterir. Durdurmak için kısayola ya da DİKTE'ye yeniden bas veya kutucuktaki onay işaretine tıkla; Esc ya da X iptal eder; iki dakikada kendiliğinden durur. Whisper söylediklerini bu bilgisayarda yazıya döker ve DropWheel onu önde olan uygulamaya yazar; o uygulama değiştiyse sözcükler bunun yerine panoya gider. İlk seferde Dikte penceresi konuşma modelini ister: Doğruluk Hızlı (yaklaşık 60 MB, net İngilizce), Dengeli (yaklaşık 190 MB, varsayılan) veya Hassas (yaklaşık 574 MB, Arapça ve aksanlar için en iyisi); Dil Otomatik algıla (varsayılan), العربية, English ya da birçok başka dil. Mikrofon gerekir ve hiçbir şey hiçbir yere gönderilmez.",
+  "summary": "Söylediklerini herhangi bir uygulamada imlecin olduğu yere birçok dilde yazar.",
+  "details": "Sözcüklerin gideceği yere tıkla, sonra dikteyi başlat: DropWheel dinlerken ekranın altında küçük bir hap şeklindeki kutucuk bir ses düzeyi göstergesi ve süreyi gösterir. Durdurmak için kısayola ya da DİKTE'ye yeniden bas veya kutucuktaki onay işaretine tıkla; Esc ya da X iptal eder; iki dakikada kendiliğinden durur. Whisper söylediklerini bu bilgisayarda yazıya döker ve DropWheel onu önde olan uygulamaya yazar; o uygulama değiştiyse sözcükler bunun yerine panoya gider. İlk seferde Dikte penceresi konuşma modelini ister: Doğruluk Hızlı (yaklaşık 60 MB, net İngilizce), Dengeli (yaklaşık 190 MB, varsayılan) veya Hassas (yaklaşık 574 MB, aksanlar ve İngilizce dışındaki diller için en iyisi); Dil Otomatik algıla (varsayılan) ya da birçok dilden biri. Mikrofon gerekir ve hiçbir şey hiçbir yere gönderilmez.",
   "how": "Herhangi bir uygulamada Ctrl+Win+J'ye bas ya da Metin çarkında veya Çalışma çarkında DİKTE'yi seç (hiç dosya seçili değilken Ctrl+Win+Z, sonra Tab); konuş, sonra yazması için yeniden bas.",
   "worksOn": "Sesin, herhangi bir uygulamaya yazılır; dosya yok.",
   "examples": [
-   "Ellerin dolu: bir WhatsApp Web sohbetine tıkla, Ctrl+Win+J'ye bas ve yanıtını Arapça söyle.",
+   "Ellerin dolu: bir WhatsApp Web sohbetine tıkla, Ctrl+Win+J'ye bas ve yanıtını söyle.",
    "Bir Word raporunun ilk taslağını iki dakikalık parçalar hâlinde konuşarak yaz.",
-   "Bir web sitesindeki uzun bir yorum kutusunu İngilizce yazmak yerine konuşarak doldur."
+   "Bir web sitesindeki uzun bir yorum kutusunu yazmak yerine konuşarak doldur."
   ],
   "keywords": [
    "dikte",
@@ -3866,7 +3924,7 @@
    "yazmak yerine konuş",
    "sesten metne",
    "mikrofonla yazma",
-   "arapça dikte",
+   "her dilde dikte",
    "whisper",
    "sesi yazıya dök",
    "sesli yazma"
@@ -4355,13 +4413,13 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Masaüstünde işaretçinin yanına, herhangi bir dilde ve renkte yeni bir yapışkan not koyar.",
-  "details": "NOT'u seç; işaretçinin yanında yazmaya hazır bir yapışkan not açılır; Arapça kendiliğinden sağdan sola yazılır. Şeridinde Yeni not, Renk (sarı, yeşil, mavi, pembe, mor, gri), Üstte tut ve Notu sil düğmeleri vardır; onu şeridinden sürükleyebilir ve köşesinden boyutlandırabilirsin. Bir notta Ctrl+N bir tane daha yapar. Notlar kendiliğinden kaydedilir ve DropWheel başladığında oldukları yere geri gelir; metin içeren silinmiş bir not, beliren karta tıklanarak geri getirilebilir. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
+  "details": "NOT'u seç; işaretçinin yanında yazmaya hazır bir yapışkan not açılır; sağdan sola yazılan diller kendiliğinden öyle yazılır. Şeridinde Yeni not, Renk (sarı, yeşil, mavi, pembe, mor, gri), Üstte tut ve Notu sil düğmeleri vardır; onu şeridinden sürükleyebilir ve köşesinden boyutlandırabilirsin. Bir notta Ctrl+N bir tane daha yapar. Notlar kendiliğinden kaydedilir ve DropWheel başladığında oldukları yere geri gelir; metin içeren silinmiş bir not, beliren karta tıklanarak geri getirilebilir. Başka herhangi bir renk de seçilebilir: serbest bir renk paleti ve yazılıp yapıştırılabilen hex kodu.",
   "how": "Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Çalışma ya da Pano çarkına geç ve NOT'u seç, sonra yaz.",
   "worksOn": "",
   "examples": [
    "Bir görüşme sırasında hiçbir uygulama açmadan bir telefon numarasını not al.",
    "Bugünün üç görevini işinin üstünde kalan sarı bir notta tut.",
-   "Bankayı aramak için Arapça bir hatırlatma yaz; yeniden başlatmadan sonra da orada durur."
+   "Bankayı aramak için bir hatırlatma yaz; yeniden başlatmadan sonra da orada durur."
   ],
   "keywords": [
    "yapışkan not",
@@ -4427,12 +4485,12 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Bir toplantıyı kaydeder, sonra dökümü, bir özeti, kararları ve eylem maddelerini bu bilgisayarda yazar.",
-  "details": "TOPLANTI'yı seç; DropWheel hem bilgisayarın sesini hem mikrofonunu kaydeder; üstte süreyi gösteren hap şeklinde bir kutucuk belirir; durdurup notları yazmak için bir onay işareti ve iptal etmek için bir X vardır; toplantının kendi ekran paylaşımlarına girmez. Durdurduğunda Whisper dökümü zamanlarıyla yazar; YZ modeli (yaklaşık 1,1 GB) bilgisayardaysa Özet, Kararlar ve Eylem maddeleri bölümlerini ekler. Notlar (bir Markdown dosyası) ve ses (bir M4A dosyası) Belgeler'deki DropWheel Meetings klasörüne 'Meeting tarih saat' adıyla kaydedilir ve Toplantı Notları penceresi Özet ve Döküm görünümleri, Kopyala ve Klasörü Aç ile açılır. Dikte penceresinden bir konuşma modeli ve FFmpeg gerekir; YZ modeli yoksa Özet Yaz düğmesi özeti sonradan eklemeni sağlar.",
+  "details": "TOPLANTI'yı seç; DropWheel hem bilgisayarın sesini hem mikrofonunu kaydeder; üstte süreyi gösteren hap şeklinde bir kutucuk belirir; durdurup notları yazmak için bir onay işareti ve iptal etmek için bir X vardır; toplantının kendi ekran paylaşımlarına girmez. Durdurduğunda Whisper dökümü zamanlarıyla yazar; YZ modeli (yaklaşık 1,1 GB) bilgisayardaysa ya da Ayarlar › Yapay Zekâ Modelleri'nde kendi API anahtarın seçiliyse (döküm o zaman o şirkete gider) Özet, Kararlar ve Eylem maddeleri bölümlerini ekler. Notlar (bir Markdown dosyası) ve ses (bir M4A dosyası) Belgeler'deki DropWheel Meetings klasörüne 'Meeting tarih saat' adıyla kaydedilir ve Toplantı Notları penceresi Özet ve Döküm görünümleri, Kopyala ve Klasörü Aç ile açılır. Dikte penceresinden bir konuşma modeli ve FFmpeg gerekir; YZ modeli yoksa Özet Yaz düğmesi özeti sonradan eklemeni sağlar.",
   "how": "Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Çalışma çarkına geç ve TOPLANTI'yı seç; durdurmak için yeniden seç ya da kutucuktaki onay işaretine bas.",
   "worksOn": "",
   "examples": [
    "Bir saatlik bir Teams görüşmesi: kendin not almadan kararları ve kimin ne yapacağını al.",
-   "Arapça bir Zoom dersi: sonra çalışmak için dökümün tamamını ve sesi sakla.",
+   "Bir Zoom dersi: sonra çalışmak için dökümün tamamını ve sesi sakla.",
    "Masanda hoparlörden yapılan bir telefon görüşmesi: kaydet ve eylem maddelerini bir e-postaya kopyala."
   ],
   "keywords": [
@@ -4451,13 +4509,13 @@
  },
  "do:work.captions": {
   "category": "work",
-  "summary": "Herhangi bir video, görüşme ya da ders için canlı altyazı gösterir; geldikçe Arapçaya çevrilir, bu bilgisayarda.",
-  "details": "ALTYAZI'yı seç; ekranın altında bir altyazı çubuğu belirir; onu istediğin yere sürükle. DropWheel bilgisayarın sesini (varsayılan) ya da mikrofonu dinler, Whisper sözcükleri söylendikleri anda, yaklaşık yarım saniye içinde yazar (en yeni sözcükler kesinleşene kadar soluk görünür) ve çeviri modeli her cümleyi ilerledikçe Arapçaya çevirir; internet gerekmez. Bilgisayar seçilen konuşma modeli için fazla yavaşsa, altyazılar geride kalmasın diye indirilmiş daha hızlı bir model devreye girer. Düğmeleri için imleci çubuğun üzerinde tut: bilgisayarın sesi ile mikrofon arasında geçiş yap, neyin gösterileceğini değiştir (ikisi, Arapça, orijinal ya da İngilizce) veya altyazıları kapat. Dikte penceresinden bir konuşma modeli gerekir; Arapça çeviri modeli (yaklaşık 114 MB) ilk seferde önerilir; o gelene kadar altyazılar söyleneni gösterir. Durdurmak için ALTYAZI'yı yeniden seç. Çevirinin iki satırı vardır: ilki biten son cümleyi tam çevirisiyle gösterir; altındaki ikinci satır söylenmekte olan cümleyi anlık çevirir ve cümle biter bitmez ilk satıra geçer.",
+  "summary": "Herhangi bir video, görüşme ya da ders için canlı altyazı gösterir; geldikçe seçtiğin dile çevrilir.",
+  "details": "ALTYAZI'yı seç; ekranın altında bir altyazı çubuğu belirir; onu istediğin yere sürükle. DropWheel bilgisayarın sesini (varsayılan) ya da mikrofonu dinler, Whisper sözcükleri söylendikleri anda, yaklaşık yarım saniye içinde yazar (en yeni sözcükler kesinleşene kadar soluk görünür) ve bir çeviri modeli her cümleyi Ayarlar › Ekran ve Metin'de Şu dile çevir altında seçilen dile (ilk başta DropWheel'in konuştuğu dil) çevirir; internet gerekmez. Çevirinin iki satırı vardır: ilki biten son cümleyi tam çevirisiyle gösterir; altındaki ikinci satır söylenmekte olan cümleyi anlık çevirir ve cümle biter bitmez ilk satıra geçer. Bilgisayar seçilen konuşma modeli için fazla yavaşsa, altyazılar geride kalmasın diye indirilmiş daha hızlı bir model devreye girer. Düğmeleri için imleci çubuğun üzerinde tut: bilgisayarın sesi ile mikrofon arasında geçiş yap, neyin gösterileceğini değiştir (ikisi, çeviri ya da orijinal) veya altyazıları kapat. Dikte penceresinden bir konuşma modeli gerekir; dillerin gerektirdiği çeviri modeli ilk seferde önerilir (yaklaşık 110 MB'tan yaklaşık 630 MB'a kadar); o gelene kadar altyazılar söyleneni gösterir. Ayarlar › Yapay Zekâ Modelleri'nde kendi API anahtarını seçtiysen biten her cümle bunun yerine o şirkete gider ve ikinci satır için bu bilgisayarda bir model gerekir. Durdurmak için ALTYAZI'yı yeniden seç.",
   "how": "Ctrl+Win+Z'ye bas (hiç dosya seçili değilken), Tab ile Çalışma çarkına geç ve ALTYAZI'yı seç; altyazıları kapatmak için yeniden seç.",
   "worksOn": "",
   "examples": [
-   "İngilizce bir YouTube kursunu izle ve altındaki Arapça altyazıları oku.",
-   "Hızlı bir İngilizce Zoom görüşmesini, insanlar konuştukça sözcükler ekranda yazılarak takip et.",
+   "Başka dilde bir YouTube kursunu izle ve altındaki altyazıları kendi dilinde oku.",
+   "Hızlı bir Zoom görüşmesini, insanlar konuştukça sözcükler ekranda yazılarak takip et.",
    "İşitme güçlüğü çeken bir sınıf arkadaşın için bir dersi mikrofondan altyazıla."
   ],
   "keywords": [
@@ -4465,7 +4523,7 @@
    "altyazı",
    "kapalı altyazı",
    "videoyu çevir",
-   "arapça altyazı",
+   "kendi dilimde altyazı",
    "işitme",
    "gerçek zamanlı çeviri",
    "görüşmeleri altyazıla",
@@ -4524,7 +4582,7 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Araç Rehberi'ni açar: her araç ve eylem örneklerle açıklanır; ne yapmak istediğini söyleyebileceğin bir kutu da vardır.",
-  "details": "Rehber, DropWheel'in araçlarını, dosya eylemlerini ve dosyasız çarkların eylemlerini bölüm bölüm listeler. Her biri açıldığında ne yaptığını, nasıl kullanılacağını, üç örneği ve neyle çalıştığını gösterir; başlatmak için Dene ve onun hakkında soru sormak için bir kutu vardır. En üste ne yapmak istediğini kendi sözlerinle yaz, en yakın araçlar hemen görünür; Enter'a bas, bu bilgisayardaki YZ modeli rehberden yanıt verir ve adını verdiği araçlara bağlantı koyar. Model ilk soru sorduğunda bir kez indirilir; o olmadan da en yakın araçlar görünür.",
+  "details": "Rehber, DropWheel'in araçlarını, dosya eylemlerini ve dosyasız çarkların eylemlerini bölüm bölüm listeler. Her biri açıldığında ne yaptığını, nasıl kullanılacağını, üç örneği ve neyle çalıştığını gösterir; başlatmak için Dene ve onun hakkında soru sormak için bir kutu vardır. En üste ne yapmak istediğini kendi sözlerinle yaz, en yakın araçlar hemen görünür; Enter'a bas, bu bilgisayardaki YZ modeli rehberden yanıt verir ve adını verdiği araçlara bağlantı koyar. Model ilk soru sorduğunda bir kez indirilir ya da onun yerine Ayarlar › Yapay Zekâ Modelleri'ndeki kendi API anahtarın yanıtlar; ikisi de olmadan da en yakın araçlar görünür.",
   "how": "Bildirim alanı menüsünden (Araç Rehberi…), DropWheel'in ayarlarının üstündeki Araç Rehberi düğmesinden, komut paletinden (Ctrl+Win+K) ya da bir çarka eklediğin REHBER yaprağından aç. Bir çarkta, bir yaprağın adının altındaki işaret (ya da F1) o yaprağın açıklamasını rehbere bir bağlantıyla birlikte gösterir.",
   "worksOn": "",
   "examples": [

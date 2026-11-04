@@ -348,7 +348,7 @@ internal sealed class MeetingNotesWindow : ToolWindow
     private async Task SummarizeAsync()
     {
         _summarize.IsEnabled = false;
-        _text.Text = L.T("Writing the summary on this PC…");
+        _text.Text = Petal.App.Settings.AiSetup.Writing("Writing the summary on this PC…");
         try
         {
             _summary = await MeetingNotes.SummarizeAsync(_transcript);

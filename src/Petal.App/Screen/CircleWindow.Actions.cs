@@ -147,10 +147,10 @@ internal sealed partial class CircleWindow
             NeedsModels(card, AskPetal.Models, "Explaining on this PC needs the AI model, downloaded once.", () => _ = RunAsync("explain"));
             return;
         }
-        card.Busy("Thinking on this PC…");
+        card.Busy(Petal.App.Settings.AiSetup.Writing("Thinking on this PC…"));
         var answer = await AskPetal.WriteAsync(AskPetal.Instructions.Explain(L.EnglishName), c.Prose, s => Dispatcher.BeginInvoke(() => { if (!ct.IsCancellationRequested) card.Text = s; }), 420, ct, 0.3);
         card.Text = answer;
-        card.Done(answer.Length == 0 ? L.T("Nothing came back. Try again.") : L.T("Worked out on this PC; it can be wrong."));
+        card.Done(answer.Length == 0 ? L.T("Nothing came back. Try again.") : Petal.App.Settings.AiSetup.WorkedOut(Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null));
         card.CopyChip("Copy", () => card.Text);
         card.Chip("ask", "Ask More", () => FollowUp(card, c, ct));
     }
@@ -181,7 +181,7 @@ internal sealed partial class CircleWindow
                     return;
                 }
                 card.Text = question;
-                card.Busy("Thinking on this PC…");
+                card.Busy(picture ? Petal.App.Settings.AiSetup.Looking : Petal.App.Settings.AiSetup.Writing("Thinking on this PC…"));
                 string answer;
                 if (picture)
                     answer = await AskPictureAsync(c, question, work.Token);
@@ -192,7 +192,7 @@ internal sealed partial class CircleWindow
                 }
                 history.Add((question, answer));
                 card.Text = question + Environment.NewLine + Environment.NewLine + answer;
-                card.Done(L.T("Worked out on this PC; it can be wrong."));
+                card.Done(Petal.App.Settings.AiSetup.WorkedOut(picture ? (Petal.Recipes.Cloud.CloudAi.CanSee ? Petal.Recipes.Cloud.CloudAi.Seeing : null) : Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null));
                 card.ClearChips();
                 card.CopyChip("Copy Answer", () => answer);
             }
@@ -233,7 +233,7 @@ internal sealed partial class CircleWindow
             NeedsModels(card, AskPetal.Models, "Summarizing on this PC needs the AI model, downloaded once.", () => _ = RunAsync("summary"));
             return;
         }
-        card.Busy("Summarizing on this PC…");
+        card.Busy(Petal.App.Settings.AiSetup.Writing("Summarizing on this PC…"));
         var text = c.Prose;
         var answer = await AskPetal.WriteAsync(AskPetal.Instructions.Summary(true, KeyboardLayout.LooksArabicLanguage(text)), text, s => Dispatcher.BeginInvoke(() => { if (!ct.IsCancellationRequested) card.Text = s; }), 500, ct);
         card.Text = answer;
@@ -423,7 +423,7 @@ internal sealed partial class CircleWindow
             NeedsModels(card, PictureDescriber.Models, "Describing pictures on this PC needs the picture model, downloaded once.", () => _ = RunAsync("describe"));
             return;
         }
-        card.Busy("Looking at the picture on this PC…");
+        card.Busy(Petal.App.Settings.AiSetup.Looking);
         var path = Temporary(c.Picture);
         try
         {
@@ -434,7 +434,7 @@ internal sealed partial class CircleWindow
         {
             Forget(path);
         }
-        card.Done(L.T("Worked out on this PC; it can be wrong."));
+        card.Done(Petal.App.Settings.AiSetup.WorkedOut(Petal.Recipes.Cloud.CloudAi.CanSee ? Petal.Recipes.Cloud.CloudAi.Seeing : null));
         card.CopyChip("Copy", () => card.Text);
         card.Chip("ask", "Ask More", () => FollowUp(card, c, ct));
     }

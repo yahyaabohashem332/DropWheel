@@ -244,12 +244,12 @@ internal sealed class TextResultWindow : ToolWindow
     {
         _cts?.Cancel();
         var cts = _cts = new CancellationTokenSource();
-        _status.Text = L.T(_job switch
+        _status.Text = _job switch
         {
-            TextJob.Translate => "Translating on this PC…",
-            TextJob.Summarize => "Summarizing on this PC…",
-            _ => "Rewriting on this PC…",
-        });
+            TextJob.Translate => Translation.Working(),
+            TextJob.Summarize => Petal.App.Settings.AiSetup.Writing("Summarizing on this PC…"),
+            _ => Petal.App.Settings.AiSetup.Writing("Rewriting on this PC…"),
+        };
         _result.IsReadOnly = true;
         try
         {

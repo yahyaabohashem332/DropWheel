@@ -85,7 +85,9 @@ public sealed class DubWindow : MediaToolWindow
             : Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 2;
         _accuracy = Segments([(0, "Fast"), (1, "Balanced"), (2, "Accurate"), (Finest, L.T("Best", "dub"))], preferred);
         _settings.Children.Add(Row("Accuracy", _accuracy, 130, 12));
-        _finest.Children.Add(Text("Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech.", "Petal.Caption").WithMarginT(6));
+        _finest.Children.Add(Text(Petal.Recipes.Cloud.CloudAi.CanWrite
+            ? L.F("Translated by meaning, not word for word, by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
+            : "Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech.", "Petal.Caption").WithMarginT(6));
         _finest.Children.Add(_writer);
         _settings.Children.Add(_finest);
         _model = new ModelPanel(Models[Math.Min(preferred, 2)]);
@@ -105,7 +107,9 @@ public sealed class DubWindow : MediaToolWindow
         _working.Children.Add(_stage);
         _working.Children.Add(_track);
         _working.Children.Add(_detail);
-        _working.Children.Add(Text("It all happens on this PC; nothing is uploaded. A video prepared once opens again at once.", "Petal.Caption").WithMarginT(14));
+        _working.Children.Add(Text(Petal.Recipes.Cloud.CloudAi.CanTranslate || Petal.Recipes.Cloud.CloudAi.CanWrite
+            ? "The words go to the AI you chose, on your own key; the voices and the rest happen on this PC. A video prepared once opens again at once."
+            : "It all happens on this PC; nothing is uploaded. A video prepared once opens again at once.", "Petal.Caption").WithMarginT(14));
         Body.Children.Add(_working);
 
         _count.Style = (Style)FindResource("Petal.Section");

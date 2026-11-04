@@ -28,7 +28,7 @@
  "tool:AnnotatePhoto": {
   "category": "pictures",
   "summary": "Draws arrows, text, boxes, highlights and numbered steps on a picture and saves an annotated PNG copy.",
-  "details": "Annotate Photo shows the picture with a strip of nine tools: Arrow, Highlighter, Text, Rectangle, Ellipse, Draw, Numbered step, Magnifier and Insert image (which places another picture on top). Pick a colour with the colour well; drag an annotation to move it, double-click text to edit it, and use Undo (Ctrl+Z) or Delete selected (Del) to fix mistakes. Reset clears everything you added. Save Annotated Copy saves the result next to the original as 'name Annotated.png', always as PNG.",
+  "details": "Annotate Photo shows the picture with a strip of nine tools: Arrow, Highlighter, Text, Rectangle, Ellipse, Draw, Numbered step, Magnifier and Insert image (which places another picture on top). Pick a colour with the colour well; drag an annotation to move it, double-click text to edit it, and use Undo (Ctrl+Z) or Delete selected (Del) to fix mistakes. Reset clears everything you added. Save Annotated Copy saves the result next to the original as 'name Annotated.png', always as PNG. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one picture, tap Ctrl and drop on ANNOTATE; pick a tool, draw on the picture and choose Save Annotated Copy.",
   "examples": [
    "A screenshot of a settings page for a colleague: add an arrow and the text 'click here'.",
@@ -52,7 +52,7 @@
  "tool:AddBackground": {
   "category": "pictures",
   "summary": "Places a picture on a gradient, colour or image background with padding, rounded corners and a shadow.",
-  "details": "Add Background puts the picture on a background with a live preview. Choose one of twelve soft gradients (Dawn, Lagoon, Aurora, Peach, Ultraviolet, Mint, Sky, Ember, Night, Blush, Citrus, Graphite), one of eighteen solid colours, your own colour, or an image of your own, which also gets a Blur slider. Padding, Corners and Shadow start at sizes that suit the picture, and Ratio can be Auto, 1:1, 16:9, 4:5 or 9:16. Save with Background saves the result next to the original as 'name Background' in the same format; Reset goes back to the defaults.",
+  "details": "Add Background puts the picture on a background with a live preview. Choose one of twelve soft gradients (Dawn, Lagoon, Aurora, Peach, Ultraviolet, Mint, Sky, Ember, Night, Blush, Citrus, Graphite), one of eighteen solid colours, your own colour, or an image of your own, which also gets a Blur slider. Padding, Corners and Shadow start at sizes that suit the picture, and Ratio can be Auto, 1:1, 16:9, 4:5 or 9:16. Save with Background saves the result next to the original as 'name Background' in the same format; Reset goes back to the defaults. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one picture, tap Ctrl and drop on ADD BG; pick a background, set Padding, Corners and Shadow, then choose Save with Background.",
   "examples": [
    "A plain app screenshot for a LinkedIn post: put it on the Aurora gradient with rounded corners and a shadow.",
@@ -100,7 +100,7 @@
  "tool:RedactPhoto": {
   "category": "pictures",
   "summary": "Covers private details, faces or text in a picture with solid boxes or a blur that can't be undone.",
-  "details": "When Redact Photo opens it already looks for private details (e-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords) and covers them; the Faces and Text buttons find faces and lines of text the same way, all on this PC with Windows' own detection. You can also drag on the photo to cover any area, drag a box to move it, drag its corner to resize it, and press Delete to remove it. Style is Solid (black at first, any colour you pick) or Blur, which is made so it can't be reversed. Save Redacted Copy saves the result next to the original as 'name Redacted'; the original stays as it is.",
+  "details": "When Redact Photo opens it already looks for private details (e-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords) and covers them; the Faces and Text buttons find faces and lines of text the same way, all on this PC with Windows' own detection. You can also drag on the photo to cover any area, drag a box to move it, drag its corner to resize it, and press Delete to remove it. Style is Solid (black at first, any colour you pick) or Blur, which is made so it can't be reversed. Save Redacted Copy saves the result next to the original as 'name Redacted'; the original stays as it is. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one picture, tap Ctrl and drop on REDACT; check the boxes, add your own and choose Save Redacted Copy. PRIVATE SHOT on the Screen wheel opens it on a fresh screenshot.",
   "examples": [
    "A screenshot of a bank transfer to share in a group chat: the card number and IBAN are covered as the window opens.",
@@ -149,7 +149,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Puts your text or logo on pictures, on every frame of a video, or on every page of a PDF.",
-  "details": "Add Watermark has two kinds: Text (Arabic included; '© year' at first) with a Colour (white at first), or Picture, a logo you choose. Size goes from 5% to 90% (30% at first) and Opacity from 10% to 100% (60% at first). Position is one of nine spots (bottom right at first), or tick Repeat across to cover the whole picture. A preview shows the first file, and DropWheel remembers your last watermark for next time. Each result is saved next to its original as 'name Watermarked'.",
+  "details": "Add Watermark has two kinds: Text (right-to-left languages included; '© year' at first) with a Colour (white at first), or Picture, a logo you choose. Size goes from 5% to 90% (30% at first) and Opacity from 10% to 100% (60% at first). Position is one of nine spots (bottom right at first), or tick Repeat across to cover the whole picture. A preview shows the first file, and DropWheel remembers your last watermark for next time. Each result is saved next to its original as 'name Watermarked'. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag files, tap Ctrl and drop on WATERMARK; set the text or picture, size and position, then choose Add Watermark.",
   "examples": [
    "Thirty wedding photos for a client preview: drop them all and add your studio name in the bottom right corner.",
@@ -173,12 +173,12 @@
  "tool:CopyText": {
   "category": "pictures",
   "summary": "Copies the text in a picture, or what a QR code or barcode in it says, to the clipboard at once.",
-  "details": "Copy Text or QR Code needs no window. It first looks for QR codes and barcodes and copies what they say; when the code holds a web link, a click on the card opens it. With no code, it reads the picture's text with Windows' own text recognition, trying every language installed in Windows and keeping the cleanest reading, so Arabic and English both work. A card shows how many lines were copied and the first words. If nothing is found, it suggests a sharper picture or adding the language under Windows Settings › Time & language.",
+  "details": "Copy Text or QR Code needs no window. It first looks for QR codes and barcodes and copies what they say; when the code holds a web link, a click on the card opens it. With no code, it reads the picture's text with Windows' own text recognition, trying every language installed in Windows and keeping the cleanest reading, so any language Windows can read works. A card shows how many lines were copied and the first words. If nothing is found, it suggests a sharper picture or adding the language under Windows Settings › Time & language.",
   "how": "Drag one picture, tap Ctrl and drop on TEXT · QR; the text is on the clipboard, ready to paste with Ctrl+V.",
   "examples": [
    "A screenshot of an error message: drop it and paste the text into a search or an e-mail.",
    "A photo of a Wi-Fi QR code on a café table: the code's contents are copied straight away.",
-   "A photo of a printed Arabic recipe: drop it and paste the words into a note."
+   "A photo of a printed recipe: drop it and paste the words into a note."
   ],
   "worksOn": "One picture (JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP and similar).",
   "keywords": [
@@ -197,7 +197,7 @@
  "tool:RemoveBackground": {
   "category": "pictures",
   "summary": "Cuts the subject out of a photo, hair included, onto a transparent, white or coloured background.",
-  "details": "Remove Background uses the BiRefNet lite AI model on this PC; the 224 MB model downloads once from the tool's window the first time. Background can be Transparent (the default), White or Colour, and Crop to the subject trims the empty edges. A transparent result is saved as PNG unless the original is already PNG or WebP; each result goes next to its original as 'name No Background'. It runs on the processor, so older computers can take up to half a minute per picture. Resting on the petal before you drop shows the cut-out in the centre of the wheel once the model is there.",
+  "details": "Remove Background uses the BiRefNet lite AI model on this PC; the 224 MB model downloads once from the tool's window the first time. Background can be Transparent (the default), White or Colour, and Crop to the subject trims the empty edges. A transparent result is saved as PNG unless the original is already PNG or WebP; each result goes next to its original as 'name No Background'. It runs on the processor, so older computers can take up to half a minute per picture. Resting on the petal before you drop shows the cut-out in the centre of the wheel once the model is there. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one or more pictures, tap Ctrl and drop on REMOVE BG; choose the background and press Remove Background.",
   "examples": [
    "A product photo for an online shop: choose White for a clean listing picture.",
@@ -363,7 +363,7 @@
  "tool:CreateCollage": {
   "category": "pictures",
   "summary": "Puts several pictures together into one collage picture in a grid, row, column or featured layout.",
-  "details": "Create Collage shows a live preview. Style is Grid (with Columns from 1 to 6), Row, Column or Featured, with one large picture on the left and the rest stacked on the right. Canvas can be Square 1:1 (the default), Portrait 4:5, Story 9:16, Landscape 16:9 or Photo 3:2, and Width 1,080, 2,048 (the default), 3,000 or 4,096 px. Image fit fills the cells by cropping the edges, or fits whole images. Under Spacing & background you set Spacing (24 px), Corners (16 px) and the Background colour (white), and under Image order you change the order. Create Collage saves a PNG named after the first picture, 'name Collage.png'.",
+  "details": "Create Collage shows a live preview. Style is Grid (with Columns from 1 to 6), Row, Column or Featured, with one large picture on the left and the rest stacked on the right. Canvas can be Square 1:1 (the default), Portrait 4:5, Story 9:16, Landscape 16:9 or Photo 3:2, and Width 1,080, 2,048 (the default), 3,000 or 4,096 px. Image fit fills the cells by cropping the edges, or fits whole images. Under Spacing & background you set Spacing (24 px), Corners (16 px) and the Background colour (white), and under Image order you change the order. Create Collage saves a PNG named after the first picture, 'name Collage.png'. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag two or more pictures, tap Ctrl and drop on COLLAGE; pick a style and canvas, then press Create Collage.",
   "examples": [
    "Four photos from a weekend away for an Instagram post: Grid with 2 columns on a square canvas.",
@@ -387,7 +387,7 @@
  "tool:DescribePicture": {
   "category": "pictures",
   "summary": "Writes what a picture shows, as one sentence of alt text or a paragraph, with a small AI model on this PC.",
-  "details": "Describe Picture uses the SmolVLM picture model on this PC; the first time, the model downloads once from the window (about 570 MB with the program that runs it). Length is A sentence (the default) or A paragraph. The words appear in a box you can change; in a language other than English they are translated on this PC, after a one-time translation model download. Copy puts the text on the clipboard, and Save in the Picture writes it into the picture's own details for JPG, PNG and WebP files without changing the picture. Check the words before you publish them.",
+  "details": "Describe Picture uses the SmolVLM picture model on this PC; the first time, the model downloads once from the window (about 570 MB with the program that runs it), or your own API key from Settings › AI Models does the looking, and the picture then goes to that company. Length is A sentence (the default) or A paragraph. The words appear in a box you can change; in a language other than English they are translated, after a one-time translation model download. Copy puts the text on the clipboard, and Save in the Picture writes it into the picture's own details for JPG, PNG and WebP files without changing the picture. Check the words before you publish them.",
   "how": "Drag one picture, tap Ctrl and drop on DESCRIBE; wait for the words, edit them if needed and press Copy.",
   "examples": [
    "A product photo for a website: copy the sentence as the picture's alt text.",
@@ -411,7 +411,7 @@
  "tool:TableFromImage": {
   "category": "pictures",
   "summary": "Reads a table in a picture or screenshot into an Excel sheet, with rows, columns and real numbers.",
-  "details": "Table to Excel runs straight away, with no window. It reads the picture with the text recognition built into Windows: words close together become a cell, and cells that line up become a column. Numbers are saved as numbers, Arabic tables keep their right-to-left order, and empty cells are read a second time on their own. Each sheet is saved next to its picture as 'name Table.xlsx'. If there is no table, the card says 'No table was found in this picture.'",
+  "details": "Table to Excel runs straight away, with no window. It reads the picture with the text recognition built into Windows: words close together become a cell, and cells that line up become a column. Numbers are saved as numbers, right-to-left tables keep their order, and empty cells are read a second time on their own. Each sheet is saved next to its picture as 'name Table.xlsx'. If there is no table, the card says 'No table was found in this picture.'",
   "how": "Drag one or more pictures, tap Ctrl and drop on TABLE; the Excel file appears next to each picture.",
   "examples": [
    "A screenshot of a sales report someone sent in a chat: get it as a sheet you can add up.",
@@ -533,7 +533,7 @@
  "tool:AudioVisualizer": {
   "category": "audio",
   "summary": "Turns a song or recording into an MP4 video with moving waveform bars or a still picture.",
-  "details": "Audio Visualizer makes a video out of sound, for places that only take videos. Style is Waveform (animated bars in the colour you pick, on black) or Still image (a picture you choose with Choose image… fills the frame; PNG, JPG, WEBP or BMP). Shape is 16:9 (1920 × 1080), 9:16 (1080 × 1920) or 1:1 (1080 × 1080), and the preview shows the shape and colour. Choose Create Visualization: the result is an MP4 (H.264 with AAC sound) at 30 frames a second, as long as the audio, saved as 'name Visualizer.mp4'.",
+  "details": "Audio Visualizer makes a video out of sound, for places that only take videos. Style is Waveform (animated bars in the colour you pick, on black) or Still image (a picture you choose with Choose image… fills the frame; PNG, JPG, WEBP or BMP). Shape is 16:9 (1920 × 1080), 9:16 (1080 × 1920) or 1:1 (1080 × 1080), and the preview shows the shape and colour. Choose Create Visualization: the result is an MP4 (H.264 with AAC sound) at 30 frames a second, as long as the audio, saved as 'name Visualizer.mp4'. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one audio file, tap Ctrl and drop on VISUALIZE; choose a style, shape and colour, then Create Visualization.",
   "examples": [
    "A podcast clip for Instagram Reels: Waveform, 9:16, in your brand colour.",
@@ -717,7 +717,7 @@
  "tool:RedactVideo": {
   "category": "video",
   "summary": "Hides faces, number plates or text in a video with a solid box or a strong blur, for as long as you choose.",
-  "details": "Redact Video lets you draw boxes on the video's picture. Style is Solid (in a colour you pick, black by default) or Blur, which is strong enough that faces and text can't be made out. Each box gets its own lane under Redactions: drag its ends to choose when the box is visible; at first it covers the whole video. The boxes stay where you draw them; they don't follow moving things. Reset removes all boxes, and Save Redacted Copy saves 'name Redacted' in the same format with the sound kept.",
+  "details": "Redact Video lets you draw boxes on the video's picture. Style is Solid (in a colour you pick, black by default) or Blur, which is strong enough that faces and text can't be made out. Each box gets its own lane under Redactions: drag its ends to choose when the box is visible; at first it covers the whole video. The boxes stay where you draw them; they don't follow moving things. Reset removes all boxes, and Save Redacted Copy saves 'name Redacted' in the same format with the sound kept. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one video, tap Ctrl and drop on REDACT; draw a box over what to hide, set its lane, and choose Save Redacted Copy.",
   "examples": [
    "A dashcam clip to post online that shows another car's number plate: blur it.",
@@ -763,11 +763,11 @@
  "tool:Transcribe": {
   "category": "video",
   "summary": "Writes down what is said in a recording or video, as subtitles or text, using Whisper on this PC.",
-  "details": "Transcribe uses the Whisper speech model on your PC: Accuracy is Fast, Balanced or Accurate (one-time downloads of about 60 MB, 190 MB and 574 MB), and Accurate is best for Arabic, accents and noisy recordings. Language is Detect automatically or one of 22 languages, and Subtitles in is As spoken, In English or In Arabic: speech already in the language wanted is written as spoken; Arabic goes into English and English into Arabic through the Opus-MT translation models (one-time downloads of about 114 MB each), and other languages go into English with Whisper's own translation (Accurate can't translate, so Balanced or Fast does it) and from there into Arabic. Save as gives Subtitles (an .srt file), Text (a .txt file) or Both, named like the original (talk.srt) so video players load the subtitles by themselves. For a video, In the video can also put the subtitles into a copy, As a track (switched on and off in the player) or Burned in (part of the picture), saved as 'name Subtitled'. The graphics card speeds it up when it can, and you can do many files at once.",
+  "details": "Transcribe uses the Whisper speech model on your PC: Accuracy is Fast, Balanced or Accurate (one-time downloads of about 60 MB, 190 MB and 574 MB), and Accurate is best for accents, noisy recordings and languages other than English. Language is Detect automatically or one of 22 languages, and Subtitles in is As spoken or any of the eight languages DropWheel translates (English, Arabic, Turkish, Persian, Urdu, Indonesian, French and Spanish): speech already in the language wanted is written as spoken, and other speech is written down and then translated on this PC by models downloaded once (from about 110 MB to about 630 MB; the window shows what it needs), or by your own API key's model if you chose one in Settings › AI Models, which sends the words to that company; when no translation model is ready for the language spoken, it goes into English with Whisper's own translation (Accurate can't translate, so Balanced or Fast does it) and from there into the language wanted. Save as gives Subtitles (an .srt file), Text (a .txt file) or Both, named like the original (talk.srt) so video players load the subtitles by themselves. For a video, In the video can also put the subtitles into a copy, As a track (switched on and off in the player) or Burned in (part of the picture), saved as 'name Subtitled'. The graphics card speeds it up when it can, and you can do many files at once.",
   "how": "Drag a recording or video, tap Ctrl and drop on SUBTITLES; choose the accuracy, language and what to save, then Transcribe. The first time, choose Download in the window to get the model.",
   "examples": [
    "A 1-hour interview recorded on your phone turned into a text file to quote from: Save as › Text.",
-   "An Arabic family video with English subtitles for relatives abroad: Subtitles in › In English, In the video › Burned in.",
+   "A family video with English subtitles for relatives abroad: Subtitles in › English, In the video › Burned in.",
    "A lecture video with subtitles students can switch on and off: In the video › As a track."
   ],
   "worksOn": "Audio and video files; one or many at once.",
@@ -781,7 +781,7 @@
    "whisper",
    "write down what is said",
    "translate video",
-   "arabic subtitles",
+   "subtitles in another language",
    "meeting recording"
   ]
  },
@@ -835,24 +835,50 @@
  },
  "tool:TranslateSubtitles": {
   "category": "video",
-  "summary": "Translates English subtitle files into Arabic on this PC, keeping every cue's timing.",
-  "details": "Translate to Arabic reads an English SRT or VTT subtitle file and translates it cue by cue with the Opus-MT model, a one-time download of about 114 MB. The timing stays unchanged, and formatting tags are left out of the translation. The result is saved beside the original with '.ar' in the name (talk.srt becomes talk.ar.srt), so players offer it as Arabic. It translates from English only; for a video in another language, use Transcribe with Subtitles in › In Arabic.",
-  "how": "Drag one or more .srt or .vtt files, tap Ctrl and drop on ARABIC, then choose Translate. From a command prompt: petal translate <subtitles>.",
+  "summary": "Translates subtitle files from any of DropWheel's eight languages into any other, keeping every cue's timing.",
+  "details": "Translate Subtitles reads an SRT or VTT file and translates it cue by cue. Choose From (Detect automatically, or one of English, Arabic, Turkish, Persian, Urdu, Indonesian, French and Spanish) and Into. It runs on this PC with models downloaded once, and the window shows what the pair needs: a model made for that pair (about 110 MB), two of them through English, or a larger model that knows every language (about 630 MB, and slower). With your own API key chosen in Settings › AI Models nothing needs downloading, and the words of the subtitles go to that company. The timing stays unchanged, and formatting tags are left out of the translation. The result is saved beside the original with the language's code in the name (talk.srt becomes talk.es.srt), so players offer it by language. For a video with no subtitles yet, use Transcribe.",
+  "how": "Drag one or more .srt or .vtt files, tap Ctrl and drop on TRANSLATE; choose From and Into, then Translate. From a command prompt: petal translate <subtitles> --to es (the codes are en, ar, tr, fa, ur, id, fr and es; add --from to name the language they are in).",
   "examples": [
-   "English subtitles downloaded for a film, translated for a parent who reads Arabic.",
-   "A course's lecture captions in VTT, translated for Arabic-speaking students.",
-   "English subtitles you made earlier with Transcribe, turned into Arabic later."
+   "Subtitles downloaded for a film, translated for a parent who reads another language.",
+   "A course's lecture captions in VTT, translated from English into Indonesian for your students.",
+   "Subtitles you made earlier with Transcribe, turned into French later."
   ],
   "worksOn": "Subtitle files (SRT and VTT); one or many at once.",
   "keywords": [
    "translate subtitles",
-   "arabic subtitles",
-   "english to arabic",
+   "subtitle translator",
+   "subtitles in my language",
    "srt",
    "vtt",
+   "translate srt",
    "translation",
-   "subtitle translator",
-   "captions in arabic"
+   "captions in another language"
+  ]
+ },
+ "tool:TranslateDocument": {
+  "category": "documents",
+  "summary": "Translates a Word, PowerPoint, Excel or PDF file into another language, as a new file beside the original with its formatting kept.",
+  "details": "Translate Document works between any two of DropWheel's eight languages: English, Arabic, Turkish, Persian, Urdu, Indonesian, French and Spanish. Choose From (Detect automatically, or a language) and Into; the result is saved beside the original with the language's code in its name, so report.docx becomes report.es.docx. A paragraph is translated whole and takes the look of most of its words; styles, tables, links, pictures, fields and formulas stay. Word's headers, footers, footnotes and text boxes, PowerPoint's tables and speaker notes, and the words in Excel's cells are translated too; numbers, dates, sheet names and the headings of Excel tables aren't. Into Arabic, Persian or Urdu the paragraphs, tables and sheets turn right to left, and from them back again. It runs on this PC with translation models downloaded once (the window shows what the pair needs), or with your own API key chosen in Settings › AI Models, which sends the text to that company; the window says which. It has limits. In a PDF, the translated words are drawn over each paragraph, in its colours and as large as fits. The original words are taken out of the page where that can be done safely; on a scanned page, and where it can't, they stay hidden under the translation, so search still finds them and anything secret in them is still there. A scanned PDF page is read with Windows' text recognition first, and a PDF with a password must be unlocked first. Charts and SmartArt aren't translated. ODT and RTF files come out as DOCX. Old PPT and XLS files aren't taken: save them as PPTX or XLSX first.",
+  "how": "Drag one or more files of the same kind, tap Ctrl and drop on TRANSLATE; choose From and Into, then Translate.",
+  "examples": [
+   "A contract in Word translated from French into English, its headings, tables and page numbers as they were.",
+   "A slide deck in English made Spanish for a client, the speaker notes too.",
+   "A price list in Excel put into Arabic: the sheet turns right to left, and the numbers and formulas stay."
+  ],
+  "worksOn": "Word (DOCX, ODT, RTF), PowerPoint (PPTX), Excel (XLSX) and PDF files; one or many of the same kind at once.",
+  "keywords": [
+   "translate document",
+   "translate pdf",
+   "translate word",
+   "translate powerpoint",
+   "translate excel",
+   "keep formatting",
+   "document translator",
+   "docx",
+   "pptx",
+   "xlsx",
+   "right to left",
+   "google translate document"
   ]
  },
  "tool:RemovePauses": {
@@ -881,12 +907,12 @@
  "tool:AnimatedCaptions": {
   "category": "video",
   "summary": "Burns moving captions into a video, a few words at a time with the spoken word lit up, like short videos.",
-  "details": "Animated Captions listens to the video with the Whisper speech model on your PC and draws the words into the picture. Style is Word by word (a short line with the word being said lit up and a little larger), One word (one big word at a time, popping in) or Lines (plain bold lines); Place is Bottom, Middle or Top; Size is Small, Medium or Large; Lit word is yellow, green, pink, violet or blue. A frame of the video shows how the captions will look. Accuracy (Fast, Balanced or Accurate: downloads of about 60, 190 and 574 MB), Spoken in, and Words in (As spoken, In English or In Arabic; a translation model of about 114 MB the first time) work as in Transcribe. Choose Add Captions; the result is saved as 'name Captioned' with the sound kept, and Arabic reads right to left. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
+  "details": "Animated Captions listens to the video with the Whisper speech model on your PC and draws the words into the picture. Style is Word by word (a short line with the word being said lit up and a little larger), One word (one big word at a time, popping in) or Lines (plain bold lines); Place is Bottom, Middle or Top; Size is Small, Medium or Large; Lit word is yellow, green, pink, violet or blue. A frame of the video shows how the captions will look. Accuracy (Fast, Balanced or Accurate: downloads of about 60, 190 and 574 MB), Spoken in, and Words in (As spoken or any of the eight languages DropWheel translates; a translation model the first time) work as in Transcribe. Choose Add Captions; the result is saved as 'name Captioned' with the sound kept, and Arabic, Persian and Urdu read right to left. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag one or more videos, tap Ctrl and drop on CAPTION; pick a style, place and colour, then choose Add Captions.",
   "examples": [
    "A talking-head clip for TikTok where yellow words light up as you speak: Word by word, Bottom.",
    "A Reel most people watch with the sound off: One word, Middle, Large.",
-   "An English product video with Arabic captions for customers in the Gulf: Words in › In Arabic."
+   "An English product video with Spanish captions for customers in Mexico: Words in › Español."
   ],
   "worksOn": "Videos; one or many at once.",
   "keywords": [
@@ -929,11 +955,11 @@
  "tool:MakeShorts": {
   "category": "video",
   "summary": "Turns a long video (a talk, an interview, a podcast, a lesson) into short clips ready for Reels, Shorts and TikTok: its best moments, found, framed and captioned.",
-  "details": "Make Shorts listens to the whole video on this PC (Whisper, with each word's time) and finds the moments that stand on their own: each starts where a sentence starts and ends where a thought ends. They are ranked by what keeps people watching: an opening that pulls you in (a question, “imagine…”), lively delivery, a story, advice, numbers, feeling or laughter, one topic from start to end, and the length asked for. Choose how many Clips (3, 5 or 8), their Length (up to 30 s, 30–60 s or 60–90 s), the Shape (Tall 9:16, Square or As filmed) and the Framing. Follow the speaker finds faces with Windows' own face detector, keeps the one talking in frame, glides as they move and cuts when someone else speaks; where no face is clear (slides, a stage) it shows the whole picture over a blurred copy instead, as Whole picture always does. Captions are burned in Word by word (the word being said lit up in the colour chosen), One word or Lines, and Words in is the language spoken, English or Arabic. Headline at the start puts a title over the first seconds; Cut the pauses tightens the silences between sentences. Choose Find the Best Moments: the moments appear best first, each with a score out of 100 and why it was chosen. Play one to check it, change its title (titles are written by the AI model on this PC when it is there, and kept only when they hold to what is said), untick any you don't want, then choose Make Shorts. The clips are saved in a new folder named 'name Shorts', numbered and titled, as MP4 at 1080 × 1920 with the sound at the loudness the apps play at. A video heard once opens again at once. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
+  "details": "Make Shorts listens to the whole video on this PC (Whisper, with each word's time) and finds the moments that stand on their own: each starts where a sentence starts and ends where a thought ends. They are ranked by what keeps people watching: an opening that pulls you in (a question, “imagine…”), lively delivery, a story, advice, numbers, feeling or laughter, one topic from start to end, and the length asked for. Choose how many Clips (3, 5 or 8), their Length (up to 30 s, 30–60 s or 60–90 s), the Shape (Tall 9:16, Square or As filmed) and the Framing. Follow the speaker finds faces with Windows' own face detector, keeps the one talking in frame, glides as they move and cuts when someone else speaks; where no face is clear (slides, a stage) it shows the whole picture over a blurred copy instead, as Whole picture always does. Captions are burned in Word by word (the word being said lit up in the colour chosen), One word or Lines, and Words in is As spoken or any of the eight languages DropWheel translates. Headline at the start puts a title over the first seconds; Cut the pauses tightens the silences between sentences. Choose Find the Best Moments: the moments appear best first, each with a score out of 100 and why it was chosen. Play one to check it, change its title (titles are written by the AI model on this PC when it is there, or by your own API key's model from Settings › AI Models, and kept only when they hold to what is said), untick any you don't want, then choose Make Shorts. The clips are saved in a new folder named 'name Shorts', numbered and titled, as MP4 at 1080 × 1920 with the sound at the loudness the apps play at. A video heard once opens again at once. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Drag a video, tap Ctrl and drop it on SHORTS; choose the number, length, shape and captions of the clips, choose Find the Best Moments, check the moments, then choose Make Shorts.",
   "examples": [
    "A one-hour podcast into eight 60-second clips for TikTok, each opening with a question and captioned word by word.",
-   "An Arabic lecture into five Reels with Arabic captions and a headline, the pauses cut.",
+   "A lecture into five Reels with captions and a headline, the pauses cut.",
    "A recorded webinar with slides: Whole picture keeps the slides readable, with English captions under them."
   ],
   "worksOn": "One video with speech, of any length.",
@@ -954,23 +980,23 @@
  },
  "tool:Dub": {
   "category": "video",
-  "summary": "Says a video's speech again in the other language, Arabic into English or English into Arabic, in each speaker's own voice; the music is taken out and every other sound is kept.",
-  "details": "Dub separates the voices from the rest of the sound (Demucs), writes down what is said with each word's time (Whisper) and translates it line by line, all on this PC. Choose the language to Dub into (Into English or Into Arabic), the language Spoken in (or Detect automatically) and the Accuracy of the listening, then choose Prepare the Dub. Best hears with the most accurate model and has a large AI model on this PC (Gemma 4 12B, about 7 GB, downloaded once) translate by meaning rather than word for word, as a dubbing translator would after reading the whole video: religious phrases, poetry and dialect come out as they are meant, each line about as long as the original; it takes a few minutes for each minute of speech. The lines appear with their translations: check them, change any that need it, and play a line to hear how it was said. Then choose Dub. First the music is taken out of the rest of the sound (by TIGER, made to split film sound into speech, music and effects), so steps, rain, wind and the hum of a room stay while the music goes; this takes a while the first time and is kept. Each line is then said again by the voice model on this PC (Chatterbox) in the voice of the person who said it, learnt from that very line; it is heard back and said again when it came out wrong, fitted into the time the original took (said up to 1.3 times quicker when it runs longer) and laid over the other sounds as loud as the original was said. The new video is saved next to the original as 'name Arabic.mp4' or 'name English.mp4', its picture untouched. Keep the original sound as a second track adds the original sound, music and all, for players that can switch tracks, and Subtitles in the new language puts the translation in the file as subtitles. The file says its voices were made by AI. A video prepared once opens again at once. Dub only videos whose speakers would agree to their voices being used.",
+  "summary": "Says a video's speech again in another language, from and into any of DropWheel's eight, in each speaker's own voice; the music is taken out and every other sound is kept.",
+  "details": "Dub separates the voices from the rest of the sound (Demucs), writes down what is said with each word's time (Whisper) and translates it line by line, on this PC. Choose the language to Dub into and the language Spoken in (or Detect automatically), each of them English, Arabic, Turkish, Persian, Urdu, Indonesian, French or Spanish, and the Accuracy of the listening, then choose Prepare the Dub. Best hears with the most accurate model and has a large AI model on this PC (Gemma 4 12B, about 7 GB, downloaded once) translate by meaning rather than word for word, as a dubbing translator would after reading the whole video: religious phrases, poetry and dialect come out as they are meant, each line about as long as the original; it takes a few minutes for each minute of speech. The translating can be done instead by your own API key's model, chosen in Settings › AI Models: the words of the lines go to that company and nothing needs downloading for them; the listening and the voices always stay on this PC. The lines appear with their translations: check them, change any that need it, and play a line to hear how it was said. Then choose Dub. First the music is taken out of the rest of the sound (by TIGER, made to split film sound into speech, music and effects), so steps, rain, wind and the hum of a room stay while the music goes; this takes a while the first time and is kept. Each line is then said again by the voice model on this PC (Chatterbox) in the voice of the person who said it, learnt from that very line; it is heard back and said again when it came out wrong, fitted into the time the original took (said up to 1.3 times quicker when it runs longer) and laid over the other sounds as loud as the original was said. The voice model wasn't made for Persian, Urdu or Indonesian: it reads them as Arabic and Malay, so they can sound less natural, Urdu most of all. The new video is saved next to the original, named for its language ('name Spanish.mp4'), its picture untouched. Keep the original sound as a second track adds the original sound, music and all, for players that can switch tracks, and Subtitles in the new language puts the translation in the file as subtitles. The file says its voices were made by AI. A video prepared once opens again at once. Dub only videos whose speakers would agree to their voices being used.",
   "how": "Drag a video, tap Ctrl and drop it on DUB; choose the language to dub into, choose Prepare the Dub, check the translations, then choose Dub.",
   "examples": [
-   "An English lesson dubbed into Arabic in the teacher's own voice, the background music taken out and the sounds of the class kept.",
-   "An Arabic interview dubbed into English, with English subtitles added.",
-   "A product video in English made Arabic without its music, two translations corrected before dubbing."
+   "A lesson dubbed into another language in the teacher's own voice, the background music taken out and the sounds of the class kept.",
+   "A Spanish interview dubbed into English, with English subtitles added.",
+   "A product video made French without its music, two translations corrected before dubbing."
   ],
-  "worksOn": "One video with speech in Arabic or English, up to 30 minutes long.",
+  "worksOn": "One video with speech in English, Arabic, Turkish, Persian, Urdu, Indonesian, French or Spanish, up to 30 minutes long.",
   "keywords": [
    "dub",
    "dubbing",
    "voice over",
    "translate video",
    "voice translation",
-   "arabic to english",
-   "english to arabic",
+   "dub into another language",
+   "any language",
    "voice cloning",
    "ai dubbing",
    "remove music",
@@ -1008,12 +1034,12 @@
  "tool:AskFile": {
   "category": "documents",
   "summary": "Answers questions about a PDF, a document, a spreadsheet or a recording from its own words, with the page, slide or minute it comes from.",
-  "details": "Ask a File reads the file once, on this PC: a PDF page by page (scanned pages with the text recognition built into Windows), a Word document or a presentation as it prints when Word, PowerPoint or LibreOffice is installed (otherwise by its headings and slides), a spreadsheet a few rows at a time, and a recording or a video by listening to it (Whisper). Type a question and press Ask: DropWheel finds the parts of the file that speak to it, by what they mean as well as by their words, in Arabic and English and across the two, and the AI model on this PC (Qwen3 4B, about 2.5 GB, downloaded once from the window) writes a short answer from those parts alone, in the question's language, with where the file says so: the page, the slide, the rows or the minute. Click a place to see it: the page is shown with the words the answer comes from lit up, and a recording plays from that minute. When the file doesn't say, the answer says so and shows the closest parts instead of making something up. Until the answer model is downloaded, each question shows the parts of the file that speak to it. Finding needs a small model (about 120 MB), downloaded once. A file read once is kept, so asking it again later starts at once, and nothing leaves the PC. Open the File opens it in its own app.",
+  "details": "Ask a File reads the file once, on this PC: a PDF page by page (scanned pages with the text recognition built into Windows), a Word document or a presentation as it prints when Word, PowerPoint or LibreOffice is installed (otherwise by its headings and slides), a spreadsheet a few rows at a time, and a recording or a video by listening to it (Whisper). Type a question and press Ask: DropWheel finds the parts of the file that speak to it, by what they mean as well as by their words, in the file's language and across languages, and the AI model on this PC (Qwen3 4B, about 2.5 GB, downloaded once from the window) or your own API key's model (Settings › AI Models; the question and those parts then go to that company) writes a short answer from those parts alone, in the question's language, with where the file says so: the page, the slide, the rows or the minute. Click a place to see it: the page is shown with the words the answer comes from lit up, and a recording plays from that minute. When the file doesn't say, the answer says so and shows the closest parts instead of making something up. Until the answer model is downloaded, each question shows the parts of the file that speak to it. Finding needs a small model (about 120 MB), downloaded once. A file read once is kept, so asking it again later starts at once, and unless you chose your own key, nothing leaves the PC. Open the File opens it in its own app.",
   "how": "Drag a PDF, a document, a spreadsheet or a recording, tap Ctrl and drop on ASK FILE; type a question and press Ask.",
   "examples": [
    "A 70-page contract: ask how many days' notice it needs to cancel, and see the page with the sentence lit up.",
    "A two-hour lecture recording: ask when the exam was discussed and play it from that minute.",
-   "An English policy PDF asked in Arabic and answered in Arabic, with the page the answer comes from."
+   "A policy PDF in English asked in your own language and answered in it, with the page the answer comes from."
   ],
   "worksOn": "One file: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, text, Markdown, HTML, EPUB, or an audio or video recording.",
   "keywords": [
@@ -1084,6 +1110,34 @@
    "discord limit",
    "upload limit",
    "reduce mb"
+  ]
+ },
+ "tool:EditPdf": {
+  "category": "pdf",
+  "summary": "Fills in, writes on, marks up and truly redacts a PDF in one window, saved as a new file beside the original.",
+  "details": "Edit PDF opens the pages with a strip of tools, and Save writes 'name Edited.pdf' beside the original, which is never changed. Form fields are filled where they are (text, check boxes, radio buttons, combo and list boxes), and values in Arabic, Persian or Urdu are shaped properly. Write text puts words anywhere; Today's date, Tick, Cross and Dot go down with a click. Edit the PDF's text lets you click a line of the PDF's own text and type it again: the old words leave the file. Highlight, Underline, Strike out and Comment are real annotations that other PDF readers can change; Pen, Line, Arrow, Rectangle, Ellipse, Whiteout, Place a picture and Signature draw on the page. Redact truly removes: draw boxes, select words, type a word or phrase and press Find and mark for all pages, or press Find private details (e-mail addresses, phone numbers, card numbers, IBANs, IP addresses and passwords; scanned pages are read too). Boxes show red until you save; then what is under them is taken out of the file, not covered, and the file's hidden details go too unless you untick Remove the file's hidden details. Flatten burns fields and annotations into the pages so they can't be changed. Ctrl+Z undoes, Ctrl+Y redoes, Ctrl+S saves, Delete removes the selected item and Esc goes back to Select and move. A password-protected file asks for its password, and a form locked by its author can only be changed as far as its author allows. It has limits. A page whose words can't be taken out one by one (a picture or drawing under a box, unusual fonts) is redrawn as a picture, with the words outside the boxes still searchable. Whiteout only hides: what it covers stays in the file, so use Redact to remove it. A retyped line in such a font stays under a cover, and the window says so. It doesn't do forms built only with XFA, field scripts, certificate-based digital signatures, reflowing paragraphs, or editing comments the file already has. A digitally signed file's signature no longer validates after changes.",
+  "how": "Drag one PDF, tap Ctrl and drop on EDIT; choose a tool from the strip, work on the pages and press Save.",
+  "examples": [
+   "A visa application form: type in its fields, tick the boxes, place your signature and save.",
+   "A bank statement a university asks for: Find private details marks the card and phone numbers, you redact the rest, and saving takes them out of the file.",
+   "A wrong date in a report: choose Edit the PDF's text, click the line and type it again."
+  ],
+  "worksOn": "One PDF.",
+  "keywords": [
+   "edit pdf",
+   "pdf editor",
+   "fill pdf form",
+   "fill in form",
+   "write on pdf",
+   "redact pdf",
+   "black out",
+   "remove private details",
+   "change pdf text",
+   "annotate pdf",
+   "highlight pdf",
+   "whiteout",
+   "flatten pdf",
+   "comment on pdf"
   ]
  },
  "tool:CreatePdf": {
@@ -1293,12 +1347,12 @@
  "tool:MakeSearchable": {
   "category": "pdf",
   "summary": "Reads scanned PDFs and photos of pages with Windows OCR so their text can be searched and copied.",
-  "details": "Make Searchable works straight away: every page that has no text of its own is read with Windows' built-in OCR (every installed language is tried, Arabic included) and gets an invisible text layer exactly over the words. The page looks the same, but search, selection and copy now work. Each PDF is saved as 'name Searchable.pdf', and several pictures dropped together become the pages of one searchable PDF named after the first picture. A PDF whose pages all have text already is left alone, and when no text is found the card suggests a sharper scan or adding its language under Windows Settings › Time & language.",
+  "details": "Make Searchable works straight away: every page that has no text of its own is read with Windows' built-in OCR (every installed language is tried) and gets an invisible text layer exactly over the words. The page looks the same, but search, selection and copy now work. Each PDF is saved as 'name Searchable.pdf', and several pictures dropped together become the pages of one searchable PDF named after the first picture. A PDF whose pages all have text already is left alone, and when no text is found the card suggests a sharper scan or adding its language under Windows Settings › Time & language.",
   "how": "Drag the scanned PDF (or several photos of pages), tap Ctrl and drop on OCR.",
   "examples": [
    "A scanned 30-page contract: make it searchable, then find every mention of 'termination' with Ctrl+F.",
    "Five phone photos of book pages become one PDF you can copy quotes from.",
-   "An Arabic letter scanned as a PDF: its text can then be copied into Word."
+   "A letter scanned as a PDF: its text can then be copied into Word."
   ],
   "worksOn": "PDFs (one or many, or a dropped folder of PDFs), or two or more pictures.",
   "keywords": [
@@ -1310,17 +1364,17 @@
    "search in pdf",
    "scanned document",
    "select text pdf",
-   "arabic ocr"
+   "ocr in any language"
   ]
  },
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Turns a PDF, Word file, e-book or text into an MP3 audiobook spoken on this PC.",
-  "details": "Read Aloud reads the document's text and shows how many words it has and about how many minutes it will take. It picks a voice for the document's language: one of Windows' own voices, or the natural English voice Linda, which downloads once from the window (about 85 MB); Arabic is read by Windows' own Arabic voices. Choose Speed (0.75×, 1×, 1.25× or 1.5×), press Listen to hear the first sentences, then Save Audio to write 'name Audio.mp3' next to the document. If no installed voice speaks the document's language, Open Speech Settings lets Windows add one; the text never leaves the PC.",
+  "details": "Read Aloud reads the document's text and shows how many words it has and about how many minutes it will take. It picks a voice for the document's language: one of Windows' own voices, or the natural English voice Linda, which downloads once from the window (about 85 MB). Choose Speed (0.75×, 1×, 1.25× or 1.5×), press Listen to hear the first sentences, then Save Audio to write 'name Audio.mp3' next to the document. If no installed voice speaks the document's language, Open Speech Settings lets Windows add one; the text never leaves the PC.",
   "how": "Drag the document, tap Ctrl and drop on LISTEN; choose a voice and speed and press Save Audio.",
   "examples": [
    "A 25-page PDF chapter to listen to on the bus: save it as an MP3 at 1.25×.",
-   "An Arabic article in Word read by Windows' own Arabic voice.",
+   "A French article in Word read by Windows' own French voice.",
    "An EPUB novel turned into an audiobook for a long drive."
   ],
   "worksOn": "One file: PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT or EPUB.",
@@ -1334,7 +1388,7 @@
    "mp3 from document",
    "voice",
    "narrate",
-   "arabic voice"
+   "voice in any language"
   ]
  },
  "tool:FileDetails": {
@@ -1524,8 +1578,8 @@
  },
  "action:Ask": {
   "category": "files",
-  "summary": "Does what you ask with the files, in your own words in English or Arabic, after showing you the steps.",
-  "details": "Ask DropWheel opens a box where you type (or say, with the microphone button) what to do, such as 'make them 1080 px WEBP and zip them' or 'put them in one searchable PDF'. DropWheel lists the steps it understood under 'DropWheel will:' and warns when they don't fit the files; nothing runs until you press Run. Common requests are understood without a model, and with the AI model (Qwen2.5 1.5B, about 1.1 GB, downloaded once from the window) requests worded freely are understood too, all on this PC. Save as Recipe… keeps the steps as a petal on the tools wheel, and results are saved beside the originals as 'name' plus the recipe's name.",
+  "summary": "Does what you ask with the files, in your own words, after showing you the steps.",
+  "details": "Ask DropWheel opens a box where you type (or say, with the microphone button) what to do, such as 'make them 1080 px WEBP and zip them' or 'put them in one searchable PDF'. DropWheel lists the steps it understood under 'DropWheel will:' and warns when they don't fit the files; nothing runs until you press Run. Common requests in English or Arabic are understood without a model; with the AI model (Qwen2.5 1.5B, about 1.1 GB, downloaded once from the window) requests worded freely are understood too, in other languages as well, all on this PC, or your own API key's model from Settings › AI Models does it, which sends your request, not the files, to that company. Save as Recipe… keeps the steps as a petal on the tools wheel, and results are saved beside the originals as 'name' plus the recipe's name.",
   "how": "Drag the files, tap Alt and drop on ASK; type what you want, press Ask, check the steps and press Run.",
   "examples": [
    "Twenty phone photos: type 'compress them for WhatsApp' and send them right after.",
@@ -1538,12 +1592,12 @@
    "natural language",
    "tell it what to do",
    "in my own words",
-   "arabic request",
+   "request in my language",
    "ai assistant",
    "voice request",
    "do it for me",
    "automate",
-   "plain english"
+   "plain words"
   ]
  },
  "action:Share": {
@@ -2586,7 +2640,7 @@
  "do:screen.circle": {
   "category": "screen",
   "summary": "Circle anything on the screen (a sentence, a number, a date, a picture, a QR code) and the wheel opens with what can be done with it, all on this PC.",
-  "details": "Press Ctrl+Win+C and the screen stands still, with a glowing edge. Circle anything, scribble over a word, run a line along a sentence, or click a paragraph or a picture: the pointer lights up the paragraph a click would take. DropWheel reads what you took (with the text recognition built into Windows; QR codes and barcodes too) and the wheel opens on it. For words: COPY TEXT, TRANSLATE (the translation is laid over the original, paragraph by paragraph, in its own colours, with Original to compare), EXPLAIN, ASK (a question box that keeps the conversation going), SUMMARY, SEARCH, READ ALOUD, and TABLE or EXCEL when the words stand in rows and columns. What the text holds comes first: OPEN LINK, EMAIL, CALL, CALENDAR for a date (an event file any calendar opens), YOUR TIME for a time given in another zone, CONVERT for units (kilometres and miles, kilos and pounds, °C and °F, feet and inches, feddans), CURRENCY at today's rates, RESULT for a sum, COLOUR for a colour code. For a picture: DESCRIBE, ASK, COPY PICTURE, SAVE, CUT OUT (the subject, with see-through edges), PIN, COLOURS, and TOOLS for every conversion. The middle of the wheel already shows the answer when there is one: a conversion, a sum, the time where you are. Explaining, asking and describing use the AI models on this PC, downloaded once; only CURRENCY goes online, and only when you choose it, to fetch today's rates. Esc or a right-click puts the screen back.",
+  "details": "Press Ctrl+Win+C and the screen stands still, with a glowing edge. Circle anything, scribble over a word, run a line along a sentence, or click a paragraph or a picture: the pointer lights up the paragraph a click would take. DropWheel reads what you took (with the text recognition built into Windows; QR codes and barcodes too) and the wheel opens on it. For words: COPY TEXT, TRANSLATE (the translation is laid over the original, paragraph by paragraph, in its own colours, with Original to compare), EXPLAIN, ASK (a question box that keeps the conversation going), SUMMARY, SEARCH, READ ALOUD, and TABLE or EXCEL when the words stand in rows and columns. What the text holds comes first: OPEN LINK, EMAIL, CALL, CALENDAR for a date (an event file any calendar opens), YOUR TIME for a time given in another zone, CONVERT for units (kilometres and miles, kilos and pounds, °C and °F, feet and inches, feddans), CURRENCY at today's rates, RESULT for a sum, COLOUR for a colour code. For a picture: DESCRIBE, ASK, COPY PICTURE, SAVE, CUT OUT (the subject, with see-through edges), PIN, COLOURS, and TOOLS for every conversion. The middle of the wheel already shows the answer when there is one: a conversion, a sum, the time where you are. Translating, explaining, asking and describing use models on this PC, downloaded once, or your own API key if you chose one in Settings › AI Models, which sends what you took to that company; apart from that, only CURRENCY goes online, and only when you choose it, to fetch today's rates. Esc or a right-click puts the screen back.",
   "how": "Press Ctrl+Win+C (or press Ctrl+Win+Z with nothing selected and choose CIRCLE on the Screen wheel), circle what you want, then choose a petal. The shortcut can be changed in Settings › Screen & Text.",
   "examples": [
    "Circle a price in dollars to see it in your own currency at today's rate.",
@@ -2709,7 +2763,7 @@
  "do:screen.text": {
   "category": "screen",
   "summary": "Copies the words from any part of the screen, even in pictures and videos, and reads QR codes too.",
-  "details": "Drag over the text; the Text from the Screen window shows a preview and the words found, which you can change before pressing Copy Text. Buttons let you Translate between Arabic and English on this PC (the translation model downloads once), Fix Keyboard Layout, Join Lines broken by the screen, Search the Web, Copy as Table to paste into Excel cell by cell, or Save as Excel, which saves the table in Documents and opens it. QR codes and barcodes in the area are listed with Copy, plus Open Link for web addresses. Reading uses the text recognition built into Windows, so a Windows language that can read text must be installed; if none is, the window says how to add one under Settings › Time & language › Language.",
+  "details": "Drag over the text; the Text from the Screen window shows a preview and the words found, which you can change before pressing Copy Text. Buttons let you Translate into your language (on this PC after a one-time model download, or with your own API key from Settings › AI Models), Fix Keyboard Layout, Join Lines broken by the screen, Search the Web, Copy as Table to paste into Excel cell by cell, or Save as Excel, which saves the table in Documents and opens it. QR codes and barcodes in the area are listed with Copy, plus Open Link for web addresses. Reading uses the text recognition built into Windows, so a Windows language that can read text must be installed; if none is, the window says how to add one under Settings › Time & language › Language.",
   "how": "Press Ctrl+Win+Z with nothing selected and choose COPY TEXT on the Screen wheel (or Text from the Screen in the tray menu), then drag over the words.",
   "examples": [
    "Copy a phone number shown in a YouTube video without typing it.",
@@ -3199,7 +3253,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Opens a search box where you type what you want: any action, a petal for selected files, an app, a file or a sum.",
-  "details": "The Command Palette opens over the window in front and finds things as you type, in English or Arabic: every action of every wheel, each wheel itself, every petal for the files selected in File Explorer, DropWheel's windows, the apps on the PC, what you copied lately, files found by Search by Meaning, snippets and workspaces. Type a sum or unit conversion such as 12% of 340 or 5 km in mi and Enter copies the answer. Use the arrow keys to choose, Enter to run, Ctrl+Enter for the other action (such as opening a file's folder) and Esc to close. The microphone button lets you say a command instead. If nothing fits, it offers to search the web.",
+  "details": "The Command Palette opens over the window in front and finds things as you type, in the language DropWheel speaks or in English: every action of every wheel, each wheel itself, every petal for the files selected in File Explorer, DropWheel's windows, the apps on the PC, what you copied lately, files found by Search by Meaning, snippets and workspaces. Type a sum or unit conversion such as 12% of 340 or 5 km in mi and Enter copies the answer. Use the arrow keys to choose, Enter to run, Ctrl+Enter for the other action (such as opening a file's folder) and Esc to close. The microphone button lets you say a command instead. If nothing fits, it offers to search the web.",
   "how": "Press Ctrl+Win+K, choose COMMANDS on the Work wheel, or choose Command Palette in the tray menu.",
   "examples": [
    "Type 'rec' and press Enter to start Record the Screen without looking for its wheel.",
@@ -3270,7 +3324,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Finds files by what they are about: the words in them, their name, or what a photo or video shows.",
-  "details": "Search by Meaning lets you type things like 'receipt from the pharmacy' or 'beach photos' and finds matching files in your Pictures, Documents, Desktop, Downloads and Videos folders. It is off until you press Turn On; then DropWheel reads those folders while the PC is idle and keeps the index on this PC. Finding photos and videos by what they show needs DropWheel's picture models, downloaded once. Enter opens the first result, and you can drag any result into another app. When you type a question, Ask Your Files answers from what your documents say, with the files it came from; this needs the AI model, downloaded once.",
+  "details": "Search by Meaning lets you type things like 'receipt from the pharmacy' or 'beach photos' and finds matching files in your Pictures, Documents, Desktop, Downloads and Videos folders. It is off until you press Turn On; then DropWheel reads those folders while the PC is idle and keeps the index on this PC. Finding photos and videos by what they show needs DropWheel's picture models, downloaded once. Enter opens the first result, and you can drag any result into another app. When you type a question, Ask Your Files answers from what your documents say, with the files it came from; this needs the AI model, downloaded once, or your own API key from Settings › AI Models, which sends the question and the passages found to that company.",
   "how": "It is not on a wheel at first: choose Search by Meaning in the tray menu, or type 'search' in the command palette (Ctrl+Win+K).",
   "examples": [
    "You can't remember what you named a scanned electricity bill: type 'electricity bill' and it shows up.",
@@ -3318,7 +3372,7 @@
  "do:petal.qr": {
   "category": "petal",
   "summary": "Makes a QR code for text, a link or a Wi-Fi network, to save as PNG or SVG or copy.",
-  "details": "Create QR Code draws the code as you type. Choose Text or link, or Wi-Fi, where you enter the Network and Password and tick Hidden network if needed; phones that scan it join without typing the password. You can change the two Colours and the Strength (Standard, Strong, Strongest): stronger codes still read when scratched or partly covered, but are denser. Copy Image copies the code, and Save saves it as PNG or SVG, starting in Pictures. Too much text is refused with This is too much text for a QR code.",
+  "details": "Create QR Code draws the code as you type. Choose Text or link, or Wi-Fi, where you enter the Network and Password and tick Hidden network if needed; phones that scan it join without typing the password. You can change the two Colours and the Strength (Standard, Strong, Strongest): stronger codes still read when scratched or partly covered, but are denser. Copy Image copies the code, and Save saves it as PNG or SVG, starting in Pictures. Too much text is refused with This is too much text for a QR code. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "It is not on a wheel at first: choose Create QR Code in the tray menu, type 'qr' in the command palette (Ctrl+Win+K), or copy a link and choose CLIPBOARD on the Quick wheel.",
   "examples": [
    "Guests always ask for the Wi-Fi password: print a Wi-Fi QR code and stick it on the fridge.",
@@ -3364,11 +3418,11 @@
  "do:petal.settings": {
   "category": "petal",
   "summary": "Opens DropWheel's settings window.",
-  "details": "DropWheel Settings is DropWheel's main window, and every change is saved at once. It has sections for Keys, Wheels (to change, add or switch off wheels and their petals), Appearance, The Wheel, Screen & Text, Work & Sharing, Actions Wheel, Favourites, Recipes, Automations, Your Petals, Search by Meaning, Results, Quality, Helpers, Statistics, General, Backup and Updates. A new wheel you make starts with this petal on it.",
+  "details": "DropWheel Settings is DropWheel's main window, and every change is saved at once. It has sections for Keys, Wheels (to change, add or switch off wheels and their petals), Appearance, The Wheel, Screen & Text, Work & Sharing, Actions Wheel, Favourites, Recipes, Automations, Your Petals, AI Models, Search by Meaning, Results, Quality, Helpers, Statistics, General, Backup and Updates. AI Models chooses, for writing and answers, translation and describing pictures, between a model downloaded to this PC (the default, and nothing leaves the PC) and your own API key from Gemini, ChatGPT or Claude: paste the key, press Save Key and choose it beside each job. You pay that company directly for what you use, and what the job works on goes to it; there is no subscription and no server of DropWheel's, and the key is kept encrypted on this PC and left out of backups. A window that needs one of these models also offers Use my own API key instead…, which opens this card. A new wheel you make starts with this petal on it.",
   "how": "Choose Settings in the tray menu, choose DROPWHEEL on a wheel where you added it, or type 'settings' in the command palette (Ctrl+Win+K).",
   "examples": [
    "Change the key that opens the conversion wheel from Shift to another key.",
-   "Add the Live Region petal to your Screen wheel under Wheels.",
+   "Add your own Gemini, ChatGPT or Claude API key under AI Models, so translating and summarizing need no download.",
    "Make a backup of all your wheels and favourites before moving to a new PC."
   ],
   "worksOn": "",
@@ -3381,7 +3435,13 @@
    "edit wheels",
    "customize",
    "backup settings",
-   "setup"
+   "setup",
+   "ai models",
+   "api key",
+   "own key",
+   "gemini",
+   "chatgpt",
+   "claude"
   ]
  },
  "do:petal.pause": {
@@ -3411,7 +3471,7 @@
   "category": "text",
   "summary": "Puts right text typed with the wrong keyboard language: ؤشف becomes cat, and hgsghl becomes السلام.",
   "details": "Select the garbled text in any app and choose this petal. DropWheel sees which way it went wrong: text that is mostly Arabic letters becomes the English keys under them, and English letters become the Arabic they were meant to be (the US English and Arabic 101 layouts). The fixed text is pasted over the selection, and the keyboard then switches to the language you meant when both layouts are installed, so you can keep typing. DropWheel takes the selection by asking the app through Windows UI Automation, or by copying it with Ctrl+C, and puts your clipboard back as it was afterwards. If the app in front changed meanwhile, the result goes on the clipboard instead ('Copied instead').",
-  "how": "Select the text, press Ctrl+Win+Z (with no files selected), press Tab until the Text wheel shows and choose FIX LAYOUT.",
+  "how": "Select the text, press Ctrl+Win+Z (with no files selected), press Tab until the Text wheel shows and choose FIX LAYOUT. It is on the wheel when the interface or a keyboard uses Arabic script; otherwise add it under Wheels in DropWheel Settings.",
   "examples": [
    "You typed a WhatsApp Web message while the keyboard was still on Arabic and got ؤشف: select it and FIX LAYOUT turns it into cat.",
    "A Word line came out as hgsghl ugd;l because English was on: one petal turns it into السلام عليكم.",
@@ -3433,26 +3493,26 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Translates the selected text on this PC, Arabic and English both ways or into the language DropWheel speaks, to replace or copy.",
-  "details": "Select text in any app and choose TRANSLATE: a Translate window opens with the start of the original and the translation in a box you can still edit. Arabic text goes into English and anything else into Arabic; when DropWheel itself is set to Turkish, Persian, Urdu, Indonesian, French or Spanish, text goes into that language instead (or into English when it is already in it). English into Arabic and Arabic into English use the Opus-MT translation models (about 114 MB each) when they are downloaded, a sentence at a time; otherwise, and for the other languages, the AI model Qwen2.5 1.5B (about 1.1 GB) translates; the window offers the download the first time. Replace the Selection pastes the translation over the original text, and Copy puts it on the clipboard. It runs on this PC; the text isn't sent anywhere.",
+  "summary": "Translates the selected text into the language you choose, from any of DropWheel's eight languages into any other, to replace or copy.",
+  "details": "Select text in any app and choose TRANSLATE: a Translate window opens with the start of the original and the translation in a box you can still edit. DropWheel tells the language of the text by itself, and Into is the language you want: English, Arabic, Turkish, Persian, Urdu, Indonesian, French or Spanish. It starts on the language you chose last or the one DropWheel speaks, or on another when the text is already in that one. It runs on this PC a sentence at a time with models downloaded once, and the window offers what the pair needs: a model made for that pair (about 110 MB), two of them through English, or a larger model that knows every language (about 630 MB, and slower); if the AI model is already on this PC, it translates until they are there. Replace the Selection pastes the translation over the original text, and Copy puts it on the clipboard. On this PC the text isn't sent anywhere; with your own API key chosen in Settings › AI Models it goes to that company, and the window says so.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose TRANSLATE; then press Replace the Selection or Copy.",
   "examples": [
-   "An English e-mail from a supplier in Outlook: select it, choose TRANSLATE and read it in Arabic.",
-   "You wrote a reply in Arabic in Teams for an English-speaking colleague: TRANSLATE, then Replace the Selection puts the English in its place.",
-   "A paragraph on a shopping website is in English: select it in the browser and copy the Arabic translation into your notes."
+   "An e-mail from a supplier in another language in Outlook: select it, choose TRANSLATE and read it in yours.",
+   "You wrote a reply in your own language in Teams for a colleague abroad: TRANSLATE, choose their language under Into, then Replace the Selection puts it in place.",
+   "A paragraph on a shopping website is in a language you don't read: select it in the browser and copy the translation into your notes."
   ],
   "worksOn": "Text you select in any app; no files.",
   "keywords": [
    "translate",
    "translation",
-   "arabic to english",
-   "english to arabic",
+   "translate into any language",
    "offline translation",
    "translate email",
    "translate message",
    "google translate",
    "other language",
-   "understand english"
+   "foreign language",
+   "translate selected text"
   ]
  },
  "do:text.upper": {
@@ -3547,7 +3607,7 @@
   "category": "text",
   "summary": "Removes the harakat (tashkeel), Quranic marks and tatweel from the selected Arabic text.",
   "details": "Select Arabic text in any app and choose TASHKEEL; the short-vowel marks (fatha, damma, kasra, sukun, shadda and tanween), the small Quranic marks and the stretching tatweel are taken out, and the letters stay. The cleaned text is pasted back over the selection, and your clipboard is put back as it was. Text without any of these marks gives a 'Nothing to change' card. It is handy before searching, sorting or pasting text into a field that doesn't handle the marks well.",
-  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the TIDY group and choose TASHKEEL.",
+  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the TIDY group and choose TASHKEEL. The group holds it when the interface or a keyboard uses Arabic script; otherwise add it under Wheels in DropWheel Settings.",
   "examples": [
    "A fully vowelled poem copied from a website into Word: TASHKEEL leaves plain letters that are easier to edit.",
    "A name written as مُحَمَّد in an Excel sheet doesn't match a search for محمد; remove the marks and it does.",
@@ -3570,7 +3630,7 @@
   "category": "text",
   "summary": "Swaps the digits in the selected text: Arabic ١٢٣ become 123, or 123 become ١٢٣.",
   "details": "Select text in any app and choose DIGITS. When the text has any Arabic-Indic (or Persian) digits, they all become 0 to 9, and the Arabic decimal and thousands marks become a full stop and a comma; when it has none, 0 to 9 become ٠ to ٩. The text is pasted back over the selection, and your clipboard is put back afterwards. Other characters are left as they are.",
-  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the TIDY group and choose DIGITS.",
+  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the TIDY group and choose DIGITS. The group holds it when the interface or a keyboard uses Arabic script; otherwise add it under Wheels in DropWheel Settings.",
   "examples": [
    "A phone number written as ٠٥٠١٢٣٤٥٦٧ won't go into a website form: DIGITS turns it into 0501234567.",
    "Prices in an Excel column typed with ١٢٫٥ become 12.5 so Excel can add them.",
@@ -3592,7 +3652,7 @@
   "category": "text",
   "summary": "Cleans the selected text: double spaces, spaces at line ends and extra empty lines taken out.",
   "details": "Select text in any app and choose TIDY. Runs of spaces and tabs become one space, spaces at the start and end of each line go, no more than one empty line is kept in a row, and empty lines at the start and end are removed. Because spaces at line starts go too, indenting is lost. The tidied text is pasted back over the selection, and your clipboard is put back as it was.",
-  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel, open the TIDY group and choose TIDY.",
+  "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose TIDY (inside the TIDY group when the interface or a keyboard uses Arabic script).",
   "examples": [
    "Text copied from a PDF into Word comes with double spaces and gaps: TIDY makes it neat in one go.",
    "An e-mail draft in Outlook with five empty lines between paragraphs keeps just one.",
@@ -3614,7 +3674,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Counts the words, characters, lines and sentences in the selected text and shows them on a card.",
-  "details": "Select text in any app and choose COUNT; a card shows the number of words, then characters, characters without spaces, lines and sentences. Nothing is changed in the text. Arabic and English words are both counted, and emoji count as one character. DropWheel reads the selection through Windows UI Automation or by copying it, and puts your clipboard back afterwards.",
+  "details": "Select text in any app and choose COUNT; a card shows the number of words, then characters, characters without spaces, lines and sentences. Nothing is changed in the text. Words in any language are counted, and emoji count as one character. DropWheel reads the selection through Windows UI Automation or by copying it, and puts your clipboard back afterwards.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose COUNT.",
   "examples": [
    "An essay box allows 500 words: select your draft in the browser and COUNT tells you if it fits.",
@@ -3661,7 +3721,7 @@
  "do:text.summarize": {
   "category": "text",
   "summary": "Writes a short summary of the selected text with the AI model on this PC, to put in place or copy.",
-  "details": "Select text in any app and choose SUMMARY: a Summarize window opens and the AI model Qwen2.5 1.5B writes the summary on this PC. The As switch chooses A few lines (2 or 3 sentences, the default) or Key points (3 to 6 bullet points); changing it writes the summary again. Arabic text is summarized in Arabic and other text in English. The first time, the window offers the model download (about 1.1 GB with its runner). You can edit the result, then Replace the Selection pastes it over the original, or Copy puts it on the clipboard; the text isn't sent anywhere.",
+  "details": "Select text in any app and choose SUMMARY: a Summarize window opens and the AI model Qwen2.5 1.5B writes the summary on this PC. The As switch chooses A few lines (2 or 3 sentences, the default) or Key points (3 to 6 bullet points); changing it writes the summary again. The summary comes in the language of the text. The first time, the window offers the model download (about 1.1 GB with its runner) or Use my own API key instead…, which opens Settings › AI Models; with a key chosen, the text goes to that company. You can edit the result, then Replace the Selection pastes it over the original, or Copy puts it on the clipboard; on this PC, the text isn't sent anywhere.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose SUMMARY; pick A few lines or Key points, then Replace the Selection or Copy.",
   "examples": [
    "A long e-mail thread in Outlook before a meeting: select it and read the key points in a few seconds.",
@@ -3685,7 +3745,7 @@
  "do:text.rewrite": {
   "category": "text",
   "summary": "Rewrites the selected text clearer, shorter, more formal, friendlier, or with mistakes fixed, on this PC.",
-  "details": "Select text in any app and choose REWRITE: a Rewrite window opens and the AI model Qwen2.5 1.5B rewrites it on this PC. The Make it switch offers Clearer (the default), Shorter, Formal, Friendly and Fix mistakes, which corrects spelling, grammar and punctuation and changes nothing else; choosing another one rewrites again. Arabic text is rewritten in Arabic and other text in English. The first time, the window offers the model download (about 1.1 GB with its runner). Edit the result if you like, then Replace the Selection pastes it over the original, or Copy puts it on the clipboard.",
+  "details": "Select text in any app and choose REWRITE: a Rewrite window opens and the AI model Qwen2.5 1.5B rewrites it on this PC. The Make it switch offers Clearer (the default), Shorter, Formal, Friendly and Fix mistakes, which corrects spelling, grammar and punctuation and changes nothing else; choosing another one rewrites again. The new text comes in the language of the original. The first time, the window offers the model download (about 1.1 GB with its runner) or Use my own API key instead…, which opens Settings › AI Models; with a key chosen, the text goes to that company. Edit the result if you like, then Replace the Selection pastes it over the original, or Copy puts it on the clipboard.",
   "how": "Select the text, press Ctrl+Win+Z (with no files selected), Tab to the Text wheel and choose REWRITE; pick a style under Make it, then Replace the Selection.",
   "examples": [
    "A message to your landlord in Gmail sounds too blunt: choose Formal and put the polite version in its place.",
@@ -3709,13 +3769,13 @@
  },
  "do:text.dictate": {
   "category": "text",
-  "summary": "Types what you say where the cursor is, in any app, in Arabic, English and many more languages.",
-  "details": "Click where the words should go, then start dictation: a small pill at the bottom of the screen shows a level meter and the time while DropWheel listens. Press the shortcut or DICTATE again, or the tick on the pill, to stop; Esc or the X cancels, and it stops by itself at two minutes. Whisper writes down what you said on this PC and DropWheel types it into the app that was in front; if that app changed, the words go on the clipboard instead. The first time, the Dictation window asks for the speech model: Accuracy Fast (about 60 MB, clear English), Balanced (about 190 MB, the default) or Accurate (about 574 MB, best for Arabic and accents), and Language Detect automatically (the default), العربية, English or many others. It needs a microphone and nothing is sent anywhere.",
+  "summary": "Types what you say where the cursor is, in any app, in many languages.",
+  "details": "Click where the words should go, then start dictation: a small pill at the bottom of the screen shows a level meter and the time while DropWheel listens. Press the shortcut or DICTATE again, or the tick on the pill, to stop; Esc or the X cancels, and it stops by itself at two minutes. Whisper writes down what you said on this PC and DropWheel types it into the app that was in front; if that app changed, the words go on the clipboard instead. The first time, the Dictation window asks for the speech model: Accuracy Fast (about 60 MB, clear English), Balanced (about 190 MB, the default) or Accurate (about 574 MB, best for accents and languages other than English), and Language Detect automatically (the default) or one of many others. It needs a microphone and nothing is sent anywhere.",
   "how": "Press Ctrl+Win+J in any app, or choose DICTATE on the Text wheel or the Work wheel (Ctrl+Win+Z with no files selected, then Tab); speak, then press it again to type.",
   "examples": [
-   "Your hands are full: click in a WhatsApp Web chat, press Ctrl+Win+J and say your reply in Arabic.",
+   "Your hands are full: click in a WhatsApp Web chat, press Ctrl+Win+J and say your reply.",
    "Write the first draft of a Word report by speaking it in two-minute pieces.",
-   "Fill a long comment box on a website by talking instead of typing in English."
+   "Fill a long comment box on a website by talking instead of typing."
   ],
   "worksOn": "Your voice, typed into any app; no files.",
   "keywords": [
@@ -3726,7 +3786,7 @@
    "speak instead of typing",
    "voice to text",
    "microphone typing",
-   "arabic dictation",
+   "dictation in any language",
    "whisper",
    "transcribe voice"
   ]
@@ -4177,12 +4237,12 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Puts a new sticky note on the desktop near the pointer, in any language and colour.",
-  "details": "Choose NOTE and a sticky note opens near the pointer, ready to type; Arabic runs right to left by itself. Its band has buttons for a New note, Colour (yellow, green, blue, pink, purple, grey), Keep on top and Delete note, and you can drag it by the band and resize it from the corner. Ctrl+N in a note makes another one. Notes are saved by themselves and come back where they were when DropWheel starts; a deleted note with text can be brought back by clicking the card that appears. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
+  "details": "Choose NOTE and a sticky note opens near the pointer, ready to type; right-to-left languages run that way by themselves. Its band has buttons for a New note, Colour (yellow, green, blue, pink, purple, grey), Keep on top and Delete note, and you can drag it by the band and resize it from the corner. Ctrl+N in a note makes another one. Notes are saved by themselves and come back where they were when DropWheel starts; a deleted note with text can be brought back by clicking the card that appears. Any other colour can be chosen too: a free palette, with its hex code to type or paste.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work or Clipboard wheel and choose NOTE, then type.",
   "examples": [
    "Jot down a phone number during a call without opening any app.",
    "Keep today's three tasks on a yellow note that stays on top of your work.",
-   "Write a reminder in Arabic to call the bank, and it is still there after a restart."
+   "Write a reminder to call the bank, and it is still there after a restart."
   ],
   "worksOn": "",
   "keywords": [
@@ -4245,11 +4305,11 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Records a meeting, then writes the transcript, a summary, the decisions and action items on this PC.",
-  "details": "Choose MEETING and DropWheel records both the PC's sound and your microphone; a pill at the top shows the time, with a tick to stop and write the notes and an X to cancel, and it is kept out of the meeting's own screen shares. When you stop, Whisper writes the transcript with times, and if the AI model (about 1.1 GB) is on the PC it adds Summary, Decisions and Action items sections. The notes (a Markdown file) and the sound (an M4A file) are saved as 'Meeting date time' in the DropWheel Meetings folder in Documents, and the Meeting Notes window opens with Summary and Transcript views, Copy and Open Folder. It needs a speech model from the Dictation window and FFmpeg; without the AI model, a Write a Summary button lets you add the summary later.",
+  "details": "Choose MEETING and DropWheel records both the PC's sound and your microphone; a pill at the top shows the time, with a tick to stop and write the notes and an X to cancel, and it is kept out of the meeting's own screen shares. When you stop, Whisper writes the transcript with times, and if the AI model (about 1.1 GB) is on the PC, or your own API key is chosen in Settings › AI Models (the transcript then goes to that company), it adds Summary, Decisions and Action items sections. The notes (a Markdown file) and the sound (an M4A file) are saved as 'Meeting date time' in the DropWheel Meetings folder in Documents, and the Meeting Notes window opens with Summary and Transcript views, Copy and Open Folder. It needs a speech model from the Dictation window and FFmpeg; without the AI model, a Write a Summary button lets you add the summary later.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work wheel and choose MEETING; choose it again or press the tick on the pill to stop.",
   "examples": [
    "A one-hour Teams call: get the decisions and who does what without taking notes yourself.",
-   "A Zoom lecture in Arabic: keep the full transcript and the sound to study later.",
+   "A Zoom lecture: keep the full transcript and the sound to study later.",
    "A phone call on speaker at your desk: record it and copy the action items into an e-mail."
   ],
   "worksOn": "",
@@ -4268,11 +4328,11 @@
  },
  "do:work.captions": {
   "category": "work",
-  "summary": "Shows live captions for any video, call or lesson, translated into Arabic as they come, on this PC.",
-  "details": "Choose CC and a caption bar appears at the bottom of the screen; drag it anywhere. DropWheel listens to the PC's sound (the default) or the microphone, Whisper writes the words down as they are said, within about half a second (the newest look dimmer until they are sure), and the translation model puts each sentence into Arabic as it goes, with no internet needed. If the PC is too slow for the speech model chosen, a quicker one that is downloaded takes over so the captions keep up. Hover over the bar for its buttons: switch between the PC's sound and the microphone, change what is shown (both, Arabic, the original, or English), or turn the captions off. It needs a speech model from the Dictation window, and the Arabic translation model (about 114 MB) is offered the first time; until it is there, the captions show what was said. Choose CC again to stop. A translation has two lines: the first shows the last finished sentence, translated properly; the second, under it, shows the sentence being said, translated as it comes, and it moves up to the first line as soon as the sentence ends.",
+  "summary": "Shows live captions for any video, call or lesson, translated into the language you choose as they come.",
+  "details": "Choose CC and a caption bar appears at the bottom of the screen; drag it anywhere. DropWheel listens to the PC's sound (the default) or the microphone, Whisper writes the words down as they are said, within about half a second (the newest look dimmer until they are sure), and a translation model puts each sentence into the language chosen under Translate into in Settings › Screen & Text (at first the one DropWheel speaks), with no internet needed. A translation has two lines: the first shows the last finished sentence, translated properly; the second, under it, shows the sentence being said, translated as it comes, and it moves up to the first line as soon as the sentence ends. If the PC is too slow for the speech model chosen, a quicker one that is downloaded takes over so the captions keep up. Hover over the bar for its buttons: switch between the PC's sound and the microphone, change what is shown (both, the translation, or the original), or turn the captions off. It needs a speech model from the Dictation window, and the translation model the languages need is offered the first time (from about 110 MB to about 630 MB); until it is there, the captions show what was said. With your own API key chosen in Settings › AI Models, each finished sentence goes to that company instead, and the second line needs a model on this PC. Choose CC again to stop.",
   "how": "Press Ctrl+Win+Z (with no files selected), Tab to the Work wheel and choose CC; choose it again to turn the captions off.",
   "examples": [
-   "Watch an English YouTube course and read the Arabic captions under it.",
+   "Watch a YouTube course in another language and read the captions under it in yours.",
    "Follow a fast Zoom call in English with the words written on the screen as people speak.",
    "Caption a lecture from the microphone for a classmate who is hard of hearing."
   ],
@@ -4282,7 +4342,7 @@
    "subtitles",
    "closed captions",
    "translate video",
-   "arabic subtitles",
+   "captions in my language",
    "hearing",
    "real time translation",
    "caption calls",
@@ -4339,7 +4399,7 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Opens the Tools Guide: every tool and action explained, with examples, and a box to say what you want to do.",
-  "details": "The guide lists DropWheel's tools, file actions and the actions of the wheels without files by section. Each one opens to what it does, how to use it, three examples and what it works on, with Try It to start it and a box to ask about it. Type what you want to do in your own words at the top and the closest tools appear at once; press Enter and the AI model on this PC answers from the guide and links the tools it names. The model downloads once, the first time you ask; without it the closest tools still appear.",
+  "details": "The guide lists DropWheel's tools, file actions and the actions of the wheels without files by section. Each one opens to what it does, how to use it, three examples and what it works on, with Try It to start it and a box to ask about it. Type what you want to do in your own words at the top and the closest tools appear at once; press Enter and the AI model on this PC answers from the guide and links the tools it names. The model downloads once, the first time you ask, or your own API key from Settings › AI Models can answer instead; without either the closest tools still appear.",
   "how": "Open it from the tray menu (Tools Guide…), the Tools Guide button at the top of DropWheel's settings, the command palette (Ctrl+Win+K), or a GUIDE petal you add to a wheel. In a wheel, the mark under a petal's name (or F1) shows that petal's explanation, with a link to the guide.",
   "examples": [
    "You need a countdown for a class break: type \"countdown\" and Timer comes first, with Try It to start it.",

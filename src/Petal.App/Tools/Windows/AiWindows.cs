@@ -144,7 +144,7 @@ public sealed class TranscribeWindow : ToolWindow
         int preferred = Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 1;
         _accuracy = Segments([(0, "Fast"), (1, "Balanced"), (2, "Accurate")], preferred);
         Body.Children.Add(Row("Accuracy", _accuracy, 110, 14));
-        Body.Children.Add(Text("Fast suits clear English speech. Accurate is best for Arabic, accents and noisy recordings.", "Petal.Caption").WithMargin(110, 4, 0, 0));
+        Body.Children.Add(Text("Fast suits clear speech. Accurate is best for accents, noisy recordings and languages other than English.", "Petal.Caption").WithMargin(110, 4, 0, 0));
         _model = new ModelPanel(Models[preferred]);
         Body.Children.Add(_model);
         _accuracy.Changed += i => { _model.Model = Models[i]; Sync(); };

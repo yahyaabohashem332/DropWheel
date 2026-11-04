@@ -30,7 +30,7 @@
  "tool:AnnotatePhoto": {
   "category": "pictures",
   "summary": "Dessine des flèches, du texte, des cadres, des surlignages et des étapes numérotées sur une image, et enregistre une copie annotée en PNG.",
-  "details": "Annoter la photo affiche l'image avec une barre de neuf outils : Flèche, Surligneur, Texte, Rectangle, Ellipse, Dessiner, Étape numérotée, Loupe et Insérer une image (qui place une autre image par-dessus). Choisissez une couleur avec le sélecteur de couleur ; faites glisser une annotation pour la déplacer, double-cliquez sur un texte pour le modifier, et utilisez Annuler (Ctrl+Z) ou Supprimer la sélection (Suppr) pour corriger une erreur. Réinitialiser efface tout ce que vous avez ajouté. Enregistrer une copie annotée enregistre le résultat à côté de l'original sous le nom « nom Annotated.png », toujours en PNG.",
+  "details": "Annoter la photo affiche l'image avec une barre de neuf outils : Flèche, Surligneur, Texte, Rectangle, Ellipse, Dessiner, Étape numérotée, Loupe et Insérer une image (qui place une autre image par-dessus). Choisissez une couleur avec le sélecteur de couleur ; faites glisser une annotation pour la déplacer, double-cliquez sur un texte pour le modifier, et utilisez Annuler (Ctrl+Z) ou Supprimer la sélection (Suppr) pour corriger une erreur. Réinitialiser efface tout ce que vous avez ajouté. Enregistrer une copie annotée enregistre le résultat à côté de l'original sous le nom « nom Annotated.png », toujours en PNG. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur ANNOTER ; choisissez un outil, dessinez sur l'image et choisissez Enregistrer une copie annotée.",
   "worksOn": "Une image à la fois.",
   "examples": [
@@ -55,7 +55,7 @@
  "tool:AddBackground": {
   "category": "pictures",
   "summary": "Place une image sur un fond dégradé, uni ou une image, avec une marge, des coins arrondis et une ombre.",
-  "details": "Ajouter un arrière-plan place l'image sur un fond, avec un aperçu en direct. Choisissez l'un des douze dégradés doux (Aube, Lagon, Aurore, Pêche, Ultraviolet, Menthe, Ciel, Braise, Nuit, Rosé, Agrumes, Graphite), l'une des dix-huit couleurs unies, votre propre couleur, ou une image à vous, qui dispose en plus d'un curseur Flou. Marge intérieure, Coins et Ombre partent de tailles adaptées à l'image, et Proportions peut valoir Auto, 1:1, 16:9, 4:5 ou 9:16. Enregistrer avec l'arrière-plan enregistre le résultat à côté de l'original sous le nom « nom Background », dans le même format ; Réinitialiser revient aux réglages par défaut.",
+  "details": "Ajouter un arrière-plan place l'image sur un fond, avec un aperçu en direct. Choisissez l'un des douze dégradés doux (Aube, Lagon, Aurore, Pêche, Ultraviolet, Menthe, Ciel, Braise, Nuit, Rosé, Agrumes, Graphite), l'une des dix-huit couleurs unies, votre propre couleur, ou une image à vous, qui dispose en plus d'un curseur Flou. Marge intérieure, Coins et Ombre partent de tailles adaptées à l'image, et Proportions peut valoir Auto, 1:1, 16:9, 4:5 ou 9:16. Enregistrer avec l'arrière-plan enregistre le résultat à côté de l'original sous le nom « nom Background », dans le même format ; Réinitialiser revient aux réglages par défaut. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur AJOUT FOND ; choisissez un fond, réglez Marge intérieure, Coins et Ombre, puis choisissez Enregistrer avec l'arrière-plan.",
   "worksOn": "Une image à la fois.",
   "examples": [
@@ -105,7 +105,7 @@
  "tool:RedactPhoto": {
   "category": "pictures",
   "summary": "Cache les informations privées, les visages ou le texte d'une image sous des cadres opaques ou un flou irréversible.",
-  "details": "Dès son ouverture, Masquer dans la photo recherche les informations privées (adresses e-mail, numéros de téléphone, numéros de carte, IBAN, adresses IP et mots de passe) et les masque ; les boutons Visages et Texte trouvent de la même façon les visages et les lignes de texte, le tout sur ce PC grâce à la détection propre à Windows. Vous pouvez aussi faire glisser sur la photo pour masquer n'importe quelle zone, faire glisser un cadre pour le déplacer, faire glisser son coin pour le redimensionner, et appuyer sur Suppr pour le retirer. Style vaut Opaque (noir au départ, ou la couleur de votre choix) ou Flou, conçu pour ne pas pouvoir être annulé. Enregistrer une copie masquée enregistre le résultat à côté de l'original sous le nom « nom Redacted » ; l'original reste tel quel.",
+  "details": "Dès son ouverture, Masquer dans la photo recherche les informations privées (adresses e-mail, numéros de téléphone, numéros de carte, IBAN, adresses IP et mots de passe) et les masque ; les boutons Visages et Texte trouvent de la même façon les visages et les lignes de texte, le tout sur ce PC grâce à la détection propre à Windows. Vous pouvez aussi faire glisser sur la photo pour masquer n'importe quelle zone, faire glisser un cadre pour le déplacer, faire glisser son coin pour le redimensionner, et appuyer sur Suppr pour le retirer. Style vaut Opaque (noir au départ, ou la couleur de votre choix) ou Flou, conçu pour ne pas pouvoir être annulé. Enregistrer une copie masquée enregistre le résultat à côté de l'original sous le nom « nom Redacted » ; l'original reste tel quel. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur MASQUER ; vérifiez les cadres, ajoutez les vôtres et choisissez Enregistrer une copie masquée. CAPTURE PRIVÉE sur la roue Écran l'ouvre sur une nouvelle capture d'écran.",
   "worksOn": "Une image à la fois.",
   "examples": [
@@ -156,7 +156,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Place votre texte ou votre logo sur des images, sur chaque image d'une vidéo ou sur chaque page d'un PDF.",
-  "details": "Ajouter un filigrane propose deux types : Texte (arabe compris ; « © année » au départ) avec une Couleur (blanc au départ), ou Image, un logo de votre choix. Taille va de 5 % à 90 % (30 % au départ) et Opacité de 10 % à 100 % (60 % au départ). Position est l'un des neuf emplacements (en bas à droite au départ), ou cochez Répéter sur toute l'image pour couvrir toute l'image. Un aperçu montre le premier fichier, et DropWheel mémorise votre dernier filigrane pour la fois suivante. Chaque résultat est enregistré à côté de son original sous le nom « nom Watermarked ».",
+  "details": "Ajouter un filigrane propose deux types : Texte (langues écrites de droite à gauche comprises ; « © année » au départ) avec une Couleur (blanc au départ), ou Image, un logo de votre choix. Taille va de 5 % à 90 % (30 % au départ) et Opacité de 10 % à 100 % (60 % au départ). Position est l'un des neuf emplacements (en bas à droite au départ), ou cochez Répéter sur toute l'image pour couvrir toute l'image. Un aperçu montre le premier fichier, et DropWheel mémorise votre dernier filigrane pour la fois suivante. Chaque résultat est enregistré à côté de son original sous le nom « nom Watermarked ». Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser des fichiers, appuyez sur Ctrl et déposez-les sur FILIGRANE ; réglez le texte ou l'image, la taille et la position, puis choisissez Ajouter un filigrane.",
   "worksOn": "Images, vidéos (pas les GIF) et PDF ; un fichier ou plusieurs. Aussi les fichiers d'un dossier déposé.",
   "examples": [
@@ -181,13 +181,13 @@
  "tool:CopyText": {
   "category": "pictures",
   "summary": "Copie aussitôt dans le Presse-papiers le texte d'une image, ou le contenu d'un code QR ou d'un code-barres qui s'y trouve.",
-  "details": "Copier le texte ou le code QR n'ouvre aucune fenêtre. Il cherche d'abord les codes QR et les codes-barres et copie leur contenu ; quand le code contient un lien web, un clic sur la carte l'ouvre. S'il n'y a pas de code, il lit le texte de l'image avec la reconnaissance de texte propre à Windows, en essayant chaque langue installée dans Windows et en gardant la lecture la plus propre, si bien que l'arabe comme l'anglais fonctionnent. Une carte indique combien de lignes ont été copiées et les premiers mots. Si rien n'est trouvé, il suggère une image plus nette ou d'ajouter la langue dans Paramètres Windows › Heure et langue.",
+  "details": "Copier le texte ou le code QR n'ouvre aucune fenêtre. Il cherche d'abord les codes QR et les codes-barres et copie leur contenu ; quand le code contient un lien web, un clic sur la carte l'ouvre. S'il n'y a pas de code, il lit le texte de l'image avec la reconnaissance de texte propre à Windows, en essayant chaque langue installée dans Windows et en gardant la lecture la plus propre, si bien que toute langue lisible par Windows fonctionne. Une carte indique combien de lignes ont été copiées et les premiers mots. Si rien n'est trouvé, il suggère une image plus nette ou d'ajouter la langue dans Paramètres Windows › Heure et langue.",
   "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur TEXTE · QR ; le texte est dans le Presse-papiers, prêt à être collé avec Ctrl+V.",
   "worksOn": "Une image (JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP et formats similaires).",
   "examples": [
    "La capture d'un message d'erreur : déposez-la et collez le texte dans une recherche ou un e-mail.",
    "La photo d'un code QR Wi-Fi sur une table de café : le contenu du code est copié tout de suite.",
-   "La photo d'une recette imprimée en arabe : déposez-la et collez les mots dans une note."
+   "La photo d'une recette imprimée : déposez-la et collez les mots dans une note."
   ],
   "keywords": [
    "texte d'une image",
@@ -205,7 +205,7 @@
  "tool:RemoveBackground": {
   "category": "pictures",
   "summary": "Détoure le sujet d'une photo, cheveux compris, sur un fond transparent, blanc ou de couleur.",
-  "details": "Supprimer l'arrière-plan utilise le modèle d'IA BiRefNet lite sur ce PC ; le modèle de 224 Mo se télécharge une seule fois depuis la fenêtre de l'outil, la première fois. Arrière-plan peut valoir Transparent (par défaut), Blanc ou Couleur, et Rogner autour du sujet supprime les bords vides. Un résultat transparent est enregistré en PNG, sauf si l'original est déjà en PNG ou en WebP ; chaque résultat va à côté de son original sous le nom « nom No Background ». Il s'exécute sur le processeur, donc les ordinateurs anciens peuvent mettre jusqu'à une demi-minute par image. Si vous vous arrêtez sur le pétale avant de déposer, le détourage s'affiche au centre de la roue, une fois le modèle présent.",
+  "details": "Supprimer l'arrière-plan utilise le modèle d'IA BiRefNet lite sur ce PC ; le modèle de 224 Mo se télécharge une seule fois depuis la fenêtre de l'outil, la première fois. Arrière-plan peut valoir Transparent (par défaut), Blanc ou Couleur, et Rogner autour du sujet supprime les bords vides. Un résultat transparent est enregistré en PNG, sauf si l'original est déjà en PNG ou en WebP ; chaque résultat va à côté de son original sous le nom « nom No Background ». Il s'exécute sur le processeur, donc les ordinateurs anciens peuvent mettre jusqu'à une demi-minute par image. Si vous vous arrêtez sur le pétale avant de déposer, le détourage s'affiche au centre de la roue, une fois le modèle présent. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une ou plusieurs images, appuyez sur Ctrl et déposez-les sur SANS FOND ; choisissez l'arrière-plan et appuyez sur Supprimer l'arrière-plan.",
   "worksOn": "Des images ; une ou plusieurs à la fois. Aussi les images d'un dossier déposé.",
   "examples": [
@@ -372,7 +372,7 @@
  "tool:CreateCollage": {
   "category": "pictures",
   "summary": "Rassemble plusieurs images en un seul collage, en grille, en ligne, en colonne ou avec une image mise en avant.",
-  "details": "Créer un collage affiche un aperçu en direct. Style vaut Grille (avec Colonnes de 1 à 6), Ligne, Colonne ou À la une, avec une grande image à gauche et les autres empilées à droite. Zone de travail peut valoir Carré · 1:1 (par défaut), Portrait · 4:5, Story · 9:16, Paysage · 16:9 ou Photo · 3:2, et Largeur 1 080, 2 048 (par défaut), 3 000 ou 4 096 px. Ajustement de l'image remplit les cases en rognant les bords, ou affiche les images entières. Sous Espacement et arrière-plan, vous réglez Espacement (24 px), Coins (16 px) et la couleur d'Arrière-plan (blanc), et sous Ordre des images vous changez l'ordre. Créer un collage enregistre un PNG au nom de la première image, « nom Collage.png ».",
+  "details": "Créer un collage affiche un aperçu en direct. Style vaut Grille (avec Colonnes de 1 à 6), Ligne, Colonne ou À la une, avec une grande image à gauche et les autres empilées à droite. Zone de travail peut valoir Carré · 1:1 (par défaut), Portrait · 4:5, Story · 9:16, Paysage · 16:9 ou Photo · 3:2, et Largeur 1 080, 2 048 (par défaut), 3 000 ou 4 096 px. Ajustement de l'image remplit les cases en rognant les bords, ou affiche les images entières. Sous Espacement et arrière-plan, vous réglez Espacement (24 px), Coins (16 px) et la couleur d'Arrière-plan (blanc), et sous Ordre des images vous changez l'ordre. Créer un collage enregistre un PNG au nom de la première image, « nom Collage.png ». Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser deux images ou plus, appuyez sur Ctrl et déposez-les sur COLLAGE ; choisissez un style et une zone de travail, puis appuyez sur Créer un collage.",
   "worksOn": "Deux images ou plus à la fois, fichiers Photoshop, RAW, SVG, Illustrator et EPS compris.",
   "examples": [
@@ -396,7 +396,7 @@
  "tool:DescribePicture": {
   "category": "pictures",
   "summary": "Décrit ce que montre une image, en une phrase de texte alternatif ou en un paragraphe, avec un petit modèle d'IA sur ce PC.",
-  "details": "Décrire l'image utilise le modèle d'images SmolVLM sur ce PC ; la première fois, le modèle se télécharge une seule fois depuis la fenêtre (environ 570 Mo avec le programme qui l'exécute). Le réglage Durée vaut Une phrase (par défaut) ou Un paragraphe. Les mots apparaissent dans une zone que vous pouvez modifier ; dans une autre langue que l'anglais, ils sont traduits sur ce PC, après le téléchargement unique d'un modèle de traduction. Copier place le texte dans le Presse-papiers, et Enregistrer dans l'image l'écrit dans les informations de l'image elle-même pour les fichiers JPG, PNG et WebP, sans modifier l'image. Relisez les mots avant de les publier.",
+  "details": "Décrire l'image utilise le modèle d'images SmolVLM sur ce PC ; la première fois, le modèle se télécharge une seule fois depuis la fenêtre (environ 570 Mo avec le programme qui l'exécute), ou le modèle de votre propre clé API depuis Paramètres › Modèles d'IA regarde l'image, qui va alors à cette société. Le réglage Durée vaut Une phrase (par défaut) ou Un paragraphe. Les mots apparaissent dans une zone que vous pouvez modifier ; dans une autre langue que l'anglais, ils sont traduits, après le téléchargement unique d'un modèle de traduction. Copier place le texte dans le Presse-papiers, et Enregistrer dans l'image l'écrit dans les informations de l'image elle-même pour les fichiers JPG, PNG et WebP, sans modifier l'image. Relisez les mots avant de les publier.",
   "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur DÉCRIRE ; attendez les mots, modifiez-les si besoin et appuyez sur Copier.",
   "worksOn": "Une image à la fois ; Enregistrer dans l'image fonctionne pour les JPG, PNG et WebP.",
   "examples": [
@@ -421,7 +421,7 @@
  "tool:TableFromImage": {
   "category": "pictures",
   "summary": "Lit un tableau dans une image ou une capture et le transforme en feuille Excel, avec lignes, colonnes et vrais nombres.",
-  "details": "Tableau vers Excel s'exécute immédiatement, sans fenêtre. Il lit l'image avec la reconnaissance de texte intégrée à Windows : les mots proches les uns des autres forment une cellule, et les cellules alignées forment une colonne. Les nombres sont enregistrés comme des nombres, les tableaux en arabe gardent leur ordre de droite à gauche, et les cellules vides sont relues une seconde fois séparément. Chaque feuille est enregistrée à côté de son image sous le nom « nom Table.xlsx ». S'il n'y a pas de tableau, la carte indique « Aucun tableau n'a été trouvé dans cette image. »",
+  "details": "Tableau vers Excel s'exécute immédiatement, sans fenêtre. Il lit l'image avec la reconnaissance de texte intégrée à Windows : les mots proches les uns des autres forment une cellule, et les cellules alignées forment une colonne. Les nombres sont enregistrés comme des nombres, les tableaux écrits de droite à gauche gardent leur ordre, et les cellules vides sont relues une seconde fois séparément. Chaque feuille est enregistrée à côté de son image sous le nom « nom Table.xlsx ». S'il n'y a pas de tableau, la carte indique « Aucun tableau n'a été trouvé dans cette image. »",
   "how": "Faites glisser une ou plusieurs images, appuyez sur Ctrl et déposez-les sur TABLEAU ; le fichier Excel apparaît à côté de chaque image.",
   "worksOn": "Des images ; une ou plusieurs à la fois. Aussi les images d'un dossier déposé.",
   "examples": [
@@ -545,7 +545,7 @@
  "tool:AudioVisualizer": {
   "category": "audio",
   "summary": "Transforme une chanson ou un enregistrement en vidéo MP4 avec des barres d'onde animées ou une image fixe.",
-  "details": "Visualiseur audio fabrique une vidéo à partir du son, pour les endroits qui n'acceptent que des vidéos. Style vaut Forme d'onde (des barres animées dans la couleur choisie, sur fond noir) ou Image fixe (une image choisie avec Choisir une image… remplit le cadre ; PNG, JPG, WEBP ou BMP). Forme vaut 16:9 (1920 × 1080), 9:16 (1080 × 1920) ou 1:1 (1080 × 1080), et l'aperçu montre la forme et la couleur. Choisissez Créer une visualisation : le résultat est un MP4 (H.264 avec son AAC) à 30 images par seconde, aussi long que l'audio, enregistré sous le nom « nom Visualizer.mp4 ».",
+  "details": "Visualiseur audio fabrique une vidéo à partir du son, pour les endroits qui n'acceptent que des vidéos. Style vaut Forme d'onde (des barres animées dans la couleur choisie, sur fond noir) ou Image fixe (une image choisie avec Choisir une image… remplit le cadre ; PNG, JPG, WEBP ou BMP). Forme vaut 16:9 (1920 × 1080), 9:16 (1080 × 1920) ou 1:1 (1080 × 1080), et l'aperçu montre la forme et la couleur. Choisissez Créer une visualisation : le résultat est un MP4 (H.264 avec son AAC) à 30 images par seconde, aussi long que l'audio, enregistré sous le nom « nom Visualizer.mp4 ». Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser un fichier audio, appuyez sur Ctrl et déposez-le sur VISUALISER ; choisissez un style, une forme et une couleur, puis Créer une visualisation.",
   "worksOn": "Un fichier audio.",
   "examples": [
@@ -736,7 +736,7 @@
  "tool:RedactVideo": {
   "category": "video",
   "summary": "Cache les visages, les plaques d'immatriculation ou le texte d'une vidéo sous un cadre opaque ou un flou fort, pendant la durée choisie.",
-  "details": "Masquer dans la vidéo vous permet de dessiner des cadres sur l'image de la vidéo. Style vaut Opaque (dans la couleur choisie, noir par défaut) ou Flou, assez fort pour qu'on ne puisse pas distinguer les visages ni le texte. Chaque cadre a sa propre piste sous Masquages : faites glisser ses extrémités pour choisir quand le cadre est visible ; au départ, il couvre toute la vidéo. Les cadres restent là où vous les dessinez ; ils ne suivent pas les objets en mouvement. Réinitialiser retire tous les cadres, et Enregistrer une copie masquée enregistre « nom Redacted » dans le même format, son conservé.",
+  "details": "Masquer dans la vidéo vous permet de dessiner des cadres sur l'image de la vidéo. Style vaut Opaque (dans la couleur choisie, noir par défaut) ou Flou, assez fort pour qu'on ne puisse pas distinguer les visages ni le texte. Chaque cadre a sa propre piste sous Masquages : faites glisser ses extrémités pour choisir quand le cadre est visible ; au départ, il couvre toute la vidéo. Les cadres restent là où vous les dessinez ; ils ne suivent pas les objets en mouvement. Réinitialiser retire tous les cadres, et Enregistrer une copie masquée enregistre « nom Redacted » dans le même format, son conservé. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur MASQUER ; dessinez un cadre sur ce qu'il faut cacher, réglez sa piste, et choisissez Enregistrer une copie masquée.",
   "worksOn": "Une vidéo.",
   "examples": [
@@ -783,12 +783,12 @@
  "tool:Transcribe": {
   "category": "video",
   "summary": "Écrit ce qui est dit dans un enregistrement ou une vidéo, en sous-titres ou en texte, avec Whisper sur ce PC.",
-  "details": "Transcrire utilise le modèle vocal Whisper sur votre PC : Précision vaut Rapide, Équilibré ou Précis (téléchargements uniques d'environ 60 Mo, 190 Mo et 574 Mo), et Précis est le meilleur pour l'arabe, les accents et les enregistrements bruyants. Langue vaut Détecter automatiquement ou l'une des 22 langues, et Sous-titres en vaut Tel que prononcé, En anglais ou En arabe : une parole déjà dans la langue voulue est écrite telle que prononcée ; l'arabe passe en anglais et l'anglais en arabe par les modèles de traduction Opus-MT (téléchargements uniques d'environ 114 Mo chacun), et les autres langues passent en anglais par la traduction de Whisper lui-même (Précis ne sait pas traduire, Équilibré ou Rapide s'en charge), puis en arabe si besoin. Enregistrer en donne Sous-titres (un fichier .srt), Texte (un fichier .txt) ou Les deux, nommés comme l'original (talk.srt) pour que les lecteurs vidéo chargent les sous-titres d'eux-mêmes. Pour une vidéo, Dans la vidéo peut aussi placer les sous-titres dans une copie, En piste séparée (activés et désactivés dans le lecteur) ou Incrustés (intégrés à l'image), enregistrée sous le nom « nom Subtitled ». La carte graphique accélère le travail quand elle le peut, et vous pouvez traiter plusieurs fichiers à la fois.",
+  "details": "Transcrire utilise le modèle vocal Whisper sur votre PC : Précision vaut Rapide, Équilibré ou Précis (téléchargements uniques d'environ 60 Mo, 190 Mo et 574 Mo), et Précis est le meilleur pour les accents, les enregistrements bruyants et les langues autres que l'anglais. Langue vaut Détecter automatiquement ou l'une des 22 langues, et Sous-titres en vaut Tel que prononcé ou l'une des huit langues que DropWheel traduit (anglais, arabe, turc, persan, ourdou, indonésien, français et espagnol) : une parole déjà dans la langue voulue est écrite telle que prononcée, et toute autre est écrite puis traduite sur ce PC par des modèles téléchargés une seule fois (d'environ 110 Mo à environ 630 Mo ; la fenêtre montre ce qu'il faut), ou par le modèle de votre propre clé API si vous l'avez choisi dans Paramètres › Modèles d'IA, ce qui envoie les mots à cette société ; quand aucun modèle de traduction n'est prêt pour la langue parlée, elle passe en anglais par la traduction de Whisper lui-même (Précis ne sait pas traduire, Équilibré ou Rapide s'en charge), puis dans la langue voulue. Enregistrer en donne Sous-titres (un fichier .srt), Texte (un fichier .txt) ou Les deux, nommés comme l'original (talk.srt) pour que les lecteurs vidéo chargent les sous-titres d'eux-mêmes. Pour une vidéo, Dans la vidéo peut aussi placer les sous-titres dans une copie, En piste séparée (activés et désactivés dans le lecteur) ou Incrustés (intégrés à l'image), enregistrée sous le nom « nom Subtitled ». La carte graphique accélère le travail quand elle le peut, et vous pouvez traiter plusieurs fichiers à la fois.",
   "how": "Faites glisser un enregistrement ou une vidéo, appuyez sur Ctrl et déposez-le sur SOUS-TITRES ; choisissez la précision, la langue et ce qu'il faut enregistrer, puis Transcrire. La première fois, choisissez Télécharger dans la fenêtre pour obtenir le modèle.",
   "worksOn": "Fichiers audio et vidéo ; un ou plusieurs à la fois.",
   "examples": [
    "Une interview d'une heure enregistrée sur votre téléphone transformée en fichier texte à citer : Enregistrer en › Texte.",
-   "Une vidéo de famille en arabe avec des sous-titres anglais pour les proches à l'étranger : Sous-titres en › En anglais, Dans la vidéo › Incrustés.",
+   "Une vidéo de famille avec des sous-titres anglais pour les proches à l'étranger : Sous-titres en › English, Dans la vidéo › Incrustés.",
    "Une vidéo de cours avec des sous-titres que les étudiants peuvent activer ou désactiver : Dans la vidéo › En piste séparée."
   ],
   "keywords": [
@@ -801,7 +801,7 @@
    "whisper",
    "écrire ce qui est dit",
    "traduire une vidéo",
-   "sous-titres arabes",
+   "sous-titres dans une autre langue",
    "enregistrement de réunion",
    "dictée audio"
   ]
@@ -858,25 +858,51 @@
  },
  "tool:TranslateSubtitles": {
   "category": "video",
-  "summary": "Traduit en arabe des fichiers de sous-titres anglais sur ce PC, en gardant le minutage de chaque réplique.",
-  "details": "Traduire en arabe lit un fichier de sous-titres anglais SRT ou VTT et le traduit réplique par réplique avec le modèle Opus-MT, un téléchargement unique d'environ 114 Mo. Le minutage reste inchangé, et les balises de mise en forme sont exclues de la traduction. Le résultat est enregistré à côté de l'original avec « .ar » dans le nom (talk.srt devient talk.ar.srt), pour que les lecteurs le proposent en arabe. Il ne traduit que depuis l'anglais ; pour une vidéo dans une autre langue, utilisez Transcrire avec Sous-titres en › En arabe.",
-  "how": "Faites glisser un ou plusieurs fichiers .srt ou .vtt, appuyez sur Ctrl et déposez-les sur ARABE, puis choisissez Traduire. Depuis une invite de commandes : petal translate <sous-titres>.",
+  "summary": "Traduit des fichiers de sous-titres de n'importe laquelle des huit langues de DropWheel vers n'importe quelle autre, en gardant le minutage de chaque réplique.",
+  "details": "Traduire les sous-titres lit un fichier SRT ou VTT et le traduit réplique par réplique. Choisissez « De » (Détecter automatiquement, ou anglais, arabe, turc, persan, ourdou, indonésien, français ou espagnol) et « En ». Tout se passe sur ce PC avec des modèles téléchargés une seule fois, et la fenêtre montre ce qu'il faut pour cette paire : un modèle fait pour elle (environ 110 Mo), deux modèles en passant par l'anglais, ou un modèle plus gros qui connaît toutes les langues (environ 630 Mo, et plus lent). Avec votre propre clé API choisie dans Paramètres › Modèles d'IA, rien n'est à télécharger, et les mots des sous-titres vont à cette société. Le minutage reste inchangé, et les balises de mise en forme sont exclues de la traduction. Le résultat est enregistré à côté de l'original avec le code de la langue dans le nom (talk.srt devient talk.es.srt), pour que les lecteurs le proposent dans sa langue. Pour une vidéo sans sous-titres, utilisez Transcrire.",
+  "how": "Faites glisser un ou plusieurs fichiers .srt ou .vtt, appuyez sur Ctrl et déposez-les sur TRADUIRE ; choisissez « De » et « En », puis Traduire. Depuis une invite de commandes : petal translate <sous-titres> --to es (les codes sont en, ar, tr, fa, ur, id, fr et es ; ajoutez --from pour indiquer leur langue).",
   "worksOn": "Fichiers de sous-titres (SRT et VTT) ; un ou plusieurs à la fois.",
   "examples": [
-   "Des sous-titres anglais téléchargés pour un film, traduits pour un parent qui lit l'arabe.",
-   "Les sous-titres VTT des cours d'une formation, traduits pour des étudiants arabophones.",
-   "Des sous-titres anglais créés plus tôt avec Transcrire, mis en arabe ensuite."
+   "Des sous-titres téléchargés pour un film, traduits pour un parent qui lit une autre langue.",
+   "Les sous-titres VTT des cours d'une formation, traduits de l'anglais vers l'indonésien pour vos étudiants.",
+   "Des sous-titres créés plus tôt avec Transcrire, mis en espagnol ensuite."
   ],
   "keywords": [
    "traduire des sous-titres",
-   "sous-titres arabes",
-   "anglais vers arabe",
+   "sous-titres en français",
+   "anglais vers français",
    "srt",
    "vtt",
    "traduction",
    "traducteur de sous-titres",
-   "sous-titres en arabe",
+   "sous-titres dans ma langue",
    "traduire un srt"
+  ]
+ },
+ "tool:TranslateDocument": {
+  "category": "documents",
+  "summary": "Traduit un fichier Word, PowerPoint, Excel ou PDF dans une autre langue, en un nouveau fichier à côté de l'original, mise en forme gardée.",
+  "details": "Traduire un document fonctionne entre deux des huit langues de DropWheel : anglais, arabe, turc, persan, ourdou, indonésien, français et espagnol. Choisissez « De » (Détecter automatiquement, ou une langue) et « En » ; le résultat est enregistré à côté de l'original avec le code de la langue dans son nom, ainsi report.docx devient report.es.docx. Un paragraphe est traduit en entier et prend l'aspect de la plupart de ses mots ; les styles, tableaux, liens, images, champs et formules restent. Les en-têtes, pieds de page, notes et zones de texte de Word, les tableaux et notes du présentateur de PowerPoint et les mots des cellules d'Excel sont traduits aussi ; les nombres, dates, noms de feuilles et en-têtes des tableaux Excel ne le sont pas. Vers l'arabe, le persan ou l'ourdou, les paragraphes, tableaux et feuilles passent de droite à gauche, et en reviennent dans l'autre sens. Tout se passe sur ce PC avec des modèles de traduction téléchargés une seule fois (la fenêtre montre ce qu'il faut pour cette paire), ou avec votre propre clé API choisie dans Paramètres › Modèles d'IA, qui envoie le texte à cette société ; la fenêtre dit lequel. Il a des limites. Dans un PDF, les mots traduits sont dessinés sur chaque paragraphe, dans ses couleurs et aussi grands que possible. Les mots d'origine sont retirés de la page là où c'est possible sans risque ; sur une page numérisée et là où ce n'est pas possible, ils restent cachés sous la traduction, si bien que la recherche les trouve encore et qu'un secret qu'ils contiennent y reste. Une page de PDF numérisée est d'abord lue par la reconnaissance de texte de Windows, et un PDF protégé par mot de passe doit d'abord être déverrouillé. Les graphiques et SmartArt ne sont pas traduits. Les fichiers ODT et RTF sortent en DOCX. Les anciens fichiers PPT et XLS ne sont pas acceptés : enregistrez-les d'abord en PPTX ou XLSX.",
+  "how": "Faites glisser un ou plusieurs fichiers du même genre, appuyez sur Ctrl et déposez-les sur TRADUIRE ; choisissez « De » et « En », puis Traduire.",
+  "worksOn": "Fichiers Word (DOCX, ODT, RTF), PowerPoint (PPTX), Excel (XLSX) et PDF ; un ou plusieurs du même genre à la fois.",
+  "examples": [
+   "Un contrat Word traduit du français vers l'anglais, ses titres, tableaux et numéros de page tels quels.",
+   "Une présentation en anglais mise en espagnol pour un client, notes du présentateur comprises.",
+   "Un tarif Excel mis en arabe : la feuille passe de droite à gauche, et les nombres et formules restent."
+  ],
+  "keywords": [
+   "traduire un document",
+   "traduire un pdf",
+   "traduire un word",
+   "traduire un powerpoint",
+   "traduire un excel",
+   "garder la mise en forme",
+   "traducteur de documents",
+   "docx",
+   "pptx",
+   "xlsx",
+   "droite à gauche",
+   "traduire un fichier"
   ]
  },
  "tool:RemovePauses": {
@@ -906,13 +932,13 @@
  "tool:AnimatedCaptions": {
   "category": "video",
   "summary": "Incruste des sous-titres animés dans une vidéo, quelques mots à la fois avec le mot prononcé en surbrillance, comme dans les vidéos courtes.",
-  "details": "Sous-titres animés écoute la vidéo avec le modèle vocal Whisper sur votre PC et dessine les mots dans l'image. Style vaut Mot à mot (une ligne courte où le mot prononcé est en surbrillance et un peu plus grand), Un mot (un grand mot à la fois, qui apparaît d'un coup) ou Lignes (de simples lignes en gras) ; Emplacement vaut Bas, Milieu ou Haut ; Taille vaut Petit, Moyen ou Grand ; Mot en surbrillance est jaune, vert, rose, violet ou bleu. Une image de la vidéo montre le rendu des sous-titres. Précision (Rapide, Équilibré ou Précis : téléchargements d'environ 60, 190 et 574 Mo), Langue parlée et Mots en (Tel que prononcé, En anglais ou En arabe ; avec un modèle de traduction d'environ 114 Mo la première fois) fonctionnent comme dans Transcrire. Choisissez Ajouter des sous-titres ; le résultat est enregistré sous le nom « nom Captioned », son conservé, et l'arabe se lit de droite à gauche. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
+  "details": "Sous-titres animés écoute la vidéo avec le modèle vocal Whisper sur votre PC et dessine les mots dans l'image. Style vaut Mot à mot (une ligne courte où le mot prononcé est en surbrillance et un peu plus grand), Un mot (un grand mot à la fois, qui apparaît d'un coup) ou Lignes (de simples lignes en gras) ; Emplacement vaut Bas, Milieu ou Haut ; Taille vaut Petit, Moyen ou Grand ; Mot en surbrillance est jaune, vert, rose, violet ou bleu. Une image de la vidéo montre le rendu des sous-titres. Précision (Rapide, Équilibré ou Précis : téléchargements d'environ 60, 190 et 574 Mo), Langue parlée et Mots en (Tel que prononcé ou l'une des huit langues que DropWheel traduit ; avec un modèle de traduction la première fois) fonctionnent comme dans Transcrire. Choisissez Ajouter des sous-titres ; le résultat est enregistré sous le nom « nom Captioned », son conservé, et l'arabe, le persan et l'ourdou se lisent de droite à gauche. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une ou plusieurs vidéos, appuyez sur Ctrl et déposez-les sur SOUS-TITRER ; choisissez un style, un emplacement et une couleur, puis choisissez Ajouter des sous-titres.",
   "worksOn": "Des vidéos ; une ou plusieurs à la fois.",
   "examples": [
    "Une vidéo face caméra pour TikTok où des mots jaunes s'allument pendant que vous parlez : Mot à mot, Bas.",
    "Un Reel que la plupart des gens regardent sans le son : Un mot, Milieu, Grand.",
-   "Une vidéo de produit en anglais avec des sous-titres arabes pour des clients du Golfe : Mots en › En arabe."
+   "Une vidéo de produit en anglais avec des sous-titres espagnols pour des clients au Mexique : Mots en › Español."
   ],
   "keywords": [
    "sous-titres animés",
@@ -954,12 +980,12 @@
  "tool:MakeShorts": {
   "category": "video",
   "summary": "Transforme une longue vidéo (conférence, interview, podcast, cours) en courts extraits prêts pour Reels, Shorts et TikTok : ses meilleurs moments, trouvés, cadrés et sous-titrés.",
-  "details": "Vidéos courtes écoute toute la vidéo sur ce PC (Whisper, avec l'instant de chaque mot) et trouve les moments qui tiennent debout seuls : chacun commence au début d'une phrase et finit là où une idée s'achève. Ils sont classés selon ce qui retient le spectateur : une ouverture qui accroche (une question, « imaginez… »), un débit vivant, une histoire, des conseils, des chiffres, de l'émotion ou des rires, un seul sujet du début à la fin, et la durée demandée. Choisissez le nombre de Clips (3, 5 ou 8), leur Durée (jusqu'à 30 s, 30–60 s ou 60–90 s), la Forme (Vertical 9:16, Carré ou Tel quel) et le Cadrage. Suivre l'orateur trouve les visages avec le détecteur de visages de Windows, garde dans le cadre celui qui parle, glisse quand il bouge et coupe quand un autre prend la parole ; quand aucun visage n'est net (diapositives, scène), il montre toute l'image sur une copie floutée d'elle-même, comme Image entière le fait toujours. Les Sous-titres sont incrustés Mot à mot (le mot prononcé s'allume dans la couleur choisie), Un mot ou Lignes, et Mots en est la langue parlée, l'anglais ou l'arabe. Titre au début place un titre sur les premières secondes ; Couper les silences resserre les blancs entre les phrases. Choisissez Trouver les meilleurs moments : ils s'affichent du meilleur au moins bon, chacun avec une note sur 100 et la raison de son choix. Lisez-en un pour vérifier, changez son titre (les titres sont écrits par le modèle d'IA de ce PC quand il est là, et gardés seulement s'ils restent fidèles à ce qui est dit), décochez ceux dont vous ne voulez pas, puis choisissez Créer les vidéos courtes. Les extraits sont enregistrés dans un nouveau dossier nommé « nom Shorts », numérotés et titrés, en MP4 1080 × 1920, le son au niveau sonore que jouent les applications. Une vidéo écoutée une fois se rouvre aussitôt. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
+  "details": "Vidéos courtes écoute toute la vidéo sur ce PC (Whisper, avec l'instant de chaque mot) et trouve les moments qui tiennent debout seuls : chacun commence au début d'une phrase et finit là où une idée s'achève. Ils sont classés selon ce qui retient le spectateur : une ouverture qui accroche (une question, « imaginez… »), un débit vivant, une histoire, des conseils, des chiffres, de l'émotion ou des rires, un seul sujet du début à la fin, et la durée demandée. Choisissez le nombre de Clips (3, 5 ou 8), leur Durée (jusqu'à 30 s, 30–60 s ou 60–90 s), la Forme (Vertical 9:16, Carré ou Tel quel) et le Cadrage. Suivre l'orateur trouve les visages avec le détecteur de visages de Windows, garde dans le cadre celui qui parle, glisse quand il bouge et coupe quand un autre prend la parole ; quand aucun visage n'est net (diapositives, scène), il montre toute l'image sur une copie floutée d'elle-même, comme Image entière le fait toujours. Les Sous-titres sont incrustés Mot à mot (le mot prononcé s'allume dans la couleur choisie), Un mot ou Lignes, et Mots en vaut Tel que prononcé ou l'une des huit langues que DropWheel traduit. Titre au début place un titre sur les premières secondes ; Couper les silences resserre les blancs entre les phrases. Choisissez Trouver les meilleurs moments : ils s'affichent du meilleur au moins bon, chacun avec une note sur 100 et la raison de son choix. Lisez-en un pour vérifier, changez son titre (les titres sont écrits par le modèle d'IA de ce PC quand il est là, ou par le modèle de votre propre clé API depuis Paramètres › Modèles d'IA, et gardés seulement s'ils restent fidèles à ce qui est dit), décochez ceux dont vous ne voulez pas, puis choisissez Créer les vidéos courtes. Les extraits sont enregistrés dans un nouveau dossier nommé « nom Shorts », numérotés et titrés, en MP4 1080 × 1920, le son au niveau sonore que jouent les applications. Une vidéo écoutée une fois se rouvre aussitôt. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur SHORTS ; choisissez le nombre, la durée, la forme et les sous-titres des extraits, choisissez Trouver les meilleurs moments, vérifiez les moments, puis choisissez Créer les vidéos courtes.",
   "worksOn": "Une vidéo avec de la parole, de n'importe quelle durée.",
   "examples": [
    "Un podcast d'une heure transformé en huit extraits de 60 secondes pour TikTok, chacun ouvert par une question et sous-titré mot à mot.",
-   "Un cours en arabe transformé en cinq Reels avec sous-titres arabes et titre, les silences coupés.",
+   "Un cours transformé en cinq Reels avec sous-titres et titre, les silences coupés.",
    "Un webinaire enregistré avec diapositives : Image entière garde les diapositives lisibles, avec des sous-titres anglais en dessous."
   ],
   "keywords": [
@@ -979,23 +1005,23 @@
  },
  "tool:Dub": {
   "category": "video",
-  "summary": "Redit la parole d'une vidéo dans l'autre langue, de l'arabe vers l'anglais ou de l'anglais vers l'arabe, avec la voix de chaque orateur ; la musique est retirée et tous les autres sons sont gardés.",
-  "details": "Doublage sépare les voix du reste du son (Demucs), écrit ce qui est dit avec l'instant de chaque mot (Whisper) et le traduit phrase par phrase, le tout sur ce PC. Choisissez la langue du Doublage (En anglais ou En arabe), la Langue parlée (ou Détecter automatiquement) et la Précision de l'écoute, puis choisissez Préparer le doublage. Très précis écoute avec le modèle le plus précis et fait traduire par le sens, pas mot à mot, par un grand modèle d'IA sur ce PC (Gemma 4 12B, environ 7 Go, téléchargé une fois), comme le ferait un traducteur de doublage après avoir lu toute la vidéo : expressions religieuses, poésie et dialecte sont rendus comme ils sont voulus, chaque ligne gardant à peu près la longueur de l'original ; cela prend quelques minutes par minute de parole. Les phrases apparaissent avec leurs traductions : vérifiez-les, modifiez celles qui le demandent et écoutez une phrase pour entendre comment elle a été dite. Puis choisissez Doublage. D'abord la musique est retirée du reste du son (par TIGER, fait pour séparer le son des films en parole, musique et effets) : les pas, la pluie, le vent et le bruit d'une pièce restent, la musique s'en va ; cela prend un moment la première fois, puis c'est gardé. Ensuite chaque phrase est redite par le modèle de voix de ce PC (Chatterbox) avec la voix de la personne qui l'a prononcée, apprise de cette phrase même ; elle est réécoutée et redite si elle est sortie de travers, ajustée au temps qu'avait pris l'originale (dite jusqu'à 1,3 fois plus vite si elle est plus longue) et posée sur les autres sons aussi fort que l'originale avait été dite. La nouvelle vidéo est enregistrée à côté de l'originale sous le nom « nom Arabic.mp4 » ou « nom English.mp4 », son image intacte. Garder le son d'origine comme deuxième piste ajoute le son d'origine, musique comprise, pour les lecteurs qui changent de piste, et Sous-titres dans la nouvelle langue met la traduction dans le fichier en sous-titres. Le fichier indique que ses voix ont été créées par l'IA. Une vidéo préparée une fois se rouvre aussitôt. Ne doublez que des vidéos dont les orateurs accepteraient que leur voix soit utilisée.",
+  "summary": "Redit la parole d'une vidéo dans une autre langue, depuis et vers n'importe laquelle des huit langues de DropWheel, avec la voix de chaque orateur ; la musique est retirée et tous les autres sons sont gardés.",
+  "details": "Doublage sépare les voix du reste du son (Demucs), écrit ce qui est dit avec l'instant de chaque mot (Whisper) et le traduit phrase par phrase, sur ce PC. Choisissez Doubler en et la Langue parlée (ou Détecter automatiquement), chacune anglais, arabe, turc, persan, ourdou, indonésien, français ou espagnol, et la Précision de l'écoute, puis choisissez Préparer le doublage. Très précis écoute avec le modèle le plus précis et fait traduire par le sens, pas mot à mot, par un grand modèle d'IA sur ce PC (Gemma 4 12B, environ 7 Go, téléchargé une fois), comme le ferait un traducteur de doublage après avoir lu toute la vidéo : expressions religieuses, poésie et dialecte sont rendus comme ils sont voulus, chaque ligne gardant à peu près la longueur de l'original ; cela prend quelques minutes par minute de parole. La traduction peut aussi être faite par le modèle de votre propre clé API, choisi dans Paramètres › Modèles d'IA : les mots des phrases vont à cette société et rien n'est à télécharger pour eux ; l'écoute et les voix restent toujours sur ce PC. Les phrases apparaissent avec leurs traductions : vérifiez-les, modifiez celles qui le demandent et écoutez une phrase pour entendre comment elle a été dite. Puis choisissez Doublage. D'abord la musique est retirée du reste du son (par TIGER, fait pour séparer le son des films en parole, musique et effets) : les pas, la pluie, le vent et le bruit d'une pièce restent, la musique s'en va ; cela prend un moment la première fois, puis c'est gardé. Ensuite chaque phrase est redite par le modèle de voix de ce PC (Chatterbox) avec la voix de la personne qui l'a prononcée, apprise de cette phrase même ; elle est réécoutée et redite si elle est sortie de travers, ajustée au temps qu'avait pris l'originale (dite jusqu'à 1,3 fois plus vite si elle est plus longue) et posée sur les autres sons aussi fort que l'originale avait été dite. Le modèle de voix n'a pas été fait pour le persan, l'ourdou et l'indonésien : il les lit comme l'arabe et le malais, et ils peuvent donc sonner moins naturels, l'ourdou surtout. La nouvelle vidéo est enregistrée à côté de l'originale sous le nom de sa langue (« nom Spanish.mp4 »), son image intacte. Garder le son d'origine comme deuxième piste ajoute le son d'origine, musique comprise, pour les lecteurs qui changent de piste, et Sous-titres dans la nouvelle langue met la traduction dans le fichier en sous-titres. Le fichier indique que ses voix ont été créées par l'IA. Une vidéo préparée une fois se rouvre aussitôt. Ne doublez que des vidéos dont les orateurs accepteraient que leur voix soit utilisée.",
   "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur DOUBLAGE ; choisissez la langue du doublage, choisissez Préparer le doublage, vérifiez les traductions, puis choisissez Doublage.",
   "examples": [
-   "Un cours en anglais doublé en arabe avec la voix même de l'enseignant, la musique de fond retirée et les bruits de la classe gardés.",
-   "Une interview en arabe doublée en anglais, avec des sous-titres anglais.",
-   "Une vidéo de produit en anglais rendue arabe sans sa musique, deux traductions corrigées avant le doublage."
+   "Un cours doublé dans une autre langue avec la voix même de l'enseignant, la musique de fond retirée et les bruits de la classe gardés.",
+   "Une interview en espagnol doublée en anglais, avec des sous-titres anglais.",
+   "Une vidéo de produit rendue française sans sa musique, deux traductions corrigées avant le doublage."
   ],
-  "worksOn": "Une vidéo avec de la parole en arabe ou en anglais, jusqu'à 30 minutes.",
+  "worksOn": "Une vidéo avec de la parole en anglais, arabe, turc, persan, ourdou, indonésien, français ou espagnol, jusqu'à 30 minutes.",
   "keywords": [
    "doublage",
    "doubler",
    "voix off",
    "traduire une vidéo",
    "traduction vocale",
-   "arabe vers anglais",
-   "anglais vers arabe",
+   "français vers anglais",
+   "anglais vers français",
    "clonage de voix",
    "doublage ia",
    "retirer la musique",
@@ -1031,12 +1057,12 @@
  "tool:AskFile": {
   "category": "documents",
   "summary": "Répond aux questions sur un PDF, un document, un tableur ou un enregistrement à partir de ses propres mots, avec la page, la diapositive ou la minute d'où vient la réponse.",
-  "details": "Interroger un fichier lit le fichier une fois, sur ce PC : un PDF page par page (les pages numérisées avec la reconnaissance de texte intégrée à Windows), un document Word ou une présentation tels qu'ils s'impriment quand Word, PowerPoint ou LibreOffice est installé (sinon par ses titres et ses diapositives), un tableur quelques lignes à la fois, et un enregistrement ou une vidéo en l'écoutant (Whisper). Tapez une question et appuyez sur Demander : DropWheel trouve les passages du fichier qui en parlent, par leur sens comme par leurs mots, en arabe et en anglais et de l'un à l'autre, et le modèle d'IA de ce PC (Qwen3 4B, environ 2,5 Go, téléchargé une fois depuis la fenêtre) écrit une réponse courte à partir de ces seuls passages, dans la langue de la question, avec l'endroit où le fichier le dit : la page, la diapositive, les lignes ou la minute. Cliquez sur un endroit pour le voir : la page s'affiche avec les mots d'où vient la réponse surlignés, et un enregistrement se lit à partir de cette minute. Quand le fichier ne le dit pas, la réponse le dit et montre les passages les plus proches au lieu d'inventer. Tant que le modèle de réponse n'est pas téléchargé, chaque question montre les passages du fichier qui en parlent. La recherche demande un petit modèle (environ 120 Mo), téléchargé une fois. Un fichier lu une fois est gardé : le réinterroger plus tard commence aussitôt, et rien ne quitte le PC. Ouvrir le fichier l'ouvre dans son application.",
+  "details": "Interroger un fichier lit le fichier une fois, sur ce PC : un PDF page par page (les pages numérisées avec la reconnaissance de texte intégrée à Windows), un document Word ou une présentation tels qu'ils s'impriment quand Word, PowerPoint ou LibreOffice est installé (sinon par ses titres et ses diapositives), un tableur quelques lignes à la fois, et un enregistrement ou une vidéo en l'écoutant (Whisper). Tapez une question et appuyez sur Demander : DropWheel trouve les passages du fichier qui en parlent, par leur sens comme par leurs mots, dans la langue du fichier et d'une langue à l'autre, et le modèle d'IA de ce PC (Qwen3 4B, environ 2,5 Go, téléchargé une fois depuis la fenêtre) ou le modèle de votre propre clé API (Paramètres › Modèles d'IA ; la question et ces passages vont alors à cette société) écrit une réponse courte à partir de ces seuls passages, dans la langue de la question, avec l'endroit où le fichier le dit : la page, la diapositive, les lignes ou la minute. Cliquez sur un endroit pour le voir : la page s'affiche avec les mots d'où vient la réponse surlignés, et un enregistrement se lit à partir de cette minute. Quand le fichier ne le dit pas, la réponse le dit et montre les passages les plus proches au lieu d'inventer. Tant que le modèle de réponse n'est pas téléchargé, chaque question montre les passages du fichier qui en parlent. La recherche demande un petit modèle (environ 120 Mo), téléchargé une fois. Un fichier lu une fois est gardé : le réinterroger plus tard commence aussitôt, et sauf si vous avez choisi votre propre clé, rien ne quitte le PC. Ouvrir le fichier l'ouvre dans son application.",
   "how": "Faites glisser un PDF, un document, un tableur ou un enregistrement, appuyez sur Ctrl et déposez-le sur INTERROGER ; tapez une question et appuyez sur Demander.",
   "examples": [
    "Un contrat de 70 pages : demandez quel préavis il faut pour le résilier, et voyez la page avec la phrase surlignée.",
    "L'enregistrement d'un cours de deux heures : demandez quand l'examen a été évoqué et écoutez à partir de cette minute.",
-   "Un règlement en anglais au format PDF interrogé en arabe et répondu en arabe, avec la page d'où vient la réponse."
+   "Un règlement en anglais au format PDF interrogé dans votre langue et répondu dans celle-ci, avec la page d'où vient la réponse."
   ],
   "worksOn": "Un fichier : PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, texte, Markdown, HTML, EPUB, ou un enregistrement audio ou vidéo.",
   "keywords": [
@@ -1101,6 +1127,32 @@
    "limite discord",
    "limite d'envoi",
    "réduire les mo"
+  ]
+ },
+ "tool:EditPdf": {
+  "category": "pdf",
+  "summary": "Remplit un PDF, écrit dessus, l'annote et le caviarde vraiment dans une seule fenêtre, en un nouveau fichier à côté de l'original.",
+  "details": "Modifier le PDF ouvre les pages avec une bande d'outils, et Enregistrer écrit « nom Edited.pdf » à côté de l'original, qui ne change jamais. Les champs de formulaire se remplissent sur place (texte, cases à cocher, boutons radio, listes déroulantes et listes), et les valeurs en arabe, persan ou ourdou sont correctement formées. Écrire du texte place des mots n'importe où ; Date du jour, Coche, Croix et Point se posent d'un clic. Modifier le texte du PDF vous laisse cliquer sur une ligne du texte même du PDF et la retaper : les anciens mots quittent le fichier. Surligner, Souligné, Barrer et Commentaire sont de vraies annotations que d'autres lecteurs PDF peuvent modifier ; Stylo, Ligne, Flèche, Rectangle, Ellipse, Masquer en blanc, Placer une image et Signature dessinent sur la page. Caviarder retire vraiment : dessinez des cadres, sélectionnez des mots, tapez un mot ou une expression et appuyez sur Trouver et marquer pour toutes les pages, ou appuyez sur Trouver les données privées (adresses e-mail, numéros de téléphone, numéros de carte, IBAN, adresses IP et mots de passe ; les pages numérisées sont lues aussi). Les cadres restent rouges jusqu'à l'enregistrement ; ce qui est dessous est alors retiré du fichier, pas recouvert, et les données cachées du fichier partent aussi, sauf si vous décochez Retirer les données cachées du fichier. Aplatir incruste les champs et les annotations dans les pages pour qu'ils ne puissent plus changer. Ctrl+Z annule, Ctrl+Y rétablit, Ctrl+S enregistre, Suppr retire l'élément sélectionné et Échap revient à Sélectionner et déplacer. Un fichier protégé demande son mot de passe, et un formulaire verrouillé par son auteur ne se modifie que dans la mesure où celui-ci le permet. Il a des limites. Une page dont les mots ne peuvent pas être retirés un par un (une image ou un dessin sous un cadre, des polices inhabituelles) est redessinée comme une image, les mots hors des cadres restant consultables. Masquer en blanc ne fait que cacher : ce qu'il couvre reste dans le fichier, utilisez donc Caviarder pour le retirer. Une ligne retapée dans une telle police reste sous un cache, et la fenêtre le dit. Il ne gère pas les formulaires faits uniquement en XFA, les scripts de champs, les signatures numériques à certificat, la remise en forme des paragraphes, ni la modification des commentaires que le fichier contient déjà. La signature d'un fichier signé numériquement n'est plus valide après des modifications.",
+  "how": "Faites glisser un PDF, appuyez sur Ctrl et déposez-le sur MODIFIER ; choisissez un outil dans la bande, travaillez sur les pages et appuyez sur Enregistrer.",
+  "worksOn": "Un PDF.",
+  "examples": [
+   "Un formulaire de demande de visa : tapez dans ses champs, cochez les cases, placez votre signature et enregistrez.",
+   "Un relevé bancaire demandé par une université : Trouver les données privées marque les numéros de carte et de téléphone, vous caviardez le reste, et l'enregistrement les retire du fichier.",
+   "Une date erronée dans un rapport : choisissez Modifier le texte du PDF, cliquez sur la ligne et retapez-la."
+  ],
+  "keywords": [
+   "modifier un pdf",
+   "éditeur pdf",
+   "remplir un formulaire pdf",
+   "remplir un formulaire",
+   "écrire sur un pdf",
+   "caviarder un pdf",
+   "retirer les données privées",
+   "changer le texte d'un pdf",
+   "surligner un pdf",
+   "masquer en blanc",
+   "aplatir un pdf",
+   "annoter un pdf"
   ]
  },
  "tool:CreatePdf": {
@@ -1316,13 +1368,13 @@
  "tool:MakeSearchable": {
   "category": "pdf",
   "summary": "Lit les PDF numérisés et les photos de pages avec l'OCR de Windows pour que leur texte puisse être recherché et copié.",
-  "details": "Rendre consultable fonctionne immédiatement : chaque page qui n'a pas de texte propre est lue avec l'OCR intégré à Windows (chaque langue installée est essayée, arabe compris) et reçoit un calque de texte invisible placé exactement sur les mots. La page reste identique, mais la recherche, la sélection et la copie fonctionnent désormais. Chaque PDF est enregistré sous le nom « nom Searchable.pdf », et plusieurs images déposées ensemble deviennent les pages d'un seul PDF consultable au nom de la première image. Un PDF dont toutes les pages ont déjà du texte est laissé tel quel, et quand aucun texte n'est trouvé, la carte suggère une numérisation plus nette ou d'ajouter sa langue dans Paramètres Windows › Heure et langue.",
+  "details": "Rendre consultable fonctionne immédiatement : chaque page qui n'a pas de texte propre est lue avec l'OCR intégré à Windows (chaque langue installée est essayée) et reçoit un calque de texte invisible placé exactement sur les mots. La page reste identique, mais la recherche, la sélection et la copie fonctionnent désormais. Chaque PDF est enregistré sous le nom « nom Searchable.pdf », et plusieurs images déposées ensemble deviennent les pages d'un seul PDF consultable au nom de la première image. Un PDF dont toutes les pages ont déjà du texte est laissé tel quel, et quand aucun texte n'est trouvé, la carte suggère une numérisation plus nette ou d'ajouter sa langue dans Paramètres Windows › Heure et langue.",
   "how": "Faites glisser le PDF numérisé (ou plusieurs photos de pages), appuyez sur Ctrl et déposez-le sur OCR.",
   "worksOn": "Des PDF (un ou plusieurs, ou un dossier de PDF déposé), ou deux images ou plus.",
   "examples": [
    "Un contrat numérisé de 30 pages : rendez-le consultable, puis trouvez chaque mention de « résiliation » avec Ctrl+F.",
    "Cinq photos de pages de livre prises au téléphone deviennent un seul PDF dont vous pouvez copier des citations.",
-   "Une lettre en arabe numérisée en PDF : son texte peut ensuite être copié dans Word."
+   "Une lettre numérisée en PDF : son texte peut ensuite être copié dans Word."
   ],
   "keywords": [
    "ocr",
@@ -1334,18 +1386,18 @@
    "rechercher dans un pdf",
    "document numérisé",
    "sélectionner le texte d'un pdf",
-   "ocr arabe"
+   "ocr dans toutes les langues"
   ]
  },
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Transforme un PDF, un fichier Word, un livre numérique ou un texte en livre audio MP3 lu sur ce PC.",
-  "details": "Lire à voix haute lit le texte du document et indique combien de mots il contient et environ combien de minutes la lecture prendra. Il choisit une voix pour la langue du document : l'une des voix propres à Windows, ou la voix naturelle anglaise Linda, qui se télécharge une seule fois depuis la fenêtre (environ 85 Mo) ; l'arabe est lu par les voix arabes de Windows. Choisissez Vitesse (0,75×, 1×, 1,25× ou 1,5×), appuyez sur Écouter pour entendre les premières phrases, puis sur Enregistrer l'audio pour écrire « nom Audio.mp3 » à côté du document. Si aucune voix installée ne parle la langue du document, Ouvrir les paramètres vocaux permet à Windows d'en ajouter une ; le texte ne quitte jamais le PC.",
+  "details": "Lire à voix haute lit le texte du document et indique combien de mots il contient et environ combien de minutes la lecture prendra. Il choisit une voix pour la langue du document : l'une des voix propres à Windows, ou la voix naturelle anglaise Linda, qui se télécharge une seule fois depuis la fenêtre (environ 85 Mo). Choisissez Vitesse (0,75×, 1×, 1,25× ou 1,5×), appuyez sur Écouter pour entendre les premières phrases, puis sur Enregistrer l'audio pour écrire « nom Audio.mp3 » à côté du document. Si aucune voix installée ne parle la langue du document, Ouvrir les paramètres vocaux permet à Windows d'en ajouter une ; le texte ne quitte jamais le PC.",
   "how": "Faites glisser le document, appuyez sur Ctrl et déposez-le sur ÉCOUTER ; choisissez une voix et une vitesse et appuyez sur Enregistrer l'audio.",
   "worksOn": "Un fichier : PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT ou EPUB.",
   "examples": [
    "Un chapitre PDF de 25 pages à écouter dans le bus : enregistrez-le en MP3 à 1,25×.",
-   "Un article en arabe dans Word lu par la voix arabe de Windows.",
+   "Un article en espagnol dans Word lu par la voix espagnole de Windows.",
    "Un roman EPUB transformé en livre audio pour un long trajet en voiture."
   ],
   "keywords": [
@@ -1358,7 +1410,7 @@
    "mp3 à partir d'un document",
    "voix",
    "narration",
-   "voix arabe",
+   "voix dans toutes les langues",
    "texte en audio"
   ]
  },
@@ -1552,8 +1604,8 @@
  },
  "action:Ask": {
   "category": "files",
-  "summary": "Fait ce que vous demandez avec les fichiers, avec vos propres mots en anglais ou en arabe, après vous avoir montré les étapes.",
-  "details": "Demander à DropWheel ouvre une zone où vous tapez (ou dites, avec le bouton du microphone) ce qu'il faut faire, par exemple « make them 1080 px WEBP and zip them » ou « put them in one searchable PDF ». DropWheel liste les étapes comprises sous « DropWheel va : » et prévient quand elles ne conviennent pas aux fichiers ; rien ne s'exécute avant que vous appuyiez sur Exécuter. Les demandes courantes sont comprises sans modèle, et avec le modèle d'IA (Qwen2.5 1.5B, environ 1,1 Go, téléchargé une seule fois depuis la fenêtre), les demandes formulées librement sont comprises aussi, le tout sur ce PC. Enregistrer comme recette… garde les étapes sous forme de pétale sur la roue des outils, et les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette.",
+  "summary": "Fait ce que vous demandez avec les fichiers, avec vos propres mots, après vous avoir montré les étapes.",
+  "details": "Demander à DropWheel ouvre une zone où vous tapez (ou dites, avec le bouton du microphone) ce qu'il faut faire, par exemple « make them 1080 px WEBP and zip them » ou « put them in one searchable PDF ». DropWheel liste les étapes comprises sous « DropWheel va : » et prévient quand elles ne conviennent pas aux fichiers ; rien ne s'exécute avant que vous appuyiez sur Exécuter. Les demandes courantes en anglais ou en arabe sont comprises sans modèle, et avec le modèle d'IA (Qwen2.5 1.5B, environ 1,1 Go, téléchargé une seule fois depuis la fenêtre), les demandes formulées librement sont comprises aussi, dans d'autres langues également, le tout sur ce PC ; ou le modèle de votre propre clé API depuis Paramètres › Modèles d'IA s'en charge, ce qui envoie votre demande, et non les fichiers, à cette société. Enregistrer comme recette… garde les étapes sous forme de pétale sur la roue des outils, et les résultats sont enregistrés à côté des originaux sous le « nom » suivi du nom de la recette.",
   "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur DEMANDER ; tapez ce que vous voulez, appuyez sur Demander, vérifiez les étapes et appuyez sur Exécuter.",
   "worksOn": "Des fichiers ; un ou plusieurs.",
   "examples": [
@@ -1566,7 +1618,7 @@
    "langage naturel",
    "lui dire quoi faire",
    "avec mes propres mots",
-   "demande en arabe",
+   "demande dans ma langue",
    "assistant ia",
    "demande vocale",
    "fais-le pour moi",
@@ -2621,7 +2673,7 @@
  "do:screen.circle": {
   "category": "screen",
   "summary": "Entourez n'importe quoi à l'écran (une phrase, un nombre, une date, une image, un code QR) et la roue s'ouvre avec ce que l'on peut en faire, le tout sur ce PC.",
-  "details": "Appuyez sur Ctrl+Win+C et l'écran se fige, avec un bord lumineux. Entourez n'importe quoi, griffonnez sur un mot, tracez une ligne le long d'une phrase, ou cliquez sur un paragraphe ou une image ; le pointeur éclaire le paragraphe qu'un clic prendrait. DropWheel lit ce que vous avez pris (avec la reconnaissance de texte intégrée à Windows ; les codes QR et codes-barres aussi) et la roue s'ouvre dessus. Pour les mots : COPIER TEXTE, TRADUIRE (la traduction est posée sur l'original, paragraphe par paragraphe, dans ses propres couleurs, avec Original pour comparer), EXPLIQUER, DEMANDER (une zone de question qui poursuit la conversation), RÉSUMÉ, RECHERCHE, LIRE, et TABLEAU ou EXCEL quand les mots sont en lignes et en colonnes. Ce que le texte contient vient d'abord : OUVRIR LIEN, E-MAIL, APPELER, CALENDRIER pour une date (un fichier d'événement que tout calendrier ouvre), VOTRE HEURE pour une heure donnée dans un autre fuseau, CONVERTIR pour les unités (kilomètres et miles, kilos et livres, °C et °F, pieds et pouces, feddans), DEVISE aux taux du jour, RÉSULTAT pour un calcul, COULEUR pour un code couleur. Pour une image : DÉCRIRE, DEMANDER, COPIER IMAGE, ENREG., DÉTOURER (le sujet, aux bords transparents), ÉPINGLER, COULEURS, et OUTILS pour toutes les conversions. Le centre de la roue montre déjà la réponse quand il y en a une : une conversion, un résultat, l'heure chez vous. Expliquer, demander et décrire utilisent les modèles d'IA de ce PC, téléchargés une seule fois ; seule DEVISE va en ligne, et seulement quand vous la choisissez, pour chercher les taux du jour. Échap ou un clic droit rend l'écran.",
+  "details": "Appuyez sur Ctrl+Win+C et l'écran se fige, avec un bord lumineux. Entourez n'importe quoi, griffonnez sur un mot, tracez une ligne le long d'une phrase, ou cliquez sur un paragraphe ou une image ; le pointeur éclaire le paragraphe qu'un clic prendrait. DropWheel lit ce que vous avez pris (avec la reconnaissance de texte intégrée à Windows ; les codes QR et codes-barres aussi) et la roue s'ouvre dessus. Pour les mots : COPIER TEXTE, TRADUIRE (la traduction est posée sur l'original, paragraphe par paragraphe, dans ses propres couleurs, avec Original pour comparer), EXPLIQUER, DEMANDER (une zone de question qui poursuit la conversation), RÉSUMÉ, RECHERCHE, LIRE, et TABLEAU ou EXCEL quand les mots sont en lignes et en colonnes. Ce que le texte contient vient d'abord : OUVRIR LIEN, E-MAIL, APPELER, CALENDRIER pour une date (un fichier d'événement que tout calendrier ouvre), VOTRE HEURE pour une heure donnée dans un autre fuseau, CONVERTIR pour les unités (kilomètres et miles, kilos et livres, °C et °F, pieds et pouces, feddans), DEVISE aux taux du jour, RÉSULTAT pour un calcul, COULEUR pour un code couleur. Pour une image : DÉCRIRE, DEMANDER, COPIER IMAGE, ENREG., DÉTOURER (le sujet, aux bords transparents), ÉPINGLER, COULEURS, et OUTILS pour toutes les conversions. Le centre de la roue montre déjà la réponse quand il y en a une : une conversion, un résultat, l'heure chez vous. Traduire, expliquer, demander et décrire utilisent les modèles de ce PC, téléchargés une seule fois, ou votre propre clé API si vous l'avez choisie dans Paramètres › Modèles d'IA, ce qui envoie ce que vous avez pris à cette société ; à part cela, seule DEVISE va en ligne, et seulement quand vous la choisissez, pour chercher les taux du jour. Échap ou un clic droit rend l'écran.",
   "how": "Appuyez sur Ctrl+Win+C (ou appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez ENTOURER sur la roue Écran), entourez ce que vous voulez, puis choisissez un pétale. Le raccourci se change dans Paramètres › Écran et texte.",
   "examples": [
    "Entourez un prix en dollars pour le voir dans votre devise au taux du jour.",
@@ -2742,7 +2794,7 @@
  "do:screen.text": {
   "category": "screen",
   "summary": "Copie les mots de n'importe quelle partie de l'écran, même dans les images et les vidéos, et lit aussi les codes QR.",
-  "details": "Faites glisser sur le texte ; la fenêtre Texte de l'écran affiche un aperçu et les mots trouvés, que vous pouvez modifier avant d'appuyer sur Copier le texte. Des boutons vous permettent de Traduire entre l'arabe et l'anglais sur ce PC (le modèle de traduction se télécharge une seule fois), Corriger la disposition du clavier, Joindre les lignes coupées par l'écran, Rechercher sur le Web, Copier en tableau pour coller dans Excel cellule par cellule, ou Enregistrer en Excel, qui enregistre le tableau dans Documents et l'ouvre. Les codes QR et codes-barres de la zone sont listés avec Copier, plus Ouvrir le lien pour les adresses web. La lecture utilise la reconnaissance de texte intégrée à Windows : une langue Windows capable de lire du texte doit donc être installée ; s'il n'y en a aucune, la fenêtre explique comment en ajouter une dans Paramètres › Heure et langue › Langue.",
+  "details": "Faites glisser sur le texte ; la fenêtre Texte de l'écran affiche un aperçu et les mots trouvés, que vous pouvez modifier avant d'appuyer sur Copier le texte. Des boutons vous permettent de Traduire dans votre langue (sur ce PC après un seul téléchargement de modèle, ou avec votre propre clé API depuis Paramètres › Modèles d'IA), Corriger la disposition du clavier, Joindre les lignes coupées par l'écran, Rechercher sur le Web, Copier en tableau pour coller dans Excel cellule par cellule, ou Enregistrer en Excel, qui enregistre le tableau dans Documents et l'ouvre. Les codes QR et codes-barres de la zone sont listés avec Copier, plus Ouvrir le lien pour les adresses web. La lecture utilise la reconnaissance de texte intégrée à Windows : une langue Windows capable de lire du texte doit donc être installée ; s'il n'y en a aucune, la fenêtre explique comment en ajouter une dans Paramètres › Heure et langue › Langue.",
   "how": "Appuyez sur Ctrl+Win+Z sans rien sélectionner et choisissez COPIER TEXTE sur la roue Écran (ou Texte de l'écran dans le menu de la zone de notification), puis faites glisser sur les mots.",
   "worksOn": "",
   "examples": [
@@ -3235,7 +3287,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Ouvre une zone de recherche où vous tapez ce que vous voulez : n'importe quelle action, un pétale pour les fichiers sélectionnés, une application, un fichier ou un calcul.",
-  "details": "La Palette de commandes s'ouvre par-dessus la fenêtre au premier plan et trouve les choses à mesure que vous tapez, en anglais ou en arabe : chaque action de chaque roue, chaque roue elle-même, chaque pétale pour les fichiers sélectionnés dans l'Explorateur de fichiers, les fenêtres de DropWheel, les applications du PC, ce que vous avez copié récemment, les fichiers trouvés par la Recherche par le sens, les extraits et les espaces de travail. Tapez un calcul ou une conversion d'unités comme 12% of 340 ou 5 km in mi, et Enter copie la réponse. Utilisez les touches fléchées pour choisir, Enter pour exécuter, Ctrl+Enter pour l'autre action (comme ouvrir le dossier d'un fichier) et Esc pour fermer. Le bouton du microphone vous permet de dire une commande à la place. Si rien ne correspond, elle propose de chercher sur le Web.",
+  "details": "La Palette de commandes s'ouvre par-dessus la fenêtre au premier plan et trouve les choses à mesure que vous tapez, dans la langue de DropWheel ou en anglais : chaque action de chaque roue, chaque roue elle-même, chaque pétale pour les fichiers sélectionnés dans l'Explorateur de fichiers, les fenêtres de DropWheel, les applications du PC, ce que vous avez copié récemment, les fichiers trouvés par la Recherche par le sens, les extraits et les espaces de travail. Tapez un calcul ou une conversion d'unités comme 12% of 340 ou 5 km in mi, et Enter copie la réponse. Utilisez les touches fléchées pour choisir, Enter pour exécuter, Ctrl+Enter pour l'autre action (comme ouvrir le dossier d'un fichier) et Esc pour fermer. Le bouton du microphone vous permet de dire une commande à la place. Si rien ne correspond, elle propose de chercher sur le Web.",
   "how": "Appuyez sur Ctrl+Win+K, choisissez PALETTE sur la roue Travail, ou choisissez Palette de commandes dans le menu de la zone de notification.",
   "worksOn": "Les fichiers sélectionnés dans l'Explorateur de fichiers, s'il y en a, pour proposer leurs pétales ; sinon rien.",
   "examples": [
@@ -3306,7 +3358,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Trouve des fichiers d'après leur sujet : les mots qu'ils contiennent, leur nom, ou ce que montre une photo ou une vidéo.",
-  "details": "Recherche par le sens vous permet de taper des choses comme « ticket de la pharmacie » ou « photos de plage » et trouve les fichiers correspondants dans vos dossiers Images, Documents, Bureau, Téléchargements et Vidéos. Elle est désactivée jusqu'à ce que vous appuyiez sur Activer ; DropWheel lit alors ces dossiers pendant que le PC est inactif et garde l'index sur ce PC. Trouver des photos et des vidéos d'après ce qu'elles montrent nécessite les modèles d'images de DropWheel, téléchargés une seule fois. Enter ouvre le premier résultat, et vous pouvez faire glisser n'importe quel résultat dans une autre application. Quand vous tapez une question, Interroger vos fichiers répond à partir de ce que disent vos documents, avec les fichiers d'où vient la réponse ; cela nécessite le modèle d'IA, téléchargé une seule fois.",
+  "details": "Recherche par le sens vous permet de taper des choses comme « ticket de la pharmacie » ou « photos de plage » et trouve les fichiers correspondants dans vos dossiers Images, Documents, Bureau, Téléchargements et Vidéos. Elle est désactivée jusqu'à ce que vous appuyiez sur Activer ; DropWheel lit alors ces dossiers pendant que le PC est inactif et garde l'index sur ce PC. Trouver des photos et des vidéos d'après ce qu'elles montrent nécessite les modèles d'images de DropWheel, téléchargés une seule fois. Enter ouvre le premier résultat, et vous pouvez faire glisser n'importe quel résultat dans une autre application. Quand vous tapez une question, Interroger vos fichiers répond à partir de ce que disent vos documents, avec les fichiers d'où vient la réponse ; cela nécessite le modèle d'IA, téléchargé une seule fois, ou votre propre clé API depuis Paramètres › Modèles d'IA, qui envoie la question et les passages trouvés à cette société.",
   "how": "Il n'est sur aucune roue au départ : choisissez Recherche par le sens dans le menu de la zone de notification, ou tapez « recherche » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3354,7 +3406,7 @@
  "do:petal.qr": {
   "category": "petal",
   "summary": "Crée un code QR pour un texte, un lien ou un réseau Wi-Fi, à enregistrer en PNG ou SVG ou à copier.",
-  "details": "Créer un code QR dessine le code à mesure que vous tapez. Choisissez Texte ou lien, ou Wi-Fi, où vous saisissez le Réseau et le Mot de passe, et cochez Réseau masqué si besoin ; les téléphones qui le scannent se connectent sans taper le mot de passe. Vous pouvez changer les deux Couleurs et l'Intensité (Standard, Fort, Le plus fort) : les codes plus forts restent lisibles quand ils sont rayés ou partiellement couverts, mais ils sont plus denses. Copier l'image copie le code, et Enregistrer l'enregistre en PNG ou en SVG, en commençant dans Images. Un texte trop long est refusé avec Il y a trop de texte pour un code QR.",
+  "details": "Créer un code QR dessine le code à mesure que vous tapez. Choisissez Texte ou lien, ou Wi-Fi, où vous saisissez le Réseau et le Mot de passe, et cochez Réseau masqué si besoin ; les téléphones qui le scannent se connectent sans taper le mot de passe. Vous pouvez changer les deux Couleurs et l'Intensité (Standard, Fort, Le plus fort) : les codes plus forts restent lisibles quand ils sont rayés ou partiellement couverts, mais ils sont plus denses. Copier l'image copie le code, et Enregistrer l'enregistre en PNG ou en SVG, en commençant dans Images. Un texte trop long est refusé avec Il y a trop de texte pour un code QR. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Il n'est sur aucune roue au départ : choisissez Créer un code QR dans le menu de la zone de notification, tapez « qr » dans la palette de commandes (Ctrl+Win+K), ou copiez un lien et choisissez COPIES sur la roue Rapide.",
   "worksOn": "",
   "examples": [
@@ -3401,12 +3453,12 @@
  "do:petal.settings": {
   "category": "petal",
   "summary": "Ouvre la fenêtre des paramètres de DropWheel.",
-  "details": "Paramètres de DropWheel est la fenêtre principale de DropWheel, et chaque modification est enregistrée aussitôt. Elle comporte des sections pour Touches, Roues (pour modifier, ajouter ou désactiver des roues et leurs pétales), Apparence, La roue, Écran et texte, Travail et partage, Roue des actions, Favoris, Recettes, Automatisations, Vos pétales, Recherche par le sens, Résultats, Qualité, Auxiliaires, Statistiques, Général, Sauvegarde et Mises à jour. Une nouvelle roue que vous créez commence avec ce pétale.",
+  "details": "Paramètres de DropWheel est la fenêtre principale de DropWheel, et chaque modification est enregistrée aussitôt. Elle comporte des sections pour Touches, Roues (pour modifier, ajouter ou désactiver des roues et leurs pétales), Apparence, La roue, Écran et texte, Travail et partage, Roue des actions, Favoris, Recettes, Automatisations, Vos pétales, Modèles d'IA, Recherche par le sens, Résultats, Qualité, Auxiliaires, Statistiques, Général, Sauvegarde et Mises à jour. Modèles d'IA permet de choisir, pour la rédaction et les réponses, la traduction et la description des images, entre un modèle téléchargé sur ce PC (par défaut, et rien ne quitte le PC) et votre propre clé API de Gemini, ChatGPT ou Claude : collez la clé, appuyez sur Enregistrer la clé et choisissez-la à côté de chaque tâche. Vous payez directement cette société pour ce que vous utilisez, et ce sur quoi la tâche travaille lui est envoyé ; il n'y a ni abonnement ni serveur de DropWheel, et la clé reste chiffrée sur ce PC, hors des sauvegardes. Une fenêtre qui a besoin de l'un de ces modèles propose aussi Utiliser plutôt ma propre clé API…, qui ouvre cette section. Une nouvelle roue que vous créez commence avec ce pétale.",
   "how": "Choisissez Paramètres dans le menu de la zone de notification, choisissez DROPWHEEL sur une roue où vous l'avez ajouté, ou tapez « paramètres » dans la palette de commandes (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Changer la touche qui ouvre la roue des conversions, de Shift à une autre touche.",
-   "Ajouter le pétale Zone en direct à votre roue Écran, sous Roues.",
+   "Ajouter votre propre clé API Gemini, ChatGPT ou Claude sous Modèles d'IA, pour que traduire et résumer ne demandent aucun téléchargement.",
    "Faire une sauvegarde de toutes vos roues et de vos favoris avant de passer à un nouveau PC."
   ],
   "keywords": [
@@ -3418,7 +3470,13 @@
    "modifier les roues",
    "personnaliser",
    "sauvegarder les paramètres",
-   "réglages"
+   "réglages",
+   "modèles d'ia",
+   "clé api",
+   "ma propre clé",
+   "gemini",
+   "chatgpt",
+   "claude"
   ]
  },
  "do:petal.pause": {
@@ -3448,7 +3506,7 @@
   "category": "text",
   "summary": "Remet d'aplomb un texte tapé avec la mauvaise langue de clavier : ؤشف devient cat, et hgsghl devient السلام.",
   "details": "Sélectionnez le texte illisible dans n'importe quelle application et choisissez ce pétale. DropWheel voit dans quel sens l'erreur s'est produite : un texte surtout en lettres arabes devient les touches anglaises qui se trouvent dessous, et des lettres anglaises deviennent l'arabe qu'elles devaient être (dispositions anglais US et arabe 101). Le texte corrigé est collé à la place de la sélection, puis le clavier passe à la langue que vous vouliez quand les deux dispositions sont installées, pour que vous puissiez continuer à taper. DropWheel récupère la sélection en la demandant à l'application via Windows UI Automation, ou en la copiant avec Ctrl+C, puis remet votre Presse-papiers comme il était. Si l'application au premier plan a changé entre-temps, le résultat va dans le Presse-papiers à la place (« Copié à la place »).",
-  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), appuyez sur Tab jusqu'à ce que la roue Texte s'affiche et choisissez CLAVIER.",
+  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), appuyez sur Tab jusqu'à ce que la roue Texte s'affiche et choisissez CLAVIER. Il est sur la roue quand l'interface ou un clavier utilise l'écriture arabe ; sinon, ajoutez-le dans Paramètres de DropWheel, sous Roues.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
    "Vous avez tapé un message sur WhatsApp Web alors que le clavier était encore en arabe et obtenu ؤشف : sélectionnez-le et CLAVIER le transforme en cat.",
@@ -3470,8 +3528,8 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Traduit le texte sélectionné sur ce PC, de l'arabe vers l'anglais et inversement, ou dans la langue de DropWheel, pour remplacer la sélection ou le copier.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez TRADUIRE : une fenêtre Traduire s'ouvre avec le début de l'original et la traduction dans une zone que vous pouvez encore modifier. Le texte arabe est traduit en anglais et tout autre texte en arabe ; quand DropWheel lui-même est réglé en turc, persan, ourdou, indonésien, français ou espagnol, le texte est traduit dans cette langue à la place (ou en anglais s'il est déjà dans cette langue). L'anglais vers l'arabe et l'arabe vers l'anglais utilisent les modèles de traduction Opus-MT (environ 114 Mo chacun) quand ils sont téléchargés, phrase par phrase ; sinon, et pour les autres langues, le modèle d'IA Qwen2.5 1.5B (environ 1,1 Go) traduit ; la fenêtre propose le téléchargement la première fois. Remplacer la sélection colle la traduction à la place du texte d'origine, et Copier la place dans le Presse-papiers. Tout se passe sur ce PC ; le texte n'est envoyé nulle part.",
+  "summary": "Traduit le texte sélectionné dans la langue que vous choisissez, de n'importe laquelle des huit langues de DropWheel vers n'importe quelle autre, pour remplacer la sélection ou le copier.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez TRADUIRE : une fenêtre Traduire s'ouvre avec le début de l'original et la traduction dans une zone que vous pouvez encore modifier. DropWheel reconnaît seul la langue du texte, et « En » est la langue voulue : anglais, arabe, turc, persan, ourdou, indonésien, français ou espagnol. Elle part de la dernière langue choisie ou de celle de DropWheel, ou d'une autre si le texte y est déjà. Tout se passe sur ce PC, phrase par phrase, avec des modèles téléchargés une seule fois, et la fenêtre propose ce qu'il faut pour cette paire : un modèle fait pour elle (environ 110 Mo), deux modèles en passant par l'anglais, ou un modèle plus gros qui connaît toutes les langues (environ 630 Mo, et plus lent) ; si le modèle d'IA est déjà sur ce PC, il traduit en attendant. Remplacer la sélection colle la traduction à la place du texte d'origine, et Copier la place dans le Presse-papiers. Sur ce PC, le texte n'est envoyé nulle part ; avec votre propre clé API choisie dans Paramètres › Modèles d'IA, il va à cette société, et la fenêtre le dit.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez TRADUIRE ; appuyez ensuite sur Remplacer la sélection ou Copier.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3484,7 +3542,7 @@
    "traduction",
    "anglais vers français",
    "français vers anglais",
-   "arabe vers anglais",
+   "traduire dans n'importe quelle langue",
    "traduction hors ligne",
    "traduire un e-mail",
    "traduire un message",
@@ -3585,7 +3643,7 @@
   "category": "text",
   "summary": "Retire les harakat (tachkil), les signes coraniques et le tatweel du texte arabe sélectionné.",
   "details": "Sélectionnez du texte arabe dans n'importe quelle application et choisissez TACHKIL ; les signes de voyelles brèves (fatha, damma, kasra, soukoun, chadda et tanwin), les petits signes coraniques et le tatweel d'allongement sont retirés, et les lettres restent. Le texte nettoyé est recollé à la place de la sélection, et votre Presse-papiers est remis comme il était. Un texte sans aucun de ces signes donne une carte « Rien à modifier ». C'est pratique avant de rechercher, de trier ou de coller du texte dans un champ qui gère mal ces signes.",
-  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe ESPACES et choisissez TACHKIL.",
+  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe ESPACES et choisissez TACHKIL. Le groupe le contient quand l'interface ou un clavier utilise l'écriture arabe ; sinon, ajoutez-le dans Paramètres de DropWheel, sous Roues.",
   "worksOn": "Du texte arabe que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
    "Un poème entièrement vocalisé copié d'un site web dans Word : TACHKIL laisse des lettres simples, plus faciles à modifier.",
@@ -3609,7 +3667,7 @@
   "category": "text",
   "summary": "Convertit les chiffres du texte sélectionné : les chiffres arabes orientaux ١٢٣ deviennent 123, ou 123 devient ١٢٣.",
   "details": "Sélectionnez du texte dans n'importe quelle application et choisissez CHIFFRES. Quand le texte contient des chiffres arabes orientaux (ou persans), ils deviennent tous des chiffres de 0 à 9, et les séparateurs arabes des décimales et des milliers deviennent un point et une virgule ; quand il n'en contient aucun, les chiffres de 0 à 9 deviennent ٠ à ٩. Le texte est recollé à la place de la sélection, et votre Presse-papiers est remis en place ensuite. Les autres caractères restent tels quels.",
-  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe ESPACES et choisissez CHIFFRES.",
+  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe ESPACES et choisissez CHIFFRES. Le groupe le contient quand l'interface ou un clavier utilise l'écriture arabe ; sinon, ajoutez-le dans Paramètres de DropWheel, sous Roues.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
    "Un numéro de téléphone écrit ٠٥٠١٢٣٤٥٦٧ n'est pas accepté par un formulaire web : CHIFFRES le transforme en 0501234567.",
@@ -3631,7 +3689,7 @@
   "category": "text",
   "summary": "Nettoie le texte sélectionné : doubles espaces, espaces en fin de ligne et lignes vides en trop retirés.",
   "details": "Sélectionnez du texte dans n'importe quelle application et choisissez ESPACES. Les suites d'espaces et de tabulations deviennent une seule espace, les espaces au début et à la fin de chaque ligne disparaissent, une seule ligne vide au plus est gardée d'affilée, et les lignes vides au début et à la fin sont retirées. Comme les espaces en début de ligne disparaissent aussi, les retraits sont perdus. Le texte nettoyé est recollé à la place de la sélection, et votre Presse-papiers est remis comme il était.",
-  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte, ouvrez le groupe ESPACES et choisissez ESPACES.",
+  "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez ESPACES (dans le groupe ESPACES quand l'interface ou un clavier utilise l'écriture arabe).",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
    "Du texte copié d'un PDF dans Word arrive avec des doubles espaces et des trous : ESPACES le remet au propre d'un coup.",
@@ -3653,7 +3711,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Compte les mots, caractères, lignes et phrases du texte sélectionné et les affiche sur une carte.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez COMPTER ; une carte affiche le nombre de mots, puis de caractères, de caractères sans espaces, de lignes et de phrases. Rien n'est modifié dans le texte. Les mots arabes et anglais sont tous comptés, et un emoji compte pour un caractère. DropWheel lit la sélection via Windows UI Automation ou en la copiant, puis remet votre Presse-papiers en place.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez COMPTER ; une carte affiche le nombre de mots, puis de caractères, de caractères sans espaces, de lignes et de phrases. Rien n'est modifié dans le texte. Les mots de toutes les langues sont comptés, et un emoji compte pour un caractère. DropWheel lit la sélection via Windows UI Automation ou en la copiant, puis remet votre Presse-papiers en place.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez COMPTER.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3701,7 +3759,7 @@
  "do:text.summarize": {
   "category": "text",
   "summary": "Rédige un court résumé du texte sélectionné avec le modèle d'IA de ce PC, à mettre à sa place ou à copier.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez RÉSUMÉ : une fenêtre Résumer s'ouvre et le modèle d'IA Qwen2.5 1.5B rédige le résumé sur ce PC. Le choix Sous forme propose Quelques lignes (2 ou 3 phrases, par défaut) ou Points clés (3 à 6 puces) ; le changer rédige à nouveau le résumé. Un texte arabe est résumé en arabe et tout autre texte en anglais. La première fois, la fenêtre propose le téléchargement du modèle (environ 1,1 Go avec son programme d'exécution). Vous pouvez modifier le résultat, puis Remplacer la sélection le colle à la place de l'original, ou Copier le place dans le Presse-papiers ; le texte n'est envoyé nulle part.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez RÉSUMÉ : une fenêtre Résumer s'ouvre et le modèle d'IA Qwen2.5 1.5B rédige le résumé sur ce PC. Le choix Sous forme propose Quelques lignes (2 ou 3 phrases, par défaut) ou Points clés (3 à 6 puces) ; le changer rédige à nouveau le résumé. Le résumé arrive dans la langue du texte. La première fois, la fenêtre propose le téléchargement du modèle (environ 1,1 Go avec son programme d'exécution) ou Utiliser plutôt ma propre clé API…, qui ouvre Paramètres › Modèles d'IA ; avec une clé choisie, le texte va à cette société. Vous pouvez modifier le résultat, puis Remplacer la sélection le colle à la place de l'original, ou Copier le place dans le Presse-papiers ; sur ce PC, le texte n'est envoyé nulle part.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez RÉSUMÉ ; choisissez Quelques lignes ou Points clés, puis Remplacer la sélection ou Copier.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3726,7 +3784,7 @@
  "do:text.rewrite": {
   "category": "text",
   "summary": "Reformule le texte sélectionné pour le rendre plus clair, plus court, plus formel, plus chaleureux ou sans fautes, sur ce PC.",
-  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez REFORMULER : une fenêtre Reformuler s'ouvre et le modèle d'IA Qwen2.5 1.5B le reformule sur ce PC. Le choix Rendre propose Plus clair (par défaut), Plus court, Formel, Chaleureux et Corriger les fautes, qui corrige l'orthographe, la grammaire et la ponctuation sans rien changer d'autre ; en choisir un autre reformule à nouveau. Un texte arabe est reformulé en arabe et tout autre texte en anglais. La première fois, la fenêtre propose le téléchargement du modèle (environ 1,1 Go avec son programme d'exécution). Modifiez le résultat si vous le souhaitez, puis Remplacer la sélection le colle à la place de l'original, ou Copier le place dans le Presse-papiers.",
+  "details": "Sélectionnez du texte dans n'importe quelle application et choisissez REFORMULER : une fenêtre Reformuler s'ouvre et le modèle d'IA Qwen2.5 1.5B le reformule sur ce PC. Le choix Rendre propose Plus clair (par défaut), Plus court, Formel, Chaleureux et Corriger les fautes, qui corrige l'orthographe, la grammaire et la ponctuation sans rien changer d'autre ; en choisir un autre reformule à nouveau. Le nouveau texte arrive dans la langue de l'original. La première fois, la fenêtre propose le téléchargement du modèle (environ 1,1 Go avec son programme d'exécution) ou Utiliser plutôt ma propre clé API…, qui ouvre Paramètres › Modèles d'IA ; avec une clé choisie, le texte va à cette société. Modifiez le résultat si vous le souhaitez, puis Remplacer la sélection le colle à la place de l'original, ou Copier le place dans le Presse-papiers.",
   "how": "Sélectionnez le texte, appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Texte et choisissez REFORMULER ; choisissez un style sous Rendre, puis Remplacer la sélection.",
   "worksOn": "Du texte que vous sélectionnez dans n'importe quelle application ; pas de fichiers.",
   "examples": [
@@ -3750,14 +3808,14 @@
  },
  "do:text.dictate": {
   "category": "text",
-  "summary": "Tape ce que vous dites là où se trouve le curseur, dans n'importe quelle application, en arabe, en anglais et dans bien d'autres langues.",
-  "details": "Cliquez là où les mots doivent aller, puis lancez la dictée : une petite pastille en bas de l'écran affiche un indicateur de niveau et le temps pendant que DropWheel écoute. Appuyez à nouveau sur le raccourci ou sur DICTER, ou sur la coche de la pastille, pour arrêter ; Esc ou le X annule, et elle s'arrête d'elle-même au bout de deux minutes. Whisper écrit ce que vous avez dit sur ce PC et DropWheel le tape dans l'application qui était au premier plan ; si cette application a changé, les mots vont dans le Presse-papiers à la place. La première fois, la fenêtre Dictée demande le modèle vocal : Précision Rapide (environ 60 Mo, anglais clair), Équilibré (environ 190 Mo, par défaut) ou Précis (environ 574 Mo, le meilleur pour l'arabe et les accents), et Langue Détecter automatiquement (par défaut), العربية, English ou bien d'autres. Il faut un microphone, et rien n'est envoyé nulle part.",
+  "summary": "Tape ce que vous dites là où se trouve le curseur, dans n'importe quelle application, dans de nombreuses langues.",
+  "details": "Cliquez là où les mots doivent aller, puis lancez la dictée : une petite pastille en bas de l'écran affiche un indicateur de niveau et le temps pendant que DropWheel écoute. Appuyez à nouveau sur le raccourci ou sur DICTER, ou sur la coche de la pastille, pour arrêter ; Esc ou le X annule, et elle s'arrête d'elle-même au bout de deux minutes. Whisper écrit ce que vous avez dit sur ce PC et DropWheel le tape dans l'application qui était au premier plan ; si cette application a changé, les mots vont dans le Presse-papiers à la place. La première fois, la fenêtre Dictée demande le modèle vocal : Précision Rapide (environ 60 Mo, anglais clair), Équilibré (environ 190 Mo, par défaut) ou Précis (environ 574 Mo, le meilleur pour les accents et les langues autres que l'anglais), et Langue Détecter automatiquement (par défaut) ou l'une de nombreuses autres. Il faut un microphone, et rien n'est envoyé nulle part.",
   "how": "Appuyez sur Ctrl+Win+J dans n'importe quelle application, ou choisissez DICTER sur la roue Texte ou la roue Travail (Ctrl+Win+Z sans fichier sélectionné, puis Tab) ; parlez, puis appuyez à nouveau pour taper.",
   "worksOn": "Votre voix, tapée dans n'importe quelle application ; pas de fichiers.",
   "examples": [
-   "Vous avez les mains prises : cliquez dans une discussion WhatsApp Web, appuyez sur Ctrl+Win+J et dites votre réponse en arabe.",
+   "Vous avez les mains prises : cliquez dans une discussion WhatsApp Web, appuyez sur Ctrl+Win+J et dites votre réponse.",
    "Rédiger le premier jet d'un rapport Word en le dictant par morceaux de deux minutes.",
-   "Remplir une longue zone de commentaire sur un site web en parlant au lieu de taper en anglais."
+   "Remplir une longue zone de commentaire sur un site web en parlant au lieu de taper."
   ],
   "keywords": [
    "dictée",
@@ -3768,7 +3826,7 @@
    "dicter au lieu de taper",
    "voix en texte",
    "taper avec le micro",
-   "dictée en arabe",
+   "dictée dans toutes les langues",
    "whisper",
    "transcrire la voix"
   ]
@@ -4219,13 +4277,13 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Place une nouvelle note adhésive sur le bureau près du pointeur, dans n'importe quelle langue et couleur.",
-  "details": "Choisissez NOTE et une note adhésive s'ouvre près du pointeur, prête à recevoir du texte ; l'arabe s'écrit de droite à gauche tout seul. Son bandeau a des boutons pour Nouvelle note, Couleur (jaune, vert, bleu, rose, violet, gris), Garder au premier plan et Supprimer la note, et vous pouvez la déplacer par le bandeau et la redimensionner par le coin. Ctrl+N dans une note en crée une autre. Les notes s'enregistrent toutes seules et reviennent à leur place au démarrage de DropWheel ; une note supprimée qui contenait du texte peut être récupérée en cliquant sur la carte qui apparaît. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
+  "details": "Choisissez NOTE et une note adhésive s'ouvre près du pointeur, prête à recevoir du texte ; les langues écrites de droite à gauche s'écrivent ainsi toutes seules. Son bandeau a des boutons pour Nouvelle note, Couleur (jaune, vert, bleu, rose, violet, gris), Garder au premier plan et Supprimer la note, et vous pouvez la déplacer par le bandeau et la redimensionner par le coin. Ctrl+N dans une note en crée une autre. Les notes s'enregistrent toutes seules et reviennent à leur place au démarrage de DropWheel ; une note supprimée qui contenait du texte peut être récupérée en cliquant sur la carte qui apparaît. Toute autre couleur peut aussi être choisie : une palette libre, avec son code hexadécimal à saisir ou coller.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail ou Presse-papiers et choisissez NOTE, puis tapez.",
   "worksOn": "",
   "examples": [
    "Noter un numéro de téléphone pendant un appel sans ouvrir aucune application.",
    "Garder les trois tâches du jour sur une note jaune qui reste au-dessus de votre travail.",
-   "Écrire en arabe un rappel pour appeler la banque, toujours là après un redémarrage."
+   "Écrire un rappel pour appeler la banque, toujours là après un redémarrage."
   ],
   "keywords": [
    "note adhésive",
@@ -4289,12 +4347,12 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Enregistre une réunion, puis rédige la transcription, un résumé, les décisions et les tâches à faire, sur ce PC.",
-  "details": "Choisissez RÉUNION et DropWheel enregistre à la fois le son du PC et votre microphone ; une pastille en haut affiche le temps, avec une coche pour arrêter et rédiger les notes et un X pour annuler, et elle n'apparaît pas dans les partages d'écran de la réunion. Quand vous arrêtez, Whisper rédige la transcription avec les horaires, et si le modèle d'IA (environ 1,1 Go) est sur le PC, il ajoute des sections Résumé, Décisions et Tâches à faire. Les notes (un fichier Markdown) et le son (un fichier M4A) sont enregistrés sous le nom « Meeting date heure » dans le dossier DropWheel Meetings de Documents, et la fenêtre Notes de réunion s'ouvre avec les vues Résumé et Transcription, Copier et Ouvrir le dossier. Il faut un modèle vocal depuis la fenêtre Dictée, ainsi que FFmpeg ; sans le modèle d'IA, un bouton Rédiger un résumé vous permet d'ajouter le résumé plus tard.",
+  "details": "Choisissez RÉUNION et DropWheel enregistre à la fois le son du PC et votre microphone ; une pastille en haut affiche le temps, avec une coche pour arrêter et rédiger les notes et un X pour annuler, et elle n'apparaît pas dans les partages d'écran de la réunion. Quand vous arrêtez, Whisper rédige la transcription avec les horaires, et si le modèle d'IA (environ 1,1 Go) est sur le PC, ou si votre propre clé API est choisie dans Paramètres › Modèles d'IA (la transcription va alors à cette société), il ajoute des sections Résumé, Décisions et Tâches à faire. Les notes (un fichier Markdown) et le son (un fichier M4A) sont enregistrés sous le nom « Meeting date heure » dans le dossier DropWheel Meetings de Documents, et la fenêtre Notes de réunion s'ouvre avec les vues Résumé et Transcription, Copier et Ouvrir le dossier. Il faut un modèle vocal depuis la fenêtre Dictée, ainsi que FFmpeg ; sans le modèle d'IA, un bouton Rédiger un résumé vous permet d'ajouter le résumé plus tard.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail et choisissez RÉUNION ; choisissez-le à nouveau ou appuyez sur la coche de la pastille pour arrêter.",
   "worksOn": "",
   "examples": [
    "Un appel Teams d'une heure : obtenez les décisions et qui fait quoi sans prendre de notes vous-même.",
-   "Un cours Zoom en arabe : gardez la transcription complète et le son pour réviser plus tard.",
+   "Un cours Zoom : gardez la transcription complète et le son pour réviser plus tard.",
    "Un appel téléphonique sur haut-parleur à votre bureau : enregistrez-le et copiez les tâches à faire dans un e-mail."
   ],
   "keywords": [
@@ -4312,12 +4370,12 @@
  },
  "do:work.captions": {
   "category": "work",
-  "summary": "Affiche des sous-titres en direct pour n'importe quelle vidéo, appel ou cours, traduits en arabe au fur et à mesure, sur ce PC.",
-  "details": "Choisissez SOUS-TITRES et une barre de sous-titres apparaît en bas de l'écran ; faites-la glisser où vous voulez. DropWheel écoute le son du PC (par défaut) ou le microphone, Whisper écrit les mots au moment où ils sont dits, en une demi-seconde environ (les plus récents restent plus pâles jusqu'à ce qu'ils soient sûrs), et le modèle de traduction met chaque phrase en arabe au fil de l'eau, sans besoin d'Internet. Si le PC est trop lent pour le modèle vocal choisi, un modèle plus rapide déjà téléchargé prend le relais pour que les sous-titres suivent. Survolez la barre pour voir ses boutons : basculer entre le son du PC et le microphone, changer ce qui est affiché (les deux, l'arabe, l'original ou l'anglais), ou désactiver les sous-titres. Il faut un modèle vocal depuis la fenêtre Dictée, et le modèle de traduction arabe (environ 114 Mo) est proposé la première fois ; en attendant, les sous-titres montrent ce qui a été dit. Choisissez à nouveau SOUS-TITRES pour arrêter. La traduction tient sur deux lignes : la première affiche la dernière phrase terminée, traduite avec soin ; la seconde, en dessous, traduit au fil de l'eau la phrase en cours, qui passe à la première ligne dès qu'elle est finie.",
+  "summary": "Affiche des sous-titres en direct pour n'importe quelle vidéo, appel ou cours, traduits dans la langue que vous choisissez au fur et à mesure.",
+  "details": "Choisissez SOUS-TITRES et une barre de sous-titres apparaît en bas de l'écran ; faites-la glisser où vous voulez. DropWheel écoute le son du PC (par défaut) ou le microphone, Whisper écrit les mots au moment où ils sont dits, en une demi-seconde environ (les plus récents restent plus pâles jusqu'à ce qu'ils soient sûrs), et un modèle de traduction met chaque phrase dans la langue choisie sous Traduire en dans Paramètres › Écran et texte (au départ celle de DropWheel), sans besoin d'Internet. La traduction tient sur deux lignes : la première affiche la dernière phrase terminée, traduite avec soin ; la seconde, en dessous, traduit au fil de l'eau la phrase en cours, qui passe à la première ligne dès qu'elle est finie. Si le PC est trop lent pour le modèle vocal choisi, un modèle plus rapide déjà téléchargé prend le relais pour que les sous-titres suivent. Survolez la barre pour voir ses boutons : basculer entre le son du PC et le microphone, changer ce qui est affiché (les deux, la traduction ou l'original), ou désactiver les sous-titres. Il faut un modèle vocal depuis la fenêtre Dictée, et le modèle de traduction que ces langues demandent est proposé la première fois (d'environ 110 Mo à environ 630 Mo) ; en attendant, les sous-titres montrent ce qui a été dit. Avec votre propre clé API choisie dans Paramètres › Modèles d'IA, chaque phrase terminée va plutôt à cette société, et la seconde ligne demande un modèle sur ce PC. Choisissez à nouveau SOUS-TITRES pour arrêter.",
   "how": "Appuyez sur Ctrl+Win+Z (sans fichier sélectionné), allez avec Tab jusqu'à la roue Travail et choisissez SOUS-TITRES ; choisissez-le à nouveau pour désactiver les sous-titres.",
   "worksOn": "",
   "examples": [
-   "Regarder un cours YouTube en anglais et lire les sous-titres arabes en dessous.",
+   "Regarder un cours YouTube en anglais et lire les sous-titres en français en dessous.",
    "Suivre un appel Zoom rapide en anglais avec les mots écrits à l'écran à mesure que les gens parlent.",
    "Sous-titrer un cours depuis le microphone pour un camarade malentendant."
   ],
@@ -4326,7 +4384,7 @@
    "sous-titres",
    "sous-titrage",
    "traduire une vidéo",
-   "sous-titres arabes",
+   "sous-titres dans ma langue",
    "malentendant",
    "traduction en temps réel",
    "sous-titrer les appels",
@@ -4383,7 +4441,7 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Ouvre le Guide des outils : chaque outil et chaque action expliqués, avec des exemples, et une zone pour dire ce que vous voulez faire.",
-  "details": "Le guide liste par section les outils de DropWheel, les actions sur les fichiers et les actions des roues sans fichiers. Chacun s'ouvre sur ce qu'il fait, comment l'utiliser, trois exemples et ce sur quoi il fonctionne, avec Essayer pour le lancer et une zone pour poser une question à son sujet. Tapez en haut ce que vous voulez faire avec vos propres mots et les outils les plus proches apparaissent aussitôt ; appuyez sur Enter et le modèle d'IA de ce PC répond à partir du guide et met un lien vers les outils qu'il cite. Le modèle se télécharge une seule fois, la première fois que vous posez une question ; sans lui, les outils les plus proches apparaissent quand même.",
+  "details": "Le guide liste par section les outils de DropWheel, les actions sur les fichiers et les actions des roues sans fichiers. Chacun s'ouvre sur ce qu'il fait, comment l'utiliser, trois exemples et ce sur quoi il fonctionne, avec Essayer pour le lancer et une zone pour poser une question à son sujet. Tapez en haut ce que vous voulez faire avec vos propres mots et les outils les plus proches apparaissent aussitôt ; appuyez sur Enter et le modèle d'IA de ce PC répond à partir du guide et met un lien vers les outils qu'il cite. Le modèle se télécharge une seule fois, la première fois que vous posez une question, ou votre propre clé API depuis Paramètres › Modèles d'IA peut répondre à sa place ; sans l'un ni l'autre, les outils les plus proches apparaissent quand même.",
   "how": "Ouvrez-le depuis le menu de la zone de notification (Guide des outils…), le bouton Guide des outils en haut des paramètres de DropWheel, la palette de commandes (Ctrl+Win+K), ou un pétale GUIDE que vous ajoutez à une roue. Dans une roue, la marque sous le nom d'un pétale (ou F1) affiche l'explication de ce pétale, avec un lien vers le guide.",
   "worksOn": "",
   "examples": [

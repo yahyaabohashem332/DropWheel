@@ -112,6 +112,9 @@ internal static class PdfContent
         return ReadPage(pdf.GetPage(index + 1), index, new PdfContentOptions { Ocr = false, Pictures = false });
     }
 
+    /// <summary>One page of an open document, its words only.</summary>
+    internal static PdfPageContent ReadPageWords(Page page, int index) => ReadPage(page, index, new PdfContentOptions { Ocr = false, Pictures = false });
+
     private static PdfPageContent ReadPage(Page page, int index, PdfContentOptions options)
     {
         // PdfPig already gives positions on the page as displayed (its /Rotate applied, the

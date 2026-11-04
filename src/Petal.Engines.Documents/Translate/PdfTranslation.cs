@@ -15,9 +15,10 @@ namespace Petal.Engines.Documents.Translate;
 /// translation drawn in the same rectangle, in its text's colour, as large as fits; right-aligned and shaped for Arabic
 /// script. A translation too long for the rectangle may spread sideways over empty page before it shrinks: a label of a word
 /// or two would otherwise come out far smaller than the text around it. Pictures, drawings, links and the page's size stay.
-/// The original words stay in the file, under the covers: they can no longer be seen, but they can still be found by
-/// search, copied by selecting them, and read by a program, mixed in with the translation's letters where the two lie over
-/// each other. A file with secrets in its original language still has them.
+/// The original words are taken out of the page first, so that copying its text gives the translation alone, and then nothing
+/// needs covering. Where that can't be done reliably (<see cref="PdfContentEraser"/> checks each page; text in a Form XObject, a scan) they
+/// stay, under the covers: they can no longer be seen, but they can still be found by search, copied by selecting them, and read
+/// by a program, mixed in with the translation's letters. Such a page still has its original words in its file.
 /// </summary>
 internal static partial class PdfTranslation
 {
@@ -36,7 +37,9 @@ internal static partial class PdfTranslation
     {
         var bytes = await File.ReadAllBytesAsync(input, cancellationToken).ConfigureAwait(false);
         // Protected files stop here with a clear message, before any OCR is spent on them.
-        using var document = PdfSharpIO.Open(bytes, PdfDocumentOpenMode.Modify, null, Path.GetFileName(input));
+        using (PdfSharpIO.Open(bytes, PdfDocumentOpenMode.Modify, null, Path.GetFileName(input)))
+        {
+        }
         var options = new PdfContentOptions { Pictures = false, OcrLanguages = from is "auto" or "" ? null : [from] };
         var (pages, _) = await PdfContent.ExtractAsync(input, options, Util.ScaledProgress.Of(progress, 0, 0.1), cancellationToken).ConfigureAwait(false);
         var blocks = pages.Select(Paragraphs).ToList();
@@ -50,10 +53,17 @@ internal static partial class PdfTranslation
         await DocumentTranslator.FillAsync(slots, translate, Util.ScaledProgress.Of(progress, 0.1, 0.9), cancellationToken).ConfigureAwait(false);
         PdfFonts.EnsureInitialized();
         bool rtl = DocumentTranslator.IsRightToLeft(to);
+        // The original words out of the pages that have them as text. A scan's are in its picture, and have to be covered.
+        var taken = new Dictionary<int, List<PdfArea>>();
+        for (int i = 0; i < pages.Count; i++)
+            if (!pages[i].Scanned && blocks[i].Where(b => b.Translation is not null).SelectMany(b => b.AllWords).Select(w => new PdfArea(w.Left, w.Top, w.Right - w.Left, w.Height)).ToList() is { Count: > 0 } areas)
+                taken[i] = areas;
+        var (clean, failed) = PdfContentEraser.Erase(bytes, taken, EraseMode.TextOnly, cancellationToken);
+        using var document = PdfSharpIO.Open(clean, PdfDocumentOpenMode.Modify, null, Path.GetFileName(input));
         for (int i = 0; i < pages.Count && i < document.PageCount; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Paint(document.Pages[i], pages[i], blocks[i], bytes, rtl);
+            Paint(document.Pages[i], pages[i], blocks[i], bytes, rtl, cover: !taken.ContainsKey(i) || failed.Contains(i));
             progress?.Report(0.9 + 0.09 * (i + 1) / pages.Count);
         }
         PdfSharpIO.Save(document, output);
@@ -163,7 +173,7 @@ internal static partial class PdfTranslation
     /// Covers then words, in two rounds so that no cover falls on a neighbour's words. The page's picture gives the colours,
     /// and tells how far the page is empty on either side of a paragraph.
     /// </summary>
-    private static void Paint(PdfPage page, PdfPageContent content, List<Block> blocks, byte[] pdf, bool rtl)
+    private static void Paint(PdfPage page, PdfPageContent content, List<Block> blocks, byte[] pdf, bool rtl, bool cover)
     {
         var todo = blocks.Where(b => b.Translation is not null).ToList();
         if (todo.Count == 0)
@@ -189,7 +199,8 @@ internal static partial class PdfTranslation
             var (back, ink) = Colours(picture, scale, block, covers[i]);
             inks[i] = new XSolidBrush(ink);
             rooms[i] = Room(picture, scale, block, back, margin, content.Width);
-            gfx.DrawRectangle(new XSolidBrush(back), covers[i]);
+            if (cover)
+                gfx.DrawRectangle(new XSolidBrush(back), covers[i]);
         }
         for (int i = 0; i < todo.Count; i++)
         {
@@ -394,21 +405,8 @@ internal static partial class PdfTranslation
     }
 
     /// <summary>The paragraph's own font when this PC has it and it has the letters; Arial, which has them all, otherwise.</summary>
-    private static string Family(Block block, bool arabicScript)
-    {
-        if (arabicScript)
-            return PdfFonts.Arabic;
-        var name = (block.AllWords.FirstOrDefault(w => w.FontName is not null)?.FontName ?? "").Replace(" ", "");
-        var known = new (string Part, string Family)[]
-        {
-            ("Calibri", "Calibri"), ("Cambria", "Cambria"), ("Georgia", "Georgia"), ("Garamond", "Garamond"), ("Verdana", "Verdana"), ("Tahoma", "Tahoma"),
-            ("Segoe", "Segoe UI"), ("Times", "Times New Roman"), ("Courier", "Courier New"), ("Consolas", "Consolas"), ("Arial", "Arial"), ("Helvetica", "Arial"),
-        };
-        foreach (var (part, family) in known)
-            if (name.Contains(part, StringComparison.OrdinalIgnoreCase) && PdfFonts.IsAvailable(family))
-                return family;
-        return "Arial";
-    }
+    private static string Family(Block block, bool arabicScript) =>
+        PdfFonts.FamilyLike(block.AllWords.FirstOrDefault(w => w.FontName is not null)?.FontName, arabicScript);
 
     /// <summary>
     /// The largest size up to the paragraph's own at which the words fit the rectangle, and their lines at that size, shaped
@@ -439,7 +437,5 @@ internal static partial class PdfTranslation
         return (sizes[low], LinesAt(sizes[low]));
     }
 
-    /// <summary>The marks that only steer joining and direction have nothing to draw, and would show as boxes.</summary>
-    private static string Drawable(string line) =>
-        new(line.Where(c => c is not ((char)0x200C or (char)0x200D or (char)0x200E or (char)0x200F)).ToArray());
+    private static string Drawable(string line) => PdfFonts.Drawable(line);
 }

@@ -97,7 +97,8 @@ Read all of it before touching anything. The user writes in Arabic. Write your f
     - PETAL_ASK and PETAL_ASK_DOCS / PETAL_ASK_KINDS (Ask a File);
     - PETAL_DUB_LINES, PETAL_DUB_LIMIT and PETAL_DUB_MODEL (dub translation);
     - PETAL_VOICES: a folder with `piper_windows_amd64.zip` + `en_US-ljspeech-medium.onnx` + `.onnx.json`;
-    - PETAL_TEXTCUT (Edit by Text).
+    - PETAL_TEXTCUT (Edit by Text);
+    - PETAL_REAL_PDFS (Edit PDF on files other programs wrote: a folder with `in\*.pdf`, results in an empty `out`, to read back with another program).
 - **Snapshots** (checking UI by eye):
   - Command: `Petal.exe --snapshot-tools <outdir> <repo>\testdata <case> --lang en|ar`, after rebuilding Petal.App. Always pass `--lang en` for English, because the PC's language is Arabic.
   - Also `--snapshot-circle`. The first snapshot after a build can miss its video frame; render it again.

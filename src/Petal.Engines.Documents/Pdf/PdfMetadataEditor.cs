@@ -98,23 +98,29 @@ public static class PdfMetadataEditor
         {
             SafeOutput.EnsureNotInput(input, output);
             using var document = PdfSharpIO.Open(input, PdfDocumentOpenMode.Modify, password);
-            document.Info.Elements.Clear();
-            var catalog = document.Internals.Catalog.Elements;
-            catalog.Remove("/Metadata");
-            catalog.Remove("/PieceInfo");
-            foreach (PdfPage page in document.Pages)
-            {
-                page.Elements.Remove("/Metadata");
-                page.Elements.Remove("/PieceInfo");
-            }
-            foreach (var obj in document.Internals.GetAllObjects())
-                if (obj is PdfDictionary dict && dict.Elements.GetName("/Subtype") is "/Image" or "/Form")
-                    dict.Elements.Remove("/Metadata");
+            StripMetadata(document);
             cancellationToken.ThrowIfCancellationRequested();
             var bytes = PdfSharpIO.SaveToBytes(document);
             bytes = PdfSharpIO.Finish(bytes, [], PdfSharpIO.XmpAction.Remove);
             SafeOutput.WriteBytes(output, PdfSharpIO.BlankWriterComments(bytes));
         }, cancellationToken);
+
+    /// <summary>Document information, XMP packets and private application data out of an open document.</summary>
+    internal static void StripMetadata(PdfDocument document)
+    {
+        document.Info.Elements.Clear();
+        var catalog = document.Internals.Catalog.Elements;
+        catalog.Remove("/Metadata");
+        catalog.Remove("/PieceInfo");
+        foreach (PdfPage page in document.Pages)
+        {
+            page.Elements.Remove("/Metadata");
+            page.Elements.Remove("/PieceInfo");
+        }
+        foreach (var obj in document.Internals.GetAllObjects())
+            if (obj is PdfDictionary dict && dict.Elements.GetName("/Subtype") is "/Image" or "/Form")
+                dict.Elements.Remove("/Metadata");
+    }
 
     /// <summary>The information dictionary as encoded PDF values, for restoring it after a PDFsharp save.</summary>
     internal static List<(string Key, string Value)> InfoEntries(PdfDocumentInformation info)

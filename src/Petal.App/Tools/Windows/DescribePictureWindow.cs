@@ -63,7 +63,9 @@ public sealed class DescribePictureWindow : ToolWindow
         PrimaryButton.Content = L.T("Copy");
         PrimaryButton.IsEnabled = false;
         PrimaryButton.Click += (_, _) => Copy();
-        FooterNote = "Written on this PC by a small AI model; check it before you publish it.";
+        FooterNote = Petal.Recipes.Cloud.CloudAi.CanSee
+            ? L.F("Written by {0}, on your own key; check it before you publish it.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Seeing!.Provider))
+            : "Written on this PC by a small AI model; check it before you publish it.";
         Loaded += async (_, _) => await DescribeAsync();
         Closed += (_, _) => _running?.Cancel();
     }

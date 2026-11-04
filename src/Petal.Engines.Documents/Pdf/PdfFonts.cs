@@ -85,6 +85,27 @@ internal static class PdfFonts
         return null;
     }
 
+    /// <summary>A font this PC has that looks like one a PDF names: Arial, which has every Arabic letter, for Arabic script or for what isn't known.</summary>
+    public static string FamilyLike(string? fontName, bool arabicScript)
+    {
+        if (arabicScript)
+            return Arabic;
+        var name = (fontName ?? "").Replace(" ", "");
+        var known = new (string Part, string Family)[]
+        {
+            ("Calibri", "Calibri"), ("Cambria", "Cambria"), ("Georgia", "Georgia"), ("Garamond", "Garamond"), ("Verdana", "Verdana"), ("Tahoma", "Tahoma"),
+            ("Segoe", "Segoe UI"), ("Times", "Times New Roman"), ("Courier", "Courier New"), ("Consolas", "Consolas"), ("Arial", "Arial"), ("Helvetica", "Arial"),
+        };
+        foreach (var (part, family) in known)
+            if (name.Contains(part, StringComparison.OrdinalIgnoreCase) && IsAvailable(family))
+                return family;
+        return "Arial";
+    }
+
+    /// <summary>The marks that only steer joining and direction have nothing to draw, and would show as boxes.</summary>
+    public static string Drawable(string line) =>
+        new(line.Where(c => c is not ((char)0x200C or (char)0x200D or (char)0x200E or (char)0x200F)).ToArray());
+
     private static string FirstAvailable(params string[] names) => names.FirstOrDefault(IsAvailable) ?? names[0];
 
     /// <summary>Splits text into runs that each need one font (null = the body font).</summary>

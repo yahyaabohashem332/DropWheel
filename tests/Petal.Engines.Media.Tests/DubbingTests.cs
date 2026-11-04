@@ -455,10 +455,14 @@ public sealed class DubbingTests(ITestOutputHelper output)
             var whisper = ModelStore.Find(ModelCatalog.WhisperAccurate)!;
             foreach (var (language, text) in new[]
             {
-                ("fr", "La réunion commencera demain matin."),
-                ("fr", "Nous parlerons des étoiles et de leur distance."),
+                ("en", "The meeting will start tomorrow morning."),
+                ("ar", "سيبدأ الاجتماع صباح غد."),
+                ("tr", "Toplantı yarın sabah başlayacak."),
                 ("fa", "جلسه فردا صبح شروع می‌شود."),
                 ("ur", "اجلاس کل صبح شروع ہوگا۔"),
+                ("id", "Rapat akan dimulai besok pagi."),
+                ("fr", "La réunion commencera demain matin."),
+                ("es", "La reunión empezará mañana por la mañana."),
             })
             {
                 // A dub says a line again when it comes out wrong: a line gets three tries here too.

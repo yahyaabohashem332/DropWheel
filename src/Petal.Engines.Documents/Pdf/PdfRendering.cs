@@ -149,6 +149,14 @@ internal static class PdfRaster
             return Conversion.ToImage(pdf, pageIndex, null, options);
     }
 
+    /// <summary>A page's own content only: no annotations and no form widgets, which stay separate objects on the page.</summary>
+    public static SKBitmap RenderContentOnly(byte[] pdf, int pageIndex, int dpi)
+    {
+        var options = Options(PageSizes(pdf)[pageIndex], dpi, annotations: false) with { WithFormFill = false };
+        lock (Gate)
+            return Conversion.ToImage(pdf, pageIndex, null, options);
+    }
+
     private static RenderOptions Options(PdfPageSize size, int dpi, bool annotations = true, SKColor? background = null)
     {
         var safe = SafeDpi(size, dpi);

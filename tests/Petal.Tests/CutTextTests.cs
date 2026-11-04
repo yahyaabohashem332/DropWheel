@@ -10,6 +10,7 @@ namespace Petal.Tests;
 /// The snapshot run's check for words a window cuts (used to review every language) finds a cut label,
 /// a cut segment and a trimmed name in a tree laid out away from any window, and passes words that fit.
 /// </summary>
+[Collection(PdfEditorWindowTests.OneApplication)]
 public sealed class CutTextTests
 {
     private static List<string> Lay(FrameworkElement content, double width)

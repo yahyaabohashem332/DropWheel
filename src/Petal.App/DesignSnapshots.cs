@@ -21,6 +21,7 @@ internal static class DesignSnapshots
         var output = args[1];
         var data = args[2];
         Directory.CreateDirectory(output);
+        _snapshotFolder = output;
         var converters = EngineSetup.CreateConverters();
         var jobs = new Jobs.JobRunner(converters);
         var at = new Input.ScreenPoint(-4000, -4000);
@@ -249,6 +250,59 @@ internal static class DesignSnapshots
     }
 
     /// <summary>Tool windows added later register here so the snapshot run covers them.</summary>
+    private static string _snapshotFolder = "";
+
+    /// <summary>A form in the snapshots' folder, with one field of each kind and a few lines of its own text: a visa application, say.</summary>
+    private static string SamplePdfForm()
+    {
+        var path = Path.Combine(_snapshotFolder, "sample-form.pdf");
+        Petal.Engines.Documents.Pdf.PdfSampleForm.Write(path);
+        return path;
+    }
+
+    private static void SceneForm(Tools.Windows.PdfEditorWindow window)
+    {
+        foreach (var (name, value) in new[] { ("name", "Yahya Abo Hashem"), ("native", "يحيى أبو هاشم"), ("address", "Kadikoy, Istanbul"), ("country", "TR") })
+            if (window.ControlsOf(name) is [System.Windows.Controls.TextBox box, ..])
+                box.Text = value;
+            else if (window.ControlsOf(name) is [System.Windows.Controls.ComboBox combo, ..])
+                combo.SelectedIndex = 0;
+        var agree = window.Session!.Fields.First(f => f.Name == "agree");
+        window.Toggle(agree, agree.Widgets[0].OnState!);
+        window.ZoomForSnapshot(0.95);
+    }
+
+    private static void SceneMarks(Tools.Windows.PdfEditorWindow window)
+    {
+        window.SelectTool(Tools.Windows.PdfTool.Select);
+        foreach (var item in new Petal.Engines.Documents.Pdf.PdfPageItem[]
+        {
+            new Petal.Engines.Documents.Pdf.PdfTextItem(0, new Petal.Engines.Documents.Pdf.PdfArea(330, 180, 220, 18), "Written anywhere", 13, 0xE02020, true),
+            new Petal.Engines.Documents.Pdf.PdfTextItem(0, new Petal.Engines.Documents.Pdf.PdfArea(330, 205, 220, 18), "نص مكتوب في أي مكان", 13, 0x1D2B6B),
+            new Petal.Engines.Documents.Pdf.PdfTextItem(0, new Petal.Engines.Documents.Pdf.PdfArea(330, 230, 120, 16), Tools.Windows.PdfEditorWindow.TodayText(), 12, 0),
+            new Petal.Engines.Documents.Pdf.PdfMarkItem(0, new Petal.Engines.Documents.Pdf.PdfArea(330, 255, 16, 16), Petal.Engines.Documents.Pdf.PdfMark.Check, 0x1D2B6B),
+            new Petal.Engines.Documents.Pdf.PdfMarkItem(0, new Petal.Engines.Documents.Pdf.PdfArea(355, 255, 16, 16), Petal.Engines.Documents.Pdf.PdfMark.Cross, 0xE02020),
+            new Petal.Engines.Documents.Pdf.PdfMarkItem(0, new Petal.Engines.Documents.Pdf.PdfArea(380, 255, 16, 16), Petal.Engines.Documents.Pdf.PdfMark.Dot, 0x1D2B6B),
+            new Petal.Engines.Documents.Pdf.PdfMarkupItem(0, Petal.Engines.Documents.Pdf.PdfMarkup.Highlight, [new Petal.Engines.Documents.Pdf.PdfArea(72, 68, 150, 16)], 0xFFD23F),
+            new Petal.Engines.Documents.Pdf.PdfMarkupItem(0, Petal.Engines.Documents.Pdf.PdfMarkup.Underline, [new Petal.Engines.Documents.Pdf.PdfArea(240, 68, 110, 16)], 0xE02020),
+            new Petal.Engines.Documents.Pdf.PdfNoteItem(0, new Petal.Engines.Documents.Pdf.PdfArea(500, 60, 22, 22), "Check this", 0xFFD23F),
+            new Petal.Engines.Documents.Pdf.PdfLineItem(0, 330, 290, 460, 330, true, 2, 0xE02020),
+            new Petal.Engines.Documents.Pdf.PdfShapeItem(0, new Petal.Engines.Documents.Pdf.PdfArea(330, 345, 70, 40), false, 2, 0xE02020),
+            new Petal.Engines.Documents.Pdf.PdfShapeItem(0, new Petal.Engines.Documents.Pdf.PdfArea(410, 345, 70, 40), true, 2, 0xE02020),
+            new Petal.Engines.Documents.Pdf.PdfInkItem(0, [[(330, 410), (360, 395), (390, 420), (420, 395), (450, 410)]], 2.5, 0x1D2B6B),
+        })
+            window.AddForSnapshot(item);
+        window.SelectForSnapshot(window.Items[0]);
+        window.ZoomForSnapshot(0.95);
+    }
+
+    private static void SceneRedact(Tools.Windows.PdfEditorWindow window)
+    {
+        window.SelectTool(Tools.Windows.PdfTool.Redact);
+        window.ZoomForSnapshot(0.95);
+        _ = window.FindPrivateAsync();
+    }
+
     private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at)
     {
         Petal.Core.Tools.ToolInfo T(Petal.Core.Tools.ToolId id) => Petal.Core.Tools.ToolRegistry.Get(id);
@@ -312,6 +366,9 @@ internal static class DesignSnapshots
             ("password", () => new Tools.Windows.PdfPasswordWindow(T(Petal.Core.Tools.ToolId.ProtectPdf), [file("album.pdf")], jobs, at)),
             ("pagenumbers", () => new Tools.Windows.PageNumbersWindow(T(Petal.Core.Tools.ToolId.NumberPages), [file("album.pdf")], jobs, at)),
             ("signpdf", () => new Tools.Windows.SignPdfWindow(T(Petal.Core.Tools.ToolId.SignPdf), file("album.pdf"), jobs, at)),
+            ("editpdf", () => Tools.Windows.PdfEditorWindow.ForSnapshot(T(Petal.Core.Tools.ToolId.EditPdf), SamplePdfForm(), jobs, at, SceneForm)),
+            ("editpdfmarks", () => Tools.Windows.PdfEditorWindow.ForSnapshot(T(Petal.Core.Tools.ToolId.EditPdf), SamplePdfForm(), jobs, at, SceneMarks)),
+            ("editpdfredact", () => Tools.Windows.PdfEditorWindow.ForSnapshot(T(Petal.Core.Tools.ToolId.EditPdf), SamplePdfForm(), jobs, at, SceneRedact)),
             ("zip", () => new Tools.Windows.ZipWindow([file("landscape.jpg"), file("album.pdf")], jobs, at)),
             ("rename", () => new Tools.Windows.RenameWindow([file("landscape.jpg"), file("figures.png"), file("weekend.mov")], at)),
             ("qr", () => (Window)typeof(Tools.Windows.QrWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null)),

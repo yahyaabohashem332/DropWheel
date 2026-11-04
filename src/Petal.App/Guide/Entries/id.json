@@ -29,7 +29,7 @@
  "tool:AnnotatePhoto": {
   "category": "pictures",
   "summary": "Menggambar panah, teks, kotak, sorotan, dan langkah bernomor pada gambar, lalu menyimpan salinan PNG beranotasi.",
-  "details": "Anotasi Foto menampilkan gambar dengan deretan sembilan alat: Panah, Stabilo, Teks, Persegi panjang, Elips, Gambar, Langkah bernomor, Kaca Pembesar, dan Sisipkan gambar (yang menaruh gambar lain di atasnya). Pilih warna dengan kotak warna; seret anotasi untuk memindahkannya, klik dua kali teks untuk mengeditnya, dan gunakan Batalkan (Ctrl+Z) atau Hapus yang dipilih (Del) untuk memperbaiki kesalahan. Atur Ulang menghapus semua yang Anda tambahkan. Simpan Salinan Beranotasi menyimpan hasilnya di samping file asli sebagai 'nama Annotated.png', selalu dalam format PNG.",
+  "details": "Anotasi Foto menampilkan gambar dengan deretan sembilan alat: Panah, Stabilo, Teks, Persegi panjang, Elips, Gambar, Langkah bernomor, Kaca Pembesar, dan Sisipkan gambar (yang menaruh gambar lain di atasnya). Pilih warna dengan kotak warna; seret anotasi untuk memindahkannya, klik dua kali teks untuk mengeditnya, dan gunakan Batalkan (Ctrl+Z) atau Hapus yang dipilih (Del) untuk memperbaiki kesalahan. Atur Ulang menghapus semua yang Anda tambahkan. Simpan Salinan Beranotasi menyimpan hasilnya di samping file asli sebagai 'nama Annotated.png', selalu dalam format PNG. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu gambar, ketuk Ctrl, lalu lepaskan di ANOTASI; pilih alat, buat coretan pada gambar, lalu pilih Simpan Salinan Beranotasi.",
   "worksOn": "Satu gambar dalam satu waktu.",
   "examples": [
@@ -54,7 +54,7 @@
  "tool:AddBackground": {
   "category": "pictures",
   "summary": "Menaruh gambar di atas latar belakang gradien, warna, atau gambar, dengan jarak tepi, sudut membulat, dan bayangan.",
-  "details": "Tambah Latar Belakang menaruh gambar di atas latar belakang dengan pratinjau langsung. Pilih salah satu dari dua belas gradien lembut (Fajar, Laguna, Aurora, Persik, Ultraungu, Mint, Langit, Bara, Malam, Merona, Jeruk, Grafit), salah satu dari delapan belas warna solid, warna pilihan Anda sendiri, atau gambar Anda sendiri, yang juga mendapat penggeser Buram. Jarak tepi, Sudut, dan Bayangan dimulai pada ukuran yang cocok untuk gambar tersebut, dan Rasio bisa Otomatis, 1:1, 16:9, 4:5, atau 9:16. Simpan dengan Latar Belakang menyimpan hasilnya di samping file asli sebagai 'nama Background' dalam format yang sama; Atur Ulang kembali ke nilai bawaan.",
+  "details": "Tambah Latar Belakang menaruh gambar di atas latar belakang dengan pratinjau langsung. Pilih salah satu dari dua belas gradien lembut (Fajar, Laguna, Aurora, Persik, Ultraungu, Mint, Langit, Bara, Malam, Merona, Jeruk, Grafit), salah satu dari delapan belas warna solid, warna pilihan Anda sendiri, atau gambar Anda sendiri, yang juga mendapat penggeser Buram. Jarak tepi, Sudut, dan Bayangan dimulai pada ukuran yang cocok untuk gambar tersebut, dan Rasio bisa Otomatis, 1:1, 16:9, 4:5, atau 9:16. Simpan dengan Latar Belakang menyimpan hasilnya di samping file asli sebagai 'nama Background' dalam format yang sama; Atur Ulang kembali ke nilai bawaan. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu gambar, ketuk Ctrl, lalu lepaskan di BERI LATAR; pilih latar belakang, atur Jarak tepi, Sudut, dan Bayangan, lalu pilih Simpan dengan Latar Belakang.",
   "worksOn": "Satu gambar dalam satu waktu.",
   "examples": [
@@ -104,7 +104,7 @@
  "tool:RedactPhoto": {
   "category": "pictures",
   "summary": "Menutupi detail pribadi, wajah, atau teks di gambar dengan kotak solid atau buram yang tidak bisa dibatalkan.",
-  "details": "Saat Samarkan Foto dibuka, alat ini langsung mencari detail pribadi (alamat email, nomor telepon, nomor kartu, IBAN, alamat IP, dan kata sandi) dan menutupinya; tombol Wajah dan Teks menemukan wajah dan baris teks dengan cara yang sama, semuanya di PC ini dengan deteksi bawaan Windows. Anda juga bisa menyeret di foto untuk menutupi area mana pun, menyeret kotak untuk memindahkannya, menyeret sudutnya untuk mengubah ukurannya, dan menekan Delete untuk menghapusnya. Gaya bisa Solid (awalnya hitam, atau warna apa pun yang Anda pilih) atau Buram, yang dibuat agar tidak bisa dikembalikan. Simpan Salinan yang Disamarkan menyimpan hasilnya di samping file asli sebagai 'nama Redacted'; file asli tetap seperti semula.",
+  "details": "Saat Samarkan Foto dibuka, alat ini langsung mencari detail pribadi (alamat email, nomor telepon, nomor kartu, IBAN, alamat IP, dan kata sandi) dan menutupinya; tombol Wajah dan Teks menemukan wajah dan baris teks dengan cara yang sama, semuanya di PC ini dengan deteksi bawaan Windows. Anda juga bisa menyeret di foto untuk menutupi area mana pun, menyeret kotak untuk memindahkannya, menyeret sudutnya untuk mengubah ukurannya, dan menekan Delete untuk menghapusnya. Gaya bisa Solid (awalnya hitam, atau warna apa pun yang Anda pilih) atau Buram, yang dibuat agar tidak bisa dikembalikan. Simpan Salinan yang Disamarkan menyimpan hasilnya di samping file asli sebagai 'nama Redacted'; file asli tetap seperti semula. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu gambar, ketuk Ctrl, lalu lepaskan di SAMARKAN; periksa kotak-kotaknya, tambahkan kotak Anda sendiri, lalu pilih Simpan Salinan yang Disamarkan. PRIVAT di roda Layar membukanya pada cuplikan layar yang baru diambil.",
   "worksOn": "Satu gambar dalam satu waktu.",
   "examples": [
@@ -155,7 +155,7 @@
  "tool:Watermark": {
   "category": "pictures",
   "summary": "Menaruh teks atau logo Anda pada gambar, pada setiap frame video, atau pada setiap halaman PDF.",
-  "details": "Tambah Tanda Air punya dua jenis: Teks (termasuk bahasa Arab; awalnya '© tahun') dengan Warna (awalnya putih), atau Gambar, yaitu logo yang Anda pilih. Ukuran dari 5% sampai 90% (awalnya 30%) dan Opasitas dari 10% sampai 100% (awalnya 60%). Posisi adalah salah satu dari sembilan titik (awalnya kanan bawah), atau centang Ulangi ke samping untuk menutupi seluruh gambar. Pratinjau menampilkan file pertama, dan DropWheel mengingat tanda air terakhir Anda untuk lain kali. Setiap hasil disimpan di samping file aslinya sebagai 'nama Watermarked'.",
+  "details": "Tambah Tanda Air punya dua jenis: Teks (termasuk bahasa yang ditulis dari kanan ke kiri; awalnya '© tahun') dengan Warna (awalnya putih), atau Gambar, yaitu logo yang Anda pilih. Ukuran dari 5% sampai 90% (awalnya 30%) dan Opasitas dari 10% sampai 100% (awalnya 60%). Posisi adalah salah satu dari sembilan titik (awalnya kanan bawah), atau centang Ulangi ke samping untuk menutupi seluruh gambar. Pratinjau menampilkan file pertama, dan DropWheel mengingat tanda air terakhir Anda untuk lain kali. Setiap hasil disimpan di samping file aslinya sebagai 'nama Watermarked'. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret file, ketuk Ctrl, lalu lepaskan di TANDA AIR; atur teks atau gambar, ukuran, dan posisinya, lalu pilih Tambah Tanda Air.",
   "worksOn": "Gambar, video (bukan GIF), dan PDF; satu file atau banyak. Juga file di dalam folder yang dilepas.",
   "examples": [
@@ -180,13 +180,13 @@
  "tool:CopyText": {
   "category": "pictures",
   "summary": "Langsung menyalin teks di dalam gambar, atau isi kode QR atau barcode di dalamnya, ke papan klip.",
-  "details": "Salin Teks atau Kode QR tidak memerlukan jendela. Alat ini pertama-tama mencari kode QR dan barcode lalu menyalin isinya; jika kode berisi tautan web, klik pada kartu akan membukanya. Jika tidak ada kode, alat ini membaca teks gambar dengan pengenalan teks bawaan Windows, mencoba setiap bahasa yang terpasang di Windows dan memakai hasil bacaan yang paling bersih, sehingga bahasa Arab dan Inggris sama-sama berfungsi. Sebuah kartu menampilkan berapa baris yang disalin dan kata-kata pertamanya. Jika tidak ada yang ditemukan, alat ini menyarankan gambar yang lebih tajam atau menambahkan bahasanya di Pengaturan Windows › Waktu & bahasa.",
+  "details": "Salin Teks atau Kode QR tidak memerlukan jendela. Alat ini pertama-tama mencari kode QR dan barcode lalu menyalin isinya; jika kode berisi tautan web, klik pada kartu akan membukanya. Jika tidak ada kode, alat ini membaca teks gambar dengan pengenalan teks bawaan Windows, mencoba setiap bahasa yang terpasang di Windows dan memakai hasil bacaan yang paling bersih, sehingga bahasa apa pun yang bisa dibaca Windows berfungsi. Sebuah kartu menampilkan berapa baris yang disalin dan kata-kata pertamanya. Jika tidak ada yang ditemukan, alat ini menyarankan gambar yang lebih tajam atau menambahkan bahasanya di Pengaturan Windows › Waktu & bahasa.",
   "how": "Seret satu gambar, ketuk Ctrl, lalu lepaskan di TEKS · QR; teksnya sudah ada di papan klip, siap ditempel dengan Ctrl+V.",
   "worksOn": "Satu gambar (JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP, dan sejenisnya).",
   "examples": [
    "Cuplikan layar pesan galat: lepaskan dan tempel teksnya ke kotak pencarian atau email.",
    "Foto kode QR Wi-Fi di meja kafe: isi kodenya langsung disalin.",
-   "Foto resep berbahasa Arab yang dicetak: lepaskan dan tempel kata-katanya ke catatan."
+   "Foto resep yang dicetak: lepaskan dan tempel kata-katanya ke catatan."
   ],
   "keywords": [
    "teks dari gambar",
@@ -205,7 +205,7 @@
  "tool:RemoveBackground": {
   "category": "pictures",
   "summary": "Memotong subjek dari foto, termasuk rambut, ke latar belakang transparan, putih, atau berwarna.",
-  "details": "Hapus Latar Belakang memakai model AI BiRefNet lite di PC ini; model 224 MB diunduh sekali dari jendela alat pada pertama kali. Latar belakang bisa Transparan (bawaan), Putih, atau Warna, dan Pangkas ke subjek memotong tepi yang kosong. Hasil transparan disimpan sebagai PNG kecuali file aslinya sudah PNG atau WebP; setiap hasil disimpan di samping file aslinya sebagai 'nama No Background'. Alat ini berjalan di prosesor, jadi komputer lama bisa memerlukan hingga setengah menit per gambar. Menahan penunjuk di atas kelopak sebelum Anda melepaskan akan menampilkan hasil potongan di tengah roda, setelah modelnya tersedia.",
+  "details": "Hapus Latar Belakang memakai model AI BiRefNet lite di PC ini; model 224 MB diunduh sekali dari jendela alat pada pertama kali. Latar belakang bisa Transparan (bawaan), Putih, atau Warna, dan Pangkas ke subjek memotong tepi yang kosong. Hasil transparan disimpan sebagai PNG kecuali file aslinya sudah PNG atau WebP; setiap hasil disimpan di samping file aslinya sebagai 'nama No Background'. Alat ini berjalan di prosesor, jadi komputer lama bisa memerlukan hingga setengah menit per gambar. Menahan penunjuk di atas kelopak sebelum Anda melepaskan akan menampilkan hasil potongan di tengah roda, setelah modelnya tersedia. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu gambar atau lebih, ketuk Ctrl, lalu lepaskan di HAPUS LATAR; pilih latar belakangnya dan tekan Hapus Latar Belakang.",
   "worksOn": "Gambar; satu atau banyak sekaligus. Juga gambar di dalam folder yang dilepas.",
   "examples": [
@@ -378,7 +378,7 @@
  "tool:CreateCollage": {
   "category": "pictures",
   "summary": "Menggabungkan beberapa gambar menjadi satu gambar kolase dalam tata letak kisi, baris, kolom, atau unggulan.",
-  "details": "Buat Kolase menampilkan pratinjau langsung. Gaya bisa Kisi (dengan Kolom dari 1 sampai 6), Baris, Kolom, atau Unggulan, dengan satu gambar besar di kiri dan sisanya bertumpuk di kanan. Kanvas bisa Persegi 1:1 (bawaan), Potret 4:5, Cerita 9:16, Lanskap 16:9, atau Foto 3:2, dan Lebar 1.080, 2.048 (bawaan), 3.000, atau 4.096 px. Penyesuaian gambar memenuhi sel dengan memangkas tepinya, atau memuat gambar secara utuh. Di bawah Jarak & latar belakang Anda mengatur Jarak (24 px), Sudut (16 px), dan warna Latar belakang (putih), dan di bawah Urutan gambar Anda mengubah urutannya. Buat Kolase menyimpan PNG yang dinamai sesuai gambar pertama, 'nama Collage.png'.",
+  "details": "Buat Kolase menampilkan pratinjau langsung. Gaya bisa Kisi (dengan Kolom dari 1 sampai 6), Baris, Kolom, atau Unggulan, dengan satu gambar besar di kiri dan sisanya bertumpuk di kanan. Kanvas bisa Persegi 1:1 (bawaan), Potret 4:5, Cerita 9:16, Lanskap 16:9, atau Foto 3:2, dan Lebar 1.080, 2.048 (bawaan), 3.000, atau 4.096 px. Penyesuaian gambar memenuhi sel dengan memangkas tepinya, atau memuat gambar secara utuh. Di bawah Jarak & latar belakang Anda mengatur Jarak (24 px), Sudut (16 px), dan warna Latar belakang (putih), dan di bawah Urutan gambar Anda mengubah urutannya. Buat Kolase menyimpan PNG yang dinamai sesuai gambar pertama, 'nama Collage.png'. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret dua gambar atau lebih, ketuk Ctrl, lalu lepaskan di KOLASE; pilih gaya dan kanvas, lalu tekan Buat Kolase.",
   "worksOn": "Dua gambar atau lebih sekaligus, termasuk file Photoshop, RAW, SVG, Illustrator, dan EPS.",
   "examples": [
@@ -403,7 +403,7 @@
  "tool:DescribePicture": {
   "category": "pictures",
   "summary": "Menuliskan apa yang ditampilkan gambar, sebagai satu kalimat teks alt atau satu paragraf, dengan model AI kecil di PC ini.",
-  "details": "Deskripsikan Gambar memakai model gambar SmolVLM di PC ini; pada pertama kali, model diunduh sekali dari jendela (sekitar 570 MB beserta program yang menjalankannya). Panjang bisa Satu kalimat (bawaan) atau Satu paragraf. Kata-katanya muncul di kotak yang bisa Anda ubah; dalam bahasa selain Inggris, kata-kata itu diterjemahkan di PC ini, setelah unduhan model terjemahan satu kali. Salin menaruh teks di papan klip, dan Simpan di Gambar menuliskannya ke dalam detail gambar itu sendiri untuk file JPG, PNG, dan WebP tanpa mengubah gambarnya. Periksa kata-katanya sebelum Anda memublikasikannya.",
+  "details": "Deskripsikan Gambar memakai model gambar SmolVLM di PC ini; pada pertama kali, model diunduh sekali dari jendela (sekitar 570 MB beserta program yang menjalankannya), atau model kunci API Anda sendiri dari Pengaturan › Model AI yang melihat gambarnya, dan gambar itu lalu dikirim ke perusahaan itu. Panjang bisa Satu kalimat (bawaan) atau Satu paragraf. Kata-katanya muncul di kotak yang bisa Anda ubah; dalam bahasa selain Inggris, kata-kata itu diterjemahkan, setelah unduhan model terjemahan satu kali. Salin menaruh teks di papan klip, dan Simpan di Gambar menuliskannya ke dalam detail gambar itu sendiri untuk file JPG, PNG, dan WebP tanpa mengubah gambarnya. Periksa kata-katanya sebelum Anda memublikasikannya.",
   "how": "Seret satu gambar, ketuk Ctrl, lalu lepaskan di DESKRIPSI; tunggu kata-katanya muncul, edit jika perlu, lalu tekan Salin.",
   "worksOn": "Satu gambar dalam satu waktu; Simpan di Gambar berfungsi untuk JPG, PNG, dan WebP.",
   "examples": [
@@ -428,7 +428,7 @@
  "tool:TableFromImage": {
   "category": "pictures",
   "summary": "Membaca tabel di gambar atau cuplikan layar menjadi lembar Excel, dengan baris, kolom, dan angka sungguhan.",
-  "details": "Tabel ke Excel langsung berjalan, tanpa jendela. Alat ini membaca gambar dengan pengenalan teks bawaan Windows: kata-kata yang berdekatan menjadi satu sel, dan sel-sel yang sejajar menjadi satu kolom. Angka disimpan sebagai angka, tabel berbahasa Arab tetap dalam urutan kanan-ke-kiri, dan sel kosong dibaca sekali lagi secara terpisah. Setiap lembar disimpan di samping gambarnya sebagai 'nama Table.xlsx'. Jika tidak ada tabel, kartu akan menulis 'Tidak ditemukan tabel di gambar ini.'",
+  "details": "Tabel ke Excel langsung berjalan, tanpa jendela. Alat ini membaca gambar dengan pengenalan teks bawaan Windows: kata-kata yang berdekatan menjadi satu sel, dan sel-sel yang sejajar menjadi satu kolom. Angka disimpan sebagai angka, tabel kanan-ke-kiri tetap dalam urutannya, dan sel kosong dibaca sekali lagi secara terpisah. Setiap lembar disimpan di samping gambarnya sebagai 'nama Table.xlsx'. Jika tidak ada tabel, kartu akan menulis 'Tidak ditemukan tabel di gambar ini.'",
   "how": "Seret satu gambar atau lebih, ketuk Ctrl, lalu lepaskan di TABEL; file Excel muncul di samping setiap gambar.",
   "worksOn": "Gambar; satu atau banyak sekaligus. Juga gambar di dalam folder yang dilepas.",
   "examples": [
@@ -555,7 +555,7 @@
  "tool:AudioVisualizer": {
   "category": "audio",
   "summary": "Mengubah lagu atau rekaman menjadi video MP4 dengan batang bentuk gelombang yang bergerak atau gambar diam.",
-  "details": "Visualisasi Audio membuat video dari suara, untuk tempat yang hanya menerima video. Gaya bisa Bentuk gelombang (batang animasi dengan warna pilihan Anda, di atas hitam) atau Gambar diam (gambar yang Anda pilih lewat Pilih gambar… memenuhi frame; PNG, JPG, WEBP, atau BMP). Bentuk bisa 16:9 (1920 × 1080), 9:16 (1080 × 1920), atau 1:1 (1080 × 1080), dan pratinjau menampilkan bentuk dan warnanya. Pilih Buat Visualisasi: hasilnya MP4 (H.264 dengan suara AAC) pada 30 frame per detik, sepanjang audionya, disimpan sebagai 'nama Visualizer.mp4'.",
+  "details": "Visualisasi Audio membuat video dari suara, untuk tempat yang hanya menerima video. Gaya bisa Bentuk gelombang (batang animasi dengan warna pilihan Anda, di atas hitam) atau Gambar diam (gambar yang Anda pilih lewat Pilih gambar… memenuhi frame; PNG, JPG, WEBP, atau BMP). Bentuk bisa 16:9 (1920 × 1080), 9:16 (1080 × 1920), atau 1:1 (1080 × 1080), dan pratinjau menampilkan bentuk dan warnanya. Pilih Buat Visualisasi: hasilnya MP4 (H.264 dengan suara AAC) pada 30 frame per detik, sepanjang audionya, disimpan sebagai 'nama Visualizer.mp4'. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu file audio, ketuk Ctrl, lalu lepaskan di VISUALISASI; pilih gaya, bentuk, dan warna, lalu Buat Visualisasi.",
   "worksOn": "Satu file audio.",
   "examples": [
@@ -753,7 +753,7 @@
  "tool:RedactVideo": {
   "category": "video",
   "summary": "Menyembunyikan wajah, pelat nomor, atau teks dalam video dengan kotak solid atau buram yang kuat, selama yang Anda pilih.",
-  "details": "Samarkan Video memungkinkan Anda menggambar kotak di gambar video. Gaya bisa Solid (dengan warna pilihan Anda, bawaan hitam) atau Buram, yang cukup kuat sehingga wajah dan teks tidak bisa dikenali. Setiap kotak mendapat jalurnya sendiri di bawah Area samaran: seret ujung-ujungnya untuk memilih kapan kotak terlihat; awalnya kotak menutupi seluruh video. Kotak tetap di tempat Anda menggambarnya; kotak tidak mengikuti benda yang bergerak. Atur Ulang menghapus semua kotak, dan Simpan Salinan yang Disamarkan menyimpan 'nama Redacted' dalam format yang sama dengan suara tetap dipertahankan.",
+  "details": "Samarkan Video memungkinkan Anda menggambar kotak di gambar video. Gaya bisa Solid (dengan warna pilihan Anda, bawaan hitam) atau Buram, yang cukup kuat sehingga wajah dan teks tidak bisa dikenali. Setiap kotak mendapat jalurnya sendiri di bawah Area samaran: seret ujung-ujungnya untuk memilih kapan kotak terlihat; awalnya kotak menutupi seluruh video. Kotak tetap di tempat Anda menggambarnya; kotak tidak mengikuti benda yang bergerak. Atur Ulang menghapus semua kotak, dan Simpan Salinan yang Disamarkan menyimpan 'nama Redacted' dalam format yang sama dengan suara tetap dipertahankan. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu video, ketuk Ctrl, lalu lepaskan di SAMARKAN; gambar kotak di atas yang ingin disembunyikan, atur jalurnya, lalu pilih Simpan Salinan yang Disamarkan.",
   "worksOn": "Satu video.",
   "examples": [
@@ -802,12 +802,12 @@
  "tool:Transcribe": {
   "category": "video",
   "summary": "Menuliskan apa yang diucapkan dalam rekaman atau video, sebagai subtitel atau teks, dengan Whisper di PC ini.",
-  "details": "Transkripsikan memakai model ucapan Whisper di PC Anda: Akurasi bisa Cepat, Seimbang, atau Akurat (unduhan satu kali sekitar 60 MB, 190 MB, dan 574 MB), dan Akurat paling baik untuk bahasa Arab, aksen, dan rekaman yang bising. Bahasa bisa Deteksi otomatis atau salah satu dari 22 bahasa, dan Subtitel dalam bisa Sesuai ucapan, Dalam bahasa Inggris, atau Dalam bahasa Arab: ucapan yang sudah dalam bahasa yang diinginkan ditulis sesuai ucapan; bahasa Arab ke Inggris dan Inggris ke Arab memakai model terjemahan Opus-MT (masing-masing unduhan satu kali sekitar 114 MB), dan bahasa lain diterjemahkan ke bahasa Inggris dengan terjemahan Whisper sendiri (Akurat tidak dapat menerjemahkan, jadi Seimbang atau Cepat yang melakukannya), lalu ke bahasa Arab bila diminta. Simpan sebagai memberikan Subtitel (file .srt), Teks (file .txt), atau Keduanya, dinamai seperti file asli (talk.srt) sehingga pemutar video memuat subtitelnya sendiri. Untuk video, Di dalam video juga bisa menaruh subtitel ke dalam salinan, Sebagai trek (dinyalakan dan dimatikan di pemutar) atau Tertanam (menjadi bagian dari gambar), disimpan sebagai 'nama Subtitled'. Kartu grafis mempercepat prosesnya jika memungkinkan, dan Anda bisa memproses banyak file sekaligus.",
+  "details": "Transkripsikan memakai model ucapan Whisper di PC Anda: Akurasi bisa Cepat, Seimbang, atau Akurat (unduhan satu kali sekitar 60 MB, 190 MB, dan 574 MB), dan Akurat paling baik untuk aksen, rekaman yang bising, dan bahasa selain Inggris. Bahasa bisa Deteksi otomatis atau salah satu dari 22 bahasa, dan Subtitel dalam bisa Sesuai ucapan atau salah satu dari delapan bahasa yang diterjemahkan DropWheel (Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, dan Spanyol): ucapan yang sudah dalam bahasa yang diinginkan ditulis sesuai ucapan, dan ucapan lain ditulis lalu diterjemahkan di PC ini oleh model yang diunduh sekali (dari sekitar 110 MB hingga sekitar 630 MB; jendela menunjukkan apa yang diperlukan), atau oleh model kunci API Anda sendiri jika Anda memilihnya di Pengaturan › Model AI, yang mengirim kata-katanya ke perusahaan itu; jika belum ada model terjemahan yang siap untuk bahasa yang diucapkan, ucapan masuk ke bahasa Inggris dengan terjemahan Whisper sendiri (Akurat tidak dapat menerjemahkan, jadi Seimbang atau Cepat yang melakukannya) dan dari sana ke bahasa yang diinginkan. Simpan sebagai memberikan Subtitel (file .srt), Teks (file .txt), atau Keduanya, dinamai seperti file asli (talk.srt) sehingga pemutar video memuat subtitelnya sendiri. Untuk video, Di dalam video juga bisa menaruh subtitel ke dalam salinan, Sebagai trek (dinyalakan dan dimatikan di pemutar) atau Tertanam (menjadi bagian dari gambar), disimpan sebagai 'nama Subtitled'. Kartu grafis mempercepat prosesnya jika memungkinkan, dan Anda bisa memproses banyak file sekaligus.",
   "how": "Seret rekaman atau video, ketuk Ctrl, lalu lepaskan di SUBTITEL; pilih akurasi, bahasa, dan apa yang disimpan, lalu Transkripsikan. Pada pertama kali, pilih Unduh di jendela untuk mendapatkan modelnya.",
   "worksOn": "File audio dan video; satu atau banyak sekaligus.",
   "examples": [
    "Wawancara 1 jam yang direkam di ponsel dijadikan file teks untuk dikutip: Simpan sebagai › Teks.",
-   "Video keluarga berbahasa Arab dengan subtitel bahasa Inggris untuk kerabat di luar negeri: Subtitel dalam › Dalam bahasa Inggris, Di dalam video › Tertanam.",
+   "Video keluarga dengan subtitel bahasa Inggris untuk kerabat di luar negeri: Subtitel dalam › English, Di dalam video › Tertanam.",
    "Video kuliah dengan subtitel yang bisa dinyalakan dan dimatikan mahasiswa: Di dalam video › Sebagai trek."
   ],
   "keywords": [
@@ -822,7 +822,7 @@
    "whisper",
    "tulis apa yang diucapkan",
    "terjemahkan video",
-   "subtitle arab",
+   "subtitle bahasa lain",
    "rekaman rapat"
   ]
  },
@@ -880,26 +880,52 @@
  },
  "tool:TranslateSubtitles": {
   "category": "video",
-  "summary": "Menerjemahkan file subtitel bahasa Inggris ke bahasa Arab di PC ini, dengan tetap menjaga waktu setiap baris.",
-  "details": "Terjemahkan ke bahasa Arab membaca file subtitel SRT atau VTT berbahasa Inggris dan menerjemahkannya baris demi baris dengan model Opus-MT, unduhan satu kali sekitar 114 MB. Waktunya tidak berubah, dan tag format tidak diikutkan dalam terjemahan. Hasilnya disimpan di samping file asli dengan '.ar' di namanya (talk.srt menjadi talk.ar.srt), sehingga pemutar menawarkannya sebagai bahasa Arab. Alat ini hanya menerjemahkan dari bahasa Inggris; untuk video dalam bahasa lain, gunakan Transkripsikan dengan Subtitel dalam › Dalam bahasa Arab.",
-  "how": "Seret satu file .srt atau .vtt atau lebih, ketuk Ctrl, lalu lepaskan di ARAB, kemudian pilih Terjemahkan. Dari command prompt: petal translate <subtitles>.",
+  "summary": "Menerjemahkan file subtitel dari delapan bahasa DropWheel ke bahasa mana pun di antaranya, dengan tetap menjaga waktu setiap baris.",
+  "details": "Terjemahkan Subtitel membaca file SRT atau VTT dan menerjemahkannya baris demi baris. Pilih Dari (Deteksi otomatis, atau salah satu dari Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, dan Spanyol) dan Ke. Alat ini berjalan di PC ini dengan model yang diunduh sekali, dan jendela menunjukkan apa yang diperlukan pasangan bahasa itu: model khusus untuk pasangan itu (sekitar 110 MB), dua model melalui bahasa Inggris, atau model lebih besar yang mengenal semua bahasa (sekitar 630 MB, dan lebih lambat). Dengan kunci API Anda sendiri yang dipilih di Pengaturan › Model AI, tidak ada yang perlu diunduh, dan kata-kata subtitel dikirim ke perusahaan itu. Waktunya tidak berubah, dan tag format tidak diikutkan dalam terjemahan. Hasilnya disimpan di samping file asli dengan kode bahasa di namanya (talk.srt menjadi talk.es.srt), sehingga pemutar menawarkannya sesuai bahasanya. Untuk video yang belum punya subtitel, gunakan Transkripsikan.",
+  "how": "Seret satu file .srt atau .vtt atau lebih, ketuk Ctrl, lalu lepaskan di TERJEMAH; pilih Dari dan Ke, lalu pilih Terjemahkan. Dari command prompt: petal translate <subtitles> --to es (kodenya en, ar, tr, fa, ur, id, fr, dan es; tambahkan --from untuk menyebut bahasa subtitelnya).",
   "worksOn": "File subtitel (SRT dan VTT); satu atau banyak sekaligus.",
   "examples": [
-   "Subtitel bahasa Inggris yang diunduh untuk sebuah film, diterjemahkan untuk orang tua yang membaca bahasa Arab.",
-   "Keterangan kuliah sebuah kursus dalam format VTT, diterjemahkan untuk mahasiswa berbahasa Arab.",
-   "Subtitel bahasa Inggris yang Anda buat sebelumnya dengan Transkripsikan, diubah ke bahasa Arab belakangan."
+   "Subtitel yang diunduh untuk sebuah film, diterjemahkan untuk orang tua yang membaca bahasa lain.",
+   "Keterangan kuliah sebuah kursus dalam format VTT, diterjemahkan dari bahasa Inggris ke bahasa Indonesia untuk mahasiswa Anda.",
+   "Subtitel yang Anda buat sebelumnya dengan Transkripsikan, diubah ke bahasa Prancis belakangan."
   ],
   "keywords": [
    "terjemahkan subtitle",
    "terjemahkan subtitel",
-   "subtitle arab",
-   "inggris ke arab",
+   "subtitle bahasa indonesia",
+   "inggris ke indonesia",
    "srt",
    "vtt",
    "terjemahan",
    "penerjemah subtitle",
-   "teks film bahasa arab",
-   "caption arab"
+   "teks film",
+   "caption bahasa lain"
+  ]
+ },
+ "tool:TranslateDocument": {
+  "category": "documents",
+  "summary": "Menerjemahkan file Word, PowerPoint, Excel, atau PDF ke bahasa lain, sebagai file baru di samping aslinya dengan format tetap terjaga.",
+  "details": "Terjemahkan Dokumen bekerja di antara dua bahasa mana pun dari delapan bahasa DropWheel: Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, dan Spanyol. Pilih Dari (Deteksi otomatis, atau sebuah bahasa) dan Ke; hasilnya disimpan di samping aslinya dengan kode bahasa di namanya, jadi report.docx menjadi report.es.docx. Satu paragraf diterjemahkan utuh dan mengikuti tampilan sebagian besar katanya; gaya, tabel, tautan, gambar, kolom isian, dan rumus tetap ada. Header, footer, catatan kaki, dan kotak teks Word, tabel dan catatan pembicara PowerPoint, serta kata-kata di sel Excel juga diterjemahkan; angka, tanggal, nama lembar, dan judul kolom tabel Excel tidak. Ke bahasa Arab, Persia, atau Urdu, paragraf, tabel, dan lembar berubah menjadi kanan ke kiri, dan dari bahasa itu kembali lagi. Alat ini berjalan di PC ini dengan model terjemahan yang diunduh sekali (jendela menunjukkan apa yang diperlukan pasangan bahasa itu), atau dengan kunci API Anda sendiri yang dipilih di Pengaturan › Model AI, yang mengirim teksnya ke perusahaan itu; jendela mengatakan yang mana. Ada batasnya. Di PDF, kata-kata terjemahan digambar di atas setiap paragraf, dengan warnanya dan sebesar yang muat. Kata-kata asli dikeluarkan dari halaman jika itu bisa dilakukan dengan aman; di halaman hasil pindaian dan jika tidak bisa, kata-kata itu tetap tersembunyi di bawah terjemahan, jadi pencarian masih menemukannya dan rahasia apa pun di dalamnya masih ada. Halaman PDF hasil pindaian dibaca dulu dengan pengenalan teks Windows, dan PDF berkata sandi harus dibuka dulu. Bagan dan SmartArt tidak diterjemahkan. File ODT dan RTF keluar sebagai DOCX. File PPT dan XLS lama tidak diterima: simpan dulu sebagai PPTX atau XLSX.",
+  "how": "Seret satu file atau lebih dari jenis yang sama, ketuk Ctrl, lalu lepaskan di TERJEMAH; pilih Dari dan Ke, lalu pilih Terjemahkan.",
+  "worksOn": "File Word (DOCX, ODT, RTF), PowerPoint (PPTX), Excel (XLSX), dan PDF; satu atau banyak dari jenis yang sama sekaligus.",
+  "examples": [
+   "Kontrak di Word yang diterjemahkan dari bahasa Prancis ke bahasa Inggris, judul, tabel, dan nomor halamannya tetap seperti semula.",
+   "Presentasi berbahasa Inggris yang dijadikan bahasa Spanyol untuk klien, catatan pembicaranya juga.",
+   "Daftar harga di Excel yang diubah ke bahasa Arab: lembarnya menjadi kanan ke kiri, angka dan rumusnya tetap."
+  ],
+  "keywords": [
+   "terjemahkan dokumen",
+   "terjemahkan pdf",
+   "terjemahkan word",
+   "terjemahkan powerpoint",
+   "terjemahkan excel",
+   "format tetap",
+   "penerjemah dokumen",
+   "docx",
+   "pptx",
+   "xlsx",
+   "kanan ke kiri",
+   "terjemahkan file"
   ]
  },
  "tool:RemovePauses": {
@@ -930,13 +956,13 @@
  "tool:AnimatedCaptions": {
   "category": "video",
   "summary": "Menanamkan keterangan bergerak ke dalam video, beberapa kata sekaligus dengan kata yang sedang diucapkan menyala, seperti di video pendek.",
-  "details": "Keterangan Animasi mendengarkan video dengan model ucapan Whisper di PC Anda dan menggambar kata-katanya ke dalam gambar. Gaya bisa Kata demi kata (baris pendek dengan kata yang sedang diucapkan menyala dan sedikit lebih besar), Satu kata (satu kata besar setiap kali, muncul dengan efek pop), atau Baris (baris tebal biasa); Tempatkan bisa Bawah, Tengah, atau Atas; Ukuran bisa Kecil, Sedang, atau Besar; Kata yang menyala bisa kuning, hijau, merah muda, violet, atau biru. Satu bingkai video menampilkan bagaimana keterangannya akan terlihat. Akurasi (Cepat, Seimbang, atau Akurat: unduhan sekitar 60, 190, dan 574 MB), Diucapkan dalam, dan Kata dalam (Sesuai ucapan, Dalam bahasa Inggris, atau Dalam bahasa Arab; dengan model terjemahan sekitar 114 MB pada pertama kali) bekerja seperti di Transkripsikan. Pilih Tambah Keterangan; hasilnya disimpan sebagai 'nama Captioned' dengan suara tetap dipertahankan, dan bahasa Arab dibaca dari kanan ke kiri. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
+  "details": "Keterangan Animasi mendengarkan video dengan model ucapan Whisper di PC Anda dan menggambar kata-katanya ke dalam gambar. Gaya bisa Kata demi kata (baris pendek dengan kata yang sedang diucapkan menyala dan sedikit lebih besar), Satu kata (satu kata besar setiap kali, muncul dengan efek pop), atau Baris (baris tebal biasa); Tempatkan bisa Bawah, Tengah, atau Atas; Ukuran bisa Kecil, Sedang, atau Besar; Kata yang menyala bisa kuning, hijau, merah muda, violet, atau biru. Satu bingkai video menampilkan bagaimana keterangannya akan terlihat. Akurasi (Cepat, Seimbang, atau Akurat: unduhan sekitar 60, 190, dan 574 MB), Diucapkan dalam, dan Kata dalam (Sesuai ucapan atau salah satu dari delapan bahasa yang diterjemahkan DropWheel; dengan model terjemahan pada pertama kali) bekerja seperti di Transkripsikan. Pilih Tambah Keterangan; hasilnya disimpan sebagai 'nama Captioned' dengan suara tetap dipertahankan, dan bahasa Arab, Persia, dan Urdu dibaca dari kanan ke kiri. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret satu video atau lebih, ketuk Ctrl, lalu lepaskan di TEKS; pilih gaya, tempat, dan warna, lalu pilih Tambah Keterangan.",
   "worksOn": "Video; satu atau banyak sekaligus.",
   "examples": [
    "Klip bicara ke kamera untuk TikTok dengan kata-kata kuning yang menyala saat Anda berbicara: Kata demi kata, Bawah.",
    "Reel yang kebanyakan ditonton orang tanpa suara: Satu kata, Tengah, Besar.",
-   "Video produk berbahasa Inggris dengan keterangan bahasa Arab untuk pelanggan di negara-negara Teluk: Kata dalam › Dalam bahasa Arab."
+   "Video produk berbahasa Inggris dengan keterangan bahasa Spanyol untuk pelanggan di Meksiko: Kata dalam › Español."
   ],
   "keywords": [
    "keterangan",
@@ -982,12 +1008,12 @@
  "tool:MakeShorts": {
   "category": "video",
   "summary": "Mengubah video panjang (ceramah, wawancara, podcast, pelajaran) menjadi klip pendek yang siap untuk Reels, Shorts, dan TikTok: momen terbaiknya, ditemukan, dibingkai, dan diberi teks.",
-  "details": "Buat Video Pendek mendengarkan seluruh video di PC ini (Whisper, dengan waktu setiap kata) dan menemukan momen yang bisa berdiri sendiri: masing-masing dimulai di awal kalimat dan berakhir saat sebuah gagasan selesai. Momen diurutkan menurut apa yang membuat orang terus menonton: pembuka yang menarik (pertanyaan, “bayangkan…”), penyampaian yang bersemangat, cerita, saran, angka, perasaan atau tawa, satu topik dari awal sampai akhir, dan panjang yang diminta. Pilih jumlah Klip (3, 5, atau 8), Panjang (hingga 30 dtk, 30–60 dtk, atau 60–90 dtk), Bentuk (Tegak 9:16, Persegi, atau Seperti aslinya), dan Pembingkaian. Ikuti pembicara menemukan wajah dengan pendeteksi wajah bawaan Windows, menjaga orang yang berbicara tetap dalam bingkai, bergeser halus saat ia bergerak, dan berpindah potong saat orang lain berbicara; bila tidak ada wajah yang jelas (slide, panggung), ia menampilkan seluruh gambar di atas salinannya yang buram, seperti yang selalu dilakukan Seluruh gambar. Teks ditulis di video Kata demi kata (kata yang diucapkan menyala dengan warna pilihan), Satu kata, atau Baris, dan Kata dalam adalah bahasa yang diucapkan, Inggris, atau Arab. Judul di awal memasang judul di atas detik-detik pertama; Potong jeda memendekkan keheningan di antara kalimat. Pilih Temukan Momen Terbaik: momen muncul dari yang terbaik, masing-masing dengan skor dari 100 dan alasan dipilihnya. Putar salah satunya untuk memeriksa, ubah judulnya (judul ditulis oleh model AI di PC ini bila tersedia, dan hanya dipertahankan bila setia pada apa yang diucapkan), hapus centang yang tidak Anda inginkan, lalu pilih tombol Buat video pendek. Klip disimpan di folder baru bernama 'nama Shorts', bernomor dan berjudul, sebagai MP4 1080 × 1920 dengan suara pada tingkat kenyaringan yang diputar aplikasi. Video yang sudah didengar sekali langsung terbuka lagi. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
+  "details": "Buat Video Pendek mendengarkan seluruh video di PC ini (Whisper, dengan waktu setiap kata) dan menemukan momen yang bisa berdiri sendiri: masing-masing dimulai di awal kalimat dan berakhir saat sebuah gagasan selesai. Momen diurutkan menurut apa yang membuat orang terus menonton: pembuka yang menarik (pertanyaan, “bayangkan…”), penyampaian yang bersemangat, cerita, saran, angka, perasaan atau tawa, satu topik dari awal sampai akhir, dan panjang yang diminta. Pilih jumlah Klip (3, 5, atau 8), Panjang (hingga 30 dtk, 30–60 dtk, atau 60–90 dtk), Bentuk (Tegak 9:16, Persegi, atau Seperti aslinya), dan Pembingkaian. Ikuti pembicara menemukan wajah dengan pendeteksi wajah bawaan Windows, menjaga orang yang berbicara tetap dalam bingkai, bergeser halus saat ia bergerak, dan berpindah potong saat orang lain berbicara; bila tidak ada wajah yang jelas (slide, panggung), ia menampilkan seluruh gambar di atas salinannya yang buram, seperti yang selalu dilakukan Seluruh gambar. Teks ditulis di video Kata demi kata (kata yang diucapkan menyala dengan warna pilihan), Satu kata, atau Baris, dan Kata dalam adalah Sesuai ucapan atau salah satu dari delapan bahasa yang diterjemahkan DropWheel. Judul di awal memasang judul di atas detik-detik pertama; Potong jeda memendekkan keheningan di antara kalimat. Pilih Temukan Momen Terbaik: momen muncul dari yang terbaik, masing-masing dengan skor dari 100 dan alasan dipilihnya. Putar salah satunya untuk memeriksa, ubah judulnya (judul ditulis oleh model AI di PC ini bila tersedia, atau oleh model kunci API Anda sendiri dari Pengaturan › Model AI, dan hanya dipertahankan bila setia pada apa yang diucapkan), hapus centang yang tidak Anda inginkan, lalu pilih tombol Buat video pendek. Klip disimpan di folder baru bernama 'nama Shorts', bernomor dan berjudul, sebagai MP4 1080 × 1920 dengan suara pada tingkat kenyaringan yang diputar aplikasi. Video yang sudah didengar sekali langsung terbuka lagi. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Seret sebuah video, ketuk Ctrl, lalu lepaskan di VIDEO PENDEK; pilih jumlah, panjang, bentuk, dan teks klip, pilih Temukan Momen Terbaik, periksa momennya, lalu pilih tombol Buat video pendek.",
   "worksOn": "Satu video berisi ucapan, berapa pun panjangnya.",
   "examples": [
    "Podcast satu jam menjadi delapan klip 60 detik untuk TikTok, masing-masing dibuka dengan pertanyaan dan diberi teks kata demi kata.",
-   "Kuliah berbahasa Arab menjadi lima Reels dengan teks Arab dan judul, jedanya dipotong.",
+   "Kuliah menjadi lima Reels dengan teks dan judul, jedanya dipotong.",
    "Webinar rekaman dengan slide: Seluruh gambar menjaga slide tetap terbaca, dengan teks bahasa Inggris di bawahnya."
   ],
   "keywords": [
@@ -1007,15 +1033,15 @@
  },
  "tool:Dub": {
   "category": "video",
-  "summary": "Mengucapkan ulang ucapan dalam video ke bahasa lain, dari Arab ke Inggris atau dari Inggris ke Arab, dengan suara masing-masing pembicara; musiknya dihapus dan semua suara lainnya tetap ada.",
-  "details": "Sulih Suara memisahkan suara pembicara dari suara lainnya (Demucs), menuliskan apa yang diucapkan beserta waktu setiap kata (Whisper), lalu menerjemahkannya kalimat demi kalimat, semuanya di PC ini. Pilih bahasa tujuan Sulih Suara (Ke bahasa Inggris atau Ke bahasa Arab), bahasa yang Diucapkan dalam (atau Deteksi otomatis) dan Akurasi pendengarannya, lalu pilih Siapkan Sulih Suara. Paling akurat mendengar dengan model paling akurat dan meminta model AI besar di PC ini (Gemma 4 12B, sekitar 7 GB, diunduh sekali) menerjemahkan maknanya, bukan kata demi kata, seperti penerjemah sulih suara setelah membaca seluruh video: ungkapan keagamaan, puisi, dan dialek keluar sesuai maksudnya, dan setiap baris kira-kira sepanjang aslinya; butuh beberapa menit untuk setiap menit ucapan. Kalimat-kalimat muncul beserta terjemahannya: periksa, ubah yang perlu, dan putar sebuah kalimat untuk mendengar cara kalimat itu diucapkan. Lalu pilih Sulih Suara. Pertama, musik dihapus dari suara lainnya (dengan TIGER, yang dibuat untuk memisahkan suara film menjadi ucapan, musik, dan efek), sehingga langkah kaki, hujan, angin, dan dengung ruangan tetap ada sementara musiknya hilang; ini memakan waktu pada kali pertama, lalu disimpan. Kemudian setiap kalimat diucapkan ulang oleh model suara di PC ini (Chatterbox) dengan suara orang yang mengucapkannya, dipelajari dari kalimat itu sendiri; kalimat itu didengarkan kembali dan diucapkan ulang bila hasilnya salah, dimuat dalam waktu yang dipakai kalimat aslinya (diucapkan hingga 1,3 kali lebih cepat bila lebih panjang), dan diletakkan di atas suara lainnya sekeras kalimat aslinya. Video baru disimpan di samping aslinya sebagai 'nama Arabic.mp4' atau 'nama English.mp4', gambarnya tidak diubah. Simpan suara asli sebagai trek kedua menambahkan suara asli beserta musiknya untuk pemutar yang bisa berganti trek, dan Subtitel dalam bahasa baru menaruh terjemahan di dalam file sebagai subtitel. File itu menyebutkan bahwa suaranya dibuat dengan AI. Video yang sudah disiapkan sekali langsung terbuka lagi. Sulihsuarakan hanya video yang pembicaranya setuju suaranya dipakai.",
+  "summary": "Mengucapkan ulang ucapan dalam video ke bahasa lain, dari dan ke delapan bahasa DropWheel, dengan suara masing-masing pembicara; musiknya dihapus dan semua suara lainnya tetap ada.",
+  "details": "Sulih Suara memisahkan suara pembicara dari suara lainnya (Demucs), menuliskan apa yang diucapkan beserta waktu setiap kata (Whisper), lalu menerjemahkannya kalimat demi kalimat di PC ini. Pilih bahasa Sulih ke dan bahasa yang Diucapkan dalam (atau Deteksi otomatis), masing-masing Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol, serta Akurasi pendengarannya, lalu pilih Siapkan Sulih Suara. Paling akurat mendengar dengan model paling akurat dan meminta model AI besar di PC ini (Gemma 4 12B, sekitar 7 GB, diunduh sekali) menerjemahkan maknanya, bukan kata demi kata, seperti penerjemah sulih suara setelah membaca seluruh video: ungkapan keagamaan, puisi, dan dialek keluar sesuai maksudnya, dan setiap baris kira-kira sepanjang aslinya; butuh beberapa menit untuk setiap menit ucapan. Terjemahannya juga bisa dikerjakan oleh model kunci API Anda sendiri, yang dipilih di Pengaturan › Model AI: kata-kata kalimatnya dikirim ke perusahaan itu dan tidak ada yang perlu diunduh untuk itu; pendengaran dan suaranya selalu tetap di PC ini. Kalimat-kalimat muncul beserta terjemahannya: periksa, ubah yang perlu, dan putar sebuah kalimat untuk mendengar cara kalimat itu diucapkan. Lalu pilih Sulih Suara. Pertama, musik dihapus dari suara lainnya (dengan TIGER, yang dibuat untuk memisahkan suara film menjadi ucapan, musik, dan efek), sehingga langkah kaki, hujan, angin, dan dengung ruangan tetap ada sementara musiknya hilang; ini memakan waktu pada kali pertama, lalu disimpan. Kemudian setiap kalimat diucapkan ulang oleh model suara di PC ini (Chatterbox) dengan suara orang yang mengucapkannya, dipelajari dari kalimat itu sendiri; kalimat itu didengarkan kembali dan diucapkan ulang bila hasilnya salah, dimuat dalam waktu yang dipakai kalimat aslinya (diucapkan hingga 1,3 kali lebih cepat bila lebih panjang), dan diletakkan di atas suara lainnya sekeras kalimat aslinya. Model suara tidak dibuat untuk bahasa Persia, Urdu, dan Indonesia: model ini membacanya seperti bahasa Arab dan Melayu, jadi hasilnya bisa terdengar kurang alami, terutama Urdu. Video baru disimpan di samping aslinya dengan nama bahasanya ('nama Spanish.mp4'), gambarnya tidak diubah. Simpan suara asli sebagai trek kedua menambahkan suara asli beserta musiknya untuk pemutar yang bisa berganti trek, dan Subtitel dalam bahasa baru menaruh terjemahan di dalam file sebagai subtitel. File itu menyebutkan bahwa suaranya dibuat dengan AI. Video yang sudah disiapkan sekali langsung terbuka lagi. Sulihsuarakan hanya video yang pembicaranya setuju suaranya dipakai.",
   "how": "Seret sebuah video, ketuk Ctrl, lalu lepaskan di SULIH SUARA; pilih bahasa tujuan, pilih Siapkan Sulih Suara, periksa terjemahannya, lalu pilih Sulih Suara.",
   "examples": [
-   "Pelajaran berbahasa Inggris yang disulihsuarakan ke bahasa Arab dengan suara gurunya sendiri, musik latarnya dihapus dan suara kelas tetap ada.",
-   "Wawancara berbahasa Arab yang disulihsuarakan ke bahasa Inggris, dengan subtitel Inggris.",
-   "Video produk berbahasa Inggris dijadikan berbahasa Arab tanpa musik, dua terjemahan diperbaiki sebelum sulih suara."
+   "Pelajaran yang disulihsuarakan ke bahasa lain dengan suara gurunya sendiri, musik latarnya dihapus dan suara kelas tetap ada.",
+   "Wawancara berbahasa Spanyol yang disulihsuarakan ke bahasa Inggris, dengan subtitel Inggris.",
+   "Video produk dijadikan berbahasa Prancis tanpa musik, dua terjemahan diperbaiki sebelum sulih suara."
   ],
-  "worksOn": "Satu video berisi ucapan dalam bahasa Arab atau Inggris, hingga 30 menit.",
+  "worksOn": "Satu video berisi ucapan dalam bahasa Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol, hingga 30 menit.",
   "keywords": [
    "sulih suara",
    "dubbing",
@@ -1023,8 +1049,8 @@
    "voice over",
    "terjemahkan video",
    "terjemahan suara",
-   "arab ke inggris",
-   "inggris ke arab",
+   "indonesia ke inggris",
+   "inggris ke indonesia",
    "kloning suara",
    "dubbing ai",
    "hapus musik",
@@ -1059,12 +1085,12 @@
  "tool:AskFile": {
   "category": "documents",
   "summary": "Menjawab pertanyaan tentang PDF, dokumen, spreadsheet, atau rekaman dari kata-katanya sendiri, dengan halaman, slide, atau menit asal jawabannya.",
-  "details": "Tanya File membaca file sekali di PC ini: PDF halaman demi halaman (halaman hasil pindaian dengan pengenalan teks bawaan Windows), dokumen Word atau presentasi seperti saat dicetak bila Word, PowerPoint, atau LibreOffice terpasang (jika tidak, menurut judul dan slidenya), spreadsheet beberapa baris sekaligus, dan rekaman atau video dengan mendengarkannya (Whisper). Ketik pertanyaan lalu tekan Tanya: DropWheel menemukan bagian file yang membahasnya, menurut maknanya maupun kata-katanya, dalam bahasa Arab dan Inggris serta lintas keduanya, lalu model AI di PC ini (Qwen3 4B, sekitar 2,5 GB, diunduh sekali dari jendela) menulis jawaban singkat hanya dari bagian-bagian itu, dalam bahasa pertanyaan, beserta di mana file mengatakannya: halaman, slide, baris, atau menit. Klik tempatnya untuk melihat: halaman ditampilkan dengan kata-kata asal jawaban disorot, dan rekaman diputar dari menit itu. Bila file tidak menyebutkannya, jawabannya berkata demikian dan menampilkan bagian terdekat alih-alih mengarang. Sebelum model jawaban diunduh, setiap pertanyaan menampilkan bagian file yang membahasnya. Pencarian memerlukan model kecil (sekitar 120 MB) yang diunduh sekali. File yang sudah dibaca disimpan, jadi bertanya lagi nanti langsung dimulai, dan tidak ada yang keluar dari PC. Buka File membukanya di aplikasinya sendiri.",
+  "details": "Tanya File membaca file sekali di PC ini: PDF halaman demi halaman (halaman hasil pindaian dengan pengenalan teks bawaan Windows), dokumen Word atau presentasi seperti saat dicetak bila Word, PowerPoint, atau LibreOffice terpasang (jika tidak, menurut judul dan slidenya), spreadsheet beberapa baris sekaligus, dan rekaman atau video dengan mendengarkannya (Whisper). Ketik pertanyaan lalu tekan Tanya: DropWheel menemukan bagian file yang membahasnya, menurut maknanya maupun kata-katanya, dalam bahasa file dan lintas bahasa, lalu model AI di PC ini (Qwen3 4B, sekitar 2,5 GB, diunduh sekali dari jendela) atau model kunci API Anda sendiri (Pengaturan › Model AI; pertanyaan dan bagian-bagian itu lalu dikirim ke perusahaan itu) menulis jawaban singkat hanya dari bagian-bagian itu, dalam bahasa pertanyaan, beserta di mana file mengatakannya: halaman, slide, baris, atau menit. Klik tempatnya untuk melihat: halaman ditampilkan dengan kata-kata asal jawaban disorot, dan rekaman diputar dari menit itu. Bila file tidak menyebutkannya, jawabannya berkata demikian dan menampilkan bagian terdekat alih-alih mengarang. Sebelum model jawaban diunduh, setiap pertanyaan menampilkan bagian file yang membahasnya. Pencarian memerlukan model kecil (sekitar 120 MB) yang diunduh sekali. File yang sudah dibaca disimpan, jadi bertanya lagi nanti langsung dimulai, dan kecuali Anda memilih kunci sendiri, tidak ada yang keluar dari PC. Buka File membukanya di aplikasinya sendiri.",
   "how": "Seret PDF, dokumen, spreadsheet, atau rekaman, ketuk Ctrl lalu jatuhkan di TANYA FILE; ketik pertanyaan lalu tekan Tanya.",
   "examples": [
    "Kontrak 70 halaman: tanyakan berapa hari pemberitahuan untuk membatalkannya, lalu lihat halamannya dengan kalimat yang disorot.",
    "Rekaman kuliah dua jam: tanyakan kapan ujian dibahas dan putar dari menit itu.",
-   "PDF kebijakan berbahasa Inggris yang ditanya dalam bahasa Arab dan dijawab dalam bahasa Arab, dengan halaman asal jawabannya."
+   "PDF kebijakan berbahasa Inggris yang ditanya dalam bahasa Anda dan dijawab dalam bahasa itu, dengan halaman asal jawabannya."
   ],
   "worksOn": "Satu file: PDF, Word (DOCX, DOC), ODT, RTF, PowerPoint (PPTX, PPT), Excel (XLSX, XLS), ODS, CSV, teks, Markdown, HTML, EPUB, atau rekaman audio atau video.",
   "keywords": [
@@ -1129,6 +1155,32 @@
    "batas discord",
    "batas unggah",
    "kurangi mb"
+  ]
+ },
+ "tool:EditPdf": {
+  "category": "pdf",
+  "summary": "Mengisi, menulisi, menandai, dan benar-benar meredaksi PDF dalam satu jendela, disimpan sebagai file baru di samping aslinya.",
+  "details": "Edit PDF membuka halaman dengan deretan alat, dan Simpan menulis 'nama Edited.pdf' di samping aslinya, yang tidak pernah berubah. Kolom formulir diisi di tempatnya (teks, kotak centang, tombol radio, kotak kombo, dan kotak daftar), dan isian berbahasa Arab, Persia, atau Urdu dibentuk dengan benar. Tulis teks menaruh kata di mana saja; Tanggal hari ini, Tanda centang, Tanda silang, dan Titik dipasang dengan sekali klik. Edit teks PDF memungkinkan Anda mengeklik satu baris teks PDF itu sendiri dan mengetiknya lagi: kata-kata lama keluar dari file. Sorot, Garis Bawah, Coret, dan Komentar adalah anotasi sungguhan yang bisa diubah pembaca PDF lain; Pena, Garis, Panah, Persegi panjang, Elips, Tutup putih, Tempatkan gambar, dan Tanda tangan menggambar di halaman. Redaksi benar-benar menghapus: gambar kotak, pilih kata, ketik kata atau frasa lalu tekan Temukan dan tandai untuk semua halaman, atau tekan Temukan detail pribadi (alamat email, nomor telepon, nomor kartu, IBAN, alamat IP, dan kata sandi; halaman hasil pindaian juga dibaca). Kotak tampak merah sampai Anda menyimpan; lalu apa yang ada di bawahnya dikeluarkan dari file, bukan ditutupi, dan detail tersembunyi file ikut hilang kecuali Anda menghapus centang Hapus detail tersembunyi file. Ratakan menanamkan kolom dan anotasi ke halaman sehingga tidak bisa diubah. Ctrl+Z membatalkan, Ctrl+Y mengulangi, Ctrl+S menyimpan, Delete menghapus item yang dipilih, dan Esc kembali ke Pilih dan pindahkan. File berkata sandi meminta kata sandinya, dan formulir yang dikunci pembuatnya hanya bisa diubah sejauh yang diizinkan pembuatnya. Ada batasnya. Halaman yang kata-katanya tidak bisa dikeluarkan satu per satu (gambar atau coretan di bawah kotak, font yang tidak biasa) digambar ulang sebagai gambar, dengan kata-kata di luar kotak tetap bisa dicari. Tutup putih hanya menyembunyikan: yang ditutupinya tetap ada di file, jadi gunakan Redaksi untuk menghapusnya. Baris yang diketik ulang dengan font seperti itu tetap di bawah penutup, dan jendela mengatakannya. Alat ini tidak menangani formulir yang hanya dibuat dengan XFA, skrip kolom, tanda tangan digital berbasis sertifikat, pengaliran ulang paragraf, atau pengeditan komentar yang sudah ada di file. Tanda tangan file yang ditandatangani secara digital tidak lagi valid setelah diubah.",
+  "how": "Seret satu PDF, ketuk Ctrl, lalu lepaskan di EDIT; pilih alat dari deretan, kerjakan halamannya, lalu tekan Simpan.",
+  "worksOn": "Satu PDF.",
+  "examples": [
+   "Formulir permohonan visa: ketik di kolomnya, centang kotaknya, tempatkan tanda tangan Anda, lalu simpan.",
+   "Rekening koran yang diminta universitas: Temukan detail pribadi menandai nomor kartu dan telepon, Anda meredaksi sisanya, dan menyimpan mengeluarkannya dari file.",
+   "Tanggal yang salah di laporan: pilih Edit teks PDF, klik barisnya, lalu ketik lagi."
+  ],
+  "keywords": [
+   "edit pdf",
+   "editor pdf",
+   "isi formulir pdf",
+   "isi formulir",
+   "tulis di pdf",
+   "redaksi pdf",
+   "hitamkan teks",
+   "hapus detail pribadi",
+   "ubah teks pdf",
+   "sorot pdf",
+   "tutup putih",
+   "ratakan pdf"
   ]
  },
  "tool:CreatePdf": {
@@ -1349,13 +1401,13 @@
  "tool:MakeSearchable": {
   "category": "pdf",
   "summary": "Membaca PDF hasil pindai dan foto halaman dengan OCR Windows agar teksnya bisa dicari dan disalin.",
-  "details": "Jadikan Bisa Dicari langsung bekerja: setiap halaman yang tidak memiliki teks sendiri dibaca dengan OCR bawaan Windows (setiap bahasa yang terpasang dicoba, termasuk bahasa Arab) dan mendapat lapisan teks tak terlihat tepat di atas kata-katanya. Halamannya terlihat sama, tetapi pencarian, pemilihan, dan penyalinan kini berfungsi. Setiap PDF disimpan sebagai 'nama Searchable.pdf', dan beberapa gambar yang dilepas bersama menjadi halaman-halaman dari satu PDF yang bisa dicari, yang dinamai sesuai gambar pertama. PDF yang semua halamannya sudah berisi teks dibiarkan apa adanya, dan jika tidak ada teks yang ditemukan, kartu menyarankan pindaian yang lebih tajam atau menambahkan bahasanya di Pengaturan Windows › Waktu & bahasa.",
+  "details": "Jadikan Bisa Dicari langsung bekerja: setiap halaman yang tidak memiliki teks sendiri dibaca dengan OCR bawaan Windows (setiap bahasa yang terpasang dicoba) dan mendapat lapisan teks tak terlihat tepat di atas kata-katanya. Halamannya terlihat sama, tetapi pencarian, pemilihan, dan penyalinan kini berfungsi. Setiap PDF disimpan sebagai 'nama Searchable.pdf', dan beberapa gambar yang dilepas bersama menjadi halaman-halaman dari satu PDF yang bisa dicari, yang dinamai sesuai gambar pertama. PDF yang semua halamannya sudah berisi teks dibiarkan apa adanya, dan jika tidak ada teks yang ditemukan, kartu menyarankan pindaian yang lebih tajam atau menambahkan bahasanya di Pengaturan Windows › Waktu & bahasa.",
   "how": "Seret PDF hasil pindai (atau beberapa foto halaman), ketuk Ctrl, lalu lepaskan di OCR.",
   "worksOn": "PDF (satu atau banyak, atau folder berisi PDF yang dilepas), atau dua gambar atau lebih.",
   "examples": [
    "Kontrak hasil pindai 30 halaman: jadikan bisa dicari, lalu temukan setiap penyebutan 'pemutusan' dengan Ctrl+F.",
    "Lima foto ponsel dari halaman buku menjadi satu PDF yang kutipannya bisa Anda salin.",
-   "Surat berbahasa Arab yang dipindai sebagai PDF: teksnya kemudian bisa disalin ke Word."
+   "Surat yang dipindai sebagai PDF: teksnya kemudian bisa disalin ke Word."
   ],
   "keywords": [
    "ocr",
@@ -1367,18 +1419,18 @@
    "cari di pdf",
    "dokumen hasil pindai",
    "pilih teks pdf",
-   "ocr arab"
+   "ocr bahasa apa pun"
   ]
  },
  "tool:ReadAloud": {
   "category": "documents",
   "summary": "Mengubah PDF, file Word, e-book, atau teks menjadi buku audio MP3 yang dibacakan di PC ini.",
-  "details": "Bacakan membaca teks dokumen dan menampilkan jumlah katanya dan kira-kira berapa menit waktu yang diperlukan. Alat ini memilih suara untuk bahasa dokumen: salah satu suara bawaan Windows, atau suara alami bahasa Inggris Linda, yang diunduh sekali dari jendela (sekitar 85 MB); bahasa Arab dibacakan oleh suara Arab bawaan Windows. Pilih Kecepatan (0,75×, 1×, 1,25×, atau 1,5×), tekan Dengarkan untuk mendengar kalimat-kalimat pertama, lalu Simpan Audio untuk menulis 'nama Audio.mp3' di samping dokumen. Jika tidak ada suara terpasang yang berbicara dalam bahasa dokumen, Buka Pengaturan Ucapan memungkinkan Windows menambahkannya; teksnya tidak pernah meninggalkan PC.",
+  "details": "Bacakan membaca teks dokumen dan menampilkan jumlah katanya dan kira-kira berapa menit waktu yang diperlukan. Alat ini memilih suara untuk bahasa dokumen: salah satu suara bawaan Windows, atau suara alami bahasa Inggris Linda, yang diunduh sekali dari jendela (sekitar 85 MB). Pilih Kecepatan (0,75×, 1×, 1,25×, atau 1,5×), tekan Dengarkan untuk mendengar kalimat-kalimat pertama, lalu Simpan Audio untuk menulis 'nama Audio.mp3' di samping dokumen. Jika tidak ada suara terpasang yang berbicara dalam bahasa dokumen, Buka Pengaturan Ucapan memungkinkan Windows menambahkannya; teksnya tidak pernah meninggalkan PC.",
   "how": "Seret dokumen, ketuk Ctrl, lalu lepaskan di DENGAR; pilih suara dan kecepatan, lalu tekan Simpan Audio.",
   "worksOn": "Satu file: PDF, Word (DOCX), ODT, RTF, Markdown, HTML, TXT, atau EPUB.",
   "examples": [
    "Bab PDF 25 halaman untuk didengarkan di bus: simpan sebagai MP3 pada 1,25×.",
-   "Artikel berbahasa Arab di Word yang dibacakan oleh suara Arab bawaan Windows.",
+   "Artikel berbahasa Prancis di Word yang dibacakan oleh suara Prancis bawaan Windows.",
    "Novel EPUB yang diubah menjadi buku audio untuk perjalanan jauh dengan mobil."
   ],
   "keywords": [
@@ -1393,7 +1445,7 @@
    "mp3 dari dokumen",
    "suara",
    "narasi",
-   "suara arab"
+   "suara bahasa apa pun"
   ]
  },
  "tool:FileDetails": {
@@ -1593,8 +1645,8 @@
  },
  "action:Ask": {
   "category": "files",
-  "summary": "Melakukan apa yang Anda minta pada file, dengan kata-kata Anda sendiri dalam bahasa Inggris atau Arab, setelah menunjukkan langkah-langkahnya.",
-  "details": "Tanya DropWheel membuka kotak tempat Anda mengetik (atau mengucapkan, dengan tombol mikrofon) apa yang harus dilakukan, misalnya 'make them 1080 px WEBP and zip them' atau 'put them in one searchable PDF'. DropWheel mencantumkan langkah-langkah yang dipahaminya di bawah 'DropWheel akan:' dan memberi peringatan jika langkah-langkah itu tidak cocok dengan filenya; tidak ada yang dijalankan sampai Anda menekan Jalankan. Permintaan umum dipahami tanpa model, dan dengan model AI (Qwen2.5 1.5B, sekitar 1,1 GB, diunduh sekali dari jendela) permintaan dengan susunan kata bebas juga dipahami, semuanya di PC ini. Simpan sebagai Resep… menyimpan langkah-langkahnya sebagai kelopak di roda alat, dan hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya.",
+  "summary": "Melakukan apa yang Anda minta pada file, dengan kata-kata Anda sendiri, setelah menunjukkan langkah-langkahnya.",
+  "details": "Tanya DropWheel membuka kotak tempat Anda mengetik (atau mengucapkan, dengan tombol mikrofon) apa yang harus dilakukan, misalnya 'make them 1080 px WEBP and zip them' atau 'put them in one searchable PDF'. DropWheel mencantumkan langkah-langkah yang dipahaminya di bawah 'DropWheel akan:' dan memberi peringatan jika langkah-langkah itu tidak cocok dengan filenya; tidak ada yang dijalankan sampai Anda menekan Jalankan. Permintaan umum dalam bahasa Inggris atau Arab dipahami tanpa model, dan dengan model AI (Qwen2.5 1.5B, sekitar 1,1 GB, diunduh sekali dari jendela) permintaan dengan susunan kata bebas juga dipahami, dalam bahasa lain juga, semuanya di PC ini; atau model kunci API Anda sendiri dari Pengaturan › Model AI yang mengerjakannya, dan permintaan Anda, bukan file-nya, dikirim ke perusahaan itu. Simpan sebagai Resep… menyimpan langkah-langkahnya sebagai kelopak di roda alat, dan hasilnya disimpan di samping file asli sebagai 'nama' ditambah nama resepnya.",
   "how": "Seret file, ketuk Alt, lalu lepaskan di TANYA; ketik apa yang Anda inginkan, tekan Tanya, periksa langkah-langkahnya, lalu tekan Jalankan.",
   "worksOn": "File; satu atau banyak.",
   "examples": [
@@ -1608,7 +1660,7 @@
    "bahasa alami",
    "suruh lakukan",
    "dengan kata-kata sendiri",
-   "perintah bahasa arab",
+   "perintah bahasa indonesia",
    "perintah bahasa inggris",
    "asisten ai",
    "perintah suara",
@@ -2706,7 +2758,7 @@
  "do:screen.circle": {
   "category": "screen",
   "summary": "Lingkari apa saja di layar (kalimat, angka, tanggal, gambar, kode QR) dan roda terbuka dengan hal yang bisa dilakukan dengannya, semuanya di PC ini.",
-  "details": "Tekan Ctrl+Win+C dan layar berhenti dengan tepi yang bercahaya. Lingkari apa saja, coret sebuah kata, tarik garis sepanjang kalimat, atau klik paragraf atau gambar; penunjuk menyorot paragraf yang akan diambil oleh klik. DropWheel membaca yang Anda ambil (dengan pengenalan teks bawaan Windows; kode QR dan barcode juga) lalu roda terbuka di atasnya. Untuk kata-kata: SALIN TEKS, TERJEMAH (terjemahannya diletakkan di atas teks asli, paragraf demi paragraf, dengan warnanya sendiri, dan Asli untuk membandingkan), JELASKAN, TANYA (kotak pertanyaan yang melanjutkan percakapan), RINGKASAN, CARI, BACAKAN, serta TABEL atau EXCEL bila kata-katanya tersusun dalam baris dan kolom. Yang dikandung teks muncul lebih dulu: BUKA TAUTAN, EMAIL, TELEPON, KALENDER untuk tanggal (file acara yang dibuka kalender mana pun), WAKTU ANDA untuk jam yang ditulis di zona waktu lain, KONVERSI untuk satuan (kilometer dan mil, kilo dan pon, °C dan °F, kaki dan inci, feddan), MATA UANG dengan kurs hari ini, HASIL untuk hitungan, WARNA untuk kode warna. Untuk gambar: DESKRIPSI, TANYA, SALIN GAMBAR, SIMPAN, PISAHKAN (objeknya, dengan tepi transparan), SEMATKAN, AMBIL WARNA, dan ALAT untuk setiap konversi. Bagian tengah roda langsung menampilkan jawabannya bila ada: hasil konversi, hasil hitungan, jam di tempat Anda. Menjelaskan, bertanya, dan mendeskripsikan memakai model AI di PC ini yang diunduh sekali; hanya MATA UANG yang tersambung ke internet, dan hanya saat Anda memilihnya, untuk mengambil kurs hari ini. Esc atau klik kanan mengembalikan layar.",
+  "details": "Tekan Ctrl+Win+C dan layar berhenti dengan tepi yang bercahaya. Lingkari apa saja, coret sebuah kata, tarik garis sepanjang kalimat, atau klik paragraf atau gambar; penunjuk menyorot paragraf yang akan diambil oleh klik. DropWheel membaca yang Anda ambil (dengan pengenalan teks bawaan Windows; kode QR dan barcode juga) lalu roda terbuka di atasnya. Untuk kata-kata: SALIN TEKS, TERJEMAH (terjemahannya diletakkan di atas teks asli, paragraf demi paragraf, dengan warnanya sendiri, dan Asli untuk membandingkan), JELASKAN, TANYA (kotak pertanyaan yang melanjutkan percakapan), RINGKASAN, CARI, BACAKAN, serta TABEL atau EXCEL bila kata-katanya tersusun dalam baris dan kolom. Yang dikandung teks muncul lebih dulu: BUKA TAUTAN, EMAIL, TELEPON, KALENDER untuk tanggal (file acara yang dibuka kalender mana pun), WAKTU ANDA untuk jam yang ditulis di zona waktu lain, KONVERSI untuk satuan (kilometer dan mil, kilo dan pon, °C dan °F, kaki dan inci, feddan), MATA UANG dengan kurs hari ini, HASIL untuk hitungan, WARNA untuk kode warna. Untuk gambar: DESKRIPSI, TANYA, SALIN GAMBAR, SIMPAN, PISAHKAN (objeknya, dengan tepi transparan), SEMATKAN, AMBIL WARNA, dan ALAT untuk setiap konversi. Bagian tengah roda langsung menampilkan jawabannya bila ada: hasil konversi, hasil hitungan, jam di tempat Anda. Menerjemahkan, menjelaskan, bertanya, dan mendeskripsikan memakai model di PC ini yang diunduh sekali, atau kunci API Anda sendiri jika Anda memilihnya di Pengaturan › Model AI, yang mengirim apa yang Anda ambil ke perusahaan itu; selain itu, hanya MATA UANG yang tersambung ke internet, dan hanya saat Anda memilihnya, untuk mengambil kurs hari ini. Esc atau klik kanan mengembalikan layar.",
   "how": "Tekan Ctrl+Win+C (atau tekan Ctrl+Win+Z tanpa ada yang dipilih lalu pilih LINGKARI di roda Layar), lingkari yang Anda inginkan, lalu pilih kelopak. Pintasannya bisa diubah di Pengaturan › Layar & Teks.",
   "examples": [
    "Lingkari harga dalam dolar untuk melihatnya dalam mata uang Anda dengan kurs hari ini.",
@@ -2831,7 +2883,7 @@
  "do:screen.text": {
   "category": "screen",
   "summary": "Menyalin kata-kata dari bagian layar mana pun, bahkan di gambar dan video, dan juga membaca kode QR.",
-  "details": "Seret di atas teksnya; jendela Teks dari Layar menampilkan pratinjau dan kata-kata yang ditemukan, yang bisa Anda ubah sebelum menekan Salin Teks. Tombol-tombol memungkinkan Anda Terjemahkan antara bahasa Arab dan Inggris di PC ini (model terjemahan diunduh sekali), Perbaiki Tata Letak Keyboard, Gabungkan Baris yang terpotong oleh layar, Cari di Web, Salin sebagai Tabel untuk ditempel ke Excel sel demi sel, atau Simpan sebagai Excel, yang menyimpan tabel di Dokumen dan membukanya. Kode QR dan barcode di area tersebut dicantumkan dengan Salin, ditambah Buka Tautan untuk alamat web. Pembacaan memakai pengenalan teks bawaan Windows, jadi bahasa Windows yang bisa membaca teks harus terpasang; jika tidak ada, jendela memberi tahu cara menambahkannya di Pengaturan › Waktu & bahasa › Bahasa.",
+  "details": "Seret di atas teksnya; jendela Teks dari Layar menampilkan pratinjau dan kata-kata yang ditemukan, yang bisa Anda ubah sebelum menekan Salin Teks. Tombol-tombol memungkinkan Anda Terjemahkan ke bahasa Anda (di PC ini setelah model diunduh sekali, atau dengan kunci API Anda sendiri dari Pengaturan › Model AI), Perbaiki Tata Letak Keyboard, Gabungkan Baris yang terpotong oleh layar, Cari di Web, Salin sebagai Tabel untuk ditempel ke Excel sel demi sel, atau Simpan sebagai Excel, yang menyimpan tabel di Dokumen dan membukanya. Kode QR dan barcode di area tersebut dicantumkan dengan Salin, ditambah Buka Tautan untuk alamat web. Pembacaan memakai pengenalan teks bawaan Windows, jadi bahasa Windows yang bisa membaca teks harus terpasang; jika tidak ada, jendela memberi tahu cara menambahkannya di Pengaturan › Waktu & bahasa › Bahasa.",
   "how": "Tekan Ctrl+Win+Z tanpa ada yang dipilih dan pilih SALIN TEKS di roda Layar (atau Teks dari Layar di menu baki sistem), lalu seret di atas kata-katanya.",
   "worksOn": "",
   "examples": [
@@ -3339,7 +3391,7 @@
  "do:petal.palette": {
   "category": "petal",
   "summary": "Membuka kotak pencarian tempat Anda mengetik apa yang Anda inginkan: tindakan apa pun, kelopak untuk file yang dipilih, aplikasi, file, atau hitungan.",
-  "details": "Palet Perintah terbuka di atas jendela di depan dan menemukan sesuatu saat Anda mengetik, dalam bahasa Inggris atau Arab: setiap tindakan dari setiap roda, setiap roda itu sendiri, setiap kelopak untuk file yang dipilih di File Explorer, jendela-jendela DropWheel, aplikasi di PC, apa yang baru-baru ini Anda salin, file yang ditemukan oleh Cari Berdasarkan Makna, cuplikan teks, dan ruang kerja. Ketik hitungan atau konversi satuan seperti 12% of 340 atau 5 km in mi dan Enter menyalin jawabannya. Gunakan tombol panah untuk memilih, Enter untuk menjalankan, Ctrl+Enter untuk tindakan lain (seperti membuka folder sebuah file), dan Esc untuk menutup. Tombol mikrofon memungkinkan Anda mengucapkan perintah sebagai gantinya. Jika tidak ada yang cocok, palet menawarkan pencarian di web.",
+  "details": "Palet Perintah terbuka di atas jendela di depan dan menemukan sesuatu saat Anda mengetik, dalam bahasa yang dipakai DropWheel atau bahasa Inggris: setiap tindakan dari setiap roda, setiap roda itu sendiri, setiap kelopak untuk file yang dipilih di File Explorer, jendela-jendela DropWheel, aplikasi di PC, apa yang baru-baru ini Anda salin, file yang ditemukan oleh Cari Berdasarkan Makna, cuplikan teks, dan ruang kerja. Ketik hitungan atau konversi satuan seperti 12% of 340 atau 5 km in mi dan Enter menyalin jawabannya. Gunakan tombol panah untuk memilih, Enter untuk menjalankan, Ctrl+Enter untuk tindakan lain (seperti membuka folder sebuah file), dan Esc untuk menutup. Tombol mikrofon memungkinkan Anda mengucapkan perintah sebagai gantinya. Jika tidak ada yang cocok, palet menawarkan pencarian di web.",
   "how": "Tekan Ctrl+Win+K, pilih PERINTAH di roda Kerja, atau pilih Palet Perintah di menu baki sistem.",
   "worksOn": "File yang dipilih di File Explorer, jika ada, untuk menawarkan kelopaknya; jika tidak ada, tidak ada apa pun.",
   "examples": [
@@ -3413,7 +3465,7 @@
  "do:petal.search": {
   "category": "petal",
   "summary": "Menemukan file berdasarkan isinya: kata-kata di dalamnya, namanya, atau apa yang ditampilkan foto atau video.",
-  "details": "Cari Berdasarkan Makna memungkinkan Anda mengetik hal seperti 'struk dari apotek' atau 'foto pantai' dan menemukan file yang cocok di folder Gambar, Dokumen, Desktop, Unduhan, dan Video Anda. Fitur ini nonaktif sampai Anda menekan Aktifkan; kemudian DropWheel membaca folder-folder itu saat PC sedang menganggur dan menyimpan indeksnya di PC ini. Menemukan foto dan video berdasarkan apa yang ditampilkannya memerlukan model gambar DropWheel, yang diunduh sekali. Enter membuka hasil pertama, dan Anda bisa menyeret hasil mana pun ke aplikasi lain. Saat Anda mengetik pertanyaan, Tanya File Anda menjawab dari isi dokumen Anda, beserta file sumbernya; ini memerlukan model AI, yang diunduh sekali.",
+  "details": "Cari Berdasarkan Makna memungkinkan Anda mengetik hal seperti 'struk dari apotek' atau 'foto pantai' dan menemukan file yang cocok di folder Gambar, Dokumen, Desktop, Unduhan, dan Video Anda. Fitur ini nonaktif sampai Anda menekan Aktifkan; kemudian DropWheel membaca folder-folder itu saat PC sedang menganggur dan menyimpan indeksnya di PC ini. Menemukan foto dan video berdasarkan apa yang ditampilkannya memerlukan model gambar DropWheel, yang diunduh sekali. Enter membuka hasil pertama, dan Anda bisa menyeret hasil mana pun ke aplikasi lain. Saat Anda mengetik pertanyaan, Tanya File Anda menjawab dari isi dokumen Anda, beserta file sumbernya; ini memerlukan model AI, yang diunduh sekali, atau kunci API Anda sendiri dari Pengaturan › Model AI, yang mengirim pertanyaan dan bagian yang ditemukan ke perusahaan itu.",
   "how": "Kelopak ini awalnya tidak ada di roda: pilih Cari Berdasarkan Makna di menu baki sistem, atau ketik 'cari' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
@@ -3462,7 +3514,7 @@
  "do:petal.qr": {
   "category": "petal",
   "summary": "Membuat kode QR untuk teks, tautan, atau jaringan Wi-Fi, untuk disimpan sebagai PNG atau SVG, atau disalin.",
-  "details": "Buat Kode QR menggambar kode saat Anda mengetik. Pilih Teks atau tautan, atau Wi-Fi, tempat Anda memasukkan Jaringan dan Kata sandi serta mencentang Jaringan tersembunyi jika perlu; ponsel yang memindainya langsung tersambung tanpa mengetik kata sandi. Anda bisa mengubah kedua Warna dan Kekuatan (Standar, Kuat, Terkuat): kode yang lebih kuat tetap terbaca saat tergores atau sebagian tertutup, tetapi lebih padat. Salin Gambar menyalin kode, dan Simpan menyimpannya sebagai PNG atau SVG, dimulai di folder Gambar. Teks yang terlalu banyak ditolak dengan pesan Teks ini terlalu panjang untuk kode QR.",
+  "details": "Buat Kode QR menggambar kode saat Anda mengetik. Pilih Teks atau tautan, atau Wi-Fi, tempat Anda memasukkan Jaringan dan Kata sandi serta mencentang Jaringan tersembunyi jika perlu; ponsel yang memindainya langsung tersambung tanpa mengetik kata sandi. Anda bisa mengubah kedua Warna dan Kekuatan (Standar, Kuat, Terkuat): kode yang lebih kuat tetap terbaca saat tergores atau sebagian tertutup, tetapi lebih padat. Salin Gambar menyalin kode, dan Simpan menyimpannya sebagai PNG atau SVG, dimulai di folder Gambar. Teks yang terlalu banyak ditolak dengan pesan Teks ini terlalu panjang untuk kode QR. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Kelopak ini awalnya tidak ada di roda: pilih Buat Kode QR di menu baki sistem, ketik 'qr' di palet perintah (Ctrl+Win+K), atau salin tautan lalu pilih PAPAN KLIP di roda Cepat.",
   "worksOn": "",
   "examples": [
@@ -3510,12 +3562,12 @@
  "do:petal.settings": {
   "category": "petal",
   "summary": "Membuka jendela pengaturan DropWheel.",
-  "details": "Pengaturan DropWheel adalah jendela utama DropWheel, dan setiap perubahan langsung disimpan. Jendela ini memiliki bagian untuk Tombol, Roda (untuk mengubah, menambah, atau menonaktifkan roda dan kelopaknya), Tampilan, Roda (perilaku roda itu sendiri), Layar & Teks, Kerja & Berbagi, Roda Tindakan, Favorit, Resep, Otomatisasi, Kelopak Anda, Cari Berdasarkan Makna, Hasil, Kualitas, Pembantu, Statistik, Umum, Cadangan, dan Pembaruan. Roda baru yang Anda buat dimulai dengan kelopak ini di dalamnya.",
+  "details": "Pengaturan DropWheel adalah jendela utama DropWheel, dan setiap perubahan langsung disimpan. Jendela ini memiliki bagian untuk Tombol, Roda (untuk mengubah, menambah, atau menonaktifkan roda dan kelopaknya), Tampilan, Roda (perilaku roda itu sendiri), Layar & Teks, Kerja & Berbagi, Roda Tindakan, Favorit, Resep, Otomatisasi, Kelopak Anda, Model AI, Cari Berdasarkan Makna, Hasil, Kualitas, Pembantu, Statistik, Umum, Cadangan, dan Pembaruan. Model AI menentukan, untuk menulis dan menjawab, menerjemahkan, dan mendeskripsikan gambar, antara model yang diunduh ke PC ini (bawaan, dan tidak ada yang keluar dari PC) dan kunci API Anda sendiri dari Gemini, ChatGPT, atau Claude: tempelkan kuncinya, tekan Simpan Kunci, dan pilih di samping setiap tugas. Anda membayar langsung ke perusahaan itu untuk yang Anda pakai, dan apa yang dikerjakan tugas itu dikirim ke sana; tidak ada langganan dan tidak ada server milik DropWheel, dan kunci disimpan terenkripsi di PC ini serta tidak ikut dalam cadangan. Jendela yang memerlukan salah satu model ini juga menawarkan Gunakan kunci API saya sendiri…, yang membuka bagian ini. Roda baru yang Anda buat dimulai dengan kelopak ini di dalamnya.",
   "how": "Pilih Pengaturan di menu baki sistem, pilih DROPWHEEL di roda tempat Anda menambahkannya, atau ketik 'pengaturan' di palet perintah (Ctrl+Win+K).",
   "worksOn": "",
   "examples": [
    "Ganti tombol yang membuka roda konversi dari Shift ke tombol lain.",
-   "Tambahkan kelopak Area Langsung ke roda Layar Anda di bawah Roda.",
+   "Tambahkan kunci API Gemini, ChatGPT, atau Claude Anda sendiri di bawah Model AI, agar menerjemahkan dan meringkas tidak perlu unduhan.",
    "Buat cadangan semua roda dan favorit Anda sebelum pindah ke PC baru."
   ],
   "keywords": [
@@ -3528,7 +3580,13 @@
    "ganti tombol",
    "edit roda",
    "sesuaikan",
-   "cadangkan pengaturan"
+   "cadangkan pengaturan",
+   "model ai",
+   "kunci api",
+   "kunci sendiri",
+   "gemini",
+   "chatgpt",
+   "claude"
   ]
  },
  "do:petal.pause": {
@@ -3559,7 +3617,7 @@
   "category": "text",
   "summary": "Membetulkan teks yang diketik dengan bahasa keyboard yang salah: ؤشف menjadi cat, dan hgsghl menjadi السلام.",
   "details": "Pilih teks yang kacau di aplikasi mana pun dan pilih kelopak ini. DropWheel melihat ke arah mana kesalahannya: teks yang sebagian besar berupa huruf Arab menjadi tombol bahasa Inggris di bawahnya, dan huruf Inggris menjadi huruf Arab yang dimaksud (tata letak US English dan Arabic 101). Teks yang sudah diperbaiki ditempel di atas pilihan, lalu keyboard beralih ke bahasa yang Anda maksud jika kedua tata letak terpasang, sehingga Anda bisa terus mengetik. DropWheel mengambil pilihan dengan meminta aplikasi melalui Windows UI Automation, atau dengan menyalinnya lewat Ctrl+C, lalu mengembalikan papan klip Anda seperti semula setelahnya. Jika aplikasi di depan berubah sementara itu, hasilnya ditaruh di papan klip sebagai gantinya ('Disalin sebagai gantinya').",
-  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), tekan Tab sampai roda Teks tampil, lalu pilih PERBAIKI.",
+  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), tekan Tab sampai roda Teks tampil, lalu pilih PERBAIKI. Ini ada di roda jika antarmuka atau salah satu keyboard memakai aksara Arab; jika tidak, tambahkan di Pengaturan DropWheel di bawah Roda.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
    "Anda mengetik pesan WhatsApp Web saat keyboard masih dalam bahasa Arab dan mendapat ؤشف: pilih teks itu dan PERBAIKI mengubahnya menjadi cat.",
@@ -3581,21 +3639,21 @@
  },
  "do:text.translate": {
   "category": "text",
-  "summary": "Menerjemahkan teks yang dipilih di PC ini, antara bahasa Arab dan Inggris ke dua arah atau ke bahasa yang dipakai DropWheel, untuk menggantikan pilihan atau disalin.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih TERJEMAH: jendela Terjemahkan terbuka dengan awal teks asli dan terjemahannya di kotak yang masih bisa Anda edit. Teks bahasa Arab diterjemahkan ke bahasa Inggris dan teks lainnya ke bahasa Arab; jika DropWheel sendiri diatur ke bahasa Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol, teks diterjemahkan ke bahasa itu sebagai gantinya (atau ke bahasa Inggris jika teksnya sudah dalam bahasa itu). Bahasa Inggris ke Arab dan Arab ke Inggris memakai model terjemahan Opus-MT (masing-masing sekitar 114 MB) kalimat demi kalimat jika sudah diunduh; jika tidak, dan untuk bahasa lain, model AI Qwen2.5 1.5B (sekitar 1,1 GB) yang menerjemahkan; jendela menawarkan unduhan pada pertama kali. Ganti Pilihan menempelkan terjemahan di atas teks asli, dan Salin menaruhnya di papan klip. Ini berjalan di PC ini; teksnya tidak dikirim ke mana pun.",
+  "summary": "Menerjemahkan teks yang dipilih ke bahasa pilihan Anda, dari delapan bahasa DropWheel ke bahasa mana pun di antaranya, untuk menggantikan pilihan atau disalin.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih TERJEMAH: jendela Terjemahkan terbuka dengan awal teks asli dan terjemahannya di kotak yang masih bisa Anda edit. DropWheel mengenali sendiri bahasa teksnya, dan Ke adalah bahasa yang Anda inginkan: Inggris, Arab, Turki, Persia, Urdu, Indonesia, Prancis, atau Spanyol. Pilihan awalnya adalah bahasa yang terakhir Anda pilih atau bahasa yang dipakai DropWheel, atau bahasa lain jika teksnya sudah dalam bahasa itu. Ini berjalan di PC ini kalimat demi kalimat dengan model yang diunduh sekali, dan jendela menawarkan apa yang diperlukan pasangan bahasa itu: model khusus untuk pasangan itu (sekitar 110 MB), dua model melalui bahasa Inggris, atau model lebih besar yang mengenal semua bahasa (sekitar 630 MB, dan lebih lambat); jika model AI sudah ada di PC ini, model itu yang menerjemahkan sampai model-model tadi tersedia. Ganti Pilihan menempelkan terjemahan di atas teks asli, dan Salin menaruhnya di papan klip. Di PC ini teksnya tidak dikirim ke mana pun; dengan kunci API Anda sendiri yang dipilih di Pengaturan › Model AI, teks dikirim ke perusahaan itu, dan jendela mengatakannya.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih TERJEMAH; kemudian tekan Ganti Pilihan atau Salin.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
-   "Email berbahasa Inggris dari pemasok di Outlook: pilih teksnya, pilih TERJEMAH, dan baca dalam bahasa Arab.",
-   "Anda menulis balasan dalam bahasa Arab di Teams untuk rekan kerja yang berbahasa Inggris: TERJEMAH, lalu Ganti Pilihan menaruh versi bahasa Inggrisnya di tempat itu.",
-   "Satu paragraf di situs belanja berbahasa Inggris: pilih di browser dan salin terjemahan bahasa Arabnya ke catatan Anda."
+   "Email berbahasa Inggris dari pemasok di Outlook: pilih teksnya, pilih TERJEMAH, dan baca dalam bahasa Indonesia.",
+   "Anda menulis balasan dalam bahasa Indonesia di Teams untuk rekan kerja yang berbahasa Inggris: TERJEMAH, lalu Ganti Pilihan menaruh versi bahasa Inggrisnya di tempat itu.",
+   "Satu paragraf di situs belanja dalam bahasa yang tidak Anda baca: pilih di browser dan salin terjemahannya ke catatan Anda."
   ],
   "keywords": [
    "terjemahkan",
    "terjemahan",
    "translate",
-   "arab ke inggris",
-   "inggris ke arab",
+   "indonesia ke inggris",
+   "terjemahkan ke bahasa apa pun",
    "inggris ke indonesia",
    "terjemahan offline",
    "terjemahkan email",
@@ -3698,7 +3756,7 @@
   "category": "text",
   "summary": "Menghapus harakat (tasykil), tanda-tanda Al-Qur'an, dan tatwil dari teks Arab yang dipilih.",
   "details": "Pilih teks Arab di aplikasi mana pun dan pilih HARAKAT; tanda vokal pendek (fathah, dammah, kasrah, sukun, syaddah, dan tanwin), tanda-tanda kecil Al-Qur'an, dan tatwil pemanjang dihapus, sementara hurufnya tetap. Teks yang sudah dibersihkan ditempel kembali di atas pilihan, dan papan klip Anda dikembalikan seperti semula. Teks tanpa tanda-tanda ini menghasilkan kartu 'Tidak ada yang perlu diubah'. Ini berguna sebelum mencari, mengurutkan, atau menempel teks ke kolom yang tidak menangani tanda-tanda itu dengan baik.",
-  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup RAPIKAN, lalu pilih HARAKAT.",
+  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup RAPIKAN, lalu pilih HARAKAT. Grup itu memuatnya jika antarmuka atau salah satu keyboard memakai aksara Arab; jika tidak, tambahkan di Pengaturan DropWheel di bawah Roda.",
   "worksOn": "Teks Arab yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
    "Puisi berharakat lengkap yang disalin dari situs web ke Word: HARAKAT menyisakan huruf polos yang lebih mudah diedit.",
@@ -3723,7 +3781,7 @@
   "category": "text",
   "summary": "Menukar angka dalam teks yang dipilih: angka Arab ١٢٣ menjadi 123, atau 123 menjadi ١٢٣.",
   "details": "Pilih teks di aplikasi mana pun dan pilih ANGKA. Jika teks berisi angka Arab-Indik (atau Persia), semuanya menjadi 0 sampai 9, dan tanda desimal serta pemisah ribuan Arab menjadi titik dan koma; jika tidak ada, 0 sampai 9 menjadi ٠ sampai ٩. Teks ditempel kembali di atas pilihan, dan papan klip Anda dikembalikan setelahnya. Karakter lain dibiarkan seperti semula.",
-  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup RAPIKAN, lalu pilih ANGKA.",
+  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup RAPIKAN, lalu pilih ANGKA. Grup itu memuatnya jika antarmuka atau salah satu keyboard memakai aksara Arab; jika tidak, tambahkan di Pengaturan DropWheel di bawah Roda.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
    "Nomor telepon yang ditulis sebagai ٠٥٠١٢٣٤٥٦٧ tidak bisa dimasukkan ke formulir situs web: ANGKA mengubahnya menjadi 0501234567.",
@@ -3746,7 +3804,7 @@
   "category": "text",
   "summary": "Membersihkan teks yang dipilih: spasi ganda, spasi di akhir baris, dan baris kosong berlebih dihapus.",
   "details": "Pilih teks di aplikasi mana pun dan pilih RAPIKAN. Deretan spasi dan tab menjadi satu spasi, spasi di awal dan akhir setiap baris dihapus, tidak lebih dari satu baris kosong berturut-turut yang dipertahankan, dan baris kosong di awal dan akhir dihapus. Karena spasi di awal baris juga dihapus, indentasi hilang. Teks yang sudah dirapikan ditempel kembali di atas pilihan, dan papan klip Anda dikembalikan seperti semula.",
-  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, buka grup RAPIKAN, lalu pilih RAPIKAN.",
+  "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih RAPIKAN (di dalam grup RAPIKAN jika antarmuka atau salah satu keyboard memakai aksara Arab).",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
    "Teks yang disalin dari PDF ke Word penuh spasi ganda dan celah: RAPIKAN membuatnya rapi sekaligus.",
@@ -3768,7 +3826,7 @@
  "do:text.count": {
   "category": "text",
   "summary": "Menghitung kata, karakter, baris, dan kalimat dalam teks yang dipilih dan menampilkannya di kartu.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih HITUNG KATA; sebuah kartu menampilkan jumlah kata, lalu karakter, karakter tanpa spasi, baris, dan kalimat. Tidak ada yang diubah dalam teks. Kata bahasa Arab dan Inggris sama-sama dihitung, dan emoji dihitung sebagai satu karakter. DropWheel membaca pilihan melalui Windows UI Automation atau dengan menyalinnya, lalu mengembalikan papan klip Anda setelahnya.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih HITUNG KATA; sebuah kartu menampilkan jumlah kata, lalu karakter, karakter tanpa spasi, baris, dan kalimat. Tidak ada yang diubah dalam teks. Kata dalam bahasa apa pun dihitung, dan emoji dihitung sebagai satu karakter. DropWheel membaca pilihan melalui Windows UI Automation atau dengan menyalinnya, lalu mengembalikan papan klip Anda setelahnya.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih HITUNG KATA.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3817,7 +3875,7 @@
  "do:text.summarize": {
   "category": "text",
   "summary": "Menulis ringkasan singkat dari teks yang dipilih dengan model AI di PC ini, untuk ditaruh di tempatnya atau disalin.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih RINGKASAN: jendela Ringkas terbuka dan model AI Qwen2.5 1.5B menulis ringkasannya di PC ini. Sakelar Sebagai memilih Beberapa baris (2 atau 3 kalimat, bawaan) atau Poin penting (3 sampai 6 butir); mengubahnya akan menulis ulang ringkasan. Teks bahasa Arab diringkas dalam bahasa Arab dan teks lainnya dalam bahasa Inggris. Pada pertama kali, jendela menawarkan unduhan model (sekitar 1,1 GB beserta program penjalannya). Anda bisa mengedit hasilnya, lalu Ganti Pilihan menempelkannya di atas teks asli, atau Salin menaruhnya di papan klip; teksnya tidak dikirim ke mana pun.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih RINGKASAN: jendela Ringkas terbuka dan model AI Qwen2.5 1.5B menulis ringkasannya di PC ini. Sakelar Sebagai memilih Beberapa baris (2 atau 3 kalimat, bawaan) atau Poin penting (3 sampai 6 butir); mengubahnya akan menulis ulang ringkasan. Ringkasan muncul dalam bahasa teksnya. Pada pertama kali, jendela menawarkan unduhan model (sekitar 1,1 GB beserta program penjalannya) atau Gunakan kunci API saya sendiri…, yang membuka Pengaturan › Model AI; dengan kunci yang dipilih, teks dikirim ke perusahaan itu. Anda bisa mengedit hasilnya, lalu Ganti Pilihan menempelkannya di atas teks asli, atau Salin menaruhnya di papan klip; di PC ini teksnya tidak dikirim ke mana pun.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih RINGKASAN; pilih Beberapa baris atau Poin penting, lalu Ganti Pilihan atau Salin.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3842,7 +3900,7 @@
  "do:text.rewrite": {
   "category": "text",
   "summary": "Menulis ulang teks yang dipilih agar lebih jelas, lebih singkat, lebih formal, lebih ramah, atau dengan kesalahan diperbaiki, di PC ini.",
-  "details": "Pilih teks di aplikasi mana pun dan pilih TULIS ULANG: jendela Tulis Ulang terbuka dan model AI Qwen2.5 1.5B menulis ulang teks itu di PC ini. Sakelar Buat menawarkan Lebih jelas (bawaan), Lebih singkat, Formal, Ramah, dan Perbaiki kesalahan, yang membetulkan ejaan, tata bahasa, dan tanda baca tanpa mengubah hal lain; memilih yang lain akan menulis ulang lagi. Teks bahasa Arab ditulis ulang dalam bahasa Arab dan teks lainnya dalam bahasa Inggris. Pada pertama kali, jendela menawarkan unduhan model (sekitar 1,1 GB beserta program penjalannya). Edit hasilnya jika mau, lalu Ganti Pilihan menempelkannya di atas teks asli, atau Salin menaruhnya di papan klip.",
+  "details": "Pilih teks di aplikasi mana pun dan pilih TULIS ULANG: jendela Tulis Ulang terbuka dan model AI Qwen2.5 1.5B menulis ulang teks itu di PC ini. Sakelar Buat menawarkan Lebih jelas (bawaan), Lebih singkat, Formal, Ramah, dan Perbaiki kesalahan, yang membetulkan ejaan, tata bahasa, dan tanda baca tanpa mengubah hal lain; memilih yang lain akan menulis ulang lagi. Teks baru muncul dalam bahasa teks aslinya. Pada pertama kali, jendela menawarkan unduhan model (sekitar 1,1 GB beserta program penjalannya) atau Gunakan kunci API saya sendiri…, yang membuka Pengaturan › Model AI; dengan kunci yang dipilih, teks dikirim ke perusahaan itu. Edit hasilnya jika mau, lalu Ganti Pilihan menempelkannya di atas teks asli, atau Salin menaruhnya di papan klip.",
   "how": "Pilih teksnya, tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Teks, lalu pilih TULIS ULANG; pilih gaya di bawah Buat, lalu Ganti Pilihan.",
   "worksOn": "Teks yang Anda pilih di aplikasi mana pun; bukan file.",
   "examples": [
@@ -3866,14 +3924,14 @@
  },
  "do:text.dictate": {
   "category": "text",
-  "summary": "Mengetikkan apa yang Anda ucapkan di posisi kursor, di aplikasi mana pun, dalam bahasa Arab, Inggris, dan banyak bahasa lain.",
-  "details": "Klik di tempat kata-kata harus ditulis, lalu mulai dikte: label bulat kecil di bagian bawah layar menampilkan pengukur level dan waktu selama DropWheel mendengarkan. Tekan pintasannya atau DIKTE lagi, atau tanda centang di label itu, untuk berhenti; Esc atau X membatalkan, dan dikte berhenti sendiri pada dua menit. Whisper menuliskan apa yang Anda ucapkan di PC ini dan DropWheel mengetikkannya ke aplikasi yang berada di depan; jika aplikasi itu berubah, kata-katanya ditaruh di papan klip sebagai gantinya. Pada pertama kali, jendela Dikte meminta model ucapan: Akurasi Cepat (sekitar 60 MB, bahasa Inggris yang jelas), Seimbang (sekitar 190 MB, bawaan), atau Akurat (sekitar 574 MB, terbaik untuk bahasa Arab dan aksen), serta Bahasa Deteksi otomatis (bawaan), العربية, English, atau banyak bahasa lain. Fitur ini memerlukan mikrofon dan tidak ada yang dikirim ke mana pun.",
+  "summary": "Mengetikkan apa yang Anda ucapkan di posisi kursor, di aplikasi mana pun, dalam banyak bahasa.",
+  "details": "Klik di tempat kata-kata harus ditulis, lalu mulai dikte: label bulat kecil di bagian bawah layar menampilkan pengukur level dan waktu selama DropWheel mendengarkan. Tekan pintasannya atau DIKTE lagi, atau tanda centang di label itu, untuk berhenti; Esc atau X membatalkan, dan dikte berhenti sendiri pada dua menit. Whisper menuliskan apa yang Anda ucapkan di PC ini dan DropWheel mengetikkannya ke aplikasi yang berada di depan; jika aplikasi itu berubah, kata-katanya ditaruh di papan klip sebagai gantinya. Pada pertama kali, jendela Dikte meminta model ucapan: Akurasi Cepat (sekitar 60 MB, bahasa Inggris yang jelas), Seimbang (sekitar 190 MB, bawaan), atau Akurat (sekitar 574 MB, terbaik untuk aksen dan bahasa selain Inggris), serta Bahasa Deteksi otomatis (bawaan) atau salah satu dari banyak bahasa. Fitur ini memerlukan mikrofon dan tidak ada yang dikirim ke mana pun.",
   "how": "Tekan Ctrl+Win+J di aplikasi mana pun, atau pilih DIKTE di roda Teks atau roda Kerja (Ctrl+Win+Z tanpa ada file yang dipilih, lalu Tab); bicaralah, lalu tekan lagi untuk mengetik.",
   "worksOn": "Suara Anda, diketikkan ke aplikasi mana pun; bukan file.",
   "examples": [
-   "Tangan Anda sibuk: klik di chat WhatsApp Web, tekan Ctrl+Win+J, dan ucapkan balasan Anda dalam bahasa Arab.",
+   "Tangan Anda sibuk: klik di chat WhatsApp Web, tekan Ctrl+Win+J, dan ucapkan balasan Anda.",
    "Tulis draf pertama laporan Word dengan mengucapkannya dalam potongan dua menit.",
-   "Isi kotak komentar panjang di situs web dengan berbicara alih-alih mengetik dalam bahasa Inggris."
+   "Isi kotak komentar panjang di situs web dengan berbicara alih-alih mengetik."
   ],
   "keywords": [
    "dikte",
@@ -3884,7 +3942,7 @@
    "bicara alih-alih mengetik",
    "suara ke teks",
    "ketik pakai mikrofon",
-   "dikte bahasa arab",
+   "dikte bahasa indonesia",
    "whisper",
    "transkripsi suara"
   ]
@@ -4339,13 +4397,13 @@
  "do:notes.new": {
   "category": "notes",
   "summary": "Menaruh catatan tempel baru di desktop dekat penunjuk, dalam bahasa dan warna apa pun.",
-  "details": "Pilih CATATAN dan catatan tempel terbuka di dekat penunjuk, siap diketik; bahasa Arab otomatis berjalan dari kanan ke kiri. Pitanya memiliki tombol Catatan baru, Warna (kuning, hijau, biru, merah muda, ungu, abu-abu), Tetap di atas, dan Hapus catatan, dan Anda bisa menyeretnya lewat pita serta mengubah ukurannya dari sudut. Ctrl+N di sebuah catatan membuat catatan lain. Catatan tersimpan sendiri dan muncul kembali di tempatnya saat DropWheel dimulai; catatan berisi teks yang dihapus bisa dikembalikan dengan mengklik kartu yang muncul. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
+  "details": "Pilih CATATAN dan catatan tempel terbuka di dekat penunjuk, siap diketik; bahasa yang ditulis dari kanan ke kiri otomatis berjalan begitu. Pitanya memiliki tombol Catatan baru, Warna (kuning, hijau, biru, merah muda, ungu, abu-abu), Tetap di atas, dan Hapus catatan, dan Anda bisa menyeretnya lewat pita serta mengubah ukurannya dari sudut. Ctrl+N di sebuah catatan membuat catatan lain. Catatan tersimpan sendiri dan muncul kembali di tempatnya saat DropWheel dimulai; catatan berisi teks yang dihapus bisa dikembalikan dengan mengklik kartu yang muncul. Warna lain apa pun juga bisa dipilih: palet bebas, dengan kode hex untuk diketik atau ditempel.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja atau Papan Klip, pilih CATATAN, lalu mulai mengetik.",
   "worksOn": "",
   "examples": [
    "Catat nomor telepon selama panggilan tanpa membuka aplikasi apa pun.",
    "Simpan tiga tugas hari ini di catatan kuning yang tetap berada di atas pekerjaan Anda.",
-   "Tulis pengingat dalam bahasa Arab untuk menelepon bank, dan catatan itu masih ada setelah restart."
+   "Tulis pengingat untuk menelepon bank, dan catatan itu masih ada setelah restart."
   ],
   "keywords": [
    "catatan tempel",
@@ -4410,12 +4468,12 @@
  "do:work.meeting": {
   "category": "work",
   "summary": "Merekam rapat, lalu menulis transkrip, ringkasan, keputusan, dan tindak lanjut di PC ini.",
-  "details": "Pilih RAPAT dan DropWheel merekam suara PC sekaligus mikrofon Anda; label bulat di bagian atas menampilkan waktu, dengan tanda centang untuk berhenti dan menulis catatan serta X untuk membatalkan, dan label itu tidak ikut terlihat saat rapat berbagi layar. Saat Anda berhenti, Whisper menulis transkrip beserta waktunya, dan jika model AI (sekitar 1,1 GB) ada di PC, model itu menambahkan bagian Summary, Decisions, dan Action items. Catatan (file Markdown) dan suaranya (file M4A) disimpan sebagai 'Meeting tanggal waktu' di folder DropWheel Meetings di dalam Dokumen, dan jendela Catatan Rapat terbuka dengan tampilan Ringkasan dan Transkrip, Salin, serta Buka Folder. Fitur ini memerlukan model ucapan dari jendela Dikte dan FFmpeg; tanpa model AI, tombol Tulis Ringkasan memungkinkan Anda menambahkan ringkasan nanti.",
+  "details": "Pilih RAPAT dan DropWheel merekam suara PC sekaligus mikrofon Anda; label bulat di bagian atas menampilkan waktu, dengan tanda centang untuk berhenti dan menulis catatan serta X untuk membatalkan, dan label itu tidak ikut terlihat saat rapat berbagi layar. Saat Anda berhenti, Whisper menulis transkrip beserta waktunya, dan jika model AI (sekitar 1,1 GB) ada di PC, atau kunci API Anda sendiri dipilih di Pengaturan › Model AI (transkrip lalu dikirim ke perusahaan itu), model itu menambahkan bagian Summary, Decisions, dan Action items. Catatan (file Markdown) dan suaranya (file M4A) disimpan sebagai 'Meeting tanggal waktu' di folder DropWheel Meetings di dalam Dokumen, dan jendela Catatan Rapat terbuka dengan tampilan Ringkasan dan Transkrip, Salin, serta Buka Folder. Fitur ini memerlukan model ucapan dari jendela Dikte dan FFmpeg; tanpa model AI, tombol Tulis Ringkasan memungkinkan Anda menambahkan ringkasan nanti.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja, lalu pilih RAPAT; pilih lagi atau tekan tanda centang di label untuk berhenti.",
   "worksOn": "",
   "examples": [
    "Panggilan Teams satu jam: dapatkan keputusan dan siapa mengerjakan apa tanpa mencatat sendiri.",
-   "Kuliah Zoom berbahasa Arab: simpan transkrip lengkap dan suaranya untuk dipelajari nanti.",
+   "Kuliah Zoom: simpan transkrip lengkap dan suaranya untuk dipelajari nanti.",
    "Panggilan telepon dengan pengeras suara di meja Anda: rekam dan salin tindak lanjutnya ke email."
   ],
   "keywords": [
@@ -4433,12 +4491,12 @@
  },
  "do:work.captions": {
   "category": "work",
-  "summary": "Menampilkan teks langsung untuk video, panggilan, atau pelajaran apa pun, langsung diterjemahkan ke bahasa Arab, di PC ini.",
-  "details": "Pilih CC dan bilah teks muncul di bagian bawah layar; seret ke mana saja. DropWheel mendengarkan suara PC (bawaan) atau mikrofon, Whisper menuliskan kata-kata saat diucapkan, dalam sekitar setengah detik (kata terbaru tampak lebih pudar sampai pasti), dan model terjemahan mengubah setiap kalimat ke bahasa Arab sambil berjalan, tanpa perlu internet. Jika PC terlalu lambat untuk model ucapan yang dipilih, model lebih cepat yang sudah diunduh mengambil alih agar teks tetap mengikuti. Arahkan penunjuk ke bilah untuk melihat tombolnya: beralih antara suara PC dan mikrofon, mengubah apa yang ditampilkan (keduanya, bahasa Arab, teks asli, atau bahasa Inggris), atau mematikan teks. Fitur ini memerlukan model ucapan dari jendela Dikte, dan model terjemahan bahasa Arab (sekitar 114 MB) ditawarkan pada pertama kali; sampai model itu tersedia, teks menampilkan apa yang diucapkan. Pilih CC lagi untuk berhenti. Terjemahan punya dua baris: baris pertama menampilkan kalimat terakhir yang selesai dengan terjemahan penuh; baris kedua di bawahnya menerjemahkan kalimat yang sedang diucapkan secara hampir langsung, dan begitu kalimat selesai, ia pindah ke baris pertama.",
+  "summary": "Menampilkan teks langsung untuk video, panggilan, atau pelajaran apa pun, langsung diterjemahkan ke bahasa pilihan Anda.",
+  "details": "Pilih CC dan bilah teks muncul di bagian bawah layar; seret ke mana saja. DropWheel mendengarkan suara PC (bawaan) atau mikrofon, Whisper menuliskan kata-kata saat diucapkan, dalam sekitar setengah detik (kata terbaru tampak lebih pudar sampai pasti), dan model terjemahan mengubah setiap kalimat ke bahasa yang dipilih di Terjemahkan ke pada Pengaturan › Layar & Teks (awalnya bahasa yang dipakai DropWheel), tanpa perlu internet. Terjemahan punya dua baris: baris pertama menampilkan kalimat terakhir yang selesai dengan terjemahan penuh; baris kedua di bawahnya menerjemahkan kalimat yang sedang diucapkan secara hampir langsung, dan begitu kalimat selesai, ia pindah ke baris pertama. Jika PC terlalu lambat untuk model ucapan yang dipilih, model lebih cepat yang sudah diunduh mengambil alih agar teks tetap mengikuti. Arahkan penunjuk ke bilah untuk melihat tombolnya: beralih antara suara PC dan mikrofon, mengubah apa yang ditampilkan (keduanya, terjemahan, atau teks asli), atau mematikan teks. Fitur ini memerlukan model ucapan dari jendela Dikte, dan model terjemahan yang diperlukan bahasa-bahasa itu ditawarkan pada pertama kali (dari sekitar 110 MB hingga sekitar 630 MB); sampai model itu tersedia, teks menampilkan apa yang diucapkan. Dengan kunci API Anda sendiri yang dipilih di Pengaturan › Model AI, setiap kalimat yang selesai dikirim ke perusahaan itu sebagai gantinya, dan baris kedua memerlukan model di PC ini. Pilih CC lagi untuk berhenti.",
   "how": "Tekan Ctrl+Win+Z (tanpa ada file yang dipilih), Tab ke roda Kerja, lalu pilih CC; pilih lagi untuk mematikan teks.",
   "worksOn": "",
   "examples": [
-   "Tonton kursus YouTube berbahasa Inggris dan baca teks bahasa Arab di bawahnya.",
+   "Tonton kursus YouTube berbahasa Inggris dan baca teks bahasa Indonesia di bawahnya.",
    "Ikuti panggilan Zoom berbahasa Inggris yang cepat dengan kata-kata tertulis di layar saat orang berbicara.",
    "Buat teks untuk kuliah dari mikrofon bagi teman sekelas yang kurang pendengaran."
   ],
@@ -4447,7 +4505,7 @@
    "subtitle langsung",
    "closed caption",
    "terjemahkan video",
-   "subtitle arab",
+   "subtitle bahasa indonesia",
    "pendengaran",
    "terjemahan langsung",
    "teks panggilan",
@@ -4506,7 +4564,7 @@
  "do:petal.guide": {
   "category": "petal",
   "summary": "Membuka Panduan Alat: setiap alat dan tindakan dijelaskan, dengan contoh, dan kotak untuk menyampaikan apa yang ingin Anda lakukan.",
-  "details": "Panduan ini mencantumkan alat DropWheel, tindakan file, dan tindakan roda tanpa file per bagian. Setiap entri terbuka menampilkan apa yang dilakukannya, cara memakainya, tiga contoh, dan apa yang bisa diprosesnya, dengan Coba untuk memulainya dan kotak untuk bertanya tentangnya. Ketik apa yang ingin Anda lakukan dengan kata-kata Anda sendiri di bagian atas dan alat yang paling sesuai langsung muncul; tekan Enter dan model AI di PC ini menjawab berdasarkan panduan dan menautkan alat yang disebutkannya. Model diunduh sekali, saat Anda pertama kali bertanya; tanpanya, alat yang paling sesuai tetap muncul.",
+  "details": "Panduan ini mencantumkan alat DropWheel, tindakan file, dan tindakan roda tanpa file per bagian. Setiap entri terbuka menampilkan apa yang dilakukannya, cara memakainya, tiga contoh, dan apa yang bisa diprosesnya, dengan Coba untuk memulainya dan kotak untuk bertanya tentangnya. Ketik apa yang ingin Anda lakukan dengan kata-kata Anda sendiri di bagian atas dan alat yang paling sesuai langsung muncul; tekan Enter dan model AI di PC ini menjawab berdasarkan panduan dan menautkan alat yang disebutkannya. Model diunduh sekali, saat Anda pertama kali bertanya, atau kunci API Anda sendiri dari Pengaturan › Model AI bisa menjawab sebagai gantinya; tanpa keduanya, alat yang paling sesuai tetap muncul.",
   "how": "Buka dari menu baki sistem (Panduan Alat…), tombol Panduan Alat di bagian atas Pengaturan DropWheel, palet perintah (Ctrl+Win+K), atau kelopak PANDUAN yang Anda tambahkan ke roda. Di roda, tanda di bawah nama kelopak (atau F1) menampilkan penjelasan kelopak itu, dengan tautan ke panduan.",
   "worksOn": "",
   "examples": [

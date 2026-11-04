@@ -144,6 +144,52 @@ public sealed class PasswordField : Grid
     }
 }
 
+/// <summary>A signature as a tightly cropped transparent picture, from strokes on a pad or a typed name.</summary>
+public static class Signatures
+{
+    public static readonly Color Ink = Color.FromRgb(0x1D, 0x2B, 0x6B);
+
+    public static BitmapSource Render(System.Windows.Ink.StrokeCollection strokes)
+    {
+        var bounds = strokes.GetBounds();
+        bounds.Inflate(4, 4);
+        const double scale = 3;
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.PushTransform(new ScaleTransform(scale, scale));
+            dc.PushTransform(new TranslateTransform(-bounds.X, -bounds.Y));
+            strokes.Draw(dc);
+        }
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(bounds.Width * scale), (int)Math.Ceiling(bounds.Height * scale), 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    public static BitmapSource Render(string name)
+    {
+        // Handwriting-style fonts that come with Windows, in order of preference.
+        var family = new[] { "Segoe Script", "Ink Free", "Segoe Print" }.FirstOrDefault(f => Fonts.SystemFontFamilies.Any(s => s.Source == f)) ?? "Segoe UI";
+        bool rtl = name.Any(c => c is >= '\u0590' and <= '\u08FF');
+        var text = new FormattedText(name, CultureInfo.CurrentUICulture, rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+            new Typeface(new FontFamily(rtl ? "Segoe UI" : family), FontStyles.Italic, FontWeights.Normal, FontStretches.Normal), 120, new SolidColorBrush(Ink), 1.0);
+        var geometry = text.BuildGeometry(new Point(0, 0));
+        var b = geometry.Bounds;
+        b.Inflate(6, 6);
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.PushTransform(new TranslateTransform(-b.X, -b.Y));
+            dc.DrawGeometry(new SolidColorBrush(Ink), null, geometry);
+        }
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(b.Width), (int)Math.Ceiling(b.Height), 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        bitmap.Freeze();
+        return bitmap;
+    }
+}
+
 /// <summary>A still of any file Petal can preview: the picture, a video frame or a PDF's first page.</summary>
 public static class PreviewSource
 {

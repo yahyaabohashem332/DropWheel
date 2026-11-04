@@ -9,6 +9,18 @@ namespace Petal.App.Settings;
 /// <summary>Tells the AI layer what the settings chose: this PC, or a cloud model on the user's own key.</summary>
 internal static class AiSetup
 {
+    /// <summary>What a tool that writes says while it works: the words given when it is this PC, or the cloud model it has gone to.</summary>
+    public static string Writing(string onThisPc) =>
+        CloudAi.CanWrite ? L.F("Writing with {0}, on your own key…", CloudAi.Name(CloudAi.Writing!.Provider)) : L.T(onThisPc);
+
+    /// <summary>What a tool that looks at a picture says while it works.</summary>
+    public static string Looking =>
+        CloudAi.CanSee ? L.F("Looking at the picture with {0}, on your own key…", CloudAi.Name(CloudAi.Seeing!.Provider)) : L.T("Looking at the picture on this PC…");
+
+    /// <summary>The caveat under what a model wrote or saw.</summary>
+    public static string WorkedOut(CloudChoice? cloud) =>
+        cloud is null ? L.T("Worked out on this PC; it can be wrong.") : L.F("Worked out by {0}, on your own key; it can be wrong.", CloudAi.Name(cloud.Provider));
+
     public static void Apply(AppSettings settings)
     {
         CloudAi.Writing = Choice(settings, settings.AiWriting);

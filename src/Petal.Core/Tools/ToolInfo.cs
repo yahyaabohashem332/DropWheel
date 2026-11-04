@@ -34,6 +34,7 @@ public enum ToolId
     ProtectPdf,
     NumberPages,
     SignPdf,
+    EditPdf,
     ExtractImages,
     RemoveBackground,
     Transcribe,

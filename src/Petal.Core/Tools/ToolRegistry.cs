@@ -40,6 +40,8 @@ public static class ToolRegistry
         new(ProtectPdf, "PASSWORD", "Password", "lock", true, ToolSelection.SingleOrBatch, "Protected"),
         new(NumberPages, "NUMBERS", "Add Page Numbers", "pageNumbers", true, ToolSelection.SingleOrBatch, "Numbered"),
         new(SignPdf, "SIGN", "Sign PDF", "signature", true, ToolSelection.Single, "Signed"),
+        // Forms filled in, words retyped, marks and comments added, and what must go really taken out.
+        new(EditPdf, "EDIT", "Edit PDF", "pencil", true, ToolSelection.Single, "Edited", ToolOutputKind.FixedFormat, "pdf"),
         new(ExtractImages, "IMAGES", "Extract Images", "images", false, ToolSelection.SingleOrBatch, "Images", ToolOutputKind.Folder),
         new(RemoveBackground, "REMOVE BG", "Remove Background", "eraser", true, ToolSelection.SingleOrBatch, "No Background"),
         new(Transcribe, "SUBTITLES", "Transcribe", "captions", true, ToolSelection.SingleOrBatch, "Subtitled"),
@@ -98,7 +100,7 @@ public static class ToolRegistry
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
-    private static readonly ToolId[] PdfSingle = [Compress, Metadata, AskFile, TranslateDocument, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
+    private static readonly ToolId[] PdfSingle = [EditPdf, Compress, Metadata, AskFile, TranslateDocument, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
     private static readonly ToolId[] DocumentTools = [AskFile, ReadAloud];
     private static readonly ToolId[] TranslatedDocumentTools = [AskFile, TranslateDocument, ReadAloud];
     private static readonly ToolId[] TranslatedSheetTools = [AskFile, TranslateDocument];

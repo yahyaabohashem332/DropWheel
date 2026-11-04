@@ -113,7 +113,8 @@ public abstract class ToolWindow : Window
             if (e.Key == Key.Escape)
             {
                 e.Handled = true;
-                Close();
+                if (!OnEscape())
+                    Close();
             }
         };
         SourceInitialized += (_, _) =>
@@ -129,6 +130,9 @@ public abstract class ToolWindow : Window
     }
 
     protected StackPanel Body { get; }
+
+    /// <summary>Esc closes the window, unless it has a use for the key first (and says so by returning true).</summary>
+    protected virtual bool OnEscape() => false;
 
     protected Button PrimaryButton { get; }
 
@@ -296,7 +300,7 @@ internal static class AppIcon
     public static ImageSource? Source => _source ??= Load();
 
     /// <summary>The 256 px artwork, for places that show the icon large.</summary>
-    public static ImageSource Large { get; } = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Petal-256.png"));
+    public static ImageSource Large { get; } = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Petal;component/Assets/Petal-256.png"));
 
     private static ImageSource? Load()
     {

@@ -79,7 +79,9 @@ public sealed class AskFileWindow : ToolWindow
         name.TextTrimming = TextTrimming.CharacterEllipsis;
         name.TextWrapping = TextWrapping.NoWrap;
         Body.Children.Add(name);
-        Body.Children.Add(Text("Ask anything about it: the answer comes from its own words, with where it says so. All on this PC.", "Petal.Caption"));
+        Body.Children.Add(Text(Petal.Recipes.Cloud.CloudAi.CanWrite
+            ? L.F("Ask anything about it: the answer comes from its own words, with where it says so. Your question and those words go to {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
+            : "Ask anything about it: the answer comes from its own words, with where it says so. All on this PC.", "Petal.Caption"));
 
         // What finding needs: the passage model, and for a recording Whisper.
         var whisper = Speech[Array.FindLastIndex(Speech, ModelStore.IsAvailable) is >= 0 and var best ? best : 1];

@@ -127,6 +127,7 @@ public static class PdfToolSetup
         ToolLauncher.RegisterWindow(ToolId.ProtectPdf, (t, f, j, a) => new PdfPasswordWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.NumberPages, (t, f, j, a) => new PageNumbersWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.SignPdf, (t, f, j, a) => new SignPdfWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.EditPdf, (t, f, j, a) => new PdfEditorWindow(t, f[0], j, a));
         ToolLauncher.RegisterDirect(ToolId.ExtractImages, (tool, files, jobs, at) => jobs.RunAsync("Extracting pictures", "Pictures extracted",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>
             {

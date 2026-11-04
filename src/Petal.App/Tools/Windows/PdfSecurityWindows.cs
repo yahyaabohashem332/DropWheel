@@ -306,7 +306,7 @@ public enum SignaturePages
 
 public sealed class SignPdfWindow : ToolWindow
 {
-    private static readonly Color Ink = Color.FromRgb(0x1D, 0x2B, 0x6B);
+    private static readonly Color Ink = Signatures.Ink;
     private readonly ToolInfo _tool;
     private readonly string _file;
     private readonly JobRunner _jobs;
@@ -456,51 +456,11 @@ public sealed class SignPdfWindow : ToolWindow
     /// <summary>The signature as a tightly cropped transparent picture, or null when there is none yet.</summary>
     private BitmapSource? Signature() => _source.Value switch
     {
-        0 when _ink.Strokes.Count > 0 => RenderInk(),
-        1 when _name.Text.Trim().Length > 0 => RenderName(_name.Text.Trim()),
+        0 when _ink.Strokes.Count > 0 => Signatures.Render(_ink.Strokes),
+        1 when _name.Text.Trim().Length > 0 => Signatures.Render(_name.Text.Trim()),
         2 => _picture,
         _ => null,
     };
-
-    private BitmapSource RenderInk()
-    {
-        var bounds = _ink.Strokes.GetBounds();
-        bounds.Inflate(4, 4);
-        const double scale = 3;
-        var visual = new DrawingVisual();
-        using (var dc = visual.RenderOpen())
-        {
-            dc.PushTransform(new ScaleTransform(scale, scale));
-            dc.PushTransform(new TranslateTransform(-bounds.X, -bounds.Y));
-            _ink.Strokes.Draw(dc);
-        }
-        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(bounds.Width * scale), (int)Math.Ceiling(bounds.Height * scale), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(visual);
-        bitmap.Freeze();
-        return bitmap;
-    }
-
-    private static BitmapSource RenderName(string name)
-    {
-        // Handwriting-style fonts that come with Windows, in order of preference.
-        var family = new[] { "Segoe Script", "Ink Free", "Segoe Print" }.FirstOrDefault(f => Fonts.SystemFontFamilies.Any(s => s.Source == f)) ?? "Segoe UI";
-        bool rtl = name.Any(c => c is >= '\u0590' and <= '\u08FF');
-        var text = new FormattedText(name, CultureInfo.CurrentUICulture, rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
-            new Typeface(new FontFamily(rtl ? "Segoe UI" : family), FontStyles.Italic, FontWeights.Normal, FontStretches.Normal), 120, new SolidColorBrush(Ink), 1.0);
-        var geometry = text.BuildGeometry(new Point(0, 0));
-        var b = geometry.Bounds;
-        b.Inflate(6, 6);
-        var visual = new DrawingVisual();
-        using (var dc = visual.RenderOpen())
-        {
-            dc.PushTransform(new TranslateTransform(-b.X, -b.Y));
-            dc.DrawGeometry(new SolidColorBrush(Ink), null, geometry);
-        }
-        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(b.Width), (int)Math.Ceiling(b.Height), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(visual);
-        bitmap.Freeze();
-        return bitmap;
-    }
 
     private void ChoosePicture()
     {

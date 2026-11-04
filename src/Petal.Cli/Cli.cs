@@ -636,7 +636,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         var files = a.Files();
         if (files.Any(f => F.FromPath(f)?.Family != FormatFamily.Subtitle))
             throw new UsageException("Name subtitle files (SRT or VTT).");
-        string into = a.Get("to") ?? "ar";
+        var into = a.Get("to") ?? "";
         if (Petal.Recipes.Translation.Translator.Languages.All(l => l.Code != into))
             throw new UsageException("--to takes a language code: " + string.Join(", ", Petal.Recipes.Translation.Translator.Languages.Select(l => l.Code)) + ".");
         var outDir = a.OutputFolder();

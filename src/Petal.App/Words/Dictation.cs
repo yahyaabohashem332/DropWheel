@@ -245,10 +245,10 @@ internal sealed class DictationSetupWindow : ToolWindow
     private DictationSetupWindow() : base("Dictation", 440)
     {
         var settings = SettingsStore.Current;
-        Body.Children.Add(Text("Speak, and DropWheel types what you say in any app: in Arabic, English and many more languages. It runs on this PC; nothing is sent anywhere.", "Petal.Body"));
+        Body.Children.Add(Text("Speak, and DropWheel types what you say in any app, in whichever language you speak. It runs on this PC; nothing is sent anywhere.", "Petal.Body"));
         var accuracy = Segments([("Fast", "Fast"), ("Balanced", "Balanced"), ("Accurate", "Accurate")], settings.DictationAccuracy);
         Body.Children.Add(Row("Accuracy", accuracy, 110, 14));
-        Body.Children.Add(Text("Accurate is best for Arabic and accents; Fast suits clear English.", "Petal.Caption").WithMargin(110, 4, 0, 0));
+        Body.Children.Add(Text("Accurate is best for accents and languages other than English; Fast suits clear English.", "Petal.Caption").WithMargin(110, 4, 0, 0));
         var languages = new List<(string, string)> { ("auto", "Detect automatically"), ("ar", "العربية"), ("en", "English") };
         languages.AddRange(Petal.Engines.Media.Transcriber.Languages.Where(c => c is not "ar" and not "en").Select(c => (c, System.Globalization.CultureInfo.GetCultureInfo(c).NativeName)));
         var language = Choice(languages, settings.DictationLanguage);

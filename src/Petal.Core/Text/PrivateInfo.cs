@@ -101,7 +101,7 @@ public static partial class PrivateInfo
     [GeneratedRegex(@"\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b")]
     private static partial Regex Iban();
 
-    [GeneratedRegex(@"(?<![\w.])(?:\+|00)?\(?\d[\d \-()]{6,22}\d(?![\w.])")]
+    [GeneratedRegex(@"(?<![\w.])(?:\+|00)?\(?\d[\d \-()]{6,22}\d(?!\w|\.\d)")]
     private static partial Regex DigitRun();
 
     [GeneratedRegex(@"\b\d{1,3}(?:\.\d{1,3}){3}\b")]

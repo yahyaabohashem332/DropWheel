@@ -635,10 +635,10 @@ public sealed class TranslateDocumentTests(ITestOutputHelper output) : IDisposab
             var title = found.OrderByDescending(l => l.GlyphRectangle.Top).First().GlyphRectangle;
             Assert.Equal(original.Left, title.Left, 0);
             Assert.InRange(title.Bottom, original.Bottom - 3, original.Top);
-            // The number is not touched, once; the original words are still there, under the cover.
+            // The number is not touched, once; the original words have left the page, so copying it gives the translation alone.
             var all = string.Concat(page.Letters.Select(l => l.Value));
             Assert.Single(System.Text.RegularExpressions.Regex.Matches(all, "2024"));
-            Assert.Contains("annual", all);
+            Assert.DoesNotContain("annual", all);
         }
         // What is seen is the translation in its own colours, on its own background; the picture of the page tells.
         var picture = Petal.Engines.Documents.Pdf.PdfInfo.RenderPage(result, 0, 595);
@@ -668,8 +668,9 @@ public sealed class TranslateDocumentTests(ITestOutputHelper output) : IDisposab
         var page = pdf.GetPage(1);
         var drawn = page.Letters.Where(l => l.Value.Length > 0 && (l.Value[0] is >= (char)0xFB50 and <= (char)0xFEFF)).ToList();
         Assert.True(drawn.Count > 100, $"{drawn.Count} shaped letters");
-        // The paragraph's rectangle: its original lines, on the page.
-        var original = page.GetWords().Where(w => w.Text is "This" or "column," or "comes" or "width" or "too" or "while.").ToList();
+        // The paragraph's rectangle: its original lines, on the page as it was.
+        using var before = UglyToad.PdfPig.PdfDocument.Open(input);
+        var original = before.GetPage(1).GetWords().Where(w => w.Text is "This" or "column," or "comes" or "width" or "too" or "while.").ToList();
         double top = original.Max(w => w.BoundingBox.Top), bottom = original.Min(w => w.BoundingBox.Bottom), right = original.Max(w => w.BoundingBox.Right), left = original.Min(w => w.BoundingBox.Left);
         var inside = drawn.Where(l => l.Location.Y < top + 2 && l.Location.Y > bottom - 4).ToList();
         Assert.NotEmpty(inside);
