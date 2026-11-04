@@ -11,20 +11,23 @@ using Petal.Recipes.Cloud;
 namespace Petal.App.Tools.Parts;
 
 /// <summary>
-/// Shown in an AI tool's window while its model isn't on this PC yet: what it is, its size and
-/// licence, and a Download button with progress. Hidden once the model is here. A tool that needs
-/// several files (a program and a voice, say) gets them all with one download. For a job a cloud model
-/// can do, the user's own API key is offered beside the download from the start, as the other way to run it.
+/// In an AI tool's window: what its model is, its size and licence, and a Download button with progress. A tool that
+/// needs several files (a program and a voice, say) gets them all with one download. For a job a cloud model can do,
+/// both ways stay here whichever is in use, the model on this PC and the user's own API key, to move between them at
+/// any time. For any other job the panel is only there until the model has arrived.
 /// </summary>
 public sealed class ModelPanel : Border
 {
-    private readonly TextBlock _here = Heading("On this PC");
+    private readonly StackPanel _hereHeading = new() { Orientation = Orientation.Horizontal };
+    private readonly TextBlock _hereMark = InUse();
     private readonly TextBlock _text = new() { TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock _status = new() { Margin = new Thickness(0, 6, 0, 0), TextWrapping = TextWrapping.Wrap };
     private readonly Button _download = new();
     private readonly Border _track = new() { Height = 4, CornerRadius = new CornerRadius(2), Margin = new Thickness(0, 10, 0, 0), Visibility = Visibility.Collapsed };
     private readonly Border _fill = new() { Height = 4, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
     private readonly StackPanel _byKey = new();
+    private readonly TextBlock _keyMark = InUse();
+    private readonly TextBlock _keyWords = new() { TextWrapping = TextWrapping.Wrap };
     private readonly Button _ownKey = new();
     private readonly StackPanel _keyForm = new() { Margin = new Thickness(0, 10, 0, 0), Visibility = Visibility.Collapsed };
     private readonly ComboBox _provider = new() { MinWidth = 150 };
@@ -34,14 +37,24 @@ public sealed class ModelPanel : Border
     private readonly TextBlock _keyStatus = new() { Margin = new Thickness(0, 6, 0, 0), FontSize = 12, TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
     private CancellationTokenSource? _cts;
     private IReadOnlyList<ModelInfo> _models;
+    private bool _wanted = true;
+    private bool _ready;
+    private CloudChoice? _runner;
+    private bool _choosing;
 
     /// <summary>The job a cloud model can do in place of these models; null when none can.</summary>
     private AiJob? Job => AiSetup.JobOf(_models);
 
-    private bool OnKey => Job is { } job && AiSetup.OnKey(job);
+    private CloudChoice? Runner => Job is { } job ? AiSetup.Runner(job) : null;
 
-    /// <summary>Raised when the model has arrived (or was already here when switching to it), or a key has taken its place.</summary>
+    /// <summary>
+    /// Raised when the job can run and wasn't able to (the model has arrived, a key has taken its place), or when the
+    /// user has moved it to the other way from this panel.
+    /// </summary>
     public event Action? Ready;
+
+    /// <summary>Raised when what does the job has changed, from here or from Settings, whichever way it went.</summary>
+    public event Action? Switched;
 
     public ModelPanel(ModelInfo model) : this([model])
     {
@@ -55,6 +68,7 @@ public sealed class ModelPanel : Border
         Margin = new Thickness(0, 12, 0, 0);
         SetResourceReference(BackgroundProperty, "Petal.AccentSoft");
         _text.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
+        _keyWords.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
         _status.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
         _status.FontSize = 12;
         _keyLabel.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
@@ -62,29 +76,32 @@ public sealed class ModelPanel : Border
         _track.SetResourceReference(Border.BackgroundProperty, "Petal.Control");
         _fill.SetResourceReference(Border.BackgroundProperty, "Petal.Accent");
         _track.Child = _fill;
-        _download.Click += async (_, _) => await DownloadAsync();
+        _download.Click += async (_, _) => await HereAsync();
 
-        _ownKey.Content = L.T("Use My API Key");
         _ownKey.Click += (_, _) => ChooseKey();
         var line = new Border { Height = 1, Margin = new Thickness(0, 12, 0, 12) };
         line.SetResourceReference(Border.BackgroundProperty, "Petal.ControlBorder");
-        var keyWords = new TextBlock { Text = L.T("Gemini, ChatGPT or Claude. Nothing to download. What this job works on goes to that company, and it bills your key."), TextWrapping = TextWrapping.Wrap };
-        keyWords.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
+        _hereHeading.Children.Add(Heading("On this PC"));
+        _hereHeading.Children.Add(_hereMark);
         _byKey.Children.Add(line);
-        _byKey.Children.Add(Heading("With your own API key"));
-        _byKey.Children.Add(Beside(keyWords, _ownKey));
+        var keyHeading = new StackPanel { Orientation = Orientation.Horizontal, Children = { Heading("With your own API key"), _keyMark } };
+        _byKey.Children.Add(Beside(new StackPanel { Children = { keyHeading, _keyWords } }, _ownKey));
         _byKey.Children.Add(KeyForm());
 
-        Child = new StackPanel { Children = { _here, Beside(_text, _download), _track, _status, _byKey } };
+        Child = new StackPanel { Children = { Beside(new StackPanel { Children = { _hereHeading, _text } }, _download), _track, _status, _byKey } };
 
         void Changed()
         {
             if (Dispatcher.CheckAccess())
-                KeyChanged();
+                RunnerChanged();
             else
-                Dispatcher.BeginInvoke(KeyChanged);
+                Dispatcher.BeginInvoke(RunnerChanged);
         }
-        Loaded += (_, _) => AiSetup.Changed += Changed;
+        Loaded += (_, _) =>
+        {
+            AiSetup.Changed += Changed;
+            RunnerChanged();
+        };
         Unloaded += (_, _) =>
         {
             AiSetup.Changed -= Changed;
@@ -98,6 +115,13 @@ public sealed class ModelPanel : Border
         var heading = new TextBlock { Text = L.T(words), FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 4) };
         heading.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
         return heading;
+    }
+
+    private static TextBlock InUse()
+    {
+        var mark = new TextBlock { Text = "✓ " + L.T("In use"), FontWeight = FontWeights.SemiBold, Margin = new Thickness(8, 0, 0, 4), Visibility = Visibility.Collapsed };
+        mark.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Accent");
+        return mark;
     }
 
     /// <summary>Words, with their button at the end of the line.</summary>
@@ -138,14 +162,14 @@ public sealed class ModelPanel : Border
 
     private CloudProvider Provider => _provider.SelectedItem is ComboBoxItem { Tag: CloudProvider provider } ? provider : CloudProvider.Gemini;
 
-    /// <summary>Opens the place for a key: at a company whose key is already saved, when there is one.</summary>
+    /// <summary>Opens the place for a key: at the company in use, or else one whose key is already saved.</summary>
     public void ChooseKey()
     {
-        _ownKey.Visibility = Visibility.Collapsed;
         _keyForm.Visibility = Visibility.Visible;
-        var saved = Enum.GetValues<CloudProvider>().Where(CloudKeys.Has).Cast<CloudProvider?>().FirstOrDefault() ?? CloudProvider.Gemini;
-        _provider.SelectedItem = _provider.Items.OfType<ComboBoxItem>().First(i => (CloudProvider)i.Tag == saved);
+        var first = Runner?.Provider ?? Enum.GetValues<CloudProvider>().Where(CloudKeys.Has).Cast<CloudProvider?>().FirstOrDefault() ?? CloudProvider.Gemini;
+        _provider.SelectedItem = _provider.Items.OfType<ComboBoxItem>().First(i => (CloudProvider)i.Tag == first);
         ShowProvider();
+        Show();
         if (_key.IsVisible)
             _key.Focus();
     }
@@ -199,22 +223,56 @@ public sealed class ModelPanel : Border
             _useKey.IsEnabled = _provider.IsEnabled = true;
         }
         _key.Clear();
-        _cts?.Cancel();
-        AiSetup.Use(job, provider);
-        KeyChanged();
+        Say("");
+        _keyForm.Visibility = Visibility.Collapsed;
+        Choose(job, provider);
     }
 
-    /// <summary>A key now does this panel's job, from here or from Settings: what was waiting for the model goes on.</summary>
-    private void KeyChanged()
+    /// <summary>The user moves the job, from this panel.</summary>
+    private void Choose(AiJob job, CloudProvider? provider)
     {
-        if (Visibility == Visibility.Visible && OnKey)
+        _choosing = true;
+        AiSetup.Use(job, provider);
+        RunnerChanged();
+        _choosing = false;
+    }
+
+    /// <summary>The model on this PC: downloaded when it isn't here, and in use from then on.</summary>
+    private async Task HereAsync()
+    {
+        if (_cts is null && Missing.Count == 0)
         {
-            Visibility = Visibility.Collapsed;
+            if (Job is { } job)
+                Choose(job, null);
+            return;
+        }
+        await DownloadAsync();
+    }
+
+    private void RunnerChanged()
+    {
+        var runner = Runner;
+        if (runner == _runner)
+            return;
+        bool was = _ready;
+        Show();
+        Switched?.Invoke();
+        if (_wanted && _ready && (!was || _choosing))
             Ready?.Invoke();
+    }
+
+    public bool IsReady => Runner is not null || _models.All(ModelStore.IsAvailable);
+
+    /// <summary>Whether this window needs the panel now. Off, it stays out of sight whatever is here.</summary>
+    public bool Wanted
+    {
+        get => _wanted;
+        set
+        {
+            _wanted = value;
+            Show();
         }
     }
-
-    public bool IsReady => OnKey || _models.All(ModelStore.IsAvailable);
 
     /// <summary>Points the panel at another model (e.g. a different accuracy).</summary>
     public ModelInfo Model
@@ -229,32 +287,55 @@ public sealed class ModelPanel : Border
         get => _models;
         set
         {
-            if (_cts is not null || value.SequenceEqual(_models))
-                return;
-            _models = value;
-            Show();
-            if (IsReady)
+            if (PointAt(value) && IsReady)
                 Ready?.Invoke();
         }
+    }
+
+    /// <summary>Points the panel at another set of models, for a window that goes on by itself: Ready isn't raised.</summary>
+    public bool PointAt(IReadOnlyList<ModelInfo> models)
+    {
+        if (_cts is not null || models.SequenceEqual(_models))
+            return false;
+        _models = models;
+        Show();
+        return true;
     }
 
     private List<ModelInfo> Missing => _models.Where(m => !ModelStore.IsAvailable(m)).ToList();
 
     private void Show()
     {
-        Visibility = IsReady ? Visibility.Collapsed : Visibility.Visible;
-        _here.Visibility = _byKey.Visibility = Job is not null ? Visibility.Visible : Visibility.Collapsed;
-        // Nothing needed: a key does the job, or the language is already the one wanted.
+        var job = Job;
+        _runner = Runner;
+        _ready = IsReady;
+        // A job with two ways keeps showing both; any other has nothing to say once its model is here.
+        Visibility = _wanted && _models.Count > 0 && (job is not null || !_ready) ? Visibility.Visible : Visibility.Collapsed;
+        _hereHeading.Visibility = _byKey.Visibility = job is not null ? Visibility.Visible : Visibility.Collapsed;
         if (_models.Count == 0)
             return;
         var missing = Missing;
+        bool here = missing.Count == 0;
         // The biggest file names the download; its companions (settings, a runtime) ride along.
-        var main = missing.Count > 0 ? missing.MaxBy(m => m.Size)! : _models[0];
+        var main = !here ? missing.MaxBy(m => m.Size)! : _models.MaxBy(m => m.Size)!;
         var licences = string.Join(", ", missing.Select(m => m.License).Distinct());
-        _text.Text = L.F("This tool uses {0} ({1} licence). It's a one-time {2} download, kept on this PC; your files never leave it.",
-            L.T(main.Name), licences.Length > 0 ? licences : main.License, Sizes.Format(missing.Sum(m => m.Size)));
-        _download.Content = L.T("Download");
+        _text.Text = here
+            ? L.F("{0} is on this PC; your files never leave it.", L.T(main.Name))
+            : L.F("This tool uses {0} ({1} licence). It's a one-time {2} download, kept on this PC; your files never leave it.",
+                L.T(main.Name), licences.Length > 0 ? licences : main.License, Sizes.Format(missing.Sum(m => m.Size)));
+        _hereMark.Visibility = here && _runner is null ? Visibility.Visible : Visibility.Collapsed;
+        _keyMark.Visibility = _runner is not null ? Visibility.Visible : Visibility.Collapsed;
+        _keyWords.Text = _runner is { } runner
+            ? L.F("{0} does this job. What it works on goes to that company, and it bills your key.", CloudAi.Name(runner.Provider))
+            : L.T("Gemini, ChatGPT or Claude. Nothing to download. What this job works on goes to that company, and it bills your key.");
+        _keyWords.Visibility = _runner is null && here && _keyForm.Visibility != Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        _ownKey.Content = L.T(_runner is not null ? "Change" : "Use My API Key");
+        _ownKey.Visibility = _keyForm.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        if (_cts is not null)
+            return;
+        _download.Content = L.T(here ? "Use This PC" : "Download");
         _download.IsEnabled = true;
+        _download.Visibility = here && _runner is null ? Visibility.Collapsed : Visibility.Visible;
         _track.Visibility = Visibility.Collapsed;
         _status.Text = "";
         // An empty line would leave a gap above the button.
@@ -274,6 +355,7 @@ public sealed class ModelPanel : Border
         var missing = Missing;
         long total = Math.Max(1, missing.Sum(m => m.Size)), before = 0;
         var current = missing.Count > 0 ? missing[0] : _models[0];
+        bool arrived = false;
         try
         {
             foreach (var model in missing)
@@ -290,26 +372,33 @@ public sealed class ModelPanel : Border
                 await ModelStore.DownloadAsync(model, progress, _cts.Token);
                 before += model.Size;
             }
-            Visibility = Visibility.Collapsed;
-            Ready?.Invoke();
+            arrived = true;
         }
         catch (OperationCanceledException)
         {
-            Show();
         }
         catch (Exception ex)
         {
             Log.Error(ex, $"Downloading {current.Name}");
+            _cts.Dispose();
+            _cts = null;
             Show();
             _status.Visibility = Visibility.Visible;
             _status.Text = ex is System.Net.Http.HttpRequestException
                 ? L.T("The download didn't work. Check the internet connection and try again.")
                 : L.T(ex.Message);
+            return;
         }
-        finally
+        _cts.Dispose();
+        _cts = null;
+        // Downloaded because it is wanted: from here on the job runs on it, a key or no key.
+        if (arrived && Runner is not null && Job is { } job)
+            Choose(job, null);
+        else
         {
-            _cts?.Dispose();
-            _cts = null;
+            Show();
+            if (arrived)
+                Ready?.Invoke();
         }
     }
 }

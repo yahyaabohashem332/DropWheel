@@ -50,6 +50,7 @@ public partial class App : Application
         if (args.Length >= 3 && args[0] == "--snapshot-tools")
         {
             ThemeResources.Install(this);
+            AiSetup.Apply(SettingsStore.Load());
             Dispatcher.BeginInvoke(async () =>
             {
                 try { await DesignSnapshots.RunToolsAsync(args); }

@@ -24,7 +24,7 @@ public sealed class DescribePictureWindow : ToolWindow
     private readonly string _file;
     private readonly Segmented<bool> _length;
     private readonly ModelPanel _model = new(PictureDescriber.Models);
-    private readonly ModelPanel _translation = new(Petal.Recipes.Translation.Translator.Models) { Visibility = Visibility.Collapsed };
+    private readonly ModelPanel _translation = new(Petal.Recipes.Translation.Translator.ModelsFor("en", Words.Translation.Into(""))) { Wanted = L.Code != "en" };
     private readonly TextBox _text = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90, MaxHeight = 220, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
     private readonly TextBlock _status;
     private readonly Button _keep;
@@ -94,11 +94,9 @@ public sealed class DescribePictureWindow : ToolWindow
         if (!PictureDescriber.ModelReady)
         {
             _status.Text = L.T("Describing pictures needs the picture model, downloaded once.");
-            _model.Visibility = Visibility.Visible;
             _text.Visibility = _keep.Visibility = Visibility.Collapsed;
             return;
         }
-        _model.Visibility = Visibility.Collapsed;
         _text.Visibility = _keep.Visibility = Visibility.Visible;
         _running?.Cancel();
         var running = _running = new CancellationTokenSource();
@@ -121,13 +119,11 @@ public sealed class DescribePictureWindow : ToolWindow
                 var missing = Words.Translation.Missing(english);
                 if (missing.Count > 0)
                 {
-                    _translation.Models = missing;
-                    _translation.Visibility = Visibility.Visible;
+                    _translation.PointAt(missing);
                     _status.Text = L.T("The description is in English. Download the model to have it in your language.");
                 }
                 else
                 {
-                    _translation.Visibility = Visibility.Collapsed;
                     _status.Text = Words.Translation.Working();
                     text = await Words.Translation.RunAsync(english, running.Token);
                 }

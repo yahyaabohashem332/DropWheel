@@ -21,7 +21,7 @@ internal static class AiSetup
     /// <summary>What each job runs on may have changed.</summary>
     public static event Action? Changed;
 
-    /// <summary>A key was chosen for a job outside Settings.</summary>
+    /// <summary>What does a job was chosen outside Settings.</summary>
     public static event Action? Chosen;
 
     /// <summary>The job a cloud model could do in place of these models; null when none can (speech, voices, cutting out).</summary>
@@ -32,28 +32,29 @@ internal static class AiSetup
         return Any("smolvlm") ? AiJob.Seeing : Any("opus-mt", "m2m100") ? AiJob.Translating : Any("qwen", "gemma") ? AiJob.Writing : null;
     }
 
-    /// <summary>Whether a cloud model is doing this job now.</summary>
-    public static bool OnKey(AiJob job) => job switch
+    /// <summary>The cloud model doing this job now; null when it runs on this PC.</summary>
+    public static CloudChoice? Runner(AiJob job) => job switch
     {
-        AiJob.Writing => CloudAi.CanWrite,
-        AiJob.Translating => CloudAi.CanTranslate,
-        _ => CloudAi.CanSee,
+        AiJob.Writing => CloudAi.CanWrite ? CloudAi.Writing : null,
+        AiJob.Translating => CloudAi.CanTranslate ? CloudAi.Translating : null,
+        _ => CloudAi.CanSee ? CloudAi.Seeing : null,
     };
 
-    /// <summary>This job, and no other, now runs on this company's model.</summary>
-    public static void Use(AiJob job, CloudProvider provider)
+    /// <summary>This job, and no other, now runs on this company's model, or on this PC when none is given, until chosen otherwise.</summary>
+    public static void Use(AiJob job, CloudProvider? provider)
     {
         var settings = SettingsStore.Current;
+        var name = provider?.ToString() ?? "";
         switch (job)
         {
             case AiJob.Writing:
-                settings.AiWriting = provider.ToString();
+                settings.AiWriting = name;
                 break;
             case AiJob.Translating:
-                settings.AiTranslating = provider.ToString();
+                settings.AiTranslating = name;
                 break;
             default:
-                settings.AiSeeing = provider.ToString();
+                settings.AiSeeing = name;
                 break;
         }
         Apply(settings);

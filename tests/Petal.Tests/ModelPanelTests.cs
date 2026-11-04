@@ -16,8 +16,8 @@ using Petal.Recipes.Translation;
 namespace Petal.Tests;
 
 /// <summary>
-/// The card that asks for an AI model, on no screen and with a stand-in for the provider: a key is offered from the start for
-/// the jobs a key can do and for no others, and a key given there is checked, used and replaces the download at once.
+/// The card that asks for an AI model, on no screen and with a stand-in for the provider: for the jobs a key can do both ways stay
+/// offered whichever is in use, for others only the download, and a key given there is checked first.
 /// </summary>
 [Collection("Models")]
 public sealed class ModelPanelTests
@@ -188,7 +188,7 @@ public sealed class ModelPanelTests
         return Task.CompletedTask;
     });
 
-    /// <summary>What Dub and Translate Document ask for once a key translates: nothing, and that must not break the window.</summary>
+    /// <summary>What a translation into the language it is already in asks for: nothing, and that must not break the window.</summary>
     [Fact]
     public void A_panel_asked_for_no_models_hides() => Run(_ =>
     {
@@ -198,7 +198,7 @@ public sealed class ModelPanelTests
         return Task.CompletedTask;
     });
 
-    /// <summary>These ask for no translation model once a key translates: they open, with nothing to download.</summary>
+    /// <summary>These open with a key translating, with both ways still there.</summary>
     [Fact]
     public void The_windows_that_translate_open_with_a_key_translating() => Run(_ =>
     {
@@ -231,8 +231,135 @@ public sealed class ModelPanelTests
         return Task.CompletedTask;
     });
 
+    /// <summary>A model that is on this PC: a small file of its own, in a models folder of the test's.</summary>
+    private static ModelInfo Here(string id)
+    {
+        var name = id + ".gguf";
+        File.WriteAllBytes(Path.Combine(ModelStore.Folder, name), new byte[12]);
+        return new ModelInfo(id, id, name, "https://example.invalid/" + name, new string('0', 64), 12, "MIT");
+    }
+
+    private static void Click(Button button) => button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
+    private static async Task WithOwnModels(Func<Task> test)
+    {
+        var folder = ModelStore.Folder;
+        ModelStore.Folder = Path.Combine(Path.GetTempPath(), "petal-panel-models-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(ModelStore.Folder);
+        try
+        {
+            await test();
+        }
+        finally
+        {
+            Directory.Delete(ModelStore.Folder, true);
+            ModelStore.Folder = folder;
+        }
+    }
+
     [Fact]
-    public void A_good_key_is_used_for_this_job_and_replaces_the_download() => Run(async stub =>
+    public void A_model_on_this_pc_still_offers_the_key() => Run(_ => WithOwnModels(() =>
+    {
+        var panel = new ModelPanel([Here("qwen-here")]);
+        Assert.True(panel.IsReady);
+        Assert.Equal(Visibility.Visible, panel.Visibility);
+        Assert.True(Shown(Button(panel, "Use My API Key")));
+        // Already in use: nothing to press on this side.
+        Assert.False(Shown(Button(panel, "Use This PC")));
+        return Task.CompletedTask;
+    }));
+
+    [Fact]
+    public void A_job_on_a_key_goes_back_to_this_pc_with_one_click() => Run(_ => WithOwnModels(() =>
+    {
+        CloudKeys.Set(CloudProvider.Gemini, "saved");
+        AiSetup.Use(AiJob.Writing, CloudProvider.Gemini);
+        var panel = new ModelPanel([Here("qwen-here")]);
+        int ready = 0, switched = 0;
+        panel.Ready += () => ready++;
+        panel.Switched += () => switched++;
+        Assert.True(CloudAi.CanWrite);
+        Click(Button(panel, "Use This PC"));
+        Assert.False(CloudAi.CanWrite);
+        Assert.Equal("", SettingsStore.Current.AiWriting);
+        Assert.Equal((1, 1), (ready, switched));
+        // The key stays saved, and stays one click away.
+        Assert.True(CloudKeys.Has(CloudProvider.Gemini));
+        Assert.Equal(Visibility.Visible, panel.Visibility);
+        Assert.True(Shown(Button(panel, "Use My API Key")));
+        return Task.CompletedTask;
+    }));
+
+    [Fact]
+    public void Leaving_the_key_from_settings_with_no_model_here_stops_the_job_waiting() => Run(_ => WithOwnModels(async () =>
+    {
+        CloudKeys.Set(CloudProvider.Gemini, "saved");
+        AiSetup.Use(AiJob.Writing, CloudProvider.Gemini);
+        var panel = new ModelPanel(Writing.Select(Absent).ToList());
+        var window = new Window { Content = panel, ShowInTaskbar = false, ShowActivated = false, WindowStyle = WindowStyle.None, Width = 1, Height = 1, Left = -30000 };
+        window.Show();
+        Pump();
+        int ready = 0, switched = 0;
+        panel.Ready += () => ready++;
+        panel.Switched += () => switched++;
+        Assert.True(panel.IsReady);
+        AiSetup.Use(AiJob.Writing, null);
+        await Task.Yield();
+        Assert.False(panel.IsReady);
+        Assert.Equal((0, 1), (ready, switched));
+        Assert.True(Shown(Button(panel, "Download")));
+        window.Close();
+    }));
+
+    /// <summary>A window waiting on something else is not run again, and its words sent, because of a choice made in another.</summary>
+    [Fact]
+    public void A_choice_in_one_window_does_not_run_another_again() => Run(_ => WithOwnModels(async () =>
+    {
+        CloudKeys.Set(CloudProvider.Gemini, "saved");
+        var elsewhere = new ModelPanel([Here("qwen-here")]);
+        var window = new Window { Content = elsewhere, ShowInTaskbar = false, ShowActivated = false, WindowStyle = WindowStyle.None, Width = 1, Height = 1, Left = -30000 };
+        window.Show();
+        Pump();
+        int ready = 0;
+        elsewhere.Ready += () => ready++;
+        var here = new ModelPanel(Writing.Select(Absent).ToList());
+        Click(Button(here, "Use My API Key"));
+        Click(Button(here, L.F("Use {0}", "Gemini")));
+        await Until(() => CloudAi.CanWrite);
+        Pump();
+        Assert.Equal(0, ready);
+        window.Close();
+    }));
+
+    [Fact]
+    public void A_panel_a_window_does_not_need_stays_hidden() => Run(_ => WithOwnModels(() =>
+    {
+        var panel = new ModelPanel([Here("qwen-here")]) { Wanted = false };
+        Assert.Equal(Visibility.Collapsed, panel.Visibility);
+        panel.Wanted = true;
+        Assert.Equal(Visibility.Visible, panel.Visibility);
+        return Task.CompletedTask;
+    }));
+
+    [Fact]
+    public void Each_translator_keeps_its_own_saved_dub_translation() => Run(_ =>
+    {
+        // On this PC the names stay as they were, so what was prepared before is still found.
+        Assert.Equal("", Dubbing.TranslatedBy(false));
+        Assert.Equal("-" + DubTranslation.Writer.Id, Dubbing.TranslatedBy(true));
+        CloudKeys.Set(CloudProvider.Gemini, "saved");
+        CloudKeys.Set(CloudProvider.Claude, "saved");
+        CloudAi.Translating = new CloudChoice(CloudProvider.Gemini, "gemini-a");
+        CloudAi.Writing = new CloudChoice(CloudProvider.Claude, "claude/b");
+        Assert.Equal("-Gemini-gemini-a", Dubbing.TranslatedBy(false));
+        Assert.Equal("-" + DubTranslation.Writer.Id + "-Claude-claude_b", Dubbing.TranslatedBy(true));
+        CloudAi.Translating = new CloudChoice(CloudProvider.Gemini, "gemini-other");
+        Assert.Equal("-Gemini-gemini-other", Dubbing.TranslatedBy(false));
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public void A_good_key_is_used_for_this_job_and_the_download_stays_offered() => Run(async stub =>
     {
         var panel = new ModelPanel(Writing.Select(Absent).ToList());
         var other = new ModelPanel(Translator.ModelsFor("en", "ar").Select(Absent).ToList());
@@ -254,7 +381,10 @@ public sealed class ModelPanelTests
         Assert.Equal("my-key", CloudKeys.Get(CloudProvider.Gemini));
         Assert.True(CloudAi.CanWrite);
         Assert.True(panel.IsReady);
-        Assert.Equal(Visibility.Collapsed, panel.Visibility);
+        // It is a choice, not the end of the question: the download is still there beside the key in use.
+        Assert.Equal(Visibility.Visible, panel.Visibility);
+        Assert.True(Shown(Button(panel, "Download")));
+        Assert.True(Shown(Button(panel, "Change")));
         // Only the job asked about goes to the company: translation stays on this PC until it too is chosen.
         Assert.False(CloudAi.CanTranslate);
         Assert.Equal(Visibility.Visible, other.Visibility);

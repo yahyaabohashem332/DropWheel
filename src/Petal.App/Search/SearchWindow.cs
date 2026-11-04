@@ -39,7 +39,7 @@ public sealed class SearchWindow : ToolWindow
     // Ask your files: the button that shows while a question is typed, and the answer above the results.
     private readonly Button _ask;
     private readonly StackPanel _answer = new() { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 12, 0, 0) };
-    private readonly ModelPanel _askModel = new(Petal.Recipes.AskPetal.Models) { Visibility = Visibility.Collapsed };
+    private readonly ModelPanel _askModel = new(Petal.Recipes.AskPetal.Models) { Wanted = false };
 
     /// <summary>Opens the window (or brings it forward); with <paramref name="query"/> typed in, and asked as a question when <paramref name="ask"/>.</summary>
     public static void ShowSingle(string? query = null, bool ask = false)
@@ -224,7 +224,7 @@ public sealed class SearchWindow : ToolWindow
             return;
         _asking?.Cancel();
         var asking = _asking = new CancellationTokenSource();
-        _askModel.Visibility = Visibility.Collapsed;
+        _askModel.Wanted = false;
         _answer.Visibility = Visibility.Visible;
         _answer.Children.Clear();
         _answer.Children.Add(Text("Looking through your files…", "Petal.Caption"));
@@ -276,6 +276,7 @@ public sealed class SearchWindow : ToolWindow
     private void ShowAnswer(Petal.Recipes.Search.FileAnswer? answer, IReadOnlyList<Petal.Recipes.Search.FileSource> sources)
     {
         _answer.Children.Clear();
+        _askModel.Wanted = true;
         if (sources.Count == 0)
         {
             _answer.Children.Add(Text("None of your indexed files mention it.", "Petal.Caption"));
@@ -296,7 +297,6 @@ public sealed class SearchWindow : ToolWindow
             inside.Children.Add(Text(answer is { UsedModel: true } ? "Your files don't seem to say exactly. These passages came closest:" : "These passages mention it:", "Petal.Body"));
             if (!Petal.Recipes.AskPetal.ModelReady)
             {
-                _askModel.Visibility = Visibility.Visible;
                 inside.Children.Add(Text("With the AI model on this PC, DropWheel answers in a sentence.", "Petal.Caption").WithMargin(0, 4, 0, 0));
             }
         }

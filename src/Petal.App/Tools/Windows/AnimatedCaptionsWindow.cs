@@ -113,6 +113,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         Body.Children.Add(_helpers);
         _into.Changed += _ => Sync();
         _helpers.Ready += Sync;
+        _helpers.Switched += Sync;
         foreach (var changed in new Action<Action>[] { a => _style.Changed += _ => a(), a => _place.Changed += _ => a(), a => _size.Changed += _ => a(), a => _into.Changed += _ => a() })
             changed(ShowSample);
 
@@ -200,8 +201,8 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
-        bool ready = needed.All(ModelStore.IsAvailable);
-        _helpers.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
+        _helpers.Wanted = needed.Count > 0;
+        bool ready = needed.Count == 0 || _helpers.IsReady;
         PrimaryButton.IsEnabled = _model.IsReady && ready;
         FooterNote = _files.Count == 1 ? Path.GetFileName(_files[0]) : L.P(_files.Count, "{0} video", "{0} videos");
     }

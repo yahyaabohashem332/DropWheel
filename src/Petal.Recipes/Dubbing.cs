@@ -110,8 +110,7 @@ public static class Dubbing
         if (!Languages.Contains(language) || !Languages.Contains(target))
             throw new InvalidOperationException("Dub doesn't work on this language yet.");
         // Each kind of translation kept apart: the one by meaning doesn't take the word-for-word one's place, nor the other way.
-        var by = natural ? "-" + DubTranslation.Writer.Id : "";
-        var translations = Path.Combine(folder, $"lines-{Path.GetFileNameWithoutExtension(model)}-{spoken}-{target}{by}.json");
+        var translations = Path.Combine(folder, $"lines-{Path.GetFileNameWithoutExtension(model)}-{spoken}-{target}{TranslatedBy(natural)}.json");
         if (Read(translations) is { } done && done.Lines.Count == lines.Count)
             lines = done.Lines;
         else
@@ -126,6 +125,22 @@ public static class Dubbing
         progress?.Report(1);
         var info = await MediaProbe.ProbeAsync(video, cancellationToken).ConfigureAwait(false);
         return new DubSource(video, language, target, vocals, rest, lines, info.DurationSeconds) { Kept = translations };
+    }
+
+    /// <summary>
+    /// Who translates, for the name of the kept translation: another model, or a key instead of this PC, translates again
+    /// rather than bringing back another's words as its own.
+    /// </summary>
+    internal static string TranslatedBy(bool natural)
+    {
+        var by = natural ? "-" + DubTranslation.Writer.Id : "";
+        var cloud = natural ? (Cloud.CloudAi.CanWrite ? Cloud.CloudAi.Writing : null) : Cloud.CloudAi.CanTranslate ? Cloud.CloudAi.Translating : null;
+        if (cloud is null)
+            return by;
+        var name = $"{cloud.Provider}-{cloud.Model}";
+        foreach (char bad in Path.GetInvalidFileNameChars())
+            name = name.Replace(bad, '_');
+        return $"{by}-{name}";
     }
 
     /// <summary>Whether this video was prepared before (it then opens again at once).</summary>

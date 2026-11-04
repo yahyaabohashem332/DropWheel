@@ -160,6 +160,7 @@ public sealed class TranscribeWindow : ToolWindow
         Body.Children.Add(Row("Subtitles in", _into, 110, 10));
         Body.Children.Add(_helpers);
         _helpers.Ready += Sync;
+        _helpers.Switched += Sync;
 
         _saveAs = Segments([("srt", "Subtitles"), ("txt", "Text"), ("both", "Both")], "srt");
         Body.Children.Add(Row("Save as", _saveAs, 110, 14));
@@ -197,8 +198,8 @@ public sealed class TranscribeWindow : ToolWindow
         var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
-        bool ready = needed.All(ModelStore.IsAvailable);
-        _helpers.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
+        _helpers.Wanted = needed.Count > 0;
+        bool ready = needed.Count == 0 || _helpers.IsReady;
         PrimaryButton.IsEnabled = _model.IsReady && ready;
         var stem = _files.Count == 1 ? Path.GetFileNameWithoutExtension(_files[0]) : "";
         FooterNote = _files.Count != 1 ? L.P(_files.Count, "{0} file", "{0} files")

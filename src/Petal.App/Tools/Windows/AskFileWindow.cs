@@ -62,6 +62,7 @@ public sealed class AskFileWindow : ToolWindow
     private readonly StackPanel _answeringBox = new() { Margin = new Thickness(0, 4, 0, 0) };
     private readonly ModelPanel _answering = new(AskFile.AnsweringModels);
     private readonly TextBlock _about = Text("", "Petal.Caption");
+    private readonly TextBlock _answeringNote;
     private readonly TextBox _question = new() { MinHeight = 34, TextWrapping = TextWrapping.Wrap, AcceptsReturn = false, VerticalContentAlignment = VerticalAlignment.Center, Padding = new Thickness(8, 6, 8, 6) };
     private readonly TextBlock _hint;
 
@@ -121,9 +122,11 @@ public sealed class AskFileWindow : ToolWindow
         _scroll.Content = _talk;
         _scroll.Margin = new Thickness(0, 12, 0, 0);
         _asking.Children.Add(_scroll);
-        _answeringBox.Children.Add(Text("Written answers come from an AI model on this PC. Until it is here you see the parts of the file that speak to your question.", "Petal.Caption").WithMarginT(8));
+        _answeringNote = Text("Written answers come from an AI model on this PC. Until it is here you see the parts of the file that speak to your question.", "Petal.Caption").WithMarginT(8);
+        _answeringBox.Children.Add(_answeringNote);
         _answeringBox.Children.Add(_answering);
         _answering.Ready += SyncAnswering;
+        _answering.Switched += SyncAnswering;
         _asking.Children.Add(_answeringBox);
         _hint = Text("Ask a question about this file", "Petal.Caption");
         _hint.IsHitTestVisible = false;
@@ -172,7 +175,7 @@ public sealed class AskFileWindow : ToolWindow
 
     private void SyncAnswering()
     {
-        _answeringBox.Visibility = AskFile.CanAnswer ? Visibility.Collapsed : Visibility.Visible;
+        _answeringNote.Visibility = AskFile.CanAnswer ? Visibility.Collapsed : Visibility.Visible;
         _about.Text = Petal.Recipes.Cloud.CloudAi.CanWrite
             ? L.F("Ask anything about it: the answer comes from its own words, with where it says so. Your question and those words go to {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
             : L.T("Ask anything about it: the answer comes from its own words, with where it says so. All on this PC.");

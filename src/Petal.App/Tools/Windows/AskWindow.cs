@@ -110,6 +110,7 @@ public sealed class AskWindow : ToolWindow
         Body.Children.Add(_modelHint);
         Body.Children.Add(_model);
         _model.Ready += () => _modelHint.Visibility = Visibility.Collapsed;
+        _model.Switched += () => _modelHint.Visibility = AskPetal.ModelReady ? Visibility.Collapsed : Visibility.Visible;
 
         PrimaryButton.Content = L.T("Run");
         PrimaryButton.IsEnabled = false;

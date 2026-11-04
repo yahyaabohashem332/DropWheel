@@ -2,7 +2,6 @@ using System.Windows.Controls;
 using Petal.App.Localization;
 using Petal.Core.Models;
 using Petal.Engines.Media;
-using Petal.Recipes.Cloud;
 using Petal.Recipes.Translation;
 
 namespace Petal.App.Tools.Parts;
@@ -65,11 +64,12 @@ internal static class SpeechLanguages
 
     /// <summary>
     /// The models the words need with these choices ("spoken" or a language; "auto" or the language spoken), beyond the
-    /// speech model itself. Speech already in the language wanted needs none: it is written as spoken.
+    /// speech model itself, whether a key is translating or not (the window shows both ways). Speech already in the
+    /// language wanted needs none: it is written as spoken.
     /// </summary>
     public static IReadOnlyList<ModelInfo> Needed(ModelInfo speechModel, string language, string into)
     {
-        if (into == SpeechInto.Spoken || into == language || CloudAi.CanTranslate)
+        if (into == SpeechInto.Spoken || into == language)
             return [];
         var needed = new List<ModelInfo>();
         bool known = Translator.Languages.Any(l => l.Code == language);

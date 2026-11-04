@@ -122,6 +122,8 @@ public sealed class DubWindow : MediaToolWindow
         _accuracy.Changed += i => { _model.Model = Models[Math.Min(i, 2)]; Sync(); };
         _model.Ready += Sync;
         _writer.Ready += Sync;
+        _writer.Switched += Sync;
+        _helpers.Switched += Sync;
         _voices.Ready += Sync;
         _helpers.Ready += Sync;
         // The language spoken is never the one dubbed into: choosing one turns the other round.
@@ -186,8 +188,7 @@ public sealed class DubWindow : MediaToolWindow
         get
         {
             string from = _spoken.Value != "auto" ? _spoken.Value : _into.Value == "en" ? "ar" : "en";
-            // Best on a key has the company's model for every line, the ones it gets wrong the first time too.
-            return Petal.Recipes.Cloud.CloudAi.CanTranslate || (_accuracy.Value == Finest && Petal.Recipes.Cloud.CloudAi.CanWrite) ? [] : Translator.ModelsFor(from, _into.Value);
+            return Translator.ModelsFor(from, _into.Value);
         }
     }
 
@@ -196,6 +197,8 @@ public sealed class DubWindow : MediaToolWindow
         if (_reviewing || _into is null)
             return;
         _helpers.Models = Translation;
+        // Best on a key has the company's model for every line, the ones it gets wrong the first time too.
+        _helpers.Wanted = !(_accuracy.Value == Finest && Petal.Recipes.Cloud.CloudAi.CanWrite);
         _finest.Visibility = _accuracy.Value == Finest ? Visibility.Visible : Visibility.Collapsed;
         _finestNote.Text = Petal.Recipes.Cloud.CloudAi.CanWrite
             ? L.F("Translated by meaning, not word for word, by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
@@ -204,7 +207,7 @@ public sealed class DubWindow : MediaToolWindow
             ? "The words go to the AI you chose, on your own key; the voices and the rest happen on this PC. A video prepared once opens again at once."
             : "It all happens on this PC; nothing is uploaded. A video prepared once opens again at once.");
         bool working = _work is not null;
-        PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && Translation.All(ModelStore.IsAvailable) && Info is { HasVideo: true, HasAudio: true }
+        PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && (!_helpers.Wanted || _helpers.IsReady) && Info is { HasVideo: true, HasAudio: true }
             && (_accuracy.Value != Finest || _writer.IsReady || Petal.Recipes.Cloud.CloudAi.CanWrite);
         if (!working)
             FooterNote = Info is { HasAudio: false } ? L.T("This video has no sound to dub.")

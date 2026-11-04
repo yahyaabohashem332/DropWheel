@@ -122,6 +122,7 @@ internal sealed partial class CircleWindow
         _translation.Visibility = Visibility.Visible;
         _translation.BeginAnimation(OpacityProperty, Visuals.Motion.To(1, 200, Visuals.Motion.Standard, from: 0));
         card.Text = string.Join(Environment.NewLine + Environment.NewLine, lines.Where(l => l.Length > 0));
+        WaysChip(card, Petal.Recipes.Translation.Translator.ModelsFor(Words.Translation.From(text), Words.Translation.Into(text)), () => _ = RunAsync("translate"));
         card.Done(Petal.Recipes.Cloud.CloudAi.CanTranslate ? L.F("Translated by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Translating!.Provider)) : L.T("Translated on this PC."));
         card.CopyChip("Copy", () => card.Text);
         Border? original = null;
@@ -150,6 +151,7 @@ internal sealed partial class CircleWindow
         card.Busy(Petal.App.Settings.AiSetup.Writing("Thinking on this PC…"));
         var answer = await AskPetal.WriteAsync(AskPetal.Instructions.Explain(L.EnglishName), c.Prose, s => Dispatcher.BeginInvoke(() => { if (!ct.IsCancellationRequested) card.Text = s; }), 420, ct, 0.3);
         card.Text = answer;
+        WaysChip(card, AskPetal.Models, () => _ = RunAsync("explain"));
         card.Done(answer.Length == 0 ? L.T("Nothing came back. Try again.") : Petal.App.Settings.AiSetup.WorkedOut(Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null));
         card.CopyChip("Copy", () => card.Text);
         card.Chip("ask", "Ask More", () => FollowUp(card, c, ct));
@@ -192,6 +194,7 @@ internal sealed partial class CircleWindow
                 }
                 history.Add((question, answer));
                 card.Text = question + Environment.NewLine + Environment.NewLine + answer;
+                WaysChip(card, models, () => card.Done(L.T("Ready. Ask your question again.")));
                 card.Done(Petal.App.Settings.AiSetup.WorkedOut(picture ? (Petal.Recipes.Cloud.CloudAi.CanSee ? Petal.Recipes.Cloud.CloudAi.Seeing : null) : Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null));
                 card.ClearChips();
                 card.CopyChip("Copy Answer", () => answer);
@@ -237,6 +240,7 @@ internal sealed partial class CircleWindow
         var text = c.Prose;
         var answer = await AskPetal.WriteAsync(AskPetal.Instructions.Summary(true, KeyboardLayout.LooksArabicLanguage(text)), text, s => Dispatcher.BeginInvoke(() => { if (!ct.IsCancellationRequested) card.Text = s; }), 500, ct);
         card.Text = answer;
+        WaysChip(card, AskPetal.Models, () => _ = RunAsync("summary"));
         card.Done(answer.Length == 0 ? L.T("Nothing came back. Try again.") : "");
         card.CopyChip("Copy", () => card.Text);
     }
@@ -434,6 +438,7 @@ internal sealed partial class CircleWindow
         {
             Forget(path);
         }
+        WaysChip(card, PictureDescriber.Models, () => _ = RunAsync("describe"));
         card.Done(Petal.App.Settings.AiSetup.WorkedOut(Petal.Recipes.Cloud.CloudAi.CanSee ? Petal.Recipes.Cloud.CloudAi.Seeing : null));
         card.CopyChip("Copy", () => card.Text);
         card.Chip("ask", "Ask More", () => FollowUp(card, c, ct));
@@ -612,6 +617,11 @@ internal sealed partial class CircleWindow
     // ---------- helpers ----------
 
     /// <summary>The card says what is missing, and a chip downloads it over the still; once it is here, <paramref name="ready"/> runs.</summary>
+    /// <summary>Under a result: the other way to do this job, the model on this PC or the user's own key. Moved, the job runs again.</summary>
+    private void WaysChip(CircleCard card, IReadOnlyList<ModelInfo> models, Action again) =>
+        card.Chip("key", "This PC or a Key", () =>
+            Words.ModelDownloadWindow.Show(L.T("Circle Anything"), L.T("Choose what does this job: a model on this PC, or your own API key."), models, this, () => Dispatcher.BeginInvoke(again)));
+
     private void NeedsModels(CircleCard card, IReadOnlyList<ModelInfo> models, string why, Action ready)
     {
         var missing = models.Where(m => !ModelStore.IsAvailable(m)).ToList();

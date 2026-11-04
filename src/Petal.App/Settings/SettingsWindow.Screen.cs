@@ -50,12 +50,16 @@ public sealed partial class SettingsWindow
         };
         panel.Children.Add(Row("Show", show, 120, 6));
         var captionsInto = new Tools.Parts.LanguageChoice(_s.CaptionsInto.Length > 0 ? _s.CaptionsInto : Tools.Parts.LanguageChoice.Interface);
+        // The other way round from what captions hear most: the pair only names which models this PC would need.
+        var captionsWay = new Tools.Parts.ModelPanel(Petal.Recipes.Translation.Translator.ModelsFor(captionsInto.Value == "en" ? "es" : "en", captionsInto.Value));
         captionsInto.Changed += code =>
         {
             _s.CaptionsInto = code;
             Save();
+            captionsWay.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(code == "en" ? "es" : "en", code));
         };
         panel.Children.Add(Row("Translate into", captionsInto, 120, 6));
+        panel.Children.Add(captionsWay);
         var spoken = Choice(Languages(), _s.CaptionsLanguage);
         spoken.SelectionChanged += (_, _) =>
         {

@@ -277,7 +277,7 @@ internal sealed class MeetingNotesWindow : ToolWindow
     private readonly string _notes, _audio;
     private readonly TextBox _text = new() { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, Height = 380, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, AcceptsReturn = true };
     private readonly Segmented<bool> _view;
-    private readonly ModelPanel _model = new(AskPetal.Models) { Visibility = Visibility.Collapsed };
+    private readonly ModelPanel _model = new(AskPetal.Models) { Wanted = false };
     private readonly Button _summarize = new() { Content = L.T("Write a Summary"), Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
     private string _summary = "", _transcript = "";
 
@@ -305,7 +305,8 @@ internal sealed class MeetingNotesWindow : ToolWindow
         Body.Children.Add(_model);
         Body.Children.Add(_summarize);
         _summarize.Click += async (_, _) => await SummarizeAsync();
-        _model.Ready += () => _summarize.Visibility = Visibility.Visible;
+        _model.Ready += Display;
+        _model.Switched += Display;
         ResetButton.Content = L.T("Open Folder");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => Process.Start("explorer.exe", "/select,\"" + _notes + "\"");
@@ -335,7 +336,7 @@ internal sealed class MeetingNotesWindow : ToolWindow
         _text.Text = summary ? (_summary.Length > 0 ? Readable(_summary) : L.T("No summary yet. With the AI model on this PC, DropWheel writes the summary, the decisions and the action items.")) : _transcript;
         _text.FlowDirection = KeyboardLayout.LooksArabic(_text.Text) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         bool missing = summary && _summary.Length == 0;
-        _model.Visibility = missing && !AskPetal.ModelReady ? Visibility.Visible : Visibility.Collapsed;
+        _model.Wanted = summary;
         _summarize.Visibility = missing && AskPetal.ModelReady ? Visibility.Visible : Visibility.Collapsed;
     }
 

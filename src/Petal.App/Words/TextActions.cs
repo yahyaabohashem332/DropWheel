@@ -179,22 +179,14 @@ internal sealed class TextResultWindow : ToolWindow
             {
                 Settings.SettingsStore.Current.TranslateInto = code;
                 Settings.SettingsStore.Save();
-                var missing = Translation.Missing(_text, code);
-                if (missing.Count > 0)
-                {
-                    _model!.Models = missing;
-                    _model.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _model!.Visibility = Visibility.Collapsed;
+                _model!.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(Translation.From(_text), code));
+                if (Translation.Missing(_text, code).Count == 0)
                     _ = RunAsync();
-                }
             };
             Body.Children.Insert(Body.Children.IndexOf(_status), Row("Into", _into, 80, 12));
         }
         var models = job == TextJob.Translate ? Translation.Missing(text, _into!.Value) : AskPetal.ModelReady ? [] : AskPetal.Models;
-        _model = new ModelPanel(models.Count > 0 ? models : AskPetal.Models) { Visibility = models.Count > 0 ? Visibility.Visible : Visibility.Collapsed };
+        _model = new ModelPanel(job == TextJob.Translate ? Petal.Recipes.Translation.Translator.ModelsFor(Translation.From(text), _into!.Value) : AskPetal.Models);
         var where = Text("", "Petal.Caption").WithMarginT(8);
         void Where()
         {
@@ -204,7 +196,6 @@ internal sealed class TextResultWindow : ToolWindow
         Where();
         _model.Ready += () =>
         {
-            _model.Visibility = Visibility.Collapsed;
             Where();
             _ = RunAsync();
         };

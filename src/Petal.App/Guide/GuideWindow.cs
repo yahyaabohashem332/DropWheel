@@ -27,7 +27,7 @@ public sealed class GuideWindow : ToolWindow
     private readonly TextBlock _placeholder;
     private readonly Button _askButton;
     private readonly StackPanel _answer = new() { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 12, 0, 0) };
-    private readonly ModelPanel _model = new(AskPetal.Models) { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 8, 0, 0) };
+    private readonly ModelPanel _model = new(AskPetal.Models) { Wanted = false, Margin = new Thickness(0, 8, 0, 0) };
     private readonly StackPanel _sections = new();
     private readonly StackPanel _list = new();
     private readonly ScrollViewer _listScroll;
@@ -331,15 +331,21 @@ public sealed class GuideWindow : ToolWindow
         }
     }
 
+    /// <summary>The model on this PC or the user's own key, under what was asked: moved, the question is asked again.</summary>
+    private ModelPanel AnotherChoiceFor(string key, string question, StackPanel reply)
+    {
+        var model = new ModelPanel(AskPetal.Models);
+        model.Ready += async () => await AskAboutAsync(key, question, reply);
+        return model;
+    }
+
     private async Task AskAboutAsync(string key, string question, StackPanel reply)
     {
         reply.Children.Clear();
         if (!AskPetal.ModelReady)
         {
             reply.Children.Add(Text("Questions are answered by the AI model on this PC, downloaded once.", "Petal.Caption").WithMargin(0, 6, 0, 6));
-            var model = new ModelPanel(AskPetal.Models);
-            model.Ready += async () => await AskAboutAsync(key, question, reply);
-            reply.Children.Add(model);
+            reply.Children.Add(AnotherChoiceFor(key, question, reply));
             return;
         }
         reply.Children.Add(Text("Thinking…", "Petal.Caption").WithMargin(0, 6, 0, 0));
@@ -354,6 +360,7 @@ public sealed class GuideWindow : ToolWindow
             reply.Children.Add(answer.Found
                 ? AnswerCard(answer, withTools: false)
                 : Text("The guide doesn't say. Read how to use it above, or try it.", "Petal.Caption").WithMargin(0, 6, 0, 0));
+            reply.Children.Add(AnotherChoiceFor(key, question, reply));
         }
         catch (OperationCanceledException)
         {
@@ -375,7 +382,7 @@ public sealed class GuideWindow : ToolWindow
         if (request.Length == 0)
         {
             _answer.Visibility = Visibility.Collapsed;
-            _model.Visibility = Visibility.Collapsed;
+            _model.Wanted = false;
             if (_searching)
                 ShowSection(_section);
             return;
@@ -413,13 +420,12 @@ public sealed class GuideWindow : ToolWindow
         ShowFound(hits);
         _answer.Visibility = Visibility.Visible;
         _answer.Children.Clear();
-        _model.Visibility = Visibility.Collapsed;
+        _model.Wanted = true;
         if (!AskPetal.ModelReady)
         {
             _answer.Children.Add(Text(hits.Count > 0
                 ? "These come closest to what you said. With the AI model on this PC, DropWheel also answers in your words."
                 : "Nothing in DropWheel matches those words. With the AI model on this PC, DropWheel can understand other ways of saying it.", "Petal.Caption"));
-            _model.Visibility = Visibility.Visible;
             return;
         }
         if (hits.Count == 0)

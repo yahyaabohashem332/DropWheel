@@ -213,6 +213,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
         _accuracy.Changed += i => { _model.Model = Models[i]; Sync(); };
         _model.Ready += Sync;
         _helpers.Ready += Sync;
+        _helpers.Switched += Sync;
         _into.Changed += _ => Sync();
         _language.SelectionChanged += (_, _) => Sync();
         _shape.Changed += _ => _framing.IsEnabled = _shape.Value != ShortShape.Original;
@@ -287,8 +288,8 @@ public sealed class MakeShortsWindow : MediaToolWindow
         var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
-        bool ready = needed.All(ModelStore.IsAvailable);
-        _helpers.Visibility = ready ? Visibility.Collapsed : Visibility.Visible;
+        _helpers.Wanted = needed.Count > 0;
+        bool ready = needed.Count == 0 || _helpers.IsReady;
         bool working = _work is not null;
         PrimaryButton.IsEnabled = !working && _model.IsReady && ready && Info is { HasVideo: true };
         if (!working)

@@ -150,6 +150,7 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
         _from.Changed += _ => Choose();
         _into.Changed += _ => Choose();
         _model.Ready += Sync;
+        _model.Switched += Sync;
         PrimaryButton.Content = L.T("Translate");
         PrimaryButton.Click += (_, _) => Apply();
         Choose();
@@ -173,9 +174,7 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
 
     private void Choose()
     {
-        bool cloud = Petal.Recipes.Cloud.CloudAi.CanTranslate;
-        _model.Models = cloud ? [] : Translator.ModelsFor(From, _into.Value);
-        _model.Visibility = _model.IsReady ? Visibility.Collapsed : Visibility.Visible;
+        _model.Models = Translator.ModelsFor(From, _into.Value);
         Sync();
     }
 
@@ -185,7 +184,7 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
 
     private void Sync()
     {
-        PrimaryButton.IsEnabled = Petal.Recipes.Cloud.CloudAi.CanTranslate || _model.IsReady;
+        PrimaryButton.IsEnabled = _model.IsReady;
         FooterNote = _files.Count == 1 ? Path.GetFileName(OutputFor(_files[0], _into.Value)) : L.P(_files.Count, "{0} file", "{0} files");
     }
 

@@ -27,7 +27,7 @@ internal sealed class ScreenTextWindow : ToolWindow
     private readonly TextBox _translated = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 130, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 8, 0, 0) };
     private readonly TextBlock _status;
     private readonly StackPanel _codes = new();
-    private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.Models) { Visibility = Visibility.Collapsed };
+    private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.Models) { Wanted = false };
     private readonly Button _translate, _search;
     // The picture read, kept for reading it again as a table.
     private byte[]? _pixels;
@@ -159,14 +159,10 @@ internal sealed class ScreenTextWindow : ToolWindow
         var text = _text.Text.Trim();
         if (text.Length == 0)
             return;
-        var missing = Words.Translation.Missing(text);
-        if (missing.Count > 0)
-        {
-            _model.Models = missing;
-            _model.Visibility = Visibility.Visible;
+        _model.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(Words.Translation.From(text), Words.Translation.Into(text)));
+        _model.Wanted = true;
+        if (Words.Translation.Missing(text).Count > 0)
             return;
-        }
-        _model.Visibility = Visibility.Collapsed;
         _translate.IsEnabled = false;
         _status.Text = Words.Translation.Working();
         try
