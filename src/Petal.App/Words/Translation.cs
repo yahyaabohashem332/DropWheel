@@ -10,8 +10,8 @@ namespace Petal.App.Words;
 
 /// <summary>
 /// Translating a piece of text: into the language chosen, or the one the interface speaks (and text already in it into
-/// another). With the cloud model chosen when there is one; on this PC with the translation models, sentence by
-/// sentence; or with the AI model when they aren't here but it is.
+/// another). With the cloud model chosen when there is one; on this PC with the translation model, sentence by
+/// sentence.
 /// </summary>
 internal static class Translation
 {
@@ -48,7 +48,7 @@ internal static class Translation
     {
         into ??= Into(text);
         string from = From(text);
-        if (from == into || CloudAi.CanTranslate || AskPetal.ModelReady)
+        if (from == into || CloudAi.CanTranslate || CloudAi.CanWrite)
             return [];
         return Translator.ModelsFor(from, into).Where(m => !ModelStore.IsAvailable(m)).ToList();
     }

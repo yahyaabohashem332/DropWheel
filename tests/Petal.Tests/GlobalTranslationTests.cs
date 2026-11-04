@@ -60,11 +60,11 @@ public sealed class GlobalTranslationTests(ITestOutputHelper output)
     [Fact]
     public void A_pair_with_its_own_model_uses_it_and_others_go_through_english_or_the_universal_model()
     {
-        Assert.Contains(Translator.ModelsFor("en", "es"), m => m.Id.StartsWith("opus-mt-en-es", StringComparison.Ordinal));
-        var through = Translator.ModelsFor("es", "fr");
+        Assert.Contains(Translator.PairModelsFor("en", "es"), m => m.Id.StartsWith("opus-mt-en-es", StringComparison.Ordinal));
+        var through = Translator.PairModelsFor("es", "fr");
         Assert.True(through.Any(m => m.Id.StartsWith("opus-mt-es-en", StringComparison.Ordinal)) || through.Any(m => m.Id.StartsWith("m2m100", StringComparison.Ordinal)));
-        Assert.Contains(Translator.ModelsFor("en", "tr"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
-        Assert.Contains(Translator.ModelsFor("fa", "ur"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
+        Assert.Contains(Translator.PairModelsFor("en", "tr"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
+        Assert.Contains(Translator.PairModelsFor("fa", "ur"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class GlobalTranslationTests(ITestOutputHelper output)
             };
             foreach (var (from, to, text) in cases)
             {
-                foreach (var model in Translator.ModelsFor(from, to))
+                foreach (var model in Translator.PairModelsFor(from, to))
                     await ModelStore.DownloadAsync(model);
                 var clock = Stopwatch.StartNew();
                 var translated = Translator.Line(text, from, to);
@@ -346,35 +346,6 @@ public sealed class TranslationChoiceTests : IDisposable
         }
     }
 
-    /// <summary>The real model alone, in a folder with nothing else: PETAL_TRANSLATE names where its files are.</summary>
-    [Fact]
-    public async Task The_one_model_alone_really_translates_any_pair()
-    {
-        if (Environment.GetEnvironmentVariable("PETAL_TRANSLATE") is not { Length: > 0 } source)
-            return;
-        foreach (var model in TranslationCatalog.Universal)
-            File.Copy(Path.Combine(source, model.FileName), Path.Combine(_folder, model.FileName));
-        foreach (var (from, into, text, script) in new[]
-        {
-            ("en", "ar", "The meeting will start tomorrow morning.", @"\p{IsArabic}"),
-            ("ar", "tr", "سيبدأ الاجتماع صباح غد.", "[a-zA-Z]"),
-            ("tr", "en", "Toplantı yarın sabah başlayacak.", "[a-zA-Z]"),
-            ("en", "tr", "The meeting will start tomorrow morning.", "[a-zA-Z]"),
-            ("tr", "ar", "Toplantı yarın sabah başlayacak.", @"\p{IsArabic}"),
-            ("fr", "es", "La réunion commencera demain matin.", "[a-zA-Z]"),
-            ("id", "fa", "Rapat akan dimulai besok pagi.", @"\p{IsArabic}"),
-            ("ur", "fr", "اجلاس کل صبح شروع ہوگا۔", "[a-zA-Z]"),
-        })
-        {
-            Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Translator.ModelsFor(from, into)));
-            var said = await Task.Run(() => Translator.Line(text, from, into));
-            if (Environment.GetEnvironmentVariable("PETAL_TRANSLATE_LOG") is { Length: > 0 } log)
-                File.AppendAllLines(log, [$"{from} -> {into}: {text} => {said}"]);
-            Assert.Matches(script, said);
-            Assert.NotEqual(text, said);
-        }
-    }
-
     private static string[] Ids(IEnumerable<ModelInfo> models) => models.Select(m => m.Id).ToArray();
 
     [Fact]
@@ -387,34 +358,28 @@ public sealed class TranslationChoiceTests : IDisposable
     }
 
     [Fact]
-    public void With_the_one_model_here_every_pair_is_ready()
+    public void With_the_model_here_every_pair_is_ready()
     {
-        Have(TranslationCatalog.Universal);
+        Have([ModelCatalog.LlamaCpp, ModelCatalog.GemmaQuick]);
         foreach (var from in Translator.Languages)
             foreach (var into in Translator.Languages)
                 Assert.True(Translator.ReadyFor(from.Code, into.Code), $"{from.Code} into {into.Code}");
     }
 
     [Fact]
-    public void A_pairs_own_model_is_used_when_it_is_here()
+    public void A_small_model_for_a_pair_doesnt_stand_in_for_accuracy()
     {
-        Have(TranslationCatalog.Universal);
         Have(Translator.Models);
-        Assert.Equal(Ids(Translator.Models), Ids(Translator.ModelsFor("en", "ar")));
+        Assert.False(Translator.ReadyFor("en", "ar"));
+        Assert.Contains("translate-gemma-4-e4b", Ids(Translator.ModelsFor("en", "ar")));
     }
 
     [Fact]
-    public void Nothing_here_asks_for_the_small_download_of_that_pair()
+    public void Captions_offer_the_quick_model_whatever_is_spoken()
     {
-        Assert.Equal(Ids(Translator.Models), Ids(Translator.ModelsFor("en", "ar")));
-    }
-
-    [Fact]
-    public void Captions_offer_the_pair_when_the_language_is_known_and_the_one_model_when_it_is_not()
-    {
-        Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("auto", "ar")));
-        Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("", "tr")));
-        Assert.Equal(Ids(Translator.ModelsFor("tr", "en")), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "en")));
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("auto", "ar")));
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("", "tr")));
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "en")));
         Assert.Empty(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "tr"));
     }
 

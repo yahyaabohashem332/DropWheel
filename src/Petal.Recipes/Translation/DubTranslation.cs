@@ -92,7 +92,7 @@ public static partial class DubTranslation
             // A key translating has them; on a key that writes with no translation model here, the company's model is asked for each alone.
             var plain = fallback is null && Cloud.CloudAi.CanTranslate ? await Translator.TranslateAsync(originals, from, into, null, cancellationToken).ConfigureAwait(false)
                 : fallback is null && Cloud.CloudAi.CanWrite && !Translator.ReadyFor(from, into) ? await EachAloneAsync(originals, into, cancellationToken).ConfigureAwait(false)
-                : fallback?.Invoke(originals) ?? (into is not ("ar" or "en") || from is not ("ar" or "en") ? Translator.Lines(originals, from, into, null, cancellationToken) : into == "ar" ? Translator.ToArabic(originals, null, cancellationToken) : Translator.ToEnglish(originals, null, cancellationToken));
+                : fallback?.Invoke(originals) ?? Translator.Lines(originals, from, into, null, cancellationToken);
             for (int k = 0; k < missing.Count; k++)
                 result[missing[k]] = plain[k];
         }

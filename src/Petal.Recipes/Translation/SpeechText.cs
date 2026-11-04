@@ -16,11 +16,7 @@ public static class SpeechInto
 /// <param name="Model">The Whisper model chosen (Fast, Balanced or Accurate).</param>
 /// <param name="Language">"auto", or the language spoken ("ar").</param>
 /// <param name="Into"><see cref="SpeechInto.Spoken"/>, or the code of the language wanted.</param>
-/// <param name="TranslatingModel">
-/// A Whisper model trained to translate, for English when there is no translation from the language spoken and
-/// <paramref name="Model"/> can't translate (see <see cref="Transcriber.CanTranslate"/>).
-/// </param>
-public sealed record SpeechTextOptions(string Model, string Language, string Into, string? TranslatingModel = null);
+public sealed record SpeechTextOptions(string Model, string Language, string Into);
 
 /// <summary>
 /// The words of a recording, with their times, in the language wanted. Whisper writes what is said with the model
@@ -47,25 +43,16 @@ public static class SpeechText
         if (options.Into == SpeechInto.Spoken || wanted == language)
             return await Transcriber.TranscribeAsync(samples, new TranscribeOptions(options.Model, language), Part(progress, 0.06, 1), cancellationToken).ConfigureAwait(false);
 
-        var write = Part(progress, 0.06, 0.85);
-        var translate = Part(progress, 0.85, 1);
-        if (language != "auto" && KnownPair(language, wanted) && Translator.ReadyFor(language, wanted))
-        {
-            var spoken = await Transcriber.TranscribeAsync(samples, new TranscribeOptions(options.Model, language), write, cancellationToken).ConfigureAwait(false);
-            return await TranslateAsync(spoken, language, wanted, translate, cancellationToken).ConfigureAwait(false);
-        }
-        var model = Transcriber.CanTranslate(options.Model) ? options.Model
-            : options.TranslatingModel ?? throw new InvalidOperationException(NoTranslatingModel);
-        var english = await Transcriber.TranscribeAsync(samples, new TranscribeOptions(model, language, TranslateToEnglish: true), write, cancellationToken).ConfigureAwait(false);
-        return wanted == "en" ? english : await TranslateAsync(english, "en", wanted, translate, cancellationToken).ConfigureAwait(false);
+        if (!Translator.ReadyFor(language, wanted))
+            throw new InvalidOperationException(NoTranslationModel);
+        // Written down first and then translated by meaning. Whisper's own translating is never used: it hears a sentence and
+        // makes one up, the same one again and again where it isn't sure.
+        var spoken = await Transcriber.TranscribeAsync(samples, new TranscribeOptions(options.Model, language), Part(progress, 0.06, 0.85), cancellationToken).ConfigureAwait(false);
+        return await TranslateAsync(spoken, language, wanted, Part(progress, 0.85, 1), cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Why English couldn't be had (shown on the card, translated).</summary>
-    public const string NoTranslatingModel = "The Accurate model writes what is said but can't translate it. Download the Balanced model too, and it puts the words into English.";
-
-    /// <summary>Both languages are among those translated; Whisper hears many more.</summary>
-    internal static bool KnownPair(string from, string to) =>
-        Translator.Languages.Any(l => l.Code == from) && Translator.Languages.Any(l => l.Code == to);
+    /// <summary>Why the words couldn't be translated (shown on the card, translated).</summary>
+    public const string NoTranslationModel = "The translation model isn't downloaded yet. Download it or use your key.";
 
     /// <summary>The same segments and times, each one's words translated.</summary>
     private static async Task<Transcript> TranslateAsync(Transcript transcript, string from, string into, IProgress<double>? progress, CancellationToken cancellationToken)

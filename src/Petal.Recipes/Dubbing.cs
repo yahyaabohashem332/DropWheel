@@ -151,8 +151,9 @@ public static class Dubbing
     {
         var by = natural ? "-" + DubTranslation.Writer.Id : "";
         var cloud = natural ? (Cloud.CloudAi.CanWrite ? Cloud.CloudAi.Writing : null) : Cloud.CloudAi.CanTranslate ? Cloud.CloudAi.Translating : null;
+        // Lines translated by an older model aren't kept once a better one is here.
         if (cloud is null)
-            return by;
+            return !natural && GemmaTranslation.Ready ? "-gemma" : by;
         var name = $"{cloud.Provider}-{cloud.Model}";
         foreach (char bad in Path.GetInvalidFileNameChars())
             name = name.Replace(bad, '_');

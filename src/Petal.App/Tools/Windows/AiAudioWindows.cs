@@ -120,7 +120,7 @@ public sealed class SeparateVocalsWindow : ToolWindow
 }
 
 // ---------------------------------------------------------------------------------------------
-// Translate to Arabic — subtitles through Opus-MT on this PC.
+// Translate subtitles, between any two languages, on this PC or with a key.
 // ---------------------------------------------------------------------------------------------
 
 public sealed class TranslateSubtitlesWindow : ToolWindow

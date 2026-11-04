@@ -266,7 +266,7 @@ public static partial class AskFile
     {
         var questions = new List<string> { question.Trim() };
         var asked = LanguageGuess.Of(question) ?? file.Language;
-        if (asked != file.Language && Translator.ModelsFor(asked, file.Language).All(ModelStore.IsAvailable))
+        if (asked != file.Language && Translator.CanSearchIn(asked, file.Language))
         {
             try
             {

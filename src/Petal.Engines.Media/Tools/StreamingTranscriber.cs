@@ -46,9 +46,6 @@ public sealed class StreamingTranscriber : IDisposable
     private readonly SemaphoreSlim _model = new(1, 1);
     private readonly bool _autoLanguage;
     private readonly bool _aligned;
-    private readonly bool _canTranslate;
-    private readonly string? _translatingPath;
-    private WhisperFactory? _translating;
     private string _language;
     private int _sameLanguage;
 
@@ -71,11 +68,7 @@ public sealed class StreamingTranscriber : IDisposable
     /// <param name="modelPath">A Whisper model (ggml).</param>
     /// <param name="language">"auto" to tell (it is then kept once it is clear), or a code such as "en".</param>
     /// <param name="alignWords">Word times aligned to the sound (DTW) when the model's alignment heads are known.</param>
-    /// <param name="translatingModelPath">
-    /// A model that can translate, for <see cref="ToEnglishAsync"/> when this one can't (large-v3 turbo); loaded the
-    /// first time it is needed.
-    /// </param>
-    public StreamingTranscriber(string modelPath, string language = "auto", bool alignWords = true, string? translatingModelPath = null)
+    public StreamingTranscriber(string modelPath, string language = "auto", bool alignWords = true)
     {
         if (!File.Exists(modelPath))
             throw new FileNotFoundException("The speech model isn't downloaded yet.", modelPath);
@@ -86,8 +79,6 @@ public sealed class StreamingTranscriber : IDisposable
             ? WhisperFactory.FromPath(modelPath, new WhisperFactoryOptions { UseDtwTimeStamps = true, HeadsPreset = preset })
             : WhisperFactory.FromPath(modelPath);
         _aligned = heads is not null;
-        _canTranslate = Transcriber.CanTranslate(modelPath);
-        _translatingPath = translatingModelPath;
         _autoLanguage = string.IsNullOrEmpty(language) || language == "auto";
         _language = _autoLanguage ? "auto" : language;
     }
@@ -547,49 +538,6 @@ public sealed class StreamingTranscriber : IDisposable
         return windows > 0 && loud * 10 >= windows;
     }
 
-    /// <summary>
-    /// A finished sentence put into English by Whisper from its own sound (for languages the translation models
-    /// don't read), with a model trained to translate. Waits for the current pass; empty when its sound is no
-    /// longer kept, or when no model here can translate.
-    /// </summary>
-    public async Task<string> ToEnglishAsync(StreamSentence sentence, CancellationToken cancellationToken)
-    {
-        float[] sound;
-        lock (_gate)
-        {
-            long from = (long)(sentence.Start * Rate) - Rate / 5, to = (long)(sentence.End * Rate) + Rate / 5;
-            from = Math.Max(from, Math.Max(0, _archived - _archive.Length));
-            to = Math.Min(to, _archived);
-            if (to - from < Rate / 4)
-                return "";
-            sound = new float[to - from];
-            for (long i = from; i < to; i++)
-                sound[i - from] = _archive[i % _archive.Length];
-        }
-        await _model.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            // large-v3 turbo was never trained to translate (asked to, it writes nonsense): another model does it.
-            var factory = _canTranslate ? _factory
-                : _translating ??= _translatingPath is { } path && File.Exists(path) ? WhisperFactory.FromPath(path) : null;
-            if (factory is null)
-                return "";
-            var builder = factory.CreateBuilder().WithLanguage(sentence.Language is { Length: > 0 } l && l != "auto" ? l : "auto")
-                .WithTranslate().WithNoContext().WithTemperature(0).WithTemperatureInc(0).WithThreads(Math.Clamp(Environment.ProcessorCount, 1, 8));
-            await using var processor = builder.Build();
-            var parts = new List<string>();
-            await foreach (var segment in processor.ProcessAsync(sound, cancellationToken).ConfigureAwait(false))
-                if (segment.Text.Trim() is { Length: > 0 } t && !LiveTranscriber.IsNoise(t))
-                    parts.Add(t);
-            return string.Join(' ', parts);
-        }
-        finally
-        {
-            _model.Release();
-        }
-    }
-
     private bool _disposed;
 
     /// <summary>Lets the model go, after the pass or translation under way (those that come later fail at once).</summary>
@@ -602,7 +550,6 @@ public sealed class StreamingTranscriber : IDisposable
             if (idle)
             {
                 _factory.Dispose();
-                _translating?.Dispose();
             }
         }
         if (idle)

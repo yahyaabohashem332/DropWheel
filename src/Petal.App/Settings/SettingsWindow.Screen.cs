@@ -51,11 +51,10 @@ public sealed partial class SettingsWindow
         panel.Children.Add(Row("Show", show, 120, 6));
         var captionsInto = new Tools.Parts.LanguageChoice(_s.CaptionsInto.Length > 0 ? _s.CaptionsInto : Tools.Parts.LanguageChoice.Interface);
         var captionsWay = new Tools.Parts.ModelPanel(Words.LiveCaptions.ModelsToOffer(_s.CaptionsLanguage, captionsInto.Value));
-        var anyLanguage = Text("With Detect automatically, one model translates from any language into any other.", "Petal.Caption").WithMargin(120, 4, 0, 0);
+        var anyLanguage = Text("One model translates from any language into any other.", "Petal.Caption").WithMargin(120, 4, 0, 0);
         void ShowWay()
         {
             captionsWay.PointAt(Words.LiveCaptions.ModelsToOffer(_s.CaptionsLanguage, captionsInto.Value));
-            anyLanguage.Visibility = _s.CaptionsLanguage is "" or "auto" ? Visibility.Visible : Visibility.Collapsed;
         }
         captionsInto.Changed += code =>
         {

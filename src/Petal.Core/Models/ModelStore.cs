@@ -98,6 +98,22 @@ public static class ModelCatalog
         "0a270ec9fe6b34f4a0d33992b6135117b484ebc4766ab76b51d4ae8c457e4c42", 7_121_861_440, "Apache-2.0");
 
     /// <summary>
+    /// Gemma 4 E4B Instruct, 4-bit (Google, Apache-2.0; Unsloth's GGUF at a fixed revision): translates between any two
+    /// languages, right on nearly all of the hard sentences it was measured on, in about 3.6 s a sentence on a laptop's
+    /// processor and 0.7 s on its graphics card, quick enough for live captions.
+    /// </summary>
+    public static readonly ModelInfo GemmaQuick = new(
+        "gemma-4-e4b", "Gemma 4 E4B", "gemma-4-E4B-it-Q4_K_M.gguf",
+        "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-Q4_K_M.gguf",
+        "85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87", 4_977_171_584, "Apache-2.0");
+
+    /// <summary>llama.cpp b11763, Vulkan build (MIT): runs the translation models on a graphics card that has room for them.</summary>
+    public static readonly ModelInfo LlamaVulkan = new(
+        "llama-cpp-vulkan", "llama.cpp for graphics cards", "llama-b11763-bin-win-vulkan-x64.zip",
+        "https://github.com/ggml-org/llama.cpp/releases/download/b11763/llama-b11763-bin-win-vulkan-x64.zip",
+        "85ceb9106fdc9e2b43bce7b7da1c0c155ad706a53bb83eec8306e49fca7f5271", 36_750_686, "MIT");
+
+    /// <summary>
     /// multilingual-e5-small (intfloat, MIT), Xenova's 8-bit ONNX at a fixed revision: finds the passages of a file that
     /// speak to a question by what they mean, in about a hundred languages and across them.
     /// </summary>
@@ -280,7 +296,7 @@ public static class ModelCatalog
          ChatterboxEncoder, ChatterboxVocoder, ChatterboxFlowStart, ChatterboxLanguage, ChatterboxVocabulary, ChatterboxEmbeddings];
 
     public static IReadOnlyList<ModelInfo> All { get; } =
-        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceLinda, VoiceLindaSettings, LlamaCpp, Qwen, QwenAnswers, GemmaTranslator, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceLinda, VoiceLindaSettings, LlamaCpp, Qwen, QwenAnswers, GemmaTranslator, GemmaQuick, LlamaVulkan, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
          ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Tiger, Lama,
          OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary,
          .. Chatterbox];

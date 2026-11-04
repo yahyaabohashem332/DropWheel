@@ -29,7 +29,7 @@ internal static class AiSetup
     {
         var ids = models.Select(m => m.Id).ToList();
         bool Any(params string[] starts) => ids.Any(id => starts.Any(start => id.StartsWith(start, StringComparison.Ordinal)));
-        return Any("smolvlm") ? AiJob.Seeing : Any("opus-mt", "m2m100") ? AiJob.Translating : Any("qwen", "gemma") ? AiJob.Writing : null;
+        return Any("smolvlm") ? AiJob.Seeing : Any("translate-", "opus-mt", "m2m100") ? AiJob.Translating : Any("qwen", "gemma") ? AiJob.Writing : null;
     }
 
     /// <summary>The cloud model doing this job now; null when it runs on this PC.</summary>

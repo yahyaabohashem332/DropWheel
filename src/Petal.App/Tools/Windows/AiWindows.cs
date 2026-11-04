@@ -126,8 +126,8 @@ public sealed class TranscribeWindow : ToolWindow
     private readonly ModelPanel _model;
     private readonly ComboBox _language;
     private readonly LanguageChoice _into;
-    // What the words in another language need besides the speech model (translation models).
-    private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.Models);
+    // What the words in another language need besides the speech model (the translation model).
+    private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.ModelsFor("en", "ar"));
     private readonly Segmented<string> _saveAs;
     private readonly Segmented<SubtitlesInVideo>? _inVideo;
 
@@ -195,7 +195,7 @@ public sealed class TranscribeWindow : ToolWindow
     {
         if (_saveAs is null)
             return;
-        var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
+        var needed = SpeechLanguages.Needed(ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
         _helpers.Wanted = needed.Count > 0;
@@ -212,7 +212,7 @@ public sealed class TranscribeWindow : ToolWindow
         if (modelPath is null)
             return;
         // In English or Arabic: see SpeechText for how each is had (Arabic speech stays as it was said in Arabic).
-        var options = new SpeechTextOptions(modelPath, ValueOf<string>(_language), SpeechLanguages.Into(_into.Value), SpeechLanguages.TranslatingModel());
+        var options = new SpeechTextOptions(modelPath, ValueOf<string>(_language), SpeechLanguages.Into(_into.Value));
         string saveAs = _saveAs.Value;
         var inVideo = _inVideo?.Value ?? SubtitlesInVideo.None;
         var settings = SettingsStore.Current.Conversion;

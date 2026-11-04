@@ -42,7 +42,7 @@ public sealed class DubWindow : MediaToolWindow
     private readonly Segmented<int> _accuracy;
     private readonly ModelPanel _model;
     private readonly ModelPanel _voices = new(Dubbing.Models);
-    private readonly ModelPanel _helpers = new(Translator.Models);
+    private readonly ModelPanel _helpers = new(Translator.ModelsFor("en", "ar"));
     // The finest level's translator, and what it is.
     private readonly ModelPanel _writer = new(DubTranslation.Models);
     private bool _intoChosen;
@@ -184,29 +184,16 @@ public sealed class DubWindow : MediaToolWindow
         Sync();
     }
 
-    /// <summary>The translation models the direction needs.</summary>
-    /// <summary>
-    /// The translation models this dub needs. What is spoken may not be known yet: then a pair already here will do for now,
-    /// and otherwise the one model that goes from any language into any other.
-    /// </summary>
-    private IReadOnlyList<ModelInfo> Translation
-    {
-        get
-        {
-            if (_spoken.Value != "auto")
-                return Translator.ModelsFor(_spoken.Value, _into.Value);
-            var likely = Translator.ModelsFor(_into.Value == "en" ? "ar" : "en", _into.Value);
-            return likely.All(ModelStore.IsAvailable) ? likely : TranslationCatalog.Universal;
-        }
-    }
+    /// <summary>The translation model this dub needs: one for any pair of languages.</summary>
+    private IReadOnlyList<ModelInfo> Translation => Translator.ModelsFor("auto", _into.Value);
 
     private void Sync()
     {
         if (_reviewing || _into is null)
             return;
         _helpers.Models = Translation;
-        // Best on a key has the company's model for every line, the ones it gets wrong the first time too.
-        _helpers.Wanted = !(_accuracy.Value == Finest && Petal.Recipes.Cloud.CloudAi.CanWrite);
+        // Best has its own card: the same kind of model.
+        _helpers.Wanted = _accuracy.Value != Finest;
         _finest.Visibility = _accuracy.Value == Finest ? Visibility.Visible : Visibility.Collapsed;
         _finestNote.Text = Petal.Recipes.Cloud.CloudAi.CanWrite
             ? L.F("Translated by meaning, not word for word, by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))

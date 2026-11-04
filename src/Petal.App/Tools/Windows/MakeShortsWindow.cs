@@ -51,7 +51,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
     private readonly CheckBox _pauses = new() { IsChecked = true };
     private readonly Segmented<int> _accuracy;
     private readonly ModelPanel _model;
-    private readonly ModelPanel _helpers = new(Translator.Models);
+    private readonly ModelPanel _helpers = new(Translator.ModelsFor("en", "ar"));
     private readonly ComboBox _language;
 
     // ---------- listening ----------
@@ -285,7 +285,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
     {
         if (_reviewing || _into is null)
             return;
-        var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
+        var needed = SpeechLanguages.Needed(ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
         _helpers.Wanted = needed.Count > 0;
@@ -690,7 +690,6 @@ public sealed class MakeShortsWindow : MediaToolWindow
         var style = _captions.Value switch { "one" => CaptionStyle.OneWord, "lines" => CaptionStyle.Lines, _ => CaptionStyle.WordByWord };
         var options = new ShortOptions(_shape.Value, _framing.Value, _captions.Value != "none", style, _highlight, _pauses.IsChecked == true) { Settings = Quality };
         var into = SpeechLanguages.Into(_into.Value);
-        var translating = SpeechLanguages.TranslatingModel();
         bool headline = _headline.IsChecked == true;
         var file = File;
         var made = chosen.Select((c, i) => (c.Moment, Title: c.Title.Text.Trim(), Number: i + 1)).ToList();
@@ -700,7 +699,7 @@ public sealed class MakeShortsWindow : MediaToolWindow
         {
             Directory.CreateDirectory(folder);
             var output = Path.Combine(folder, FileName(m.Number, m.Title) + ".mp4");
-            var captions = options.Captions ? await ShortsMaker.CaptionsAsync(source, m.Moment, into, translating, ct) : null;
+            var captions = options.Captions ? await ShortsMaker.CaptionsAsync(source, m.Moment, into, ct) : null;
             // The headline in the language of the words under it.
             var title = headline ? await ShortsMaker.TitleInAsync(m.Title, source.Language, into, ct) : null;
             await ShortClip.RenderAsync(file, m.Moment, output, options, title, captions, source.Levels, p, ct);

@@ -59,35 +59,17 @@ public sealed class LanguageChoice : ComboBox
 
 /// <summary>
 /// What words in another language need besides the speech model, in the tools that write speech down (Transcribe,
-/// Animated Captions, Make Shorts): the translation models for the pair, and for a language no model reads, with the
-/// Accurate model, which can't translate, a model that can.
+/// Animated Captions, Make Shorts): the translation model.
 /// </summary>
 internal static class SpeechLanguages
 {
-    /// <summary>A Whisper model on this PC that can translate, the more accurate first; null when there is none.</summary>
-    public static string? TranslatingModel() =>
-        new[] { ModelCatalog.WhisperBalanced, ModelCatalog.WhisperFast }.Select(ModelStore.Find).FirstOrDefault(path => path is not null);
-
     /// <summary>
     /// The models the words need with these choices ("spoken" or a language; "auto" or the language spoken), beyond the
     /// speech model itself, whether a key is translating or not (the window shows both ways). Speech already in the
     /// language wanted needs none: it is written as spoken.
     /// </summary>
-    public static IReadOnlyList<ModelInfo> Needed(ModelInfo speechModel, string language, string into)
-    {
-        if (into == SpeechInto.Spoken || into == language)
-            return [];
-        var needed = new List<ModelInfo>();
-        bool known = Translator.Languages.Any(l => l.Code == language);
-        if (known)
-            needed.AddRange(Translator.ModelsFor(language, into));
-        else if (into != "en")
-            // The language isn't known yet, or no model reads it: through Whisper's English.
-            needed.AddRange(Translator.ModelsFor("en", into));
-        if (!known && language != "auto" && !Transcriber.CanTranslate(speechModel.FileName) && TranslatingModel() is null)
-            needed.Add(ModelCatalog.WhisperBalanced);
-        return needed;
-    }
+    public static IReadOnlyList<ModelInfo> Needed(string language, string into) =>
+        into == SpeechInto.Spoken ? [] : Translator.ModelsFor(language, into);
 
     public static string Into(string into) => into;
 }

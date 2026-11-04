@@ -27,7 +27,7 @@ internal sealed class ScreenTextWindow : ToolWindow
     private readonly TextBox _translated = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 130, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 8, 0, 0) };
     private readonly TextBlock _status;
     private readonly StackPanel _codes = new();
-    private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.Models) { Wanted = false };
+    private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.ModelsFor("en", "ar")) { Wanted = false };
     private readonly Button _translate, _search;
     private readonly Tools.Parts.LanguageChoice _into = new(Tools.Parts.LanguageChoice.Interface) { MinWidth = 150, Margin = new Thickness(0, 0, 8, 6) };
     private bool _intoChosen;

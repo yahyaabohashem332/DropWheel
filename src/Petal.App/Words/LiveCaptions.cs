@@ -42,10 +42,7 @@ internal static class LiveCaptions
     private static Channel<(int Number, StreamSentence Sentence)>? _sentences;
     private static readonly object Gate = new();
 
-    // The translation lane's view of the talk: the sentence being said (written by the engine, read by the lane).
-    private static volatile StreamState? _live;
     private static int _finished;
-    private static int _partialWanted;
 
     public static bool IsOn => _window is not null;
 
@@ -74,12 +71,12 @@ internal static class LiveCaptions
         var settings = SettingsStore.Current;
         Settle(settings);
         _asked.Clear();
+        _before = "";
         _window = new CaptionWindow();
         _window.Show();
         _stop = new CancellationTokenSource();
         _sentences = Channel.CreateUnbounded<(int, StreamSentence)>(new UnboundedChannelOptions { SingleReader = true });
         _finished = 0;
-        _live = null;
         var stop = _stop.Token;
         var dispatcher = Application.Current.Dispatcher;
         _ = Task.Run(async () =>
@@ -117,7 +114,7 @@ internal static class LiveCaptions
         StreamingTranscriber engine;
         try
         {
-            engine = new StreamingTranscriber(ModelStore.Find(model)!, language, translatingModelPath: SpeechLanguages.TranslatingModel());
+            engine = new StreamingTranscriber(ModelStore.Find(model)!, language, alignWords: true);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -147,9 +144,6 @@ internal static class LiveCaptions
         {
             if (_engine != engine)
                 return;
-            _live = state;
-            if (Interlocked.Exchange(ref _partialWanted, 1) == 0)
-                _wake.Release();
             _ = dispatcher.BeginInvoke(() => _window?.ShowTalk(state));
         };
         engine.Sentence += sentence =>
@@ -237,7 +231,6 @@ internal static class LiveCaptions
     {
         var dispatcher = Application.Current.Dispatcher;
         var sentences = _sentences!;
-        string lastPartial = "";
         while (!stop.IsCancellationRequested)
         {
             try { await _wake.WaitAsync(stop); } catch (OperationCanceledException) { return; }
@@ -252,22 +245,17 @@ internal static class LiveCaptions
                 while (sentences.Reader.TryRead(out var item))
                 {
                     var (finished, sentence) = item;
-                    var translated = target is null ? null : await TranslateAsync(engine, target, sentence.Text, sentence.Language, sentence, stop);
+                    // Behind the speaker: what has gathered goes as one, so the translation catches up and nothing is left out.
+                    var words = sentence.Text;
+                    while (sentences.Reader.TryRead(out var next))
+                    {
+                        finished = next.Item1;
+                        sentence = next.Item2;
+                        words += " " + sentence.Text;
+                    }
+                    var translated = target is null ? null : await TranslateAsync(target, words, sentence.Language, stop);
                     _ = dispatcher.BeginInvoke(() => _window?.ShowTranslation(translated, final: true, finished));
-                    lastPartial = "";
                 }
-                if (Interlocked.Exchange(ref _partialWanted, 0) == 0 || target is null || _live is not { } live)
-                    continue;
-                var talk = (live.Current + " " + live.Draft).Trim();
-                // A few words are enough to start; a translation of the same words isn't made twice.
-                if (talk.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length < 3 || talk == lastPartial)
-                    continue;
-                // The sentence being said is the one after those finished so far.
-                int number = Volatile.Read(ref _finished) + 1;
-                var partial = await TranslateAsync(engine, target, talk, live.Language, null, stop);
-                lastPartial = talk;
-                if (partial is not null)
-                    _ = dispatcher.BeginInvoke(() => _window?.ShowTranslation(partial, final: false, number));
             }
             catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
             {
@@ -280,48 +268,38 @@ internal static class LiveCaptions
     private static readonly HashSet<(string, string)> _asked = [];
 
     /// <summary>
-    /// Words in the language wanted, or null when they are in it already or nothing can translate them yet. The chosen
-    /// cloud model takes finished sentences only: the sentence being said changes twice a second, and each pass would be
-    /// billed. On this PC the sentence being said is translated too, following only the likeliest word. A language no model reads is put into English by Whisper from the sentence's own
-    /// sound, and from there into the language wanted.
+    /// Words in the language wanted, or null when they are in it already or nothing can translate them yet. Finished sentences
+    /// only: a sentence being said changes twice a second, and half a sentence is what gets translated wrongly. The sentence
+    /// before goes with it, to read it by.
     /// </summary>
-    private static async Task<string?> TranslateAsync(StreamingTranscriber engine, string target, string text, string language, StreamSentence? sentence, CancellationToken stop)
+    private static async Task<string?> TranslateAsync(string target, string text, string language, CancellationToken stop)
     {
-        string from = language is "" or "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "en" : language;
+        string from = language is "" or "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "" : language;
         if (from == target)
             return null;
-        bool known = Translator.Languages.Any(l => l.Code == from);
-        if (Petal.Recipes.Cloud.CloudAi.CanTranslate && sentence is not null)
-            return (await Translator.TranslateAsync([text], from, target, null, stop))[0];
-        if (known)
+        if (Petal.Recipes.Cloud.CloudAi.CanTranslate)
+            return (await Translator.TranslateAsync([text], from.Length > 0 ? from : "auto", target, null, stop))[0];
+        if (!GemmaTranslation.Ready)
         {
-            var models = Translator.ModelsFor(from, target);
-            if (models.All(ModelStore.IsAvailable))
-                return await Task.Run(() => Translator.Line(text, from, target, quick: sentence is null), stop);
-            if (sentence is not null && _asked.Add((from, target)))
-                _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", models));
+            if (_asked.Add(("", target)))
+                _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", GemmaTranslation.LiveModels));
+            return null;
         }
-        if (sentence is null)
-            return null;
-        string? english = from == "en" ? text : await engine.ToEnglishAsync(sentence, stop);
-        if (string.IsNullOrWhiteSpace(english))
-            return null;
-        if (target == "en")
-            return english;
-        var through = Translator.ModelsFor("en", target);
-        if (!through.All(ModelStore.IsAvailable))
-            return null;
-        return await Task.Run(() => Translator.Line(english, "en", target), stop);
+        if (!ModelStore.IsAvailable(ModelCatalog.GemmaQuick) && _asked.Add(("quick", "")))
+            _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "A quicker model keeps the captions up with the speaker. Until it is here, the larger one translates them, a little behind.", GemmaTranslation.LiveModels));
+        var said = await GemmaTranslation.TranslateAsync(text, from, target, _before.Length > 0 ? [_before] : null, live: true, stop);
+        _before = text;
+        return target == "ar" ? Translator.Tidy(said) : said;
     }
 
+    // The sentence before the one being translated.
+    private static string _before = "";
+
     /// <summary>
-    /// The models captions need for what is chosen. With the language spoken left to be detected it isn't known yet which
-    /// pair will be wanted, so it is the one model that goes from any language into any other.
+    /// The model captions are best with: one for every pair of languages, and the quickest of those.
     /// </summary>
     internal static IReadOnlyList<ModelInfo> ModelsToOffer(string spoken, string into) =>
-        spoken == into ? []
-        : Translator.Languages.Any(l => l.Code == spoken) ? Translator.ModelsFor(spoken, into)
-        : TranslationCatalog.Universal;
+        spoken == into ? [] : GemmaTranslation.LiveModels;
 
     /// <summary>Settings from before there was a choice of language: "In Arabic" and "In English" become the language chosen.</summary>
     internal static void Settle(AppSettings settings)
@@ -499,8 +477,6 @@ internal static class LiveCaptions
         SettingsStore.Save();
         _window?.ClearTranslation();
         _window?.Refresh();
-        if (Interlocked.Exchange(ref _partialWanted, 1) == 0)
-            _wake.Release();
     }
 }
 

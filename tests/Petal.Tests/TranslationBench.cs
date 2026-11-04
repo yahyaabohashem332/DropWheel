@@ -223,7 +223,7 @@ public sealed class TranslationBench
                 foreach (var into in new[] { SpeechInto.Spoken, SpeechInto.Arabic, SpeechInto.English })
                 {
                     var clock = Stopwatch.StartNew();
-                    var transcript = await SpeechText.TranscribeAsync(video, new SpeechTextOptions(Path.Combine(whisper, file), "auto", into, small));
+                    var transcript = await SpeechText.TranscribeAsync(video, new SpeechTextOptions(Path.Combine(whisper, file), "auto", into));
                     report.AppendLine($"## {file} · {into} · {transcript.Language} · {clock.Elapsed.TotalSeconds:0.0} s");
                     foreach (var segment in transcript.Segments)
                         report.AppendLine($"{segment.Start:mm\\:ss\\.f}-{segment.End:mm\\:ss\\.f} {segment.Text}");

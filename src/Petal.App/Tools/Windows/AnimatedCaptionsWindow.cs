@@ -38,8 +38,8 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
     private readonly ModelPanel _model;
     private readonly ComboBox _language;
     private readonly LanguageChoice _into;
-    // What the words in another language need besides the speech model (translation models).
-    private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.Models);
+    // What the words in another language need besides the speech model (the translation model).
+    private readonly ModelPanel _helpers = new(Petal.Recipes.Translation.Translator.ModelsFor("en", "ar"));
     private readonly Segmented<CaptionStyle> _style;
     private readonly Segmented<CaptionPlace> _place;
     private readonly Segmented<double> _size;
@@ -198,7 +198,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
     {
         if (_into is null)
             return;
-        var needed = SpeechLanguages.Needed(_model.Model, ValueOf<string>(_language), _into.Value);
+        var needed = SpeechLanguages.Needed(ValueOf<string>(_language), _into.Value);
         if (needed.Count > 0)
             _helpers.Models = needed;
         _helpers.Wanted = needed.Count > 0;
@@ -212,7 +212,7 @@ public sealed class AnimatedCaptionsWindow : ToolWindow
         var modelPath = ModelStore.Find(_model.Model);
         if (modelPath is null)
             return;
-        var speech = new SpeechTextOptions(modelPath, ValueOf<string>(_language), SpeechLanguages.Into(_into.Value), SpeechLanguages.TranslatingModel());
+        var speech = new SpeechTextOptions(modelPath, ValueOf<string>(_language), SpeechLanguages.Into(_into.Value));
         var options = new AnimatedCaptionOptions(_style.Value, _place.Value, _size.Value, _highlight) { Settings = SettingsStore.Current.Conversion };
         var tool = _tool;
         Close();

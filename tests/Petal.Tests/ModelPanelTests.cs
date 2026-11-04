@@ -344,9 +344,28 @@ public sealed class ModelPanelTests
     [Fact]
     public void Each_translator_keeps_its_own_saved_dub_translation() => Run(_ =>
     {
-        // On this PC the names stay as they were, so what was prepared before is still found.
-        Assert.Equal("", Dubbing.TranslatedBy(false));
-        Assert.Equal("-" + DubTranslation.Writer.Id, Dubbing.TranslatedBy(true));
+        // On this PC the names stay as they were, so what was prepared before is still found; until a better model is here.
+        var was = ModelStore.Folder;
+        var empty = Path.Combine(Path.GetTempPath(), "petal-names-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(empty);
+        ModelStore.Folder = empty;
+        try
+        {
+            Assert.Equal("", Dubbing.TranslatedBy(false));
+            Assert.Equal("-" + DubTranslation.Writer.Id, Dubbing.TranslatedBy(true));
+            foreach (var model in new[] { ModelCatalog.LlamaCpp, ModelCatalog.GemmaQuick })
+            {
+                using var file = File.Create(Path.Combine(empty, model.FileName));
+                file.SetLength(model.Size);
+            }
+            Assert.Equal("-gemma", Dubbing.TranslatedBy(false));
+            Assert.Equal("-" + DubTranslation.Writer.Id, Dubbing.TranslatedBy(true));
+        }
+        finally
+        {
+            ModelStore.Folder = was;
+            Directory.Delete(empty, true);
+        }
         CloudKeys.Set(CloudProvider.Gemini, "saved");
         CloudKeys.Set(CloudProvider.Claude, "saved");
         CloudAi.Translating = new CloudChoice(CloudProvider.Gemini, "gemini-a");

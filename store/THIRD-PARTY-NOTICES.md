@@ -106,8 +106,9 @@ download:
 - Qwen2.5 1.5B Instruct and Qwen3 4B Instruct 2507, Copyright (c) Alibaba Cloud (the Qwen team).
   Apache-2.0. https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF and
   https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF (4-bit GGUF by Unsloth).
-- Gemma 4 12B Instruct, Copyright (c) Google LLC. Apache-2.0.
-  https://huggingface.co/unsloth/gemma-4-12b-it-GGUF (4-bit GGUF by Unsloth).
+- Gemma 4 12B and E4B Instruct, Copyright (c) Google LLC. Apache-2.0.
+  https://huggingface.co/unsloth/gemma-4-12b-it-GGUF and
+  https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF (4-bit GGUF by Unsloth).
 - SmolVLM 500M Instruct, Copyright (c) Hugging Face. Apache-2.0.
   https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF
 - multilingual-e5-small, Copyright (c) Microsoft Corporation (intfloat). MIT.

@@ -8,10 +8,10 @@ using Petal.Core.Text;
 namespace Petal.Recipes.Translation;
 
 /// <summary>
-/// Translation on this PC. Opus-MT (Helsinki-NLP, CC-BY 4.0) has a quick model made for each pair: a pair it has is
-/// used, then two of them through English, and for every other pair M2M100 (Meta, MIT), one larger model that knows all
-/// the languages here. Beam search over a few candidates. With a cloud model chosen (<see cref="Cloud.CloudAi.Translating"/>),
-/// <see cref="TranslateAsync"/> uses that instead.
+/// Translation on this PC, by <see cref="GemmaTranslation"/> for any two languages. Where only older models are here:
+/// Opus-MT (Helsinki-NLP, CC-BY 4.0), made for each pair, then two of them through English, or M2M100 (Meta, MIT), with beam
+/// search over a few candidates. With a cloud model chosen (<see cref="Cloud.CloudAi.Translating"/>), <see cref="TranslateAsync"/>
+/// uses that instead.
 /// </summary>
 public static class Translator
 {
@@ -50,7 +50,7 @@ public static class Translator
     /// today; the marks a writer would keep, the doubling mark and the "an" ending as in جداً, stay), and the thousands of a
     /// number parted by an Arabic comma (10،000).
     /// </summary>
-    internal static string Tidy(string arabic)
+    public static string Tidy(string arabic)
     {
         if (arabic.Length == 0)
             return arabic;
@@ -147,19 +147,29 @@ public static class Translator
         return through ?? throw new InvalidOperationException($"No translation from {from} into {to}.");
     }
 
-    /// <summary>The models the route from one language to another needs, downloaded or not.</summary>
+    /// <summary>The models translating from one language to another needs, downloaded or not.</summary>
     public static IReadOnlyList<ModelInfo> ModelsFor(string from, string to) =>
+        from == to ? [] : GemmaTranslation.Models;
+
+    /// <summary>The older models a pair would use, for Opus-MT's and M2M100's own route.</summary>
+    internal static IReadOnlyList<ModelInfo> PairModelsFor(string from, string to) =>
         from == to ? [] : Route(from, to).SelectMany(p => p.Files).ToList();
 
-    /// <summary>Whether this translation can run now: its models are here, or a cloud model translates.</summary>
+    /// <summary>Whether this translation can run now: the model is here, or a cloud model translates.</summary>
     public static bool ReadyFor(string from, string to) =>
-        from == to || Cloud.CloudAi.CanTranslate || ModelsFor(from, to).All(ModelStore.IsAvailable);
+        from == to || Cloud.CloudAi.CanTranslate || GemmaTranslation.Ready;
+
+    /// <summary>Whether a line can be put into another language to search by: any model does for that.</summary>
+    public static bool CanSearchIn(string from, string to) =>
+        GemmaTranslation.Ready || PairModelsFor(from, to).All(ModelStore.IsAvailable);
 
     /// <summary>Each line from one language into another, on this PC; empty lines stay empty.</summary>
     public static IReadOnlyList<string> Lines(IReadOnlyList<string> lines, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         if (from == to)
             return lines;
+        if (GemmaTranslation.Ready)
+            return ByMeaning(lines, from, to, progress, cancellationToken);
         IReadOnlyList<string> current = lines;
         var route = Route(from, to);
         for (int i = 0; i < route.Count; i++)
@@ -172,9 +182,39 @@ public static class Translator
     {
         if (from == to)
             return line;
+        // Quick is for searching: a small model for the pair saves loading a large one.
+        if (GemmaTranslation.Ready && !(quick && PairModelsFor(from, to).All(ModelStore.IsAvailable)))
+            return Tidied(GemmaTranslation.TranslateAsync(line, from, to, live: quick).GetAwaiter().GetResult(), to);
         foreach (var pair in Route(from, to))
             line = pair.Line(line, quick);
         return to == "ar" ? Tidy(line) : line;
+    }
+
+    private static string Tidied(string text, string to) => to == "ar" ? Tidy(text) : text;
+
+    /// <summary>Each line in turn, with the two before it to read it by: a line of subtitles or of a document is often half a sentence.</summary>
+    private static List<string> ByMeaning(IReadOnlyList<string> lines, string from, string to, IProgress<double>? progress, CancellationToken cancellationToken)
+    {
+        var result = new List<string>(lines.Count);
+        var earlier = new List<string>();
+        try
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var line = lines[i].Trim();
+                result.Add(line.Length == 0 || !line.Any(char.IsLetter) ? line
+                    : Tidied(GemmaTranslation.TranslateAsync(line, from, to, earlier.TakeLast(2).ToList(), false, cancellationToken).GetAwaiter().GetResult(), to));
+                if (line.Length > 0)
+                    earlier.Add(line);
+                progress?.Report((i + 1.0) / lines.Count);
+            }
+        }
+        finally
+        {
+            GemmaTranslation.Finished();
+        }
+        return result;
     }
 
     /// <summary>Each line translated by the cloud model chosen, or else on this PC; <paramref name="from"/> may be "auto" with a cloud model.</summary>
@@ -182,7 +222,8 @@ public static class Translator
     {
         if (Cloud.CloudAi.CanTranslate)
             return await Cloud.CloudAi.TranslateAsync(lines, to, progress, cancellationToken).ConfigureAwait(false);
-        if (from is "auto" or "")
+        // What isn't known stays so for the model that reads any language: a wrong guess would mislead it.
+        if (from is "auto" or "" && !GemmaTranslation.Ready)
             from = LanguageGuess.Of(string.Join(' ', lines.Take(40))) ?? "en";
         var source = from;
         return await Task.Run(() => Lines(lines, source, to, progress, cancellationToken), cancellationToken).ConfigureAwait(false);
