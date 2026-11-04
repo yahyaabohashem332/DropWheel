@@ -8,9 +8,9 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_354_paths()
+    public void Conversion_matrix_has_363_paths()
     {
-        Assert.Equal(354, ConversionMatrix.TotalPaths);
+        Assert.Equal(363, ConversionMatrix.TotalPaths);
     }
 
     [Fact]
@@ -117,6 +117,9 @@ public class RegistryTests
         Assert.Equal([ToolId.SavePreview], For(F.Indd, F.Xd));
         Assert.Empty(For(F.Prproj, F.Aep));
         Assert.Equal([ToolId.Palette], For(F.Ase));
+        Assert.Empty(For(F.Pages));
+        Assert.Empty(For(F.Keynote));
+        Assert.Empty(For(F.Woff2));
         Assert.Contains(ToolId.ExtractColours, For(F.Jpg));
         // RAW files are recognised by every camera's extension.
         foreach (var ext in new[] { "dng", "CR2", "cr3", "nef", "arw", "raf", "orf", "rw2", "pef", "srw" })

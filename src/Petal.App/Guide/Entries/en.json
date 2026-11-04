@@ -2089,7 +2089,7 @@
  "kind:format": {
   "category": "general",
   "summary": "Converts the dropped files to another format, such as JPG, WEBP, MP4, MP3, PDF or DOCX, saved beside them.",
-  "details": "The Shift wheel shows your starred favourites first, then every format the files can become; the centre names the format with a few words on what it is good for (AVIF · Smallest, same look) and, while you rest on a picture, sound or video format, how big the result will be. Results are saved next to the originals with the new extension (photo.heic gives photo.jpg), or in one folder if you choose that in Settings › Results; a dropped folder is converted into a copy beside it, such as 'Trip (WEBP)', and the original is never touched. Quality comes from Settings › Quality: Image quality (90 at first, for JPG, WEBP, HEIC and AVIF), Page images DPI (300), Video quality (Best, High, Balanced or Small; High at first), Audio kbps (256), GIF frame rate (15), GIF width (720) and Hardware video encoding. A favourite such as 'WEBP 1600' adds its own size and quality, and a dim, dashed format petal needs something first, such as Ghostscript or Office, which the centre names. Fonts convert between TTF, OTF, WOFF and WOFF2: the web's packings keep the font exactly, and between TTF and OTF the outlines are rewritten and hinting is left out, while letters, spacing and shaping stay. A variable font comes out at its default weight. Check that a font's licence allows converting it.",
+  "details": "The Shift wheel shows your starred favourites first, then every format the files can become; the centre names the format with a few words on what it is good for (AVIF · Smallest, same look) and, while you rest on a picture, sound or video format, how big the result will be. Results are saved next to the originals with the new extension (photo.heic gives photo.jpg), or in one folder if you choose that in Settings › Results; a dropped folder is converted into a copy beside it, such as 'Trip (WEBP)', and the original is never touched. Quality comes from Settings › Quality: Image quality (90 at first, for JPG, WEBP, HEIC and AVIF), Page images DPI (300), Video quality (Best, High, Balanced or Small; High at first), Audio kbps (256), GIF frame rate (15), GIF width (720) and Hardware video encoding. A favourite such as 'WEBP 1600' adds its own size and quality, and a dim, dashed format petal needs something first, such as Ghostscript or Office, which the centre names. Fonts convert between TTF, OTF, WOFF and WOFF2: the web's packings keep the font exactly, and between TTF and OTF the outlines are rewritten and hinting is left out, while letters, spacing and shaping stay. A variable font comes out at its default weight. Check that a font's licence allows converting it. Pages, Numbers and Keynote files from an iPhone or Mac convert to PDF, text and a JPG of the first page. A PDF is the whole document as designed only when the file holds one, which older versions do; from today's versions it holds all the words without their layout, since only Apple's programs can draw that.",
   "how": "Drag the files, tap Shift and drop on the petal of the format you want, such as JPG or MP4.",
   "examples": [
    "iPhone HEIC photos that won't open on an old PC: drop them on JPG.",
@@ -2111,7 +2111,9 @@
    "save as",
    "ttf to woff2",
    "otf to ttf",
-   "convert font"
+   "convert font",
+   "pages to pdf",
+   "keynote to pdf"
   ]
  },
  "kind:favourite": {
@@ -2164,7 +2166,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Runs a program of your own on the dropped files, described by a small file in the petals folder.",
-  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (a file's bytes in hexadecimal with Windows' certutil) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds DropWheel doesn't know. DropWheel shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
+  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (a file's attributes with Windows' attrib) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds DropWheel doesn't know. DropWheel shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
   "how": "Add the file in Settings › Your Petals, then drag matching files, tap Ctrl and drop on its petal.",
   "examples": [
    "A petal that runs oxipng on PNG files and saves 'name Optimised.png'.",

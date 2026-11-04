@@ -262,22 +262,22 @@ public sealed class CustomPetal
         return made;
     }
 
-    /// <summary>A working example to start from: a file's bytes in hexadecimal with Windows' own certutil.</summary>
+    /// <summary>A working example to start from: a file's attributes with Windows' own attrib.</summary>
     public static string WriteExample()
     {
         Directory.CreateDirectory(Folder);
-        var path = OutputNaming.Unique(Folder, "hex dump example", "json");
+        var path = OutputNaming.Unique(Folder, "attributes example", "json");
         System.IO.File.WriteAllText(path, """
             {
-              "name": "Hex Dump",
-              "name_ar": "عرض البايتات",
-              "description": "Saves a look at the file's bytes in hexadecimal, beside it.",
-              "description_ar": "يحفظ عرضًا لبايتات الملف بالنظام الست عشري بجانبه.",
+              "name": "File Attributes",
+              "name_ar": "خصائص الملف",
+              "description": "Saves whether the file is read-only, hidden or a system file, beside it.",
+              "description_ar": "يحفظ بجانب الملف هل هو للقراءة فقط أو مخفي أو من ملفات النظام.",
               "icon": "fileText",
               "accepts": ["any"],
-              "program": "certutil",
-              "arguments": ["-dump", "{input}"],
-              "stdout": "{name} hex.txt"
+              "program": "attrib",
+              "arguments": ["{input}"],
+              "stdout": "{name} attributes.txt"
             }
             """, new UTF8Encoding(false));
         return path;

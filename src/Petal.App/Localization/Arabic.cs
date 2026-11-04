@@ -3616,5 +3616,11 @@ internal static class Arabic
         ["✓ They match: this is the publisher's file."] = "✓ متطابقتان: هذا هو ملف الناشر.",
         ["✗ They don't match: this isn't the same file. Don't open it. Download it again from the publisher."] = "✗ غير متطابقتين: ليس هذا الملف نفسه. لا تفتحه، ونزّله مجددًا من الناشر.",
         ["{0} shows the download isn't damaged, but someone could make a different file with the same value. Trust SHA-256 where it is offered."] = "يُثبت {0} أن التنزيل غير تالف، لكن يمكن صنع ملف مختلف بالقيمة نفسها. اعتمد SHA-256 حيث يتوفر.",
+        ["This file is a folder bundle from an older Mac: compress it to a ZIP on the Mac, or export it from there."] = "هذا الملف حزمة مجلد من جهاز Mac قديم: اضغطه بصيغة ZIP على Mac أو صدّره من هناك.",
+        ["This file couldn't be opened. It may be from a very old version: export it from the Mac or iPhone."] = "تعذّر فتح هذا الملف. قد يكون من إصدار قديم جدًا: صدّره من Mac أو iPhone.",
+        ["This file's contents aren't in a form DropWheel knows."] = "محتوى هذا الملف بصيغة لا يعرفها DropWheel.",
+        ["This file is damaged."] = "هذا الملف تالف.",
+        ["This file holds no picture of its first page."] = "لا يحوي هذا الملف صورة لصفحته الأولى.",
+        ["No words could be read from this file. Export it from the Mac or iPhone."] = "تعذّرت قراءة أي كلمات من هذا الملف. صدّره من Mac أو iPhone.",
     };
 }

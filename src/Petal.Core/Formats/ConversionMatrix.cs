@@ -34,6 +34,9 @@ public static class ConversionMatrix
         map[Ase] = [Aco, Png];
         map[Aco] = [Ase, Png];
 
+        foreach (var apple in new[] { Pages, Numbers, Keynote })
+            map[apple] = [Pdf, Txt, Jpg];
+
         map[Ttf] = [Woff2, Otf, Woff];
         map[Otf] = [Woff2, Ttf, Woff];
         map[Woff] = [Ttf, Otf, Woff2];

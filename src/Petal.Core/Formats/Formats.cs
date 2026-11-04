@@ -35,6 +35,11 @@ public static class Formats
     public static readonly FileFormat Ase = new("ase", "ASE", FormatFamily.Palette, ["ase"]);
     public static readonly FileFormat Aco = new("aco", "ACO", FormatFamily.Palette, ["aco"]);
 
+    // Apple's documents, from an iPhone or a Mac: read, never written.
+    public static readonly FileFormat Pages = new("pages", "PAGES", FormatFamily.Project, ["pages"], CanWrite: false);
+    public static readonly FileFormat Numbers = new("numbers", "NUMBERS", FormatFamily.Project, ["numbers"], CanWrite: false);
+    public static readonly FileFormat Keynote = new("key", "KEYNOTE", FormatFamily.Project, ["key"], CanWrite: false);
+
     public static readonly FileFormat Ttf = new("ttf", "TTF", FormatFamily.Font, ["ttf"]);
     public static readonly FileFormat Otf = new("otf", "OTF", FormatFamily.Font, ["otf"]);
     public static readonly FileFormat Woff = new("woff", "WOFF", FormatFamily.Font, ["woff"]);
@@ -96,6 +101,7 @@ public static class Formats
         Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Svg,
         Psd, Psb, Raw, Ai, Eps,
         Indd, Idml, Xd, Prproj, Aep,
+        Pages, Numbers, Keynote,
         Ase, Aco,
         Ttf, Otf, Woff, Woff2,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma,

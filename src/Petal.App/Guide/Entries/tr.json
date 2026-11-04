@@ -2141,7 +2141,7 @@
  "kind:format": {
   "category": "general",
   "summary": "Bırakılan dosyaları JPG, WEBP, MP4, MP3, PDF veya DOCX gibi başka bir biçime dönüştürür ve yanlarına kaydeder.",
-  "details": "Shift çarkı önce yıldızlı favorilerini, sonra dosyaların dönüşebileceği her biçimi gösterir; orta kısım biçimin adını ve neye yaradığını birkaç sözcükle söyler (AVIF · En küçük, aynı görünüm) ve bir resim, ses ya da video biçiminin üzerinde durduğunda sonucun ne kadar büyük olacağını gösterir. Sonuçlar orijinallerin yanına yeni uzantıyla kaydedilir (photo.heic, photo.jpg olur) ya da Ayarlar › Sonuçlar'da bunu seçersen tek bir klasöre; bırakılan bir klasör yanında 'Trip (WEBP)' gibi bir kopyaya dönüştürülür ve orijinale asla dokunulmaz. Kalite Ayarlar › Kalite'den gelir: Resim kalitesi (ilk başta 90; JPG, WEBP, HEIC ve AVIF için), Sayfa resimleri DPI (300), Video kalitesi (En iyi, Yüksek, Dengeli veya Küçük; ilk başta Yüksek), Ses kbps (256), GIF kare hızı (15), GIF genişliği (720) ve Donanımla video kodlama. 'WEBP 1600' gibi bir favori kendi boyutunu ve kalitesini ekler; soluk, kesik çizgili bir biçim yaprağı önce Ghostscript ya da Office gibi bir şeye ihtiyaç duyar; orta kısım bunun adını verir. Yazı tipleri TTF, OTF, WOFF ve WOFF2 arasında dönüşür: web biçimleri yazı tipini aynen korur; TTF ile OTF arasında anahatlar yeniden yazılır ve hinting bırakılır, harfler, aralıklar ve şekillendirme kalır. Değişken yazı tipi varsayılan ağırlığında çıkar. Yazı tipinin lisansının dönüştürmeye izin verdiğinden emin olun.",
+  "details": "Shift çarkı önce yıldızlı favorilerini, sonra dosyaların dönüşebileceği her biçimi gösterir; orta kısım biçimin adını ve neye yaradığını birkaç sözcükle söyler (AVIF · En küçük, aynı görünüm) ve bir resim, ses ya da video biçiminin üzerinde durduğunda sonucun ne kadar büyük olacağını gösterir. Sonuçlar orijinallerin yanına yeni uzantıyla kaydedilir (photo.heic, photo.jpg olur) ya da Ayarlar › Sonuçlar'da bunu seçersen tek bir klasöre; bırakılan bir klasör yanında 'Trip (WEBP)' gibi bir kopyaya dönüştürülür ve orijinale asla dokunulmaz. Kalite Ayarlar › Kalite'den gelir: Resim kalitesi (ilk başta 90; JPG, WEBP, HEIC ve AVIF için), Sayfa resimleri DPI (300), Video kalitesi (En iyi, Yüksek, Dengeli veya Küçük; ilk başta Yüksek), Ses kbps (256), GIF kare hızı (15), GIF genişliği (720) ve Donanımla video kodlama. 'WEBP 1600' gibi bir favori kendi boyutunu ve kalitesini ekler; soluk, kesik çizgili bir biçim yaprağı önce Ghostscript ya da Office gibi bir şeye ihtiyaç duyar; orta kısım bunun adını verir. Yazı tipleri TTF, OTF, WOFF ve WOFF2 arasında dönüşür: web biçimleri yazı tipini aynen korur; TTF ile OTF arasında anahatlar yeniden yazılır ve hinting bırakılır, harfler, aralıklar ve şekillendirme kalır. Değişken yazı tipi varsayılan ağırlığında çıkar. Yazı tipinin lisansının dönüştürmeye izin verdiğinden emin olun. iPhone veya Mac'ten Pages, Numbers ve Keynote dosyaları PDF'e, metne ve ilk sayfanın JPG'sine dönüşür. PDF, ancak dosya içeriyorsa (eski sürümler) belgenin tasarımlı tam hâlidir; bugünkü sürümlerde düzeni olmadan tüm sözcükleri içerir, çünkü düzeni yalnızca Apple'ın programları çizebilir.",
   "how": "Dosyaları sürükle, Shift'e dokun ve istediğin biçimin yaprağına (örneğin JPG ya da MP4) bırak.",
   "worksOn": "Resimler, videolar, sesler, belgeler, tablolar, slaytlar, e-kitaplar, altyazılar, arşivler ve tasarım dosyaları; bir tane ya da birçok tane ya da bir klasör.",
   "examples": [
@@ -2163,7 +2163,9 @@
    "dosya dönüştürücü",
    "farklı kaydet",
    "yazı tipi dönüştür",
-   "ttf woff2"
+   "ttf woff2",
+   "pages pdf",
+   "keynote pdf"
   ]
  },
  "kind:favourite": {
@@ -2217,7 +2219,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Bırakılan dosyalar üzerinde kendi programını çalıştırır; yapraklar klasöründeki küçük bir dosyayla tanımlanır.",
-  "details": "Kendi yaprakların %APPDATA%\\Petal\\petals içindeki küçük JSON dosyalarıdır; Ayarlar › Yaprakların bölümünde Dosyadan Ekle…, Bir Örnekle Başla (Windows'un certutil aracıyla dosyanın baytlarını gösterme) ve Yapraklar Klasörünü Aç vardır. Dosya yaprağa bir ad (ve bir Arapça ad), bir simge, hangi dosyaları kabul ettiğini (uzantılar ya da image, video, audio, pdf, document veya any), programı, {input}, {output}, {name}, {ext}, {folder} veya {inputs} içeren bağımsız değişkenlerini, sonucun adını ve her dosya için bir kez çalışıp çalışmayacağını verir. Yaprak, kabul ettiği dosyalar için Ctrl çarkında görünür; DropWheel'in tanımadığı türler için bile. DropWheel ilk çalıştırmadan önce ve dosya her değiştiğinde tam komutu gösterir; programı asla bir kabuk üzerinden değil, doğrudan çalıştırır.",
+  "details": "Kendi yaprakların %APPDATA%\\Petal\\petals içindeki küçük JSON dosyalarıdır; Ayarlar › Yaprakların bölümünde Dosyadan Ekle…, Bir Örnekle Başla (Windows'un attrib aracıyla dosyanın özniteliklerini gösterme) ve Yapraklar Klasörünü Aç vardır. Dosya yaprağa bir ad (ve bir Arapça ad), bir simge, hangi dosyaları kabul ettiğini (uzantılar ya da image, video, audio, pdf, document veya any), programı, {input}, {output}, {name}, {ext}, {folder} veya {inputs} içeren bağımsız değişkenlerini, sonucun adını ve her dosya için bir kez çalışıp çalışmayacağını verir. Yaprak, kabul ettiği dosyalar için Ctrl çarkında görünür; DropWheel'in tanımadığı türler için bile. DropWheel ilk çalıştırmadan önce ve dosya her değiştiğinde tam komutu gösterir; programı asla bir kabuk üzerinden değil, doğrudan çalıştırır.",
   "how": "Dosyayı Ayarlar › Yaprakların bölümünde ekle, sonra uyan dosyaları sürükle, Ctrl'ye dokun ve onun yaprağına bırak.",
   "worksOn": "'accepts' listesinin belirttiği dosyalar; bir tane ya da birçok tane.",
   "examples": [

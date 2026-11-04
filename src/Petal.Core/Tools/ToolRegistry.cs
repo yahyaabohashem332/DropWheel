@@ -145,6 +145,8 @@ public static class ToolRegistry
         var only = kinds[0];
         if (only == Formats.Formats.Indd)
             return [FileDetails, CollectFiles, SavePreview];
+        if (only == Formats.Formats.Pages || only == Formats.Formats.Numbers || only == Formats.Formats.Keynote)
+            return [];
         if (only == Formats.Formats.Idml)
             return [FileDetails, CollectFiles];
         if (only == Formats.Formats.Xd)

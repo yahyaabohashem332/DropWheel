@@ -18,24 +18,24 @@ public sealed class CustomPetalTests : IDisposable
     }
 
     [Fact]
-    public async Task The_example_petal_saves_a_hex_dump()
+    public async Task The_example_petal_saves_a_files_attributes()
     {
         var manifest = CustomPetal.WriteExample();
         var petal = Assert.Single(CustomPetal.LoadAll());
         Assert.Null(petal.Problem);
         Assert.Equal(manifest, petal.File);
-        Assert.Equal("عرض البايتات", petal.DisplayName(arabic: true));
+        Assert.Equal("خصائص الملف", petal.DisplayName(arabic: true));
 
         // A name a shell would take for two commands is just a name here.
         var file = Path.Combine(_dir, "report & calc.txt");
         File.WriteAllText(file, "Petal");
         Assert.True(petal.Takes([file]));
         var run = Assert.Single(petal.Plan([file]));
-        Assert.Equal(Path.Combine(_dir, "report & calc hex.txt"), run.Stdout);
+        Assert.Equal(Path.Combine(_dir, "report & calc attributes.txt"), run.Stdout);
         Assert.Contains("\"" + file + "\"", run.CommandLine);
 
         var made = await CustomPetal.RunAsync(run);
-        Assert.Contains("50 65 74 61 6c", File.ReadAllText(Assert.Single(made)).ToLowerInvariant());
+        Assert.Contains("report & calc.txt", File.ReadAllText(Assert.Single(made)));
     }
 
     [Fact]
