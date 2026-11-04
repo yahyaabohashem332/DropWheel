@@ -54,6 +54,7 @@ public static class ToolRegistry
         new(TranslateSubtitles, "TRANSLATE", "Translate Subtitles", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
         // A Word, PowerPoint, Excel or PDF file in another language, its formatting kept.
         new(TranslateDocument, "TRANSLATE", "Translate Document", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
+        new(TranslatePicture, "TRANSLATE", "Translate Picture", "languages", true, ToolSelection.SingleOrBatch, "Translated"),
         new(ExportLayers, "LAYERS", "Export Layers", "layers", true, ToolSelection.SingleOrBatch, "Layers", ToolOutputKind.Folder),
         new(SlimPhotoshop, "HISTORY", "Remove Photoshop History", "history", false, ToolSelection.SingleOrBatch, "Slim"),
         new(FileDetails, "INFO", "File Info", "info", true, ToolSelection.Single, ""),
@@ -91,8 +92,8 @@ public static class ToolRegistry
     public static ToolInfo Get(ToolId id) => ById[id];
 
     // Wheel order for each family, clockwise from the top. Single and multi-file lists differ.
-    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
-    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
+    private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, TranslatePicture, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
+    private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, TranslatePicture, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
     private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];

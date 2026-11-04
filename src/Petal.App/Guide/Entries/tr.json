@@ -250,6 +250,28 @@
    "istenmeyen nesne"
   ]
  },
+ "tool:TranslatePicture": {
+  "category": "pictures",
+  "summary": "Resimdeki metni bulunduğu yerde çevirir: menü, tabela, slayt, ekran görüntüsü.",
+  "details": "Windows resimdeki sözcükleri yüklü her dilde okur; çeviri modeli de resmin geri kalanını bağlam alarak onları anlamına göre çevirir, böylece yanlış okunan bazı harfleri aşabilir. Metin kaldırılır (düz arka planların üzerine boyanır; fotoğrafta arkasını 208 MB'lık LaMa modeli yeniden oluşturur, yalnızca bir resim gerektirirse bir kez indirilir) ve çeviri, özgünün rengi, kalınlığı ve hizasıyla yerine konur; sağdan sola yazılan diller de dahil. Sayılar ve net okunamayanlar olduğu gibi kalır. Her metin pencerede düzeltilebilir ya da olduğu gibi bırakılabilir; Özgünü göster karşılaştırmayı sağlar. Bu bilgisayarda (ilk seferde yaklaşık 5 GB model) veya kendi API anahtarınızla çalışır. Eğik, kavisli ya da el yazısı metin çoğu zaman okunamaz. Kopya Kaydet resmi, adında dil geçecek şekilde özgünün yanına kaydeder.",
+  "how": "Bir resmi sürükleyin, Ctrl'ye dokunun ve ÇEVİR üzerine bırakın; dili seçin, Çevir'e basın, istediğinizi düzeltin, sonra Kopya Kaydet.",
+  "worksOn": "Kontrol edip düzeltmek için bir resim veya doğrudan çevirmek için birkaç resim.",
+  "examples": [
+   "Yurt dışında bir restoran menüsünün fotoğrafı, fiyatlar aynı kalarak kendi dilinizde.",
+   "Türkçe bir dersten bir slayt, düzeni korunarak Arapçada.",
+   "Fransızca bir programın ekran görüntüsü, düğmeleri İngilizce olarak bir iş arkadaşına gönderilmek üzere."
+  ],
+  "keywords": [
+   "resim çevir",
+   "fotoğraf çevir",
+   "ekran görüntüsü çevir",
+   "resimdeki metni çevir",
+   "menü çevir",
+   "tabela çevir",
+   "resimdeki yazıyı değiştir",
+   "görsel çeviri"
+  ]
+ },
  "tool:ExportLayers": {
   "category": "pictures",
   "summary": "Bir Photoshop dosyasının her katmanını, katmanın adını taşıyan ayrı bir PNG olarak kaydeder; Photoshop gerekmez.",

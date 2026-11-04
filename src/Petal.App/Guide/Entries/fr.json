@@ -251,6 +251,28 @@
    "enlever les touristes"
   ]
  },
+ "tool:TranslatePicture": {
+  "category": "pictures",
+  "summary": "Traduit le texte d’une image là où il se trouve : menu, panneau, diapositive, capture d’écran.",
+  "details": "Windows lit les mots de l’image dans chaque langue installée, puis le modèle de traduction les traduit selon le sens, avec le reste de l’image pour contexte ; il passe ainsi outre certaines lettres mal lues. Le texte est retiré (les fonds unis sont repeints ; sur une photo, le modèle LaMa de 208 Mo reconstruit ce qu’il y a derrière, téléchargé une fois et seulement si une image en a besoin) et la traduction prend sa place, avec la couleur, la graisse et l’alignement de l’original, y compris pour les langues écrites de droite à gauche. Les nombres et ce qui n’a pas été lu clairement restent tels quels. Chaque texte peut être corrigé dans la fenêtre ou laissé tel quel, et Afficher l’original permet de comparer. L’outil fonctionne sur ce PC (environ 5 Go de modèle la première fois) ou avec votre propre clé API. Le texte penché, courbe ou manuscrit n’est souvent pas lu. Enregistrer une copie enregistre l’image à côté de l’original, avec la langue dans son nom.",
+  "how": "Faites glisser une image, appuyez sur Ctrl et déposez-la sur TRADUIRE ; choisissez la langue, appuyez sur Traduire, corrigez ce que vous voulez, puis Enregistrer une copie.",
+  "worksOn": "Une image à vérifier et corriger, ou plusieurs à traduire directement.",
+  "examples": [
+   "La photo d’un menu de restaurant à l’étranger, dans votre langue et avec les prix inchangés.",
+   "Une diapositive d’un cours en turc, en arabe avec la même mise en page.",
+   "La capture d’écran d’un logiciel en français, ses boutons en anglais pour l’envoyer à un collègue."
+  ],
+  "keywords": [
+   "traduire une image",
+   "traduire une photo",
+   "traduire une capture d’écran",
+   "texte dans une image",
+   "traduire un menu",
+   "traduire un panneau",
+   "remplacer le texte d’une image",
+   "traducteur d’images"
+  ]
+ },
  "tool:ExportLayers": {
   "category": "pictures",
   "summary": "Enregistre chaque calque d'un fichier Photoshop dans son propre PNG, au nom du calque, sans Photoshop.",

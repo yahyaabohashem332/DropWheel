@@ -272,6 +272,49 @@ public sealed class GemmaTranslationTests : IDisposable
         Assert.Equal(reply, GemmaTranslation.Reply(said));
 
     [Fact]
+    public async Task A_picture_file_comes_out_with_the_translation_on_it()
+    {
+        if (!Petal.Engines.Documents.DocumentEngine.OcrLanguages.Any(l => l.StartsWith("en", StringComparison.OrdinalIgnoreCase)))
+            return;
+        Have(ModelCatalog.LlamaCpp, ModelCatalog.GemmaQuick);
+        using var server = new StandIn(_ => "زيت");
+        var input = Path.Combine(_folder, "label.png");
+        var output = Path.Combine(_folder, "label.ar.png");
+        byte[]? pixels = null;
+        var thread = new Thread(() =>
+        {
+            var visual = new System.Windows.Media.DrawingVisual();
+            using (var dc = visual.RenderOpen())
+            {
+                dc.DrawRectangle(System.Windows.Media.Brushes.White, null, new System.Windows.Rect(0, 0, 800, 200));
+                dc.DrawText(new System.Windows.Media.FormattedText("Olive oil bottle", System.Globalization.CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, new System.Windows.Media.Typeface("Segoe UI"), 60, System.Windows.Media.Brushes.Black, 1.0), new System.Windows.Point(60, 50));
+            }
+            var target = new System.Windows.Media.Imaging.RenderTargetBitmap(800, 200, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            target.Render(visual);
+            pixels = new byte[800 * 200 * 4];
+            target.CopyPixels(pixels, 800 * 4, 0);
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(target));
+            using var file = File.Create(input);
+            encoder.Save(file);
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        Assert.Equal(1, await PictureTranslation.TranslateFileAsync(input, output, "auto", "ar"));
+
+        var prompt = server.Asked[0].GetProperty("prompt").GetString()!;
+        Assert.Contains("Olive oil bottle", prompt);
+        Assert.Contains("misread", prompt);
+        var read = await PictureTranslation.ReadAsync(output);
+        Assert.Equal(800, read.Width);
+        Assert.Equal(200, read.Height);
+        Assert.NotEqual(pixels, read.Original);
+        Assert.DoesNotContain(read.Blocks, b => b.Source.Contains("Olive", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task Going_round_twice_leaves_one_sentence_of_it()
     {
         Have(ModelCatalog.LlamaCpp, ModelCatalog.GemmaQuick);

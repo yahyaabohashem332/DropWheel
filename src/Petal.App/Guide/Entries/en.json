@@ -242,6 +242,30 @@
    "remove tourist"
   ]
  },
+ "tool:TranslatePicture": {
+  "category": "pictures",
+  "summary": "Translates the text on a picture where it stands: a menu, a sign, a slide, a screenshot.",
+  "details": "Windows reads the words on the picture in every language installed on it, and the translation model reads them by meaning, with the rest of the picture as context, so it can see through some misread letters. The text comes off (plain backgrounds are painted over; on a photo the 208 MB LaMa model rebuilds what is behind it, downloaded once and only if a picture needs it) and the translation goes in its place, in the original's colour, weight and alignment, right-to-left languages included. Numbers and whatever couldn't be read clearly stay as they were. Each piece of text can be corrected in the window or kept as it was, and Show the original compares. It runs on this PC (about 5 GB of model the first time) or with your own API key. Slanted, curved or handwritten text is often not read. Save Copy saves the picture beside the original with the language in its name.",
+  "how": "Drag a picture, tap Ctrl and drop on TRANSLATE; choose the language, press Translate, correct anything you like, then Save Copy.",
+  "examples": [
+   "A photo of a restaurant menu abroad, in your own language with the prices left alone.",
+   "A slide from a Turkish lecture, turned into Arabic with its layout kept.",
+   "A screenshot of a program in French, its buttons relabelled in English to send to a colleague."
+  ],
+  "worksOn": "One picture to check and correct, or several to translate straight away.",
+  "keywords": [
+   "translate picture",
+   "translate image",
+   "translate photo",
+   "translate screenshot",
+   "text in image",
+   "translate menu",
+   "translate sign",
+   "translate poster",
+   "replace text in image",
+   "image translator"
+  ]
+ },
  "tool:ExportLayers": {
   "category": "pictures",
   "summary": "Saves every layer of a Photoshop file as its own PNG, named after the layer, without Photoshop.",

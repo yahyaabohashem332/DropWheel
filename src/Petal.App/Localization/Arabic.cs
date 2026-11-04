@@ -3485,5 +3485,16 @@ internal static class Arabic
         ["Fast suits clear speech. Accurate is best for accents, noisy recordings and languages other than English."] = "السريع يناسب الكلام الواضح. والدقيق هو الأفضل للهجات والتسجيلات المشوشة واللغات غير الإنجليزية.",
         ["Speak, and DropWheel types what you say in any app, in whichever language you speak. It runs on this PC; nothing is sent anywhere."] = "تحدّث، فيكتب DropWheel ما تقوله في أي تطبيق، وبأي لغة تتحدث بها. يعمل على هذا الحاسوب ولا يُرسل شيئًا إلى أي مكان.",
         ["Accurate is best for accents and languages other than English; Fast suits clear English."] = "الدقيق هو الأفضل للهجات واللغات غير الإنجليزية، والسريع يناسب الإنجليزية الواضحة.",
+        ["Translate Picture"] = "ترجمة صورة",
+        ["A new picture is saved beside each original, with the language in its name."] = "تُحفظ صورة جديدة بجانب كل صورة أصلية، واسم اللغة في اسمها.",
+        ["Reading the picture…"] = "جارٍ قراءة الصورة…",
+        ["Windows has no reader for {0} on this PC, so some letters may be misread. Add the language under Settings › Time & language › Language."] = "لا يملك Windows قارئًا للغة {0} على هذا الجهاز، فقد يخطئ في قراءة بعض الحروف. أضف اللغة من الإعدادات › الوقت واللغة › اللغة.",
+        ["Taking the text off…"] = "جارٍ إزالة النص…",
+        ["Nothing here needed translating."] = "لا شيء هنا يحتاج إلى ترجمة.",
+        ["Some of the text had to go smaller to fit: shorten it here if you like."] = "صُغّر بعض النص ليتّسع: يمكنك اختصاره هنا إن شئت.",
+        ["Correct any line here and the picture follows."] = "صحّح أي سطر هنا فتتبعه الصورة.",
+        ["Show the original"] = "إظهار الأصل",
+        ["Keep as it is"] = "إبقاؤه كما هو",
+        ["Some of this text sits on a photo: the eraser model rebuilds what is behind it."] = "بعض هذا النص فوق صورة فوتوغرافية: يعيد نموذج المحو بناء ما خلفه.",
     };
 }

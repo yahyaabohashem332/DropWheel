@@ -110,6 +110,41 @@ public static class DocumentEngine
         }
     }
 
+    /// <summary>
+    /// The words on a picture given in several versions of the same size (BGRA pixels), read as carefully as Windows can:
+    /// short pictures at twice their size, very large ones at the largest it reads; boxes are in the picture's own pixels.
+    /// </summary>
+    public static async Task<IReadOnlyList<PictureWord>> ReadPictureAsync(IReadOnlyList<byte[]> versions, int width, int height, CancellationToken cancellationToken = default)
+    {
+        int max = OcrService.MaxImageDimension;
+        double scale = Math.Max(width, height) * 2 <= max && height < 1300 ? 2 : Math.Max(width, height) > max ? (double)max / Math.Max(width, height) : 1;
+        int w = Math.Max(1, (int)(width * scale)), h = Math.Max(1, (int)(height * scale));
+        var bitmaps = new List<SkiaSharp.SKBitmap>();
+        try
+        {
+            foreach (var bgra in versions)
+            {
+                var bitmap = new SkiaSharp.SKBitmap(new SkiaSharp.SKImageInfo(width, height, SkiaSharp.SKColorType.Bgra8888, SkiaSharp.SKAlphaType.Premul));
+                System.Runtime.InteropServices.Marshal.Copy(bgra, 0, bitmap.GetPixels(), Math.Min(bgra.Length, width * height * 4));
+                if (scale == 1)
+                {
+                    bitmaps.Add(bitmap);
+                    continue;
+                }
+                bitmaps.Add(bitmap.Resize(new SkiaSharp.SKImageInfo(w, h, bitmap.ColorType, bitmap.AlphaType), new SkiaSharp.SKSamplingOptions(SkiaSharp.SKCubicResampler.Mitchell)));
+                bitmap.Dispose();
+            }
+            double back = (double)w / width;
+            var words = await OcrService.RecognizeVersionsAsync(bitmaps, cancellationToken).ConfigureAwait(false);
+            return words.Select(o => new PictureWord(o.Text, o.X / back, o.Y / back, o.Width / back, o.Height / back, o.Line)).ToList();
+        }
+        finally
+        {
+            foreach (var bitmap in bitmaps)
+                bitmap.Dispose();
+        }
+    }
+
     /// <summary>A text file's contents, whatever its encoding (UTF-8/16 with or without a BOM, or the system code page).</summary>
     public static string ReadTextFile(string path) => Text.TextFile.ReadAllText(path);
 }

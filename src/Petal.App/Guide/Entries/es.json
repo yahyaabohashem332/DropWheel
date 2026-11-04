@@ -256,6 +256,28 @@
    "inpainting"
   ]
  },
+ "tool:TranslatePicture": {
+  "category": "pictures",
+  "summary": "Traduce el texto de una imagen en el lugar donde está: un menú, un cartel, una diapositiva, una captura.",
+  "details": "Windows lee las palabras de la imagen en cada idioma instalado y el modelo de traducción las traduce por su sentido, con el resto de la imagen como contexto, así que puede superar algunas letras mal leídas. El texto se quita (los fondos lisos se pintan; en una foto, el modelo LaMa de 208 MB reconstruye lo que hay detrás, y se descarga una vez y solo si una imagen lo necesita) y la traducción ocupa su lugar, con el color, el grosor y la alineación del original, también en idiomas que se escriben de derecha a izquierda. Los números y lo que no se pudo leer con claridad se quedan como estaban. Cada texto se puede corregir en la ventana o dejar como está, y Mostrar el original permite comparar. Funciona en este PC (unos 5 GB de modelo la primera vez) o con tu propia clave de API. El texto inclinado, curvo o manuscrito a menudo no se lee. Guardar copia guarda la imagen junto al original, con el idioma en su nombre.",
+  "how": "Arrastra una imagen, pulsa Ctrl y suéltala en TRADUCIR; elige el idioma, pulsa Traducir, corrige lo que quieras y luego Guardar copia.",
+  "worksOn": "Una imagen para revisar y corregir, o varias para traducir directamente.",
+  "examples": [
+   "La foto de la carta de un restaurante en el extranjero, en tu idioma y con los precios intactos.",
+   "Una diapositiva de una clase en turco, en árabe y con el mismo diseño.",
+   "La captura de un programa en francés, con sus botones en inglés para enviarla a un compañero."
+  ],
+  "keywords": [
+   "traducir imagen",
+   "traducir foto",
+   "traducir captura",
+   "texto en una imagen",
+   "traducir menú",
+   "traducir cartel",
+   "reemplazar texto de imagen",
+   "traductor de imágenes"
+  ]
+ },
  "tool:ExportLayers": {
   "category": "pictures",
   "summary": "Guarda cada capa de un archivo de Photoshop como un PNG propio, con el nombre de la capa, sin Photoshop.",

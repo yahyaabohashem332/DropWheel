@@ -252,6 +252,28 @@
    "hapus turis"
   ]
  },
+ "tool:TranslatePicture": {
+  "category": "pictures",
+  "summary": "Menerjemahkan teks pada gambar di tempatnya: menu, papan tanda, slide, tangkapan layar.",
+  "details": "Windows membaca kata-kata pada gambar dalam setiap bahasa yang terpasang, lalu model terjemahan menerjemahkannya menurut makna dengan bantuan teks lain pada gambar, sehingga bisa melewati beberapa huruf yang salah terbaca. Teks dihapus (latar polos dicat; pada foto, model LaMa 208 MB membangun ulang bagian di belakangnya, diunduh sekali dan hanya jika gambar memerlukannya) dan terjemahan ditempatkan di posisinya dengan warna, ketebalan, dan perataan aslinya, termasuk bahasa yang ditulis dari kanan. Angka dan yang tidak terbaca jelas tetap seperti semula. Setiap teks bisa diperbaiki di jendela atau dibiarkan apa adanya, dan Tampilkan aslinya untuk membandingkan. Berjalan di PC ini (sekitar 5 GB model pada kali pertama) atau dengan kunci API Anda sendiri. Teks miring, melengkung, atau tulisan tangan sering tidak terbaca. Simpan Salinan menyimpan gambar di samping aslinya dengan nama bahasa di namanya.",
+  "how": "Seret gambar, ketuk Ctrl, dan lepaskan di TERJEMAH; pilih bahasa, tekan Terjemahkan, perbaiki sesuka Anda, lalu Simpan Salinan.",
+  "worksOn": "Satu gambar untuk diperiksa dan diperbaiki, atau beberapa untuk langsung diterjemahkan.",
+  "examples": [
+   "Foto menu restoran di luar negeri menjadi bahasa Anda, harganya tetap.",
+   "Slide kuliah berbahasa Turki menjadi bahasa Arab dengan tata letak yang sama.",
+   "Tangkapan layar program berbahasa Prancis dengan tombol berbahasa Inggris untuk dikirim ke rekan kerja."
+  ],
+  "keywords": [
+   "terjemahkan gambar",
+   "terjemahkan foto",
+   "terjemahkan tangkapan layar",
+   "teks dalam gambar",
+   "terjemahkan menu",
+   "terjemahkan papan tanda",
+   "ganti teks gambar",
+   "penerjemah gambar"
+  ]
+ },
  "tool:ExportLayers": {
   "category": "pictures",
   "summary": "Menyimpan setiap lapisan file Photoshop sebagai PNG tersendiri, dinamai sesuai lapisannya, tanpa Photoshop.",

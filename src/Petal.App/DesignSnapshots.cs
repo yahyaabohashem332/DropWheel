@@ -385,6 +385,8 @@ internal static class DesignSnapshots
             ("erase", () => new Tools.Windows.EraseObjectWindow(T(Petal.Core.Tools.ToolId.EraseObject), file("landscape.jpg"), jobs, at)),
             ("translate", () => new Tools.Windows.TranslateSubtitlesWindow(T(Petal.Core.Tools.ToolId.TranslateSubtitles), [file("weekend.srt")], jobs, at)),
             ("translatedocument", () => new Tools.Windows.TranslateDocumentWindow(T(Petal.Core.Tools.ToolId.TranslateDocument), [file("album.pdf")], jobs, at)),
+            ("translatepicture", () => new Tools.Windows.TranslatePictureWindow(T(Petal.Core.Tools.ToolId.TranslatePicture), [file("figures.png")], jobs, at)),
+            ("translatedpicture", () => new Tools.Windows.TranslatePictureWindow(T(Petal.Core.Tools.ToolId.TranslatePicture), [file("figures.png")], jobs, at, TranslatedSample(), Localization.L.Code == "ar" ? "ar" : "es")),
             ("exportlayers", () => new Tools.Windows.ExportLayersWindow(T(Petal.Core.Tools.ToolId.ExportLayers), [file("layers.psd")], jobs, at)),
             ("fileinfo", () => new Tools.Windows.FileDetailsWindow(T(Petal.Core.Tools.ToolId.FileDetails), file("layers.psd"), jobs, at)),
             ("fileinfoidml", () => new Tools.Windows.FileDetailsWindow(T(Petal.Core.Tools.ToolId.FileDetails), file("leaflet.idml"), jobs, at)),
@@ -911,6 +913,48 @@ internal static class DesignSnapshots
             new Screen.Workspace { Name = Localization.L.IsArabic ? "الدراسة" : "Study" },
         ];
         s.PetalColours = new() { ["tool:Compress"] = "#30A46C", ["tool:Watermark"] = "#0090FF", ["action:Share"] = "#D6409F" };
+    }
+
+    /// <summary>A shop sign with its words already translated, for looking at the window with them.</summary>
+    private static Petal.Recipes.Translation.PictureWork TranslatedSample()
+    {
+        const int w = 900, h = 420;
+        var (title, line) = (Localization.L.Code == "ar" ? "افتتاح كبير" : "Gran apertura", Localization.L.Code == "ar" ? "قهوة مجانية لأول مئة ضيف" : "Café gratis para los primeros cien invitados");
+        var paper = Color.FromRgb(36, 60, 110);
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(new SolidColorBrush(paper), null, new Rect(0, 0, w, h));
+            void Say(string text, double y, double size) => dc.DrawText(new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), size, Brushes.White, 1.0) { MaxTextWidth = w, TextAlignment = TextAlignment.Center }, new Point(0, y));
+            Say("Grand Opening", 90, 64);
+            Say("Free coffee for the first hundred guests", 240, 34);
+        }
+        var target = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+        target.Render(visual);
+        var pixels = new byte[w * h * 4];
+        target.CopyPixels(pixels, w * 4, 0);
+        Petal.Recipes.Translation.PictureBlock Block(string source, string translation, Rect box, double size) => new()
+        {
+            Source = source,
+            Translation = translation,
+            Lines = [box],
+            Box = box,
+            LineHeight = box.Height,
+            Size = size,
+            Column = box,
+            Shape = new Rect(0, 0, w, h),
+            Align = Petal.Recipes.Translation.PictureAlign.Centre,
+            RightToLeft = false,
+            Ink = Colors.White,
+            Paper = paper,
+        };
+        return new Petal.Recipes.Translation.PictureWork
+        {
+            Original = pixels,
+            Width = w,
+            Height = h,
+            Blocks = [Block("Grand Opening", title, new Rect(245, 105, 410, 70), 64), Block("Free coffee for the first hundred guests", line, new Rect(135, 248, 630, 42), 34)],
+        };
     }
 
     private static Petal.Recipes.Recipe SampleRecipe() => new()

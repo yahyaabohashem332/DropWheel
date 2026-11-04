@@ -148,6 +148,61 @@ internal static class OcrService
         return kept.SelectMany(k => k.Words).ToList();
     }
 
+    /// <summary>
+    /// The same picture in several versions (as it is, its contrast raised, its background taken out), read by every
+    /// language installed. The cleanest reading of a place wins, and a line that reaches into one already kept is the same
+    /// words read worse: pieces of one line must not come back as a line twice over.
+    /// </summary>
+    public static async Task<IReadOnlyList<OcrWordBox>> RecognizeVersionsAsync(IReadOnlyList<SKBitmap> versions, CancellationToken cancellationToken)
+    {
+        var engines = CreateEngines(null);
+        var candidates = new List<(List<OcrWordBox> Words, double Left, double Top, double Right, double Bottom, double Score)>();
+        int lineIndex = 0;
+        for (int v = 0; v < versions.Count; v++)
+        {
+            using var soft = ToSoftwareBitmap(versions[v]);
+            for (int e = 0; e < engines.Count; e++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                bool arabicReader = engines[e].RecognizerLanguage.LanguageTag.Split('-')[0] is "ar" or "fa" or "ur" or "ps";
+                var result = await engines[e].RecognizeAsync(soft).AsTask(cancellationToken).ConfigureAwait(false);
+                foreach (var line in result.Lines)
+                {
+                    var words = line.Words.Select(w => new OcrWordBox(w.Text, w.BoundingRect.X, w.BoundingRect.Y, w.BoundingRect.Width, w.BoundingRect.Height, lineIndex)).ToList();
+                    lineIndex++;
+                    if (words.Count == 0)
+                        continue;
+                    var text = string.Concat(words.Select(w => w.Text));
+                    int letters = text.Count(char.IsLetterOrDigit);
+                    double quality = (double)letters / Math.Max(1, text.Length);
+                    int arabic = ReadingOrder.Arabic(text), latin = ReadingOrder.Latin(text);
+                    double score = letters * quality * quality;
+                    if (arabicReader == arabic > latin)
+                        score *= 1.15;
+                    // Latin letters read as Arabic, or the other way about, come out as a mixture of both.
+                    if (Math.Min(arabic, latin) * 4 > Math.Max(arabic, latin) && Math.Min(arabic, latin) > 0)
+                        score *= 0.5;
+                    if (v == 0)
+                        score *= 1.05;
+                    candidates.Add((words, words.Min(w => w.X), words.Min(w => w.Y), words.Max(w => w.X + w.Width), words.Max(w => w.Y + w.Height), score));
+                }
+            }
+        }
+        var kept = new List<(List<OcrWordBox> Words, double Left, double Top, double Right, double Bottom, double Score)>();
+        foreach (var c in candidates.OrderByDescending(c => c.Score))
+        {
+            double area = (c.Right - c.Left) * (c.Bottom - c.Top);
+            bool same = kept.Any(k =>
+            {
+                double w = Math.Min(k.Right, c.Right) - Math.Max(k.Left, c.Left), h = Math.Min(k.Bottom, c.Bottom) - Math.Max(k.Top, c.Top);
+                return w > 0 && h > 0 && w * h > 0.25 * Math.Min(area, (k.Right - k.Left) * (k.Bottom - k.Top));
+            });
+            if (!same)
+                kept.Add(c);
+        }
+        return kept.SelectMany(k => k.Words).ToList();
+    }
+
     private static List<OcrEngine> CreateEngines(IReadOnlyList<string>? languages)
     {
         var engines = new List<OcrEngine>();

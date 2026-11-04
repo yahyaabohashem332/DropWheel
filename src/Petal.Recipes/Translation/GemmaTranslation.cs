@@ -51,20 +51,23 @@ public static partial class GemmaTranslation
     /// <summary>Text that can't close the model's turn or open another.</summary>
     private static string Plain(string text) => text.Replace("<|", "< |").Replace("|>", "| >");
 
-    internal static string Prompt(string text, string from, string to, IReadOnlyList<string>? earlier)
+    /// <summary>What a translator is told about text Windows read off a picture.</summary>
+    private const string ReadOffPicture = " The text was read off a picture by a machine, so some letters may be misread: read through them to the words that were meant, and don't invent anything that isn't there.";
+
+    internal static string Prompt(string text, string from, string to, IReadOnlyList<string>? earlier, bool picture = false)
     {
         string source = from is "" or "auto" || Name(from).Length == 0 ? "the language it is in" : Name(from);
         string target = Name(to);
         var words = Plain(text).Trim();
         var asked = earlier is { Count: > 0 }
-            ? "The lines just before it, for context only; do not translate them:\n" + string.Join('\n', earlier.Select(Plain)) + "\n\nThe text to translate:\n" + words
+            ? (picture ? "Other text on the same picture, for context only; do not translate it:\n" : "The lines just before it, for context only; do not translate them:\n") + string.Join('\n', earlier.Select(Plain)) + "\n\nThe text to translate:\n" + words
             : words;
-        return $"<|turn>system\nYou are a professional translator. Translate the user's text from {source} into {target}. Keep its full meaning, names and numbers, and any line breaks. Write natural {target}. Reply with the translation only, with no notes.<turn|>\n<|turn>user\n{asked}<turn|>\n<|turn>model\n";
+        return $"<|turn>system\nYou are a professional translator. Translate the user's text from {source} into {target}. Keep its full meaning, names and numbers, and any line breaks. Write natural {target}.{(picture ? ReadOffPicture : "")} Reply with the translation only, with no notes.<turn|>\n<|turn>user\n{asked}<turn|>\n<|turn>model\n";
     }
 
     /// <summary>The text in another language. <paramref name="earlier"/> are the lines before it, so a line that goes on from them reads right.</summary>
     /// <param name="live">For captions: the quickest model here rather than the most accurate.</param>
-    public static async Task<string> TranslateAsync(string text, string from, string to, IReadOnlyList<string>? earlier = null, bool live = false, CancellationToken cancellationToken = default)
+    public static async Task<string> TranslateAsync(string text, string from, string to, IReadOnlyList<string>? earlier = null, bool live = false, CancellationToken cancellationToken = default, bool picture = false)
     {
         if (text.Trim().Length == 0)
             return text;
@@ -74,11 +77,11 @@ public static partial class GemmaTranslation
             var parts = new List<string>();
             foreach (var part in Parts(text))
             {
-                parts.Add(await TranslateAsync(part, from, to, parts.Count == 0 ? earlier : null, live, cancellationToken).ConfigureAwait(false));
+                parts.Add(await TranslateAsync(part, from, to, parts.Count == 0 ? earlier : null, live, cancellationToken, picture).ConfigureAwait(false));
             }
             return string.Join(' ', parts);
         }
-        var prompt = Prompt(text, from, to, earlier);
+        var prompt = Prompt(text, from, to, earlier, picture);
         int most = Math.Clamp(text.Length * 2 + 40, 60, 2000);
         var said = Reply(await GemmaServer.CompleteAsync(model, prompt, most, 0, 1, cancellationToken).ConfigureAwait(false));
         if (Looped(said, text))
@@ -92,7 +95,7 @@ public static partial class GemmaTranslation
         // mended, none harmed, at about twice the time; so not where that would make captions fall behind.
         if (said.Length == 0 || (live && !GemmaServer.OnCard))
             return said;
-        var read = Reply(await GemmaServer.CompleteAsync(model, ProofPrompt(text, said, from, to), most, 0, 1, cancellationToken).ConfigureAwait(false));
+        var read = Reply(await GemmaServer.CompleteAsync(model, ProofPrompt(text, said, from, to, picture), most, 0, 1, cancellationToken).ConfigureAwait(false));
         return Proofread(said, read, text);
     }
 
@@ -104,11 +107,11 @@ public static partial class GemmaTranslation
         return (open >= 0 ? said[..open] : said).Trim();
     }
 
-    internal static string ProofPrompt(string text, string translation, string from, string to)
+    internal static string ProofPrompt(string text, string translation, string from, string to, bool picture = false)
     {
         string source = from is "" or "auto" || Name(from).Length == 0 ? "another language" : Name(from);
         string target = Name(to);
-        return $"<|turn>system\nYou are a meticulous {target} editor. Below are a text in {source} and its {target} translation. Check the translation word by word: wrong words, wrong grammar or agreement, and anything whose meaning differs from the original. Correct what is wrong and change nothing else. If it is already right, repeat it exactly. Reply with the final {target} translation only, with no notes.<turn|>\n<|turn>user\nOriginal:\n{Plain(text).Trim()}\n\nTranslation:\n{Plain(translation)}<turn|>\n<|turn>model\n";
+        return $"<|turn>system\nYou are a meticulous {target} editor. Below are a text in {source} and its {target} translation. Check the translation word by word: wrong words, wrong grammar or agreement, and anything whose meaning differs from the original.{(picture ? " The original was read off a picture by a machine, so some of its letters may be misread." : "")} Correct what is wrong and change nothing else. If it is already right, repeat it exactly. Reply with the final {target} translation only, with no notes.<turn|>\n<|turn>user\nOriginal:\n{Plain(text).Trim()}\n\nTranslation:\n{Plain(translation)}<turn|>\n<|turn>model\n";
     }
 
     /// <summary>The proofread text, unless it stopped being the same translation: an editor mends words, and doesn't lose half of them or go round.</summary>
