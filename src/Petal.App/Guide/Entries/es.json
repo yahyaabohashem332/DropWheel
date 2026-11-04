@@ -256,6 +256,28 @@
    "inpainting"
   ]
  },
+ "tool:IdPhoto": {
+  "category": "pictures",
+  "summary": "Prepara fotos de pasaporte, visado y residencia al tamaño exacto que pide cada país, con una hoja para imprimir.",
+  "details": "Elige el país: se localiza a la persona, se separa del fondo (el modelo de fondo de 224 MB se descarga una vez) y se coloca para que la cabeza tenga el tamaño exigido. La ventana muestra el resultado, el tamaño de la cabeza y lo que falle en la foto; Tamaño de la cabeza y los dos controles de posición lo corrigen a mano. Tamaño personalizado admite cualquier otro. Los tamaños vienen de las oficinas oficiales de cada país, comprobados en noviembre de 2026; los países cuyas oficinas no indican ninguno no aparecen, y las normas cambian, así que confírmalo con la oficina que la pide. Guardar copia guarda la foto a 300 dpi como 'nombre ID Photo' y, al lado, una hoja de 4×6 pulgadas o A4 con todas las copias que quepan y finas líneas de corte. No juzga la expresión, la luz ni las gafas: una oficina sí puede.",
+  "how": "Arrastra un retrato, pulsa Ctrl y suéltalo en FOTO CARNÉ; elige el país, revisa la cabeza con los controles y luego Guardar copia.",
+  "worksOn": "Un retrato cada vez.",
+  "examples": [
+   "Un permiso de residencia turco: 50 × 60 mm sobre blanco, impreso en una hoja 4×6.",
+   "Una foto de visado Schengen de 35 × 45 mm a partir de una tomada en casa frente a una pared.",
+   "Cuatro copias para una solicitud universitaria en una sola hoja."
+  ],
+  "keywords": [
+   "foto de pasaporte",
+   "foto de visado",
+   "foto de residencia",
+   "foto de carné",
+   "foto biométrica",
+   "35x45",
+   "impresión 4x6",
+   "tamaño de foto por país"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Traduce el texto de una imagen en el lugar donde está: un menú, un cartel, una diapositiva, una captura.",
@@ -1115,6 +1137,28 @@
    "preguntar a una hoja de cálculo",
    "ask a pdf",
    "chat with pdf"
+  ]
+ },
+ "tool:StudyNotes": {
+  "category": "documents",
+  "summary": "Crea un resumen, tarjetas y un cuestionario a partir de una clase grabada o un documento, y un mazo para Anki.",
+  "details": "Funciona con un PDF, un archivo de Word o PowerPoint, o una grabación de audio o vídeo, que primero escucha con Whisper. El archivo se lee unas páginas cada vez y el modelo de IA solo escribe a partir de lo que dice, en su idioma o en uno de los ocho; cada tarjeta y pregunta indica la página, diapositiva o minuto de origen. En la ventana lees el resumen, das la vuelta a las tarjetas y haces el cuestionario. Guardar escribe 'nombre Study.md' con las notas y respuestas, y 'nombre Study.apkg', un mazo que Anki abre con doble clic. Funciona en este PC (unos 5 GB de modelo la primera vez; una clase larga puede tardar) o con tu clave de API. Un modelo aún puede equivocarse: comprueba lo que aprendes en el lugar que indica.",
+  "how": "Arrastra un PDF o una grabación, pulsa Ctrl y suéltalo en ESTUDIO; pulsa Crear notas y luego Guardar.",
+  "examples": [
+   "Una clase grabada de dos horas antes del examen: los puntos clave y treinta tarjetas para repasar en el autobús.",
+   "Un capítulo de 200 páginas en inglés con resumen y cuestionario en árabe.",
+   "Las diapositivas de un curso convertidas en un mazo de Anki que indica de qué diapositiva sale cada tarjeta."
+  ],
+  "worksOn": "Un archivo cada vez: PDF, Word, PowerPoint, audio o vídeo.",
+  "keywords": [
+   "resumir clase",
+   "notas de estudio",
+   "tarjetas de memoria",
+   "anki",
+   "cuestionario",
+   "repaso de examen",
+   "resumir pdf",
+   "apkg"
   ]
  },
  "tool:RecordingStudio": {

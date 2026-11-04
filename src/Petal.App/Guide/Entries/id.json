@@ -252,6 +252,28 @@
    "hapus turis"
   ]
  },
+ "tool:IdPhoto": {
+  "category": "pictures",
+  "summary": "Membuat foto paspor, visa, dan izin tinggal dengan ukuran tepat yang diminta tiap negara, beserta lembar cetak.",
+  "details": "Pilih negara: orang ditemukan di foto, dipisahkan dari latar (model latar 224 MB diunduh sekali), dan ditempatkan agar kepala sesuai ukuran yang diminta. Jendela menampilkan hasil, ukuran kepala, dan masalah pada foto jika ada; Ukuran kepala dan dua penggeser posisi memperbaikinya secara manual. Ukuran khusus menerima ukuran lain. Ukuran berasal dari kantor resmi tiap negara, diperiksa November 2026; negara yang kantornya tidak menyebut ukuran tidak tercantum, dan aturan berubah, jadi pastikan ke kantor yang meminta. Simpan Salinan menyimpan foto 300 dpi sebagai 'nama ID Photo' dan di sampingnya lembar 4×6 inci atau A4 dengan salinan sebanyak yang muat dan garis potong tipis. Alat ini tidak menilai ekspresi, cahaya, atau kacamata; kantor bisa saja menilainya.",
+  "how": "Seret potret, ketuk Ctrl, dan lepaskan di FOTO DOKUMEN; pilih negara, periksa kepala dengan penggeser, lalu Simpan Salinan.",
+  "worksOn": "Satu potret setiap kali.",
+  "examples": [
+   "Izin tinggal Turki: 50 × 60 mm berlatar putih, dicetak di satu lembar 4×6.",
+   "Foto visa Schengen 35 × 45 mm dari foto di rumah di depan dinding.",
+   "Empat salinan untuk lamaran universitas dalam satu lembar."
+  ],
+  "keywords": [
+   "foto paspor",
+   "foto visa",
+   "foto izin tinggal",
+   "pas foto",
+   "foto biometrik",
+   "35x45",
+   "cetak 4x6",
+   "ukuran foto negara"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Menerjemahkan teks pada gambar di tempatnya: menu, papan tanda, slide, tangkapan layar.",
@@ -1126,6 +1148,28 @@
    "tanya spreadsheet",
    "ask a pdf",
    "chat with pdf"
+  ]
+ },
+ "tool:StudyNotes": {
+  "category": "documents",
+  "summary": "Membuat ringkasan, kartu belajar, kuis, dan dek Anki dari rekaman kuliah atau dokumen.",
+  "details": "Bekerja pada PDF, Word, PowerPoint, atau rekaman audio dan video yang lebih dulu didengar dengan Whisper. File dibaca beberapa halaman sekaligus dan model AI hanya menulis dari isi file, dalam bahasa file atau salah satu dari delapan bahasa; setiap kartu dan pertanyaan menyebut halaman, slide, atau menit asalnya. Di jendela Anda membaca ringkasan, membalik kartu, dan mengerjakan kuis. Simpan menulis 'nama Study.md' berisi catatan dan jawaban, serta 'nama Study.apkg', dek yang dibuka Anki dengan klik ganda. Berjalan di PC ini (sekitar 5 GB model pada kali pertama; kuliah panjang bisa lama) atau dengan kunci API Anda. Model tetap bisa keliru: periksa yang Anda pelajari pada tempat yang ditunjuknya.",
+  "how": "Seret PDF atau rekaman, ketuk Ctrl, dan lepaskan di BELAJAR; tekan Buat Catatan, lalu Simpan.",
+  "examples": [
+   "Rekaman kuliah dua jam sebelum ujian: poin utama dan tiga puluh kartu untuk diulang di bus.",
+   "Bab 200 halaman berbahasa Inggris dengan ringkasan dan kuis berbahasa Arab.",
+   "Slide kuliah menjadi dek Anki yang menyebut slide asal setiap kartu."
+  ],
+  "worksOn": "Satu file setiap kali: PDF, Word, PowerPoint, audio, atau video.",
+  "keywords": [
+   "ringkasan kuliah",
+   "catatan belajar",
+   "kartu belajar",
+   "anki",
+   "kuis",
+   "persiapan ujian",
+   "ringkasan pdf",
+   "apkg"
   ]
  },
  "tool:RecordingStudio": {

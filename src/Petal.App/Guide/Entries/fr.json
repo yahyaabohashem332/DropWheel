@@ -251,6 +251,28 @@
    "enlever les touristes"
   ]
  },
+ "tool:IdPhoto": {
+  "category": "pictures",
+  "summary": "Prépare les photos de passeport, de visa et de séjour à la taille exacte demandée par chaque pays, avec une feuille à imprimer.",
+  "details": "Choisissez le pays : la personne est repérée, détourée (le modèle de fond de 224 Mo se télécharge une fois) et placée pour que la tête ait la taille demandée. La fenêtre montre le résultat, la taille de la tête et ce qui ne va pas sur la photo ; Taille de la tête et les deux curseurs de position corrigent à la main. Taille personnalisée accepte toute autre taille. Les tailles viennent des services officiels de chaque pays, vérifiées en novembre 2026 ; les pays dont les services n’en indiquent pas ne sont pas listés, et les règles changent : vérifiez auprès du service demandeur. Enregistrer une copie enregistre la photo à 300 dpi sous « nom ID Photo » et, à côté, une feuille 4×6 pouces ou A4 avec autant de copies que possible et de fines lignes de coupe. L’outil ne juge ni l’expression, ni la lumière, ni les lunettes : un service peut le faire.",
+  "how": "Faites glisser un portrait, appuyez sur Ctrl et déposez-le sur PHOTO D’IDENTITÉ ; choisissez le pays, vérifiez la tête avec les curseurs, puis Enregistrer une copie.",
+  "worksOn": "Un portrait à la fois.",
+  "examples": [
+   "Un titre de séjour turc : 50 × 60 mm sur fond blanc, imprimé sur une feuille 4×6.",
+   "Une photo de visa Schengen de 35 × 45 mm à partir d’une photo prise chez soi devant un mur.",
+   "Quatre copies pour un dossier universitaire sur une seule feuille."
+  ],
+  "keywords": [
+   "photo de passeport",
+   "photo de visa",
+   "photo de séjour",
+   "photo d’identité",
+   "photo biométrique",
+   "35x45",
+   "impression 4x6",
+   "taille de photo par pays"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Traduit le texte d’une image là où il se trouve : menu, panneau, diapositive, capture d’écran.",
@@ -1098,6 +1120,28 @@
    "interroger un tableur",
    "ask a pdf",
    "chat with pdf"
+  ]
+ },
+ "tool:StudyNotes": {
+  "category": "documents",
+  "summary": "Crée un résumé, des cartes et un quiz à partir d’un cours enregistré ou d’un document, et un paquet pour Anki.",
+  "details": "Fonctionne sur un PDF, un fichier Word ou PowerPoint, ou un enregistrement audio ou vidéo, écouté d’abord avec Whisper. Le fichier est lu quelques pages à la fois et le modèle d’IA n’écrit qu’à partir de ce qu’il dit, dans sa langue ou l’une des huit ; chaque carte et question indique la page, la diapositive ou la minute d’origine. Dans la fenêtre, vous lisez le résumé, retournez les cartes et faites le quiz. Enregistrer écrit « nom Study.md » avec les notes et les réponses, et « nom Study.apkg », un paquet qu’Anki ouvre d’un double-clic. L’outil fonctionne sur ce PC (environ 5 Go de modèle la première fois ; un long cours prend du temps) ou avec votre clé API. Un modèle peut quand même se tromper : vérifiez ce que vous apprenez à l’endroit indiqué.",
+  "how": "Faites glisser un PDF ou un enregistrement, appuyez sur Ctrl et déposez-le sur ÉTUDE ; appuyez sur Créer les notes, puis Enregistrer.",
+  "examples": [
+   "Un cours enregistré de deux heures avant l’examen : les points clés et trente cartes à revoir dans le bus.",
+   "Un chapitre de 200 pages en anglais, résumé et quiz en arabe.",
+   "Les diapositives d’un cours deviennent un paquet Anki qui indique la diapositive de chaque carte."
+  ],
+  "worksOn": "Un fichier à la fois : PDF, Word, PowerPoint, audio ou vidéo.",
+  "keywords": [
+   "résumer un cours",
+   "notes d’étude",
+   "cartes mémoire",
+   "anki",
+   "quiz",
+   "révision d’examen",
+   "résumer un pdf",
+   "apkg"
   ]
  },
  "tool:RecordingStudio": {

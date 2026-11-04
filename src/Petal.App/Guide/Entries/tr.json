@@ -250,6 +250,28 @@
    "istenmeyen nesne"
   ]
  },
+ "tool:IdPhoto": {
+  "category": "pictures",
+  "summary": "Pasaport, vize ve ikamet fotoğraflarını her ülkenin istediği tam boyutta, baskı kâğıdıyla hazırlar.",
+  "details": "Ülkeyi seçin: kişi fotoğrafta bulunur, arka plandan ayrılır (224 MB'lık arka plan modeli bir kez iner) ve baş, kurumun istediği boyutta olacak şekilde yerleştirilir. Pencere sonucu, başın çıkan boyutunu ve varsa fotoğraftaki sorunu gösterir; Baş boyutu ve iki konum kaydırıcısı elle düzeltir. Özel boyut başka her ölçüyü alır. Ölçüler ülkelerin kendi kurumlarından, Kasım 2026'da kontrol edildi; kurumları ölçü belirtmeyen ülkeler listede yok, kurallar da değişir, bu yüzden isteyen kurumdan doğrulayın. Kopya Kaydet fotoğrafı 300 dpi olarak 'ad ID Photo' adıyla, yanına da sığan kadar kopyalı ve ince kesim çizgili 4×6 inç veya A4 kâğıdı kaydeder. İfadeyi, ışığı veya gözlüğü değerlendirmez; kurum değerlendirebilir.",
+  "how": "Bir portreyi sürükleyin, Ctrl'ye dokunun ve VESİKALIK üzerine bırakın; ülkeyi seçin, başı kaydırıcılarla kontrol edin, sonra Kopya Kaydet.",
+  "worksOn": "Tek seferde bir portre.",
+  "examples": [
+   "Türkiye ikamet izni: beyaz üzerine 50 × 60 mm, fotoğrafçıda tek 4×6 kâğıda basılır.",
+   "Evde duvar önünde çekilmiş fotoğraftan 35 × 45 mm Schengen vizesi fotoğrafı.",
+   "Üniversite başvurusu için tek kâğıtta dört kopya."
+  ],
+  "keywords": [
+   "pasaport fotoğrafı",
+   "vize fotoğrafı",
+   "ikamet fotoğrafı",
+   "vesikalık",
+   "biyometrik fotoğraf",
+   "35x45",
+   "4x6 baskı",
+   "ülkeye göre fotoğraf boyutu"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Resimdeki metni bulunduğu yerde çevirir: menü, tabela, slayt, ekran görüntüsü.",
@@ -1103,6 +1125,28 @@
    "tabloya soru sor",
    "ask a pdf",
    "chat with pdf"
+  ]
+ },
+ "tool:StudyNotes": {
+  "category": "documents",
+  "summary": "Ders kaydından veya belgeden özet, bilgi kartları, test ve Anki destesi hazırlar.",
+  "details": "PDF, Word, PowerPoint veya önce Whisper ile dinlenen ses ve video kayıtlarında çalışır. Dosya birkaç sayfa birden okunur ve yapay zekâ modeli yalnızca dosyanın söylediklerinden, dosyanın dilinde veya sekiz dilden birinde yazar; her kart ve soru geldiği sayfayı, slaytı veya dakikayı söyler. Pencerede özeti okur, kartları çevirir ve testi çözersiniz. Kaydet, notlar ve cevaplarla 'ad Study.md' dosyasını ve Anki'nin çift tıkla açtığı 'ad Study.apkg' destesini yazar. Bu bilgisayarda (ilk seferde yaklaşık 5 GB model; uzun bir ders zaman alabilir) veya kendi API anahtarınızla çalışır. Model yine de yanılabilir: öğrendiğinizi gösterdiği yerden kontrol edin.",
+  "how": "Bir PDF veya kaydı sürükleyin, Ctrl'ye dokunun ve ÇALIŞMA üzerine bırakın; Not Oluştur'a, sonra Kaydet'e basın.",
+  "examples": [
+   "Sınavdan önce iki saatlik ders kaydı: ana noktalar ve otobüste tekrar için otuz kart.",
+   "İngilizce 200 sayfalık bir bölüm, özeti ve testi Arapça.",
+   "Ders slaytları, her kartın hangi slayttan geldiğini söyleyen bir Anki destesine dönüşür."
+  ],
+  "worksOn": "Tek seferde bir dosya: PDF, Word, PowerPoint, ses veya video.",
+  "keywords": [
+   "ders özeti",
+   "çalışma notları",
+   "bilgi kartı",
+   "anki",
+   "test",
+   "sınav tekrarı",
+   "pdf özeti",
+   "apkg"
   ]
  },
  "tool:RecordingStudio": {

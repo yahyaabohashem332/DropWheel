@@ -125,11 +125,11 @@ public static partial class GemmaTranslation
     internal const int Longest = 2500;
 
     /// <summary>A long text cut after a sentence where it can be, otherwise after a word.</summary>
-    internal static IEnumerable<string> Parts(string text)
+    internal static IEnumerable<string> Parts(string text, int longest = Longest)
     {
         for (int start = 0; start < text.Length;)
         {
-            int end = Math.Min(start + Longest, text.Length);
+            int end = Math.Min(start + longest, text.Length);
             if (end < text.Length)
             {
                 int cut = text.LastIndexOfAny(['.', '!', '?', '؟', '۔', '。', '\n'], end - 1, end - start);

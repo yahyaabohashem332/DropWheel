@@ -18,6 +18,7 @@ public partial class LocalizationTests
     // Strings in the app's sources that are not interface text, or read the same in Arabic.
     private static readonly HashSet<string> NotTranslated = new(StringComparer.Ordinal)
     {
+        "Photosynthesis", "Making food from light.", "Where does it happen?", "Leaves", "Roots", "Soil", "Air", "The text says so.", "Page 1",
         "Gran apertura", "Café gratis para los primeros cien invitados", "Grand Opening", "Free coffee for the first hundred guests",
         "Arial", "Segoe UI Symbol", "Yahya Abo Hashem", "Kadikoy, Istanbul", "Written anywhere", "Check this",
         "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "do:screen.circle", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",

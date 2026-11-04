@@ -69,6 +69,8 @@ public enum ToolId
     RecordingStudio,
     TranslateDocument,
     TranslatePicture,
+    IdPhoto,
+    StudyNotes,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

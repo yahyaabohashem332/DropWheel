@@ -182,6 +182,11 @@ public sealed class AppSettings
     public string CaptionsShow { get; set; } = "both";
     public string CaptionsLanguage { get; set; } = "auto";
 
+    /// <summary>The country and paper last used for ID photos; empty until one is chosen.</summary>
+    public string IdPhotoSpec { get; set; } = "";
+
+    public string IdPhotoPaper { get; set; } = "";
+
     /// <summary>The language live captions are translated into; empty for the one the interface speaks.</summary>
     public string CaptionsInto { get; set; } = "";
 

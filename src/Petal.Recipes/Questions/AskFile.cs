@@ -102,6 +102,23 @@ public static partial class AskFile
     public static bool IsKnown(string path, string? speechModel = null) => File.Exists(Path.Combine(CacheFolder, Key(path, speechModel) + ".json"));
 
     /// <summary>
+    /// A file's words and where they are, for whatever is to be made from them; what was kept when it was read for
+    /// questions is used again, and a recording is heard with <paramref name="speechModel"/>.
+    /// </summary>
+    public static async Task<IReadOnlyList<PlacedText>> WordsAsync(string path, string? speechModel = null, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        var key = Key(path, speechModel);
+        if (Load(key, path) is { } known)
+        {
+            progress?.Report(1);
+            return known.Passages.Select(p => p.Place with { Text = p.Text }).ToList();
+        }
+        var (places, _) = await PlacesAsync(path, key, speechModel, progress, cancellationToken).ConfigureAwait(false);
+        progress?.Report(1);
+        return places;
+    }
+
+    /// <summary>
     /// The file read for questions: from what was kept when it was read before, otherwise read now. A recording is heard
     /// with <paramref name="speechModel"/> (as Make Shorts hears it, and kept with it).
     /// </summary>
@@ -113,6 +130,23 @@ public static partial class AskFile
             progress?.Report(1);
             return known;
         }
+        var format = Formats.FromPath(path) ?? throw new InvalidOperationException("DropWheel doesn't know this kind of file.");
+        var (places, pdf) = await PlacesAsync(path, key, speechModel, progress, cancellationToken).ConfigureAwait(false);
+        var passages = Split(places);
+        if (passages.Count == 0)
+            throw new InvalidOperationException(IsRecording(format) ? "No speech was found in this file." : "There are no words to read in this file.");
+        using var reader = new PassageModel();
+        double from = IsRecording(format) ? 0.85 : 0.6;
+        var meanings = await Task.Run(() => reader.Passages(passages.Select(Indexed).ToList(), Slice(progress, from, 1), cancellationToken), cancellationToken).ConfigureAwait(false);
+        var knowledge = new FileKnowledge(path, LanguageOf(passages.Select(p => p.Text)), passages, meanings, pdf);
+        Save(key, knowledge);
+        progress?.Report(1);
+        return knowledge;
+    }
+
+    /// <summary>A file's words by place: a PDF's pages, a document as it is laid out, a recording as it is heard.</summary>
+    private static async Task<(List<PlacedText> Places, string? Pdf)> PlacesAsync(string path, string key, string? speechModel, IProgress<double>? progress, CancellationToken cancellationToken)
+    {
         var format = Formats.FromPath(path) ?? throw new InvalidOperationException("DropWheel doesn't know this kind of file.");
         List<PlacedText> places;
         string? pdf = null;
@@ -139,16 +173,7 @@ public static partial class AskFile
             else
                 places = await Task.Run(() => DocumentPlaces.Read(path, format), cancellationToken).ConfigureAwait(false);
         }
-        var passages = Split(places);
-        if (passages.Count == 0)
-            throw new InvalidOperationException(IsRecording(format) ? "No speech was found in this file." : "There are no words to read in this file.");
-        using var reader = new PassageModel();
-        double from = IsRecording(format) ? 0.85 : 0.6;
-        var meanings = await Task.Run(() => reader.Passages(passages.Select(Indexed).ToList(), Slice(progress, from, 1), cancellationToken), cancellationToken).ConfigureAwait(false);
-        var knowledge = new FileKnowledge(path, LanguageOf(passages.Select(p => p.Text)), passages, meanings, pdf);
-        Save(key, knowledge);
-        progress?.Report(1);
-        return knowledge;
+        return (places, pdf);
     }
 
     /// <summary>A recording's places: what was said, about a minute (or a hundred words) at a time.</summary>

@@ -242,6 +242,30 @@
    "remove tourist"
   ]
  },
+ "tool:IdPhoto": {
+  "category": "pictures",
+  "summary": "Makes passport, visa and residence photos at the exact size each country asks for, with a sheet to print.",
+  "details": "Choose the country and the person is found in the photo, cut from the background (the 224 MB background model downloads once), and placed so the head is the size that office asks for. The window shows the result, what size the head comes out and what is wrong with the photo, if anything; Head size and the two position sliders correct it by hand. Custom size takes any other size. The sizes come from each country's own offices, checked in November 2026; countries whose offices state none aren't listed, and rules change, so check with the office that asked. Save Copy saves the photo at 300 dpi as 'name ID Photo' and, beside it, a 4×6 inch or A4 sheet with as many copies as fit and thin lines to cut along. It doesn't judge the expression, the lighting or glasses: an office still can.",
+  "how": "Drag a portrait, tap Ctrl and drop on ID PHOTO; choose the country, check the head with the sliders, then Save Copy.",
+  "examples": [
+   "A Turkish residence permit: 50 × 60 mm on white, printed at a photo shop on one 4×6 sheet.",
+   "A Schengen visa photo at 35 × 45 mm from a picture taken at home against a wall.",
+   "Four copies for a university application on one sheet instead of paying for a set."
+  ],
+  "worksOn": "One portrait at a time.",
+  "keywords": [
+   "passport photo",
+   "visa photo",
+   "residence permit photo",
+   "id photo",
+   "biometric photo",
+   "35x45",
+   "4x6 print sheet",
+   "photo size country",
+   "ikamet photo",
+   "schengen photo"
+  ]
+ },
  "tool:TranslatePicture": {
   "category": "pictures",
   "summary": "Translates the text on a picture where it stands: a menu, a sign, a slide, a screenshot.",
@@ -1080,6 +1104,30 @@
    "ask a spreadsheet",
    "ask a presentation",
    "ai pdf reader"
+  ]
+ },
+ "tool:StudyNotes": {
+  "category": "documents",
+  "summary": "Makes a summary, flash cards and a quiz from a lecture recording or a document, and a deck for Anki.",
+  "details": "Works on a PDF, a Word or PowerPoint file, or an audio or video recording, which it hears with Whisper first. The file is read a few pages at a time and the AI model writes only from what it says, in the file's language or another of the eight; each card and question says the page, slide or minute it comes from. In the window you read the summary, turn the cards over and take the quiz. Save writes 'name Study.md' with the notes and answers, and 'name Study.apkg', a deck Anki opens with a double click. It runs on this PC (about 5 GB of model the first time, a long lecture can take a while) or with your own API key. A model can still get something wrong: check what you learn against the place it points to.",
+  "how": "Drag a PDF or a recording, tap Ctrl and drop on STUDY; press Make Notes, then Save.",
+  "examples": [
+   "A two-hour recorded lecture before an exam: the main points and thirty cards to review on the bus.",
+   "A 200-page textbook chapter in English, its summary and quiz written in Arabic.",
+   "Slides from a course turned into an Anki deck that says which slide each card came from."
+  ],
+  "worksOn": "One file at a time: PDF, Word, PowerPoint, audio or video.",
+  "keywords": [
+   "summarize lecture",
+   "study notes",
+   "flash cards",
+   "flashcards",
+   "anki",
+   "quiz",
+   "exam revision",
+   "summarize pdf",
+   "apkg",
+   "test from pdf"
   ]
  },
  "tool:RecordingStudio": {

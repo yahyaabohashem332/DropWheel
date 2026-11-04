@@ -361,6 +361,7 @@ public static class ImageToolSetup
         CompressWindow.Backends[FormatFamily.Image] = CompressImage;
         CompressWindow.Backends[FormatFamily.Vector] = CompressImage;
         ToolLauncher.RegisterWindow(ToolId.CropImage, (t, f, j, a) => new CropImageWindow(t, f, j, a));
+        ToolLauncher.RegisterWindow(ToolId.IdPhoto, (t, f, j, a) => new IdPhotoWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.RedactPhoto, (t, f, j, a) => new RedactPhotoWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.EditPhoto, (t, f, j, a) => new EditPhotoWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.ResizeImage, (t, f, j, a) => new ResizeImageWindow(t, f, j, a));

@@ -57,10 +57,10 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_67_tools_and_16_actions()
+    public void There_are_69_tools_and_16_actions()
     {
-        Assert.Equal(67, ToolRegistry.All.Count);
-        Assert.Equal(67, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(69, ToolRegistry.All.Count);
+        Assert.Equal(69, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
         Assert.Equal(16, Petal.Core.Actions.FileActionRegistry.All.Count);
     }
@@ -68,7 +68,7 @@ public class RegistryTests
     [Fact]
     public void Tools_change_with_selection_size()
     {
-        Assert.Equal(16, ToolRegistry.ToolsFor([F.Jpg]).Count);
+        Assert.Equal(17, ToolRegistry.ToolsFor([F.Jpg]).Count);
         var multi = ToolRegistry.ToolsFor([F.Jpg, F.Png]).Select(t => t.Id).ToList();
         Assert.Equal([ToolId.Compress, ToolId.Metadata, ToolId.ResizeImage, ToolId.CropImage, ToolId.Watermark, ToolId.RemoveBackground, ToolId.TranslatePicture, ToolId.CreatePdf, ToolId.MakeSearchable, ToolId.CreateCollage, ToolId.TableFromImage, ToolId.CompareFiles], multi);
         Assert.Contains(ToolId.Transcribe, ToolRegistry.ToolsFor([F.Mp3]).Select(t => t.Id));
@@ -80,7 +80,7 @@ public class RegistryTests
         Assert.DoesNotContain(ToolId.SignPdf, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
         Assert.Contains(ToolId.JoinVideos, ToolRegistry.ToolsFor([F.Mp4, F.Mov]).Select(t => t.Id));
         Assert.Contains(ToolId.MergePdfs, ToolRegistry.ToolsFor([F.Pdf, F.Pdf]).Select(t => t.Id));
-        Assert.Equal([ToolId.AskFile, ToolId.TranslateDocument, ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
+        Assert.Equal([ToolId.AskFile, ToolId.StudyNotes, ToolId.TranslateDocument, ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Docx]).Select(t => t.Id));
         Assert.Equal([ToolId.AskFile, ToolId.ReadAloud], ToolRegistry.ToolsFor([F.Txt]).Select(t => t.Id));
         Assert.Equal([ToolId.AskFile, ToolId.TranslateDocument], ToolRegistry.ToolsFor([F.Pptx]).Select(t => t.Id));
         Assert.Equal([ToolId.AskFile, ToolId.TranslateDocument], ToolRegistry.ToolsFor([F.Xlsx]).Select(t => t.Id));
