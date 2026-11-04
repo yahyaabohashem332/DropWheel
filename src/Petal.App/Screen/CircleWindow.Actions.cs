@@ -102,6 +102,7 @@ internal sealed partial class CircleWindow
         if (Words.Translation.Missing(text) is { Count: > 0 } missing)
         {
             NeedsModels(card, missing, "Translating on this PC needs a translation model, downloaded once.", () => _ = RunAsync("translate"));
+            LanguageChip(card, text);
             return;
         }
         card.Busy(Words.Translation.Working());
@@ -124,6 +125,7 @@ internal sealed partial class CircleWindow
         card.Text = string.Join(Environment.NewLine + Environment.NewLine, lines.Where(l => l.Length > 0));
         WaysChip(card, Petal.Recipes.Translation.Translator.ModelsFor(Words.Translation.From(text), Words.Translation.Into(text)), () => _ = RunAsync("translate"));
         card.Done(Petal.Recipes.Cloud.CloudAi.CanTranslate ? L.F("Translated by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Translating!.Provider)) : L.T("Translated on this PC."));
+        LanguageChip(card, text);
         card.CopyChip("Copy", () => card.Text);
         Border? original = null;
         original = card.Chip("eye", "Original", () =>
@@ -618,6 +620,29 @@ internal sealed partial class CircleWindow
     // ---------- helpers ----------
 
     /// <summary>The card says what is missing, and a chip downloads it over the still; once it is here, <paramref name="ready"/> runs.</summary>
+    /// <summary>The language it went into, to choose another: it is translated again, and that one is used from here on.</summary>
+    private void LanguageChip(CircleCard card, string text)
+    {
+        Border? chip = null;
+        chip = card.Chip("languages", L.F("Into {0}", Tools.Parts.LanguageChoice.NameOf(Words.Translation.Into(text))), () =>
+        {
+            var menu = new System.Windows.Controls.ContextMenu { PlacementTarget = chip, Placement = System.Windows.Controls.Primitives.PlacementMode.Top };
+            L.Apply(menu);
+            foreach (var language in Petal.Recipes.Translation.Translator.Languages)
+            {
+                var item = new System.Windows.Controls.MenuItem { Header = language.NativeName };
+                item.Click += (_, _) =>
+                {
+                    Settings.SettingsStore.Current.TranslateInto = Tools.Parts.LanguageChoice.Remembered(language.Code);
+                    Settings.SettingsStore.Save();
+                    _ = RunAsync("translate");
+                };
+                menu.Items.Add(item);
+            }
+            menu.IsOpen = true;
+        });
+    }
+
     /// <summary>Under a result: the other way to do this job, the model on this PC or the user's own key. Moved, the job runs again.</summary>
     private void WaysChip(CircleCard card, IReadOnlyList<ModelInfo> models, Action again) =>
         card.Chip("key", "This PC or a Key", () =>

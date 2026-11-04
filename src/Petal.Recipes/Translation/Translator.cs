@@ -130,14 +130,16 @@ public static class Translator
         }
     }
 
-    /// <summary>The steps from one language to another on this PC, quickest first: a pair's own model, two through English, or M2M100.</summary>
+    /// <summary>
+    /// The steps from one language to another on this PC, quickest first: a pair's own model, two through English, or M2M100.
+    /// Models already here come before a new download, so once M2M100 is here no pair needs anything more.
+    /// </summary>
     private static List<Pair> Route(string from, string to)
     {
-        if (Direct(from, to) is { } direct)
+        bool universal = UniversalMarks.ContainsKey(from) && UniversalMarks.ContainsKey(to);
+        if (Direct(from, to) is { } direct && (direct.Ready || !universal || !TranslationCatalog.Universal.All(ModelStore.IsAvailable)))
             return [direct];
         var through = Direct(from, "en") is { } first && Direct("en", to) is { } second ? new List<Pair> { first, second } : null;
-        bool universal = UniversalMarks.ContainsKey(from) && UniversalMarks.ContainsKey(to);
-        // Models already here come before a new download.
         if (through is not null && (through.All(p => p.Ready) || !universal || !TranslationCatalog.Universal.All(ModelStore.IsAvailable)))
             return through;
         if (universal)

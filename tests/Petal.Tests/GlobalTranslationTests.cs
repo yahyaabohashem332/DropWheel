@@ -316,3 +316,122 @@ public sealed class CloudAiTests : IDisposable
         Assert.Equal(["gemini-3.8-flash"], await CloudAi.ModelsAsync(CloudProvider.Gemini));
     }
 }
+
+/// <summary>Which models a translation asks for: what is here first, and one model that does for every pair.</summary>
+[Collection("Models")]
+public sealed class TranslationChoiceTests : IDisposable
+{
+    private readonly string _was = ModelStore.Folder;
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), "petal-route-" + Guid.NewGuid().ToString("N"));
+
+    public TranslationChoiceTests()
+    {
+        Directory.CreateDirectory(_folder);
+        ModelStore.Folder = _folder;
+    }
+
+    public void Dispose()
+    {
+        ModelStore.Folder = _was;
+        Directory.Delete(_folder, true);
+    }
+
+    /// <summary>Files of the right size, which is all a model's being here depends on; empty, so nothing is kept.</summary>
+    private void Have(IEnumerable<ModelInfo> models)
+    {
+        foreach (var model in models)
+        {
+            using var file = File.Create(Path.Combine(_folder, model.FileName));
+            file.SetLength(model.Size);
+        }
+    }
+
+    /// <summary>The real model alone, in a folder with nothing else: PETAL_TRANSLATE names where its files are.</summary>
+    [Fact]
+    public async Task The_one_model_alone_really_translates_any_pair()
+    {
+        if (Environment.GetEnvironmentVariable("PETAL_TRANSLATE") is not { Length: > 0 } source)
+            return;
+        foreach (var model in TranslationCatalog.Universal)
+            File.Copy(Path.Combine(source, model.FileName), Path.Combine(_folder, model.FileName));
+        foreach (var (from, into, text, script) in new[]
+        {
+            ("en", "ar", "The meeting will start tomorrow morning.", @"\p{IsArabic}"),
+            ("ar", "tr", "سيبدأ الاجتماع صباح غد.", "[a-zA-Z]"),
+            ("tr", "en", "Toplantı yarın sabah başlayacak.", "[a-zA-Z]"),
+            ("en", "tr", "The meeting will start tomorrow morning.", "[a-zA-Z]"),
+            ("tr", "ar", "Toplantı yarın sabah başlayacak.", @"\p{IsArabic}"),
+            ("fr", "es", "La réunion commencera demain matin.", "[a-zA-Z]"),
+            ("id", "fa", "Rapat akan dimulai besok pagi.", @"\p{IsArabic}"),
+            ("ur", "fr", "اجلاس کل صبح شروع ہوگا۔", "[a-zA-Z]"),
+        })
+        {
+            Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Translator.ModelsFor(from, into)));
+            var said = await Task.Run(() => Translator.Line(text, from, into));
+            if (Environment.GetEnvironmentVariable("PETAL_TRANSLATE_LOG") is { Length: > 0 } log)
+                File.AppendAllLines(log, [$"{from} -> {into}: {text} => {said}"]);
+            Assert.Matches(script, said);
+            Assert.NotEqual(text, said);
+        }
+    }
+
+    private static string[] Ids(IEnumerable<ModelInfo> models) => models.Select(m => m.Id).ToArray();
+
+    [Fact]
+    public void Every_pair_has_a_way_to_go()
+    {
+        foreach (var from in Translator.Languages)
+            foreach (var into in Translator.Languages)
+                if (from.Code != into.Code)
+                    Assert.NotEmpty(Translator.ModelsFor(from.Code, into.Code));
+    }
+
+    [Fact]
+    public void With_the_one_model_here_every_pair_is_ready()
+    {
+        Have(TranslationCatalog.Universal);
+        foreach (var from in Translator.Languages)
+            foreach (var into in Translator.Languages)
+                Assert.True(Translator.ReadyFor(from.Code, into.Code), $"{from.Code} into {into.Code}");
+    }
+
+    [Fact]
+    public void A_pairs_own_model_is_used_when_it_is_here()
+    {
+        Have(TranslationCatalog.Universal);
+        Have(Translator.Models);
+        Assert.Equal(Ids(Translator.Models), Ids(Translator.ModelsFor("en", "ar")));
+    }
+
+    [Fact]
+    public void Nothing_here_asks_for_the_small_download_of_that_pair()
+    {
+        Assert.Equal(Ids(Translator.Models), Ids(Translator.ModelsFor("en", "ar")));
+    }
+
+    [Fact]
+    public void Captions_offer_the_pair_when_the_language_is_known_and_the_one_model_when_it_is_not()
+    {
+        Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("auto", "ar")));
+        Assert.Equal(Ids(TranslationCatalog.Universal), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("", "tr")));
+        Assert.Equal(Ids(Translator.ModelsFor("tr", "en")), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "en")));
+        Assert.Empty(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "tr"));
+    }
+
+    [Fact]
+    public void The_interfaces_language_is_never_remembered_as_a_choice()
+    {
+        var own = Petal.App.Tools.Parts.LanguageChoice.Interface;
+        Assert.Equal("", Petal.App.Tools.Parts.LanguageChoice.Remembered(own));
+        var other = own == "tr" ? "fr" : "tr";
+        Assert.Equal(other, Petal.App.Tools.Parts.LanguageChoice.Remembered(other));
+    }
+
+    [Theory]
+    [InlineData("ar", "en", "en", "ar")]   // Into the interface's language.
+    [InlineData("ar", "ar", "en", "en")]   // Already in it, and nobody chose: another.
+    [InlineData("ar", "ar", null, "ar")]   // Chosen on purpose: said, not changed.
+    [InlineData("tr", "fr", null, "tr")]
+    public void A_dub_goes_where_it_should(string into, string spoken, string? otherwise, string target) =>
+        Assert.Equal(target, Petal.Recipes.Dubbing.TargetFor(into, spoken, otherwise));
+}

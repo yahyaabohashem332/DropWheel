@@ -314,6 +314,15 @@ internal static class LiveCaptions
         return await Task.Run(() => Translator.Line(english, "en", target), stop);
     }
 
+    /// <summary>
+    /// The models captions need for what is chosen. With the language spoken left to be detected it isn't known yet which
+    /// pair will be wanted, so it is the one model that goes from any language into any other.
+    /// </summary>
+    internal static IReadOnlyList<ModelInfo> ModelsToOffer(string spoken, string into) =>
+        spoken == into ? []
+        : Translator.Languages.Any(l => l.Code == spoken) ? Translator.ModelsFor(spoken, into)
+        : TranslationCatalog.Universal;
+
     /// <summary>Settings from before there was a choice of language: "In Arabic" and "In English" become the language chosen.</summary>
     internal static void Settle(AppSettings settings)
     {

@@ -50,13 +50,18 @@ public sealed partial class SettingsWindow
         };
         panel.Children.Add(Row("Show", show, 120, 6));
         var captionsInto = new Tools.Parts.LanguageChoice(_s.CaptionsInto.Length > 0 ? _s.CaptionsInto : Tools.Parts.LanguageChoice.Interface);
-        // The other way round from what captions hear most: the pair only names which models this PC would need.
-        var captionsWay = new Tools.Parts.ModelPanel(Petal.Recipes.Translation.Translator.ModelsFor(captionsInto.Value == "en" ? "es" : "en", captionsInto.Value));
+        var captionsWay = new Tools.Parts.ModelPanel(Words.LiveCaptions.ModelsToOffer(_s.CaptionsLanguage, captionsInto.Value));
+        var anyLanguage = Text("With Detect automatically, one model translates from any language into any other.", "Petal.Caption").WithMargin(120, 4, 0, 0);
+        void ShowWay()
+        {
+            captionsWay.PointAt(Words.LiveCaptions.ModelsToOffer(_s.CaptionsLanguage, captionsInto.Value));
+            anyLanguage.Visibility = _s.CaptionsLanguage is "" or "auto" ? Visibility.Visible : Visibility.Collapsed;
+        }
         captionsInto.Changed += code =>
         {
-            _s.CaptionsInto = code;
+            _s.CaptionsInto = Tools.Parts.LanguageChoice.Remembered(code);
             Save();
-            captionsWay.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(code == "en" ? "es" : "en", code));
+            ShowWay();
         };
         panel.Children.Add(Row("Translate into", captionsInto, 120, 6));
         var spoken = Choice(Languages(), _s.CaptionsLanguage);
@@ -64,10 +69,13 @@ public sealed partial class SettingsWindow
         {
             _s.CaptionsLanguage = ValueOf<string>(spoken);
             Save();
+            ShowWay();
         };
         panel.Children.Add(Row("Spoken in", spoken, 120, 8));
         panel.Children.Add(Text("From the PC's sound or the microphone (a button on the captions switches). A translation model downloads the first time it is needed.", "Petal.Caption").WithMargin(120, 4, 0, 0));
+        panel.Children.Add(anyLanguage);
         panel.Children.Add(captionsWay);
+        ShowWay();
 
         panel.Children.Add(Text("Showing clicks and keys", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Show every key", "Typing shows too, not only shortcuts. Leave it off when typing passwords on screen.", _s.ShowEveryKey, v => _s.ShowEveryKey = v, top: 6));

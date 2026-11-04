@@ -49,6 +49,12 @@ public sealed class LanguageChoice : ComboBox
 
     /// <summary>The language this interface speaks, when it is among those translated; English otherwise.</summary>
     public static string Interface => Translator.Languages.Any(l => l.Code == L.Code) ? L.Code : "en";
+
+    /// <summary>What to remember of a choice: nothing when it is the interface's language, so the default goes on following the interface.</summary>
+    public static string Remembered(string code) => code == Interface ? "" : code;
+
+    /// <summary>A language's own name.</summary>
+    public static string NameOf(string code) => Translator.Languages.FirstOrDefault(l => l.Code == code)?.NativeName ?? code;
 }
 
 /// <summary>

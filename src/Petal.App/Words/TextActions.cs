@@ -177,7 +177,7 @@ internal sealed class TextResultWindow : ToolWindow
             _into = new Tools.Parts.LanguageChoice(Translation.Into(text));
             _into.Changed += code =>
             {
-                Settings.SettingsStore.Current.TranslateInto = code;
+                Settings.SettingsStore.Current.TranslateInto = Tools.Parts.LanguageChoice.Remembered(code);
                 Settings.SettingsStore.Save();
                 _model!.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(Translation.From(_text), code));
                 if (Translation.Missing(_text, code).Count == 0)

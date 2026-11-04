@@ -13,6 +13,12 @@ namespace Petal.Recipes;
 /// A video made ready to dub: its voices apart from the rest of its sound (<paramref name="Rest"/>: the music and every other
 /// sound), what is said in it, line by line, with each line's translation.
 /// </summary>
+/// <summary>What is spoken turned out to need translation models that aren't here; what was heard is kept for the next try.</summary>
+public sealed class DubModelsMissing(string language) : InvalidOperationException($"No translation models for {language} yet.")
+{
+    public string Language { get; } = language;
+}
+
 public sealed record DubSource(string Video, string Language, string Into, string Vocals, string Rest, IReadOnlyList<DubLine> Lines, double Length)
 {
     /// <summary>Where the lines are kept, to keep the translations as they were checked.</summary>
@@ -68,8 +74,9 @@ public static class Dubbing
     /// <param name="spoken">"auto", or the language spoken.</param>
     /// <param name="into">A language's code; "auto" for English, or from English into Arabic.</param>
     /// <param name="natural">Translated by the AI model, by meaning (<see cref="DubTranslation"/>), rather than word for word.</param>
+    /// <param name="otherwise">Where to go instead when what is spoken turns out to be <paramref name="into"/>, for a language nobody chose.</param>
     public static async Task<DubSource> PrepareAsync(string video, string model, string spoken, string into, IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default, bool natural = false)
+        CancellationToken cancellationToken = default, bool natural = false, string? otherwise = null)
     {
         natural &= DubTranslation.Ready;
         var (separatedAt, heardAt) = Steps(natural);
@@ -104,7 +111,7 @@ public static class Dubbing
         }
         progress?.Report(heardAt);
 
-        var target = into != "auto" ? into : Opposite(language);
+        var target = TargetFor(into, language, otherwise);
         if (target == language)
             throw new InvalidOperationException("This video is already in that language.");
         if (!Languages.Contains(language) || !Languages.Contains(target))
@@ -115,6 +122,8 @@ public static class Dubbing
             lines = done.Lines;
         else
         {
+            if (!natural && !Translator.ReadyFor(language, target))
+                throw new DubModelsMissing(language);
             var originals = lines.Select(l => l.Original).ToList();
             IReadOnlyList<string> translated = natural
                 ? await DubTranslation.TranslateAsync(lines, language, target, Slice(progress, heardAt, 1), cancellationToken).ConfigureAwait(false)
@@ -125,6 +134,13 @@ public static class Dubbing
         progress?.Report(1);
         var info = await MediaProbe.ProbeAsync(video, cancellationToken).ConfigureAwait(false);
         return new DubSource(video, language, target, vocals, rest, lines, info.DurationSeconds) { Kept = translations };
+    }
+
+    /// <summary>The language to dub into, now what is spoken is known.</summary>
+    internal static string TargetFor(string into, string language, string? otherwise)
+    {
+        var target = into != "auto" ? into : Opposite(language);
+        return target == language && otherwise is not null && otherwise != language ? otherwise : target;
     }
 
     /// <summary>

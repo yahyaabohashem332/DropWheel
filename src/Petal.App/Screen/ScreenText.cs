@@ -29,6 +29,8 @@ internal sealed class ScreenTextWindow : ToolWindow
     private readonly StackPanel _codes = new();
     private readonly ModelPanel _model = new(Petal.Recipes.Translation.Translator.Models) { Wanted = false };
     private readonly Button _translate, _search;
+    private readonly Tools.Parts.LanguageChoice _into = new(Tools.Parts.LanguageChoice.Interface) { MinWidth = 150, Margin = new Thickness(0, 0, 8, 6) };
+    private bool _intoChosen;
     // The picture read, kept for reading it again as a table.
     private byte[]? _pixels;
     private int _width, _height;
@@ -63,6 +65,9 @@ internal sealed class ScreenTextWindow : ToolWindow
             var count = TextTools.Count(_text.Text);
             FooterNote = count.Words == 0 ? "" : L.P(count.Words, "{0} word", "{0} words");
             _translate!.IsEnabled = _search!.IsEnabled = _text.Text.Trim().Length > 0;
+            // What it would go into by itself, until a language is chosen here.
+            if (!_intoChosen && _text.Text.Trim().Length > 0)
+                _into.Value = Words.Translation.Into(_text.Text.Trim());
         };
 
         var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
@@ -83,6 +88,15 @@ internal sealed class ScreenTextWindow : ToolWindow
         excel.ToolTip = L.T("The table in the area as an Excel sheet, with numbers as numbers.");
         excel.Click += async (_, _) => await TableAsync(save: true);
         actions.Children.Add(_translate);
+        actions.Children.Add(_into);
+        _into.Changed += async code =>
+        {
+            _intoChosen = true;
+            Settings.SettingsStore.Current.TranslateInto = Tools.Parts.LanguageChoice.Remembered(code);
+            Settings.SettingsStore.Save();
+            if (_translated.Visibility == Visibility.Visible)
+                await TranslateAsync();
+        };
         actions.Children.Add(fix);
         actions.Children.Add(tidy);
         actions.Children.Add(_search);
@@ -159,15 +173,16 @@ internal sealed class ScreenTextWindow : ToolWindow
         var text = _text.Text.Trim();
         if (text.Length == 0)
             return;
-        _model.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(Words.Translation.From(text), Words.Translation.Into(text)));
+        var into = _into.Value;
+        _model.PointAt(Petal.Recipes.Translation.Translator.ModelsFor(Words.Translation.From(text), into));
         _model.Wanted = true;
-        if (Words.Translation.Missing(text).Count > 0)
+        if (Words.Translation.Missing(text, into).Count > 0)
             return;
         _translate.IsEnabled = false;
         _status.Text = Words.Translation.Working();
         try
         {
-            var result = await Words.Translation.RunAsync(text);
+            var result = await Words.Translation.RunAsync(text, into: into);
             _translated.Text = result;
             _translated.FlowDirection = KeyboardLayout.LooksArabic(result) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             _translated.Visibility = Visibility.Visible;

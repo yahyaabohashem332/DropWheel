@@ -45,6 +45,7 @@ public sealed class DubWindow : MediaToolWindow
     private readonly ModelPanel _helpers = new(Translator.Models);
     // The finest level's translator, and what it is.
     private readonly ModelPanel _writer = new(DubTranslation.Models);
+    private bool _intoChosen;
     private readonly TextBlock _finestNote = Text("", "Petal.Caption").WithMarginT(6);
     private readonly TextBlock _workingNote = Text("", "Petal.Caption").WithMarginT(14);
     private readonly StackPanel _finest = new() { Visibility = Visibility.Collapsed };
@@ -76,7 +77,8 @@ public sealed class DubWindow : MediaToolWindow
         _settings.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = picture, Margin = new Thickness(0, 0, 0, 10) });
         _settings.Children.Add(Text("Each line is said again in the other language, in the voice of the person who said it. The music is taken out; every other sound stays.", "Petal.Caption").WithMarginT(2));
         string home = Dubbing.Languages.Contains(LanguageChoice.Interface) && LanguageChoice.Interface != "en" ? LanguageChoice.Interface : "ar";
-        _into = new LanguageChoice(L.Code == "en" ? "es" : Dubbing.Opposite("ar", home) == LanguageChoice.Interface ? "en" : home, only: Dubbing.Languages);
+        // The interface's language; if that is what the video already speaks, then another (see PrepareAsync's otherwise).
+        _into = new LanguageChoice(LanguageChoice.Interface, only: Dubbing.Languages);
         _settings.Children.Add(Row("Dub into", _into, 130, 12));
         _spoken = new LanguageChoice("auto", [("auto", "Detect automatically")], Dubbing.Languages);
         _settings.Children.Add(Row("Spoken in", _spoken, 130, 8));
@@ -129,6 +131,7 @@ public sealed class DubWindow : MediaToolWindow
         // The language spoken is never the one dubbed into: choosing one turns the other round.
         _into.Changed += into =>
         {
+            _intoChosen = true;
             if (_spoken.Value == into)
                 _spoken.Value = Dubbing.Opposite(into, home);
             Sync();
@@ -182,13 +185,18 @@ public sealed class DubWindow : MediaToolWindow
     }
 
     /// <summary>The translation models the direction needs.</summary>
-    /// <summary>The translation models this dub needs; what is spoken may not be known yet, then as if English.</summary>
+    /// <summary>
+    /// The translation models this dub needs. What is spoken may not be known yet: then a pair already here will do for now,
+    /// and otherwise the one model that goes from any language into any other.
+    /// </summary>
     private IReadOnlyList<ModelInfo> Translation
     {
         get
         {
-            string from = _spoken.Value != "auto" ? _spoken.Value : _into.Value == "en" ? "ar" : "en";
-            return Translator.ModelsFor(from, _into.Value);
+            if (_spoken.Value != "auto")
+                return Translator.ModelsFor(_spoken.Value, _into.Value);
+            var likely = Translator.ModelsFor(_into.Value == "en" ? "ar" : "en", _into.Value);
+            return likely.All(ModelStore.IsAvailable) ? likely : TranslationCatalog.Universal;
         }
     }
 
@@ -263,7 +271,10 @@ public sealed class DubWindow : MediaToolWindow
                 if (!cancel.IsCancellationRequested)
                     Progress(p, p < separated ? "Separating the voices…" : p < heard ? "Listening to what is said…" : natural ? "Translating by meaning…" : "Translating…");
             });
-            _source = await Task.Run(() => Dubbing.PrepareAsync(file, model, spoken, into, progress, cancel.Token, natural), cancel.Token);
+            var otherwise = _intoChosen ? null : LanguageChoice.Interface == "en" ? "es" : "en";
+            _source = await Task.Run(() => Dubbing.PrepareAsync(file, model, spoken, into, progress, cancel.Token, natural, otherwise), cancel.Token);
+            if (!_intoChosen)
+                _into.Value = _source.Into;
             if (_source.Lines.Count == 0)
                 problem = "No speech was found in this file.";
             else
@@ -271,6 +282,12 @@ public sealed class DubWindow : MediaToolWindow
         }
         catch (OperationCanceledException)
         {
+        }
+        catch (DubModelsMissing missing)
+        {
+            // Heard now, so nobody has to say what it is, and the card shows just what this pair needs.
+            _spoken.Value = missing.Language;
+            problem = "This language's translation model isn't here yet. Download it or use your key, then prepare again: what was heard is kept.";
         }
         catch (Exception ex)
         {
