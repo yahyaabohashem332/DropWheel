@@ -175,7 +175,7 @@ internal sealed partial class CircleWindow
             {
                 bool picture = c.Kind == CircleKind.Picture || (c.Kind == CircleKind.Mixed && c.WordCount < 5);
                 var models = picture ? PictureDescriber.Models : AskPetal.Models;
-                if (!models.All(ModelStore.IsAvailable))
+                if (!(picture ? PictureDescriber.ModelReady : AskPetal.ModelReady))
                 {
                     NeedsModels(card, models, "Answering on this PC needs the AI model, downloaded once.", () => card.Done(L.T("Ready. Ask your question again.")));
                     return;
@@ -620,6 +620,9 @@ internal sealed partial class CircleWindow
         card.Done(L.F("{0} to download", Util.Sizes.Format(bytes)));
         card.Chip("download", "Download", () =>
             Words.ModelDownloadWindow.Show(L.T("Circle Anything"), L.T(why), missing, this, () => Dispatcher.BeginInvoke(ready)));
+        if (Petal.App.Settings.AiSetup.JobOf(missing) is not null)
+            card.Chip("key", "Use My API Key", () =>
+                Words.ModelDownloadWindow.Show(L.T("Circle Anything"), L.T(why), missing, this, () => Dispatcher.BeginInvoke(ready), ownKey: true));
     }
 
     private static string Temporary(BitmapSource picture)

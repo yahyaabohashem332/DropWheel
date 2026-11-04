@@ -45,6 +45,8 @@ public sealed class DubWindow : MediaToolWindow
     private readonly ModelPanel _helpers = new(Translator.Models);
     // The finest level's translator, and what it is.
     private readonly ModelPanel _writer = new(DubTranslation.Models);
+    private readonly TextBlock _finestNote = Text("", "Petal.Caption").WithMarginT(6);
+    private readonly TextBlock _workingNote = Text("", "Petal.Caption").WithMarginT(14);
     private readonly StackPanel _finest = new() { Visibility = Visibility.Collapsed };
 
     // ---------- preparing ----------
@@ -85,9 +87,7 @@ public sealed class DubWindow : MediaToolWindow
             : Array.FindLastIndex(Models, ModelStore.IsAvailable) is >= 0 and var found ? found : 2;
         _accuracy = Segments([(0, "Fast"), (1, "Balanced"), (2, "Accurate"), (Finest, L.T("Best", "dub"))], preferred);
         _settings.Children.Add(Row("Accuracy", _accuracy, 130, 12));
-        _finest.Children.Add(Text(Petal.Recipes.Cloud.CloudAi.CanWrite
-            ? L.F("Translated by meaning, not word for word, by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
-            : "Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech.", "Petal.Caption").WithMarginT(6));
+        _finest.Children.Add(_finestNote);
         _finest.Children.Add(_writer);
         _settings.Children.Add(_finest);
         _model = new ModelPanel(Models[Math.Min(preferred, 2)]);
@@ -107,9 +107,7 @@ public sealed class DubWindow : MediaToolWindow
         _working.Children.Add(_stage);
         _working.Children.Add(_track);
         _working.Children.Add(_detail);
-        _working.Children.Add(Text(Petal.Recipes.Cloud.CloudAi.CanTranslate || Petal.Recipes.Cloud.CloudAi.CanWrite
-            ? "The words go to the AI you chose, on your own key; the voices and the rest happen on this PC. A video prepared once opens again at once."
-            : "It all happens on this PC; nothing is uploaded. A video prepared once opens again at once.", "Petal.Caption").WithMarginT(14));
+        _working.Children.Add(_workingNote);
         Body.Children.Add(_working);
 
         _count.Style = (Style)FindResource("Petal.Section");
@@ -188,7 +186,8 @@ public sealed class DubWindow : MediaToolWindow
         get
         {
             string from = _spoken.Value != "auto" ? _spoken.Value : _into.Value == "en" ? "ar" : "en";
-            return Petal.Recipes.Cloud.CloudAi.CanTranslate ? [] : Translator.ModelsFor(from, _into.Value);
+            // Best on a key has the company's model for every line, the ones it gets wrong the first time too.
+            return Petal.Recipes.Cloud.CloudAi.CanTranslate || (_accuracy.Value == Finest && Petal.Recipes.Cloud.CloudAi.CanWrite) ? [] : Translator.ModelsFor(from, _into.Value);
         }
     }
 
@@ -198,6 +197,12 @@ public sealed class DubWindow : MediaToolWindow
             return;
         _helpers.Models = Translation;
         _finest.Visibility = _accuracy.Value == Finest ? Visibility.Visible : Visibility.Collapsed;
+        _finestNote.Text = Petal.Recipes.Cloud.CloudAi.CanWrite
+            ? L.F("Translated by meaning, not word for word, by {0}, on your own key.", Petal.Recipes.Cloud.CloudAi.Name(Petal.Recipes.Cloud.CloudAi.Writing!.Provider))
+            : L.T("Translated by meaning, not word for word, by a large AI model on this PC that knows religious language, poetry and dialect. It takes a while: a few minutes for each minute of speech.");
+        _workingNote.Text = L.T(Petal.Recipes.Cloud.CloudAi.CanTranslate || Petal.Recipes.Cloud.CloudAi.CanWrite
+            ? "The words go to the AI you chose, on your own key; the voices and the rest happen on this PC. A video prepared once opens again at once."
+            : "It all happens on this PC; nothing is uploaded. A video prepared once opens again at once.");
         bool working = _work is not null;
         PrimaryButton.IsEnabled = !working && _model.IsReady && _voices.IsReady && Translation.All(ModelStore.IsAvailable) && Info is { HasVideo: true, HasAudio: true }
             && (_accuracy.Value != Finest || _writer.IsReady || Petal.Recipes.Cloud.CloudAi.CanWrite);
@@ -396,6 +401,15 @@ public sealed class DubWindow : MediaToolWindow
     /// <summary>The preparing stage, part of the way through, for the design snapshots.</summary>
     /// <summary>The finest level chosen, for the design snapshots.</summary>
     internal void FinestForSnapshot() => _accuracy.Value = Finest;
+
+    /// <summary>Best when its model isn't on this PC, whatever is here; with the place for a key open or closed.</summary>
+    internal void FinestMissingForSnapshot(bool ownKey)
+    {
+        _writer.Models = [.. DubTranslation.Models.Select(m => m with { Size = m.Size + 1 })];
+        _accuracy.Value = Finest;
+        if (ownKey)
+            _writer.ChooseKey();
+    }
 
     internal void ShowPreparingForSnapshot(double share)
     {

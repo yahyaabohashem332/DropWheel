@@ -89,11 +89,21 @@ public static partial class DubTranslation
         if (missing.Count > 0)
         {
             var originals = missing.Select(i => lines[i].Original).ToList();
-            var plain = fallback?.Invoke(originals) ?? (into is not ("ar" or "en") || from is not ("ar" or "en") ? Translator.Lines(originals, from, into, null, cancellationToken) : into == "ar" ? Translator.ToArabic(originals, null, cancellationToken) : Translator.ToEnglish(originals, null, cancellationToken));
+            // On a key with no translation model here, the company's model is asked for each of these alone.
+            var plain = fallback is null && Cloud.CloudAi.CanWrite && !Translator.ReadyFor(from, into) ? await EachAloneAsync(originals, into, cancellationToken).ConfigureAwait(false)
+                : fallback?.Invoke(originals) ?? (into is not ("ar" or "en") || from is not ("ar" or "en") ? Translator.Lines(originals, from, into, null, cancellationToken) : into == "ar" ? Translator.ToArabic(originals, null, cancellationToken) : Translator.ToEnglish(originals, null, cancellationToken));
             for (int k = 0; k < missing.Count; k++)
                 result[missing[k]] = plain[k];
         }
         return result.Select(r => (r ?? "").Trim()).ToList();
+    }
+
+    private static async Task<IReadOnlyList<string>> EachAloneAsync(IReadOnlyList<string> originals, string into, CancellationToken cancellationToken)
+    {
+        var translated = new List<string>(originals.Count);
+        foreach (var original in originals)
+            translated.Add(await AskPetal.WriteAsync(AskPetal.Instructions.TranslateInto(Translator.EnglishName(into)), original, Math.Clamp(original.Length * 2, 200, 800), cancellationToken).ConfigureAwait(false));
+        return translated;
     }
 
     /// <summary>

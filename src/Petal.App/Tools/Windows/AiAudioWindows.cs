@@ -175,7 +175,7 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
     {
         bool cloud = Petal.Recipes.Cloud.CloudAi.CanTranslate;
         _model.Models = cloud ? [] : Translator.ModelsFor(From, _into.Value);
-        _model.Visibility = cloud ? Visibility.Collapsed : Visibility.Visible;
+        _model.Visibility = _model.IsReady ? Visibility.Collapsed : Visibility.Visible;
         Sync();
     }
 

@@ -188,6 +188,37 @@ public sealed class CloudAiTests : IDisposable
         Assert.False(CloudKeys.Has(CloudProvider.Gemini));
     }
 
+    /// <summary>Best on a key needs no translation model here: a line the company's model missed the first time is asked of it alone.</summary>
+    [Fact]
+    public async Task Best_on_a_key_asks_again_for_a_line_it_missed_with_no_model_here()
+    {
+        CloudKeys.Set(CloudProvider.Gemini, "g-key");
+        var (folder, writing) = (ModelStore.Folder, CloudAi.Writing);
+        ModelStore.Folder = _folder;
+        CloudAi.Writing = new CloudChoice(CloudProvider.Gemini, "gemini-3.8-flash");
+        // The brief, then a batch with nothing in it, then the line alone.
+        _reply = _ =>
+        {
+            int asked;
+            lock (_seen)
+                asked = _seen.Count;
+            var words = asked == 3 ? "Buenos d\u00edas a todos." : asked == 1 ? "A greeting." : "";
+            return (200, "text/event-stream", "data: {\"event_type\":\"step.delta\",\"delta\":{\"type\":\"text\",\"text\":\"" + words + "\"}}\n\ndata: {\"event_type\":\"interaction.completed\"}\n\n");
+        };
+        try
+        {
+            Assert.False(Translator.ReadyFor("en", "es") && !CloudAi.CanTranslate);
+            var translated = await DubTranslation.TranslateAsync([new Petal.Engines.Media.DubLine(0, 2, "Good morning everyone.", "")], "en", "es");
+            Assert.Equal(["Buenos d\u00edas a todos."], translated);
+            Assert.Equal(3, _seen.Count);
+        }
+        finally
+        {
+            ModelStore.Folder = folder;
+            CloudAi.Writing = writing;
+        }
+    }
+
     [Fact]
     public async Task Gemini_gets_its_request_and_its_words_come_as_they_are_written()
     {

@@ -461,6 +461,10 @@ internal static class DesignSnapshots
                 new Petal.Recipes.ShortsSource(video[0], Localization.L.IsArabic ? "ar" : "en", [], new Petal.Engines.Media.SoundLevels([]))))),
             ("dub", () => new Tools.Windows.DubWindow(T(Petal.Core.Tools.ToolId.Dub), video, jobs, at)),
             ("dubbest", () => Dub(window => window.FinestForSnapshot())),
+            ("dubbestmissing", () => Dub(window => window.FinestMissingForSnapshot(false))),
+            ("dubbestkey", () => Dub(window => window.FinestMissingForSnapshot(true))),
+            ("modelchoice", () => Words.ModelDownloadWindow.ForSnapshot(false)),
+            ("modelchoicekey", () => Words.ModelDownloadWindow.ForSnapshot(true)),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
             // 1.15

@@ -2,13 +2,65 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using Petal.App.Localization;
+using Petal.Core.Models;
 using Petal.Recipes.Cloud;
 
 namespace Petal.App.Settings;
 
+/// <summary>The jobs a cloud model can do in place of a model on this PC.</summary>
+internal enum AiJob
+{
+    Writing,
+    Translating,
+    Seeing,
+}
+
 /// <summary>Tells the AI layer what the settings chose: this PC, or a cloud model on the user's own key.</summary>
 internal static class AiSetup
 {
+    /// <summary>What each job runs on may have changed.</summary>
+    public static event Action? Changed;
+
+    /// <summary>A key was chosen for a job outside Settings.</summary>
+    public static event Action? Chosen;
+
+    /// <summary>The job a cloud model could do in place of these models; null when none can (speech, voices, cutting out).</summary>
+    public static AiJob? JobOf(IEnumerable<ModelInfo> models)
+    {
+        var ids = models.Select(m => m.Id).ToList();
+        bool Any(params string[] starts) => ids.Any(id => starts.Any(start => id.StartsWith(start, StringComparison.Ordinal)));
+        return Any("smolvlm") ? AiJob.Seeing : Any("opus-mt", "m2m100") ? AiJob.Translating : Any("qwen", "gemma") ? AiJob.Writing : null;
+    }
+
+    /// <summary>Whether a cloud model is doing this job now.</summary>
+    public static bool OnKey(AiJob job) => job switch
+    {
+        AiJob.Writing => CloudAi.CanWrite,
+        AiJob.Translating => CloudAi.CanTranslate,
+        _ => CloudAi.CanSee,
+    };
+
+    /// <summary>This job, and no other, now runs on this company's model.</summary>
+    public static void Use(AiJob job, CloudProvider provider)
+    {
+        var settings = SettingsStore.Current;
+        switch (job)
+        {
+            case AiJob.Writing:
+                settings.AiWriting = provider.ToString();
+                break;
+            case AiJob.Translating:
+                settings.AiTranslating = provider.ToString();
+                break;
+            default:
+                settings.AiSeeing = provider.ToString();
+                break;
+        }
+        Apply(settings);
+        SettingsStore.Save();
+        Chosen?.Invoke();
+    }
+
     /// <summary>What a tool that writes says while it works: the words given when it is this PC, or the cloud model it has gone to.</summary>
     public static string Writing(string onThisPc) =>
         CloudAi.CanWrite ? L.F("Writing with {0}, on your own key…", CloudAi.Name(CloudAi.Writing!.Provider)) : L.T(onThisPc);
@@ -26,6 +78,7 @@ internal static class AiSetup
         CloudAi.Writing = Choice(settings, settings.AiWriting);
         CloudAi.Translating = Choice(settings, settings.AiTranslating);
         CloudAi.Seeing = Choice(settings, settings.AiSeeing);
+        Changed?.Invoke();
     }
 
     private static CloudChoice? Choice(AppSettings settings, string name) =>
@@ -42,6 +95,14 @@ public sealed partial class SettingsWindow
     {
         var panel = new StackPanel();
         var jobs = new StackPanel();
+        void Fill()
+        {
+            panel.Children.Clear();
+            foreach (var provider in Enum.GetValues<CloudProvider>())
+                panel.Children.Add(ProviderRow(provider, FillJobs));
+            FillJobs();
+            panel.Children.Add(jobs);
+        }
         void FillJobs()
         {
             jobs.Children.Clear();
@@ -51,10 +112,11 @@ public sealed partial class SettingsWindow
             jobs.Children.Add(JobRow("Describing pictures", _s.AiSeeing, v => _s.AiSeeing = v));
             jobs.Children.Add(Text("This PC needs a model downloaded once, and nothing leaves it. A cloud model needs no download, but what the job works on goes to that company, and the provider bills your key.", "Petal.Caption").WithMargin(0, 8, 0, 0));
         }
-        foreach (var provider in Enum.GetValues<CloudProvider>())
-            panel.Children.Add(ProviderRow(provider, FillJobs));
-        FillJobs();
-        panel.Children.Add(jobs);
+        Fill();
+        // A key given in a tool's window while this is open.
+        void Chosen() => Dispatcher.BeginInvoke(Fill);
+        AiSetup.Chosen += Chosen;
+        Closed += (_, _) => AiSetup.Chosen -= Chosen;
         return panel;
     }
 

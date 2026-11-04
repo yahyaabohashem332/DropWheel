@@ -741,15 +741,16 @@ internal sealed class ModelDownloadWindow : ToolWindow
     private static ModelDownloadWindow? _open;
 
     /// <param name="over">A window that stays on top of everything (Circle Anything's still screen): this one goes over it.</param>
-    /// <param name="ready">Called once the models are all here.</param>
-    public static void Show(string title, string why, IReadOnlyList<ModelInfo> models, Window? over = null, Action? ready = null)
+    /// <param name="ready">Called once the models are all here, or a key does their job.</param>
+    /// <param name="ownKey">Opened at the place for a key, for someone who asked for that.</param>
+    public static void Show(string title, string why, IReadOnlyList<ModelInfo> models, Window? over = null, Action? ready = null, bool ownKey = false)
     {
         if (_open is not null)
         {
             _open.Activate();
             return;
         }
-        _open = new ModelDownloadWindow(title, why, models, ready);
+        _open = new ModelDownloadWindow(title, why, models, ready, ownKey);
         _open.Closed += (_, _) => _open = null;
         _open.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         if (over is not null)
@@ -761,11 +762,17 @@ internal sealed class ModelDownloadWindow : ToolWindow
         _open.Show();
     }
 
-    private ModelDownloadWindow(string title, string why, IReadOnlyList<ModelInfo> models, Action? ready) : base(title, 420)
+    /// <summary>The window with the place for a key open or closed, for checking by eye.</summary>
+    internal static Window ForSnapshot(bool ownKey) => new ModelDownloadWindow("Circle Anything", "Answering on this PC needs the AI model, downloaded once.",
+        [.. Petal.Recipes.AskPetal.Models.Select(m => m with { Size = m.Size + 1 })], null, ownKey);
+
+    private ModelDownloadWindow(string title, string why, IReadOnlyList<ModelInfo> models, Action? ready, bool ownKey = false) : base(title, 420)
     {
         Body.Children.Add(Text(why, "Petal.Body"));
         var panel = new ModelPanel(models);
         Body.Children.Add(panel);
+        if (ownKey)
+            panel.ChooseKey();
         panel.Ready += () =>
         {
             FooterNote = "Ready";

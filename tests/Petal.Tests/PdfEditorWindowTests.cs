@@ -45,6 +45,9 @@ public sealed class PdfEditorWindowTests
         return dispatcher!;
     });
 
+    /// <summary>For other window tests: on the same interface thread as these.</summary>
+    internal static void RunOnInterface(Func<Task> test) => OnSta(test);
+
     private static void OnSta(Func<Task> test)
     {
         var running = Interface.Value.InvokeAsync(test).Task.Unwrap();

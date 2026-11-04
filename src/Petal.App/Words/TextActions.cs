@@ -195,16 +195,21 @@ internal sealed class TextResultWindow : ToolWindow
         }
         var models = job == TextJob.Translate ? Translation.Missing(text, _into!.Value) : AskPetal.ModelReady ? [] : AskPetal.Models;
         _model = new ModelPanel(models.Count > 0 ? models : AskPetal.Models) { Visibility = models.Count > 0 ? Visibility.Visible : Visibility.Collapsed };
+        var where = Text("", "Petal.Caption").WithMarginT(8);
+        void Where()
+        {
+            var cloud = job == TextJob.Translate ? (Petal.Recipes.Cloud.CloudAi.CanTranslate ? Petal.Recipes.Cloud.CloudAi.Translating : null) : Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null;
+            where.Text = cloud is null ? L.T("Runs on this PC; the text isn't sent anywhere.") : L.F("The text goes to {0}, on your own API key.", Petal.Recipes.Cloud.CloudAi.Name(cloud.Provider));
+        }
+        Where();
         _model.Ready += () =>
         {
             _model.Visibility = Visibility.Collapsed;
+            Where();
             _ = RunAsync();
         };
         Body.Children.Add(_model);
-        var cloud = job == TextJob.Translate ? (Petal.Recipes.Cloud.CloudAi.CanTranslate ? Petal.Recipes.Cloud.CloudAi.Translating : null) : Petal.Recipes.Cloud.CloudAi.CanWrite ? Petal.Recipes.Cloud.CloudAi.Writing : null;
-        Body.Children.Add(cloud is null
-            ? Text("Runs on this PC; the text isn't sent anywhere.", "Petal.Caption").WithMarginT(8)
-            : Text(L.F("The text goes to {0}, on your own API key.", Petal.Recipes.Cloud.CloudAi.Name(cloud.Provider)), "Petal.Caption").WithMarginT(8));
+        Body.Children.Add(where);
         _result.TextChanged += (_, _) =>
         {
             _result.FlowDirection = KeyboardLayout.LooksArabic(_result.Text) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
