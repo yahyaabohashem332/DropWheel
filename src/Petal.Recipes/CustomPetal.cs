@@ -262,22 +262,22 @@ public sealed class CustomPetal
         return made;
     }
 
-    /// <summary>A working example to start from: SHA-256 checksums with Windows' own certutil.</summary>
+    /// <summary>A working example to start from: a file's bytes in hexadecimal with Windows' own certutil.</summary>
     public static string WriteExample()
     {
         Directory.CreateDirectory(Folder);
-        var path = OutputNaming.Unique(Folder, "checksum example", "json");
+        var path = OutputNaming.Unique(Folder, "hex dump example", "json");
         System.IO.File.WriteAllText(path, """
             {
-              "name": "Checksum",
-              "name_ar": "بصمة الملف",
-              "description": "Saves the file's SHA-256 checksum beside it, to check a download.",
-              "description_ar": "يحفظ بصمة SHA-256 للملف بجانبه، للتحقق من سلامة تنزيل.",
-              "icon": "fileSearch",
+              "name": "Hex Dump",
+              "name_ar": "عرض البايتات",
+              "description": "Saves a look at the file's bytes in hexadecimal, beside it.",
+              "description_ar": "يحفظ عرضًا لبايتات الملف بالنظام الست عشري بجانبه.",
+              "icon": "fileText",
               "accepts": ["any"],
               "program": "certutil",
-              "arguments": ["-hashfile", "{input}", "SHA256"],
-              "stdout": "{name} SHA-256.txt"
+              "arguments": ["-dump", "{input}"],
+              "stdout": "{name} hex.txt"
             }
             """, new UTF8Encoding(false));
         return path;

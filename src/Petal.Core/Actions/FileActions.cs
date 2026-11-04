@@ -18,6 +18,7 @@ public enum FileActionId
     OpenInCode,
     OpenWith,
     SendToPc,
+    Checksum,
 }
 
 public sealed record FileActionInfo(FileActionId Id, string WheelTitle, string Name, string Icon, string Description);
@@ -64,6 +65,7 @@ public static class FileActionRegistry
         new(FileActionId.OpenWith, "OPEN WITH", "Open With", "appWindow", "Open the files in a program you choose: the ones Windows suggests for them, or any other."),
         new(FileActionId.OpenInCode, "VS CODE", "Open in VS Code", "code", "Open files or a folder in Visual Studio Code."),
         new(FileActionId.Terminal, "TERMINAL", "Terminal", "terminal", "Open a folder, or a file's containing folder, in Windows Terminal."),
+        new(FileActionId.Checksum, "CHECK", "Check File", "fileCheck", "See a file's SHA-256 and whether it matches what its publisher says, to know a download is the real one."),
         new(FileActionId.Duplicates, "DUPES", "Find Duplicates", "copyX", "Find identical files, and photos or videos copied at another size, in a selection or folder. Extra copies go to the Recycle Bin."),
     ];
 }

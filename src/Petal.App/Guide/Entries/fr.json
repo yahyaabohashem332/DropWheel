@@ -2078,6 +2078,27 @@
    "photos en rafale"
   ]
  },
+ "action:Checksum": {
+  "category": "files",
+  "summary": "Affiche le SHA-256 d’un fichier et dit s’il correspond à ce qu’indique son éditeur, pour savoir qu’un téléchargement est authentique.",
+  "details": "La valeur est calculée tout de suite, quelle que soit la taille du fichier. Celle de l’éditeur est trouvée seule si possible : dans ce que vous avez copié de la page de téléchargement, ou dans un fichier de sommes à côté (name.sha256, SHA256SUMS, checksums.txt, etc.) ; sinon, collez-la. Sa longueur en donne le type : MD5, SHA-1, SHA-384 et SHA-512 marchent aussi, mais MD5 et SHA-1 montrent seulement que le téléchargement n’est pas abîmé. L’outil dit clairement si elles correspondent ; sinon, n’ouvrez pas le fichier. Rien ne quitte ce PC. Il suppose un site de confiance : une valeur sur une page piratée ne prouve rien.",
+  "how": "Copiez la valeur sur la page de téléchargement, faites glisser le fichier, appuyez sur Alt et déposez-le sur VÉRIFIER (sous Plus).",
+  "worksOn": "Un fichier à la fois.",
+  "examples": [
+   "Une ISO de Windows ou Linux : est-ce le fichier de l’éditeur ?",
+   "Un pilote d’un site miroir, comparé à la valeur de la page du fabricant.",
+   "Un long téléchargement peut-être coupé : le SHA-256 tranche sans l’ouvrir."
+  ],
+  "keywords": [
+   "sha256",
+   "somme de contrôle",
+   "vérifier un téléchargement",
+   "hash",
+   "md5",
+   "intégrité du fichier",
+   "vérifier le fichier"
+  ]
+ },
  "kind:format": {
   "category": "general",
   "summary": "Convertit les fichiers déposés dans un autre format, comme JPG, WEBP, MP4, MP3, PDF ou DOCX, enregistrés à côté d'eux.",
@@ -2155,7 +2176,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Exécute un programme de votre choix sur les fichiers déposés, décrit par un petit fichier dans le dossier des pétales.",
-  "details": "Vos propres pétales sont de petits fichiers JSON dans %APPDATA%\\Petal\\petals ; Paramètres › Vos pétales propose Ajouter depuis un fichier…, Partir d'un exemple (sommes de contrôle SHA-256 avec certutil de Windows) et Ouvrir le dossier des pétales. Un fichier donne au pétale un nom (et un nom arabe), une icône, les fichiers qu'il accepte (des extensions, ou image, video, audio, pdf, document ou any), le programme, ses arguments avec {input}, {output}, {name}, {ext}, {folder} ou {inputs}, le nom du résultat, et s'il s'exécute une fois par fichier. Le pétale apparaît sur la roue Ctrl pour les fichiers qu'il accepte, même des types que DropWheel ne connaît pas. DropWheel affiche la commande exacte avant la première exécution et à nouveau chaque fois que le fichier change, et exécute le programme directement, jamais via un shell.",
+  "details": "Vos propres pétales sont de petits fichiers JSON dans %APPDATA%\\Petal\\petals ; Paramètres › Vos pétales propose Ajouter depuis un fichier…, Partir d'un exemple (afficher les octets d'un fichier avec certutil de Windows) et Ouvrir le dossier des pétales. Un fichier donne au pétale un nom (et un nom arabe), une icône, les fichiers qu'il accepte (des extensions, ou image, video, audio, pdf, document ou any), le programme, ses arguments avec {input}, {output}, {name}, {ext}, {folder} ou {inputs}, le nom du résultat, et s'il s'exécute une fois par fichier. Le pétale apparaît sur la roue Ctrl pour les fichiers qu'il accepte, même des types que DropWheel ne connaît pas. DropWheel affiche la commande exacte avant la première exécution et à nouveau chaque fois que le fichier change, et exécute le programme directement, jamais via un shell.",
   "how": "Ajoutez le fichier dans Paramètres › Vos pétales, puis faites glisser des fichiers correspondants, appuyez sur Ctrl et déposez-les sur son pétale.",
   "worksOn": "Les fichiers que nomme sa liste « accepts » ; un ou plusieurs.",
   "examples": [

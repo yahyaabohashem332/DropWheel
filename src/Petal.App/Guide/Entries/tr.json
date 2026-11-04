@@ -2117,6 +2117,27 @@
    "mükerrer dosya"
   ]
  },
+ "action:Checksum": {
+  "category": "files",
+  "summary": "Dosyanın SHA-256 değerini gösterir ve yayıncının belirttiğiyle eşleşip eşleşmediğini söyler.",
+  "details": "Değeri dosya ne kadar büyük olursa olsun hemen hesaplar. Yayıncının belirttiğini mümkünse kendisi bulur: indirme sayfasından kopyaladığınızdan veya dosyanın yanındaki sağlama dosyasından (name.sha256, SHA256SUMS, checksums.txt vb.); yoksa siz yapıştırırsınız. Uzunluğu türünü söyler, MD5, SHA-1, SHA-384 ve SHA-512 de çalışır; ama MD5 ve SHA-1 yalnızca indirmenin bozuk olmadığını gösterir. Eşleşip eşleşmediğini açıkça söyler; eşleşmiyorsa dosyayı açmayın. Bu bilgisayardan hiçbir şey çıkmaz. Güvendiğiniz bir siteyle işe yarar: ele geçirilmiş sayfadaki değer bir şey kanıtlamaz.",
+  "how": "İndirme sayfasından değeri kopyalayın, dosyayı sürükleyin, Alt'a dokunun ve DOĞRULA üzerine bırakın (Diğer altında).",
+  "worksOn": "Tek seferde bir dosya.",
+  "examples": [
+   "Windows veya Linux ISO'su: yayıncının yaptığı dosya mı?",
+   "Yansı siteden sürücü, üreticinin sayfasındaki değerle karşılaştırılır.",
+   "Yarım kalmış olabilecek uzun indirme: SHA-256 açmadan sonucu söyler."
+  ],
+  "keywords": [
+   "sha256",
+   "sağlama",
+   "indirmeyi doğrula",
+   "hash",
+   "md5",
+   "dosya bütünlüğü",
+   "dosya doğrula"
+  ]
+ },
  "kind:format": {
   "category": "general",
   "summary": "Bırakılan dosyaları JPG, WEBP, MP4, MP3, PDF veya DOCX gibi başka bir biçime dönüştürür ve yanlarına kaydeder.",
@@ -2196,7 +2217,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Bırakılan dosyalar üzerinde kendi programını çalıştırır; yapraklar klasöründeki küçük bir dosyayla tanımlanır.",
-  "details": "Kendi yaprakların %APPDATA%\\Petal\\petals içindeki küçük JSON dosyalarıdır; Ayarlar › Yaprakların bölümünde Dosyadan Ekle…, Bir Örnekle Başla (Windows'un certutil aracıyla SHA-256 sağlama toplamları) ve Yapraklar Klasörünü Aç vardır. Dosya yaprağa bir ad (ve bir Arapça ad), bir simge, hangi dosyaları kabul ettiğini (uzantılar ya da image, video, audio, pdf, document veya any), programı, {input}, {output}, {name}, {ext}, {folder} veya {inputs} içeren bağımsız değişkenlerini, sonucun adını ve her dosya için bir kez çalışıp çalışmayacağını verir. Yaprak, kabul ettiği dosyalar için Ctrl çarkında görünür; DropWheel'in tanımadığı türler için bile. DropWheel ilk çalıştırmadan önce ve dosya her değiştiğinde tam komutu gösterir; programı asla bir kabuk üzerinden değil, doğrudan çalıştırır.",
+  "details": "Kendi yaprakların %APPDATA%\\Petal\\petals içindeki küçük JSON dosyalarıdır; Ayarlar › Yaprakların bölümünde Dosyadan Ekle…, Bir Örnekle Başla (Windows'un certutil aracıyla dosyanın baytlarını gösterme) ve Yapraklar Klasörünü Aç vardır. Dosya yaprağa bir ad (ve bir Arapça ad), bir simge, hangi dosyaları kabul ettiğini (uzantılar ya da image, video, audio, pdf, document veya any), programı, {input}, {output}, {name}, {ext}, {folder} veya {inputs} içeren bağımsız değişkenlerini, sonucun adını ve her dosya için bir kez çalışıp çalışmayacağını verir. Yaprak, kabul ettiği dosyalar için Ctrl çarkında görünür; DropWheel'in tanımadığı türler için bile. DropWheel ilk çalıştırmadan önce ve dosya her değiştiğinde tam komutu gösterir; programı asla bir kabuk üzerinden değil, doğrudan çalıştırır.",
   "how": "Dosyayı Ayarlar › Yaprakların bölümünde ekle, sonra uyan dosyaları sürükle, Ctrl'ye dokun ve onun yaprağına bırak.",
   "worksOn": "'accepts' listesinin belirttiği dosyalar; bir tane ya da birçok tane.",
   "examples": [

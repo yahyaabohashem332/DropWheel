@@ -36,6 +36,10 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             case FileActionId.OpenWith:
                 OpenWithWindow.Show(paths, at);
                 break;
+            case FileActionId.Checksum:
+                if (paths.FirstOrDefault(File.Exists) is { } file)
+                    new ChecksumWindow(file).Show();
+                break;
             case FileActionId.CopyPath:
                 Clipboard.SetText(string.Join(Environment.NewLine, paths));
                 Toast(at, paths.Count == 1 ? L.T("Path copied") : L.P(paths.Count, "{0} path copied", "{0} paths copied"), paths.Count == 1 ? paths[0] : L.T("One path per line"));

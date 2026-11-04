@@ -18,25 +18,24 @@ public sealed class CustomPetalTests : IDisposable
     }
 
     [Fact]
-    public async Task The_example_petal_saves_a_checksum()
+    public async Task The_example_petal_saves_a_hex_dump()
     {
         var manifest = CustomPetal.WriteExample();
         var petal = Assert.Single(CustomPetal.LoadAll());
         Assert.Null(petal.Problem);
         Assert.Equal(manifest, petal.File);
-        Assert.Equal("بصمة الملف", petal.DisplayName(arabic: true));
+        Assert.Equal("عرض البايتات", petal.DisplayName(arabic: true));
 
         // A name a shell would take for two commands is just a name here.
         var file = Path.Combine(_dir, "report & calc.txt");
         File.WriteAllText(file, "Petal");
         Assert.True(petal.Takes([file]));
         var run = Assert.Single(petal.Plan([file]));
-        Assert.Equal(Path.Combine(_dir, "report & calc SHA-256.txt"), run.Stdout);
+        Assert.Equal(Path.Combine(_dir, "report & calc hex.txt"), run.Stdout);
         Assert.Contains("\"" + file + "\"", run.CommandLine);
 
         var made = await CustomPetal.RunAsync(run);
-        var expected = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file))).ToLowerInvariant();
-        Assert.Contains(expected, File.ReadAllText(Assert.Single(made)).Replace(" ", "").ToLowerInvariant());
+        Assert.Contains("50 65 74 61 6c", File.ReadAllText(Assert.Single(made)).ToLowerInvariant());
     }
 
     [Fact]

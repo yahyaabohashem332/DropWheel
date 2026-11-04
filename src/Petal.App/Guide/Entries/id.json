@@ -2138,6 +2138,27 @@
    "foto beruntun"
   ]
  },
+ "action:Checksum": {
+  "category": "files",
+  "summary": "Menampilkan SHA-256 file dan mengatakan apakah cocok dengan yang disebut penerbitnya.",
+  "details": "Nilainya langsung dihitung sebesar apa pun filenya. Nilai dari penerbit dicari sendiri bila bisa: dari yang Anda salin di halaman unduhan atau dari file checksum di sampingnya (name.sha256, SHA256SUMS, checksums.txt, dan sejenisnya); jika tidak, tempelkan. Panjangnya menunjukkan jenisnya, jadi MD5, SHA-1, SHA-384, dan SHA-512 juga jalan, tetapi MD5 dan SHA-1 hanya menunjukkan unduhan tidak rusak. Ia mengatakan jelas cocok atau tidak; jika tidak, jangan buka filenya. Tidak ada yang keluar dari PC ini. Berguna dengan situs yang Anda percaya: nilai di halaman yang diretas tidak membuktikan apa-apa.",
+  "how": "Salin nilainya dari halaman unduhan, seret file, ketuk Alt, dan lepaskan di PERIKSA (di bawah Lainnya).",
+  "worksOn": "Satu file setiap kali.",
+  "examples": [
+   "ISO Windows atau Linux: apakah file buatan penerbit?",
+   "Driver dari situs cermin, dibandingkan dengan nilai di halaman pembuatnya.",
+   "Unduhan panjang yang mungkin rusak: SHA-256 memastikan tanpa membukanya."
+  ],
+  "keywords": [
+   "sha256",
+   "checksum",
+   "verifikasi unduhan",
+   "hash",
+   "md5",
+   "integritas file",
+   "periksa file"
+  ]
+ },
  "kind:format": {
   "category": "general",
   "summary": "Mengonversi file yang dilepas ke format lain, seperti JPG, WEBP, MP4, MP3, PDF, atau DOCX, disimpan di sampingnya.",
@@ -2218,7 +2239,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Menjalankan program Anda sendiri pada file yang dilepas, yang dijelaskan oleh file kecil di folder kelopak.",
-  "details": "Kelopak buatan Anda sendiri adalah file JSON kecil di %APPDATA%\\Petal\\petals; Pengaturan › Kelopak Anda berisi Tambah dari File…, Mulai dari Contoh (checksum SHA-256 dengan certutil milik Windows), dan Buka Folder Kelopak. Sebuah file memberi kelopak nama (dan nama Arab), ikon, file apa yang diterimanya (ekstensi, atau image, video, audio, pdf, document, atau any), programnya, argumennya dengan {input}, {output}, {name}, {ext}, {folder}, atau {inputs}, nama hasilnya, dan apakah dijalankan sekali per file. Kelopak muncul di roda Ctrl untuk file yang diterimanya, bahkan jenis yang tidak dikenal DropWheel. DropWheel menampilkan perintah persisnya sebelum dijalankan pertama kali dan lagi setiap kali file itu berubah, dan menjalankan program secara langsung, tidak pernah melalui shell.",
+  "details": "Kelopak buatan Anda sendiri adalah file JSON kecil di %APPDATA%\\Petal\\petals; Pengaturan › Kelopak Anda berisi Tambah dari File…, Mulai dari Contoh (menampilkan byte file dengan certutil milik Windows), dan Buka Folder Kelopak. Sebuah file memberi kelopak nama (dan nama Arab), ikon, file apa yang diterimanya (ekstensi, atau image, video, audio, pdf, document, atau any), programnya, argumennya dengan {input}, {output}, {name}, {ext}, {folder}, atau {inputs}, nama hasilnya, dan apakah dijalankan sekali per file. Kelopak muncul di roda Ctrl untuk file yang diterimanya, bahkan jenis yang tidak dikenal DropWheel. DropWheel menampilkan perintah persisnya sebelum dijalankan pertama kali dan lagi setiap kali file itu berubah, dan menjalankan program secara langsung, tidak pernah melalui shell.",
   "how": "Tambahkan file di Pengaturan › Kelopak Anda, lalu seret file yang cocok, ketuk Ctrl, dan lepaskan di kelopaknya.",
   "worksOn": "File yang disebutkan dalam daftar 'accepts'-nya; satu atau banyak.",
   "examples": [

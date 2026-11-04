@@ -2062,6 +2062,30 @@
    "burst shots"
   ]
  },
+ "action:Checksum": {
+  "category": "files",
+  "summary": "Shows a file's SHA-256 and says whether it matches what its publisher states, to know a download is the real one.",
+  "details": "It works the checksum out at once, however large the file. What the publisher states is found by itself where it can be: from what you copied off the web page, or from a checksum file beside the download (name.sha256, SHA256SUMS, checksums.txt and the like), and otherwise you paste it. Its length says which kind it is, so MD5, SHA-1, SHA-384 and SHA-512 work too, though MD5 and SHA-1 can only show that a download isn't damaged, not that nobody changed it. It says plainly whether they match; when they don't, don't open the file. Nothing leaves this PC. It comes after a download from a site you trust: a checksum on a hacked page proves nothing.",
+  "how": "Copy the checksum from the download page, drag the file, tap Alt and drop on CHECK (under More).",
+  "examples": [
+   "An ISO of Windows or Linux: is it the file the publisher made?",
+   "A driver from a mirror site, checked against the value on the maker's own page.",
+   "A long download that may have broken: its SHA-256 settles it without opening it."
+  ],
+  "worksOn": "One file at a time.",
+  "keywords": [
+   "sha256",
+   "checksum",
+   "verify download",
+   "hash",
+   "md5",
+   "file integrity",
+   "sha-256",
+   "check file",
+   "compare hash",
+   "sha256sum"
+  ]
+ },
  "kind:format": {
   "category": "general",
   "summary": "Converts the dropped files to another format, such as JPG, WEBP, MP4, MP3, PDF or DOCX, saved beside them.",
@@ -2140,7 +2164,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Runs a program of your own on the dropped files, described by a small file in the petals folder.",
-  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (SHA-256 checksums with Windows' certutil) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds DropWheel doesn't know. DropWheel shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
+  "details": "Your own petals are small JSON files in %APPDATA%\\Petal\\petals; Settings › Your Petals has Add from a File…, Start from an Example (a file's bytes in hexadecimal with Windows' certutil) and Open the Petals Folder. A file gives the petal a name (and an Arabic name), an icon, which files it accepts (extensions, or image, video, audio, pdf, document or any), the program, its arguments with {input}, {output}, {name}, {ext}, {folder} or {inputs}, the result's name, and whether it runs once per file. The petal appears on the Ctrl wheel for files it accepts, even kinds DropWheel doesn't know. DropWheel shows the exact command before the first run and again whenever the file changes, and runs the program directly, never through a shell.",
   "how": "Add the file in Settings › Your Petals, then drag matching files, tap Ctrl and drop on its petal.",
   "examples": [
    "A petal that runs oxipng on PNG files and saves 'name Optimised.png'.",

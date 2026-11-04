@@ -2105,6 +2105,27 @@
    "fotos en ráfaga"
   ]
  },
+ "action:Checksum": {
+  "category": "files",
+  "summary": "Muestra el SHA-256 de un archivo y dice si coincide con lo que indica su editor, para saber que una descarga es la auténtica.",
+  "details": "Calcula el valor al momento, por grande que sea el archivo. El del editor lo encuentra solo si puede: de lo que copiaste de la página de descarga o de un archivo de sumas junto al archivo (name.sha256, SHA256SUMS, checksums.txt y similares); si no, pégalo. Su longitud indica el tipo, así que MD5, SHA-1, SHA-384 y SHA-512 también funcionan, pero MD5 y SHA-1 solo muestran que la descarga no está dañada. Dice claramente si coinciden; si no, no abras el archivo. Nada sale de este PC. Sirve con un sitio de confianza: un valor en una página pirateada no prueba nada.",
+  "how": "Copia el valor de la página de descarga, arrastra el archivo, pulsa Alt y suéltalo en COMPROBAR (en Más).",
+  "worksOn": "Un archivo cada vez.",
+  "examples": [
+   "Una ISO de Windows o Linux: ¿es el archivo del editor?",
+   "Un controlador de un sitio espejo, comparado con el valor de la página del fabricante.",
+   "Una descarga larga quizá rota: el SHA-256 lo aclara sin abrirla."
+  ],
+  "keywords": [
+   "sha256",
+   "suma de comprobación",
+   "verificar descarga",
+   "hash",
+   "md5",
+   "integridad del archivo",
+   "comprobar archivo"
+  ]
+ },
  "kind:format": {
   "category": "general",
   "summary": "Convierte los archivos que sueltas a otro formato, como JPG, WEBP, MP4, MP3, PDF o DOCX, y los guarda junto a ellos.",
@@ -2184,7 +2205,7 @@
  "kind:petal": {
   "category": "general",
   "summary": "Ejecuta un programa tuyo sobre los archivos que sueltas, descrito por un pequeño archivo en la carpeta de pétalos.",
-  "details": "Tus propios pétalos son pequeños archivos JSON en %APPDATA%\\Petal\\petals; Configuración › Tus pétalos tiene Añadir desde un archivo…, Empezar desde un ejemplo (sumas de comprobación SHA-256 con certutil de Windows) y Abrir la carpeta de pétalos. Un archivo le da al pétalo un nombre (y un nombre en árabe), un icono, qué archivos acepta (extensiones, o image, video, audio, pdf, document o any), el programa, sus argumentos con {input}, {output}, {name}, {ext}, {folder} o {inputs}, el nombre del resultado y si se ejecuta una vez por archivo. El pétalo aparece en la rueda de Ctrl para los archivos que acepta, incluso tipos que DropWheel no conoce. DropWheel muestra el comando exacto antes de la primera ejecución y de nuevo cada vez que el archivo cambia, y ejecuta el programa directamente, nunca a través de un shell.",
+  "details": "Tus propios pétalos son pequeños archivos JSON en %APPDATA%\\Petal\\petals; Configuración › Tus pétalos tiene Añadir desde un archivo…, Empezar desde un ejemplo (mostrar los bytes de un archivo con certutil de Windows) y Abrir la carpeta de pétalos. Un archivo le da al pétalo un nombre (y un nombre en árabe), un icono, qué archivos acepta (extensiones, o image, video, audio, pdf, document o any), el programa, sus argumentos con {input}, {output}, {name}, {ext}, {folder} o {inputs}, el nombre del resultado y si se ejecuta una vez por archivo. El pétalo aparece en la rueda de Ctrl para los archivos que acepta, incluso tipos que DropWheel no conoce. DropWheel muestra el comando exacto antes de la primera ejecución y de nuevo cada vez que el archivo cambia, y ejecuta el programa directamente, nunca a través de un shell.",
   "how": "Añade el archivo en Configuración › Tus pétalos, y luego arrastra archivos compatibles, pulsa Ctrl y suéltalos sobre su pétalo.",
   "worksOn": "Los archivos que nombra su lista «accepts»; uno o muchos.",
   "examples": [

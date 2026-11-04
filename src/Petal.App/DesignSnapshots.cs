@@ -388,6 +388,7 @@ internal static class DesignSnapshots
             ("autoblur", () => new Tools.Windows.AutoBlurWindow(T(Petal.Core.Tools.ToolId.AutoBlur), file("weekend.mp4"), jobs, at)),
             ("studynotes", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at)),
             ("studynotesdone", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at, new Petal.Recipes.Study.StudyPack(Localization.L.T("Summary"), [new Petal.Recipes.Study.StudyCard("Photosynthesis", "Making food from light.", "Page 1")], [new Petal.Recipes.Study.StudyQuestion("Where does it happen?", ["Leaves", "Roots", "Soil", "Air"], 0, "The text says so.", "Page 1")]))),
+            ("checksum", () => new Actions.ChecksumWindow(file("landscape.jpg"), "0000000000000000000000000000000000000000000000000000000000000000")),
             ("tracesvg", () => new Tools.Windows.TraceToSvgWindow(T(Petal.Core.Tools.ToolId.TraceToSvg), [file("figures.png")], jobs, at)),
             ("idphoto", () => new Tools.Windows.IdPhotoWindow(T(Petal.Core.Tools.ToolId.IdPhoto), file("landscape.jpg"), jobs, at)),
             ("translatepicture", () => new Tools.Windows.TranslatePictureWindow(T(Petal.Core.Tools.ToolId.TranslatePicture), [file("figures.png")], jobs, at)),

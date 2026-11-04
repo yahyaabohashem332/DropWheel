@@ -3604,5 +3604,17 @@ internal static class Arabic
         ["Tracing"] = "جارٍ التحويل",
         ["Tracing…"] = "جارٍ التحويل…",
         ["{0} colours, {1} shapes, {2} KB."] = "{0} ألوان، {1} شكلًا، {2} KB.",
+        ["Check File"] = "فحص الملف",
+        ["CHECK"] = "فحص",
+        ["See a file's SHA-256 and whether it matches what its publisher says, to know a download is the real one."] = "اعرض بصمة SHA-256 للملف وهل تطابق ما يذكره ناشره، لتعرف أن ما نزّلته هو الأصلي.",
+        ["What the publisher says it should be"] = "ما يذكره الناشر",
+        ["Found in {0}, beside the file."] = "وُجد في {0} بجانب الملف.",
+        ["Taken from what you copied."] = "أُخذ مما نسخته.",
+        ["Working it out…"] = "جارٍ الحساب…",
+        ["Paste the checksum from the publisher's page to compare."] = "الصق البصمة من صفحة الناشر للمقارنة.",
+        ["That isn't a checksum, or it is for another file."] = "هذه ليست بصمة، أو أنها لملف آخر.",
+        ["✓ They match: this is the publisher's file."] = "✓ متطابقتان: هذا هو ملف الناشر.",
+        ["✗ They don't match: this isn't the same file. Don't open it. Download it again from the publisher."] = "✗ غير متطابقتين: ليس هذا الملف نفسه. لا تفتحه، ونزّله مجددًا من الناشر.",
+        ["{0} shows the download isn't damaged, but someone could make a different file with the same value. Trust SHA-256 where it is offered."] = "يُثبت {0} أن التنزيل غير تالف، لكن يمكن صنع ملف مختلف بالقيمة نفسها. اعتمد SHA-256 حيث يتوفر.",
     };
 }
