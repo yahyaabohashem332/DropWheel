@@ -94,22 +94,22 @@ public sealed class OrganizerTests : IDisposable
     }
 
     [Fact]
-    public async Task Files_move_into_folders_named_in_the_users_language()
+    public async Task Files_move_into_folders_named_in_english_whatever_the_language()
     {
         var photo = Picture("beach.jpg", 640, 480);
-        var moved = await Organizer.OrganizeAsync(photo, _dir, new OrganizeOptions(), arabic: true, Converters, new ConversionSettings());
-        Assert.Equal(Path.Combine(_dir, "الصور", "beach.jpg"), moved);
+        var moved = await Organizer.OrganizeAsync(photo, _dir, new OrganizeOptions(), Converters, new ConversionSettings());
+        Assert.Equal(Path.Combine(_dir, "Pictures", "beach.jpg"), moved);
         Assert.False(File.Exists(photo));
 
         // An existing folder wins, whatever its language.
         Directory.CreateDirectory(Path.Combine(_dir, "Music"));
         var song = Path.Combine(_dir, "song.mp3");
         File.WriteAllBytes(song, [1, 2, 3]);
-        Assert.Equal(Path.Combine(_dir, "Music", "song.mp3"), await Organizer.OrganizeAsync(song, _dir, new OrganizeOptions(), arabic: true, Converters, new ConversionSettings()));
+        Assert.Equal(Path.Combine(_dir, "Music", "song.mp3"), await Organizer.OrganizeAsync(song, _dir, new OrganizeOptions(), Converters, new ConversionSettings()));
 
         // Never over another file.
         var again = Picture("beach.jpg", 640, 480);
-        Assert.Equal(Path.Combine(_dir, "الصور", "beach 2.jpg"), await Organizer.OrganizeAsync(again, _dir, new OrganizeOptions(), arabic: true, Converters, new ConversionSettings()));
+        Assert.Equal(Path.Combine(_dir, "Pictures", "beach 2.jpg"), await Organizer.OrganizeAsync(again, _dir, new OrganizeOptions(), Converters, new ConversionSettings()));
     }
 
     [Fact]
@@ -122,10 +122,10 @@ public sealed class OrganizerTests : IDisposable
         Assert.Equal("2023-08-14 09.30.00", await Organizer.DateNameAsync(dated));
 
         var options = new OrganizeOptions { ByKind = false, Screenshots = false, Invoices = false, RenameByDate = true };
-        var renamed = await Organizer.OrganizeAsync(dated, _dir, options, arabic: false, Converters, new ConversionSettings());
+        var renamed = await Organizer.OrganizeAsync(dated, _dir, options, Converters, new ConversionSettings());
         Assert.Equal(Path.Combine(_dir, "2023-08-14 09.30.00.jpg"), renamed);
         // Seen again by the watcher: left as it is, not renamed for ever.
-        Assert.Null(await Organizer.OrganizeAsync(renamed!, _dir, options, arabic: false, Converters, new ConversionSettings()));
+        Assert.Null(await Organizer.OrganizeAsync(renamed!, _dir, options, Converters, new ConversionSettings()));
     }
 
     [Fact]

@@ -205,7 +205,8 @@ internal sealed class ScreenTextWindow : ToolWindow
                 HudCard.ShowAt(HudCard.CornerPoint(), "", "").Succeed(L.T("Table copied"), size, null);
                 return;
             }
-            var folder = Settings.SavedPlaces.Tables;
+            var folder = Settings.SavedPlaces.Folder(Settings.SavedKind.Tables);
+            System.IO.Directory.CreateDirectory(folder);
             var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
             var output = Petal.Core.Jobs.OutputNaming.Unique(folder, L.T("Table") + " " + stamp, "xlsx");
             await Task.Run(() => PictureTables.SaveXlsx(table, output, L.T("Table")));

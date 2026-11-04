@@ -22,7 +22,7 @@ internal static class PcDrop
 
     public static string Name => Environment.MachineName;
 
-    public static string Folder => Path.Combine(PhoneWindow.DownloadsFolder(), "DropWheel");
+    public static string Folder => Settings.SavedPlaces.Folder(Settings.SavedKind.FromPcs);
 
     /// <summary>Stable and random, so a PC never finds itself.</summary>
     public static string Id
@@ -40,6 +40,15 @@ internal static class PcDrop
     }
 
     public static bool Receiving => _receiver is not null;
+
+    /// <summary>Starts receiving again, into the folder now chosen.</summary>
+    public static async Task RestartAsync()
+    {
+        if (!Receiving)
+            return;
+        await ApplyAsync(false);
+        await ApplyAsync(true);
+    }
 
     /// <summary>Starts or stops receiving as the setting says.</summary>
     public static async Task ApplyAsync(bool on)

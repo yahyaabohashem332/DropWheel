@@ -72,7 +72,7 @@ public static class ClipboardSource
     private static string Stamp => DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>Where copied text is kept when it becomes a file.</summary>
-    public static string TextFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel");
+    public static string TextFolder => Settings.SavedPlaces.Folder(Settings.SavedKind.ClipboardText);
 
     private static string SaveImage(BitmapSource image)
     {

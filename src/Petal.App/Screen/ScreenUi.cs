@@ -84,6 +84,74 @@ internal class MonitorWindow : Window
     public bool Contains(ScreenPoint p) => p.X >= Bounds.Left && p.X < Bounds.Right && p.Y >= Bounds.Top && p.Y < Bounds.Bottom;
 }
 
+/// <summary>
+/// Keeps a window with the button that ends something in front of everything until it is closed on purpose. Another program
+/// can take "always on top" away from it, full-screen viewers push it down, Show Desktop hides it, and a change of screen can
+/// leave it off every monitor; nothing tells this process, so it looks twice a second and puts things right.
+/// </summary>
+internal sealed class KeepOnTop
+{
+    private readonly Window _bar;
+    private readonly Func<IEnumerable<Window>> _under;
+    private readonly Action? _lost;
+
+    private KeepOnTop(Window bar, Func<IEnumerable<Window>>? under, Action? lost)
+    {
+        _bar = bar;
+        _under = under ?? (() => []);
+        _lost = lost;
+    }
+
+    /// <param name="bar">The window that must stay in reach, always raised to the very front.</param>
+    /// <param name="under">Windows of the same tool that go under it. Raised only when they have lost their place, so they don't cover other programs' menus.</param>
+    /// <param name="lost">Puts the bar back when it is on no monitor any more.</param>
+    public static KeepOnTop Start(Window bar, Func<IEnumerable<Window>>? under = null, Action? lost = null)
+    {
+        var keep = new KeepOnTop(bar, under, lost);
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        timer.Tick += (_, _) => keep.Check();
+        bar.Closed += (_, _) => timer.Stop();
+        timer.Start();
+        return keep;
+    }
+
+    /// <summary>Lets the window close only when <paramref name="finished"/> says so, or when the app is ending: Alt+F4 won't lose the button.</summary>
+    public static void CloseOnlyWhen(Window bar, Func<bool> finished) =>
+        bar.Closing += (_, e) => e.Cancel = !finished() && !bar.Dispatcher.HasShutdownStarted;
+
+    internal void Check()
+    {
+        foreach (var window in _under())
+            if (!IsUp(window))
+                Raise(window);
+        Raise(_bar);
+        var handle = new WindowInteropHelper(_bar).Handle;
+        if (handle != IntPtr.Zero && ScreenNative.MonitorFromWindow(handle, 0) == IntPtr.Zero)
+            _lost?.Invoke();
+    }
+
+    private static bool IsUp(Window window)
+    {
+        var handle = new WindowInteropHelper(window).Handle;
+        return handle == IntPtr.Zero || (ScreenNative.IsWindowVisible(handle) && !ScreenNative.IsIconic(handle)
+            && ((long)GetWindowLongPtr(handle, GWL_EXSTYLE) & WS_EX_TOPMOST) != 0);
+    }
+
+    private static void Raise(Window window)
+    {
+        var handle = new WindowInteropHelper(window).Handle;
+        if (handle == IntPtr.Zero)
+            return;
+        if (!window.IsVisible)
+            window.Show();
+        if (ScreenNative.IsIconic(handle))
+            ScreenNative.ShowWindow(handle, ScreenNative.SW_SHOWNOACTIVATE);
+        if (window.WindowState != WindowState.Normal)
+            window.WindowState = WindowState.Normal;
+        SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+}
+
 /// <summary>The look shared by the screen tools: floating dark-glass strips of round buttons.</summary>
 internal static class ScreenUi
 {

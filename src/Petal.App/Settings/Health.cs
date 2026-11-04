@@ -310,7 +310,7 @@ public static class Health
         if (JsonNode.Parse(json) is not JsonObject settings)
             return "{}";
         foreach (var personal in new[] { "Snippets", "Workspaces", "DropId", "Destinations", "OutputFolder", "Automations", "SearchFolders", "Favourites",
-                     "ScanFolder", "Watermark", "UpdateFeed", "Recipes", "Wheels", "FocusApps", "RecentCustom", "PetalColours" })
+                     "ScanFolder", "SavedFolders", "Watermark", "UpdateFeed", "Recipes", "Wheels", "FocusApps", "RecentCustom", "PetalColours" })
         {
             var key = settings.Select(p => p.Key).FirstOrDefault(k => k.Equals(personal, StringComparison.OrdinalIgnoreCase));
             if (key is not null)

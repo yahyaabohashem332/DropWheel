@@ -124,7 +124,6 @@ public sealed class OrganizeFolderWindow : FolderToolWindow
     {
         bool byMonth = _by.Value == "month", subfolders = On(_subfolders), rename = On(_rename);
         var options = new OrganizeOptions { Screenshots = On(_screenshots), Invoices = On(_invoices), RenameByDate = rename };
-        bool arabic = L.IsArabic;
         var settings = SettingsStore.Current.Conversion;
         int moved = 0;
         Close();
@@ -138,7 +137,7 @@ public sealed class OrganizeFolderWindow : FolderToolWindow
                 var from = files[i].Path;
                 var to = byMonth
                     ? await Organizer.OrganizeByMonthAsync(from, root, rename, ct)
-                    : await Organizer.OrganizeAsync(from, root, options, arabic, Jobs.Converters, settings, ct);
+                    : await Organizer.OrganizeAsync(from, root, options, Jobs.Converters, settings, ct);
                 if (to is not null)
                     moves.Add(new RenamedPath(from, to));
                 p.Report((i + 1.0) / files.Count);

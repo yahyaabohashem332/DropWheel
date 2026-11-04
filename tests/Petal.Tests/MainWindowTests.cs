@@ -92,6 +92,63 @@ public sealed class MainWindowTests
     });
 
     [Fact]
+    public void A_folder_can_be_changed_and_put_back()
+    {
+        var settings = new AppSettings();
+        var usual = SavedPlaces.Folder(SavedKind.Screenshots, settings);
+        var mine = Path.GetTempPath().TrimEnd('\\') + @"\My Shots";
+        SavedPlaces.Choose(SavedKind.Screenshots, mine, settings);
+        Assert.Equal(mine, SavedPlaces.Folder(SavedKind.Screenshots, settings));
+        Assert.Equal(mine, SavedPlaces.Made(settings).First(place => place.Kind == SavedKind.Screenshots).Path);
+        // Only that kind.
+        Assert.NotEqual(mine, SavedPlaces.Folder(SavedKind.Recordings, settings));
+        SavedPlaces.Choose(SavedKind.Screenshots, null, settings);
+        Assert.Equal(usual, SavedPlaces.Folder(SavedKind.Screenshots, settings));
+    }
+
+    [Fact]
+    public void Scans_share_the_folder_their_own_window_chooses()
+    {
+        var settings = new AppSettings();
+        var mine = Path.GetTempPath().TrimEnd('\\') + @"\My Scans";
+        SavedPlaces.Choose(SavedKind.Scans, mine, settings);
+        Assert.Equal(mine, settings.ScanFolder);
+        Assert.Equal(mine, SavedPlaces.Folder(SavedKind.Scans, settings));
+    }
+
+    [Fact]
+    public void A_folder_on_a_drive_that_is_gone_falls_back_to_the_usual_one()
+    {
+        var settings = new AppSettings();
+        var gone = new[] { "Q", "X", "Y", "Z" }.Select(d => d + @":\\").First(root => !Directory.Exists(root)) + "Shots";
+        SavedPlaces.Choose(SavedKind.Screenshots, gone, settings);
+        Assert.Equal(SavedPlaces.Usual(SavedKind.Screenshots), SavedPlaces.Folder(SavedKind.Screenshots, settings));
+    }
+
+    [Fact]
+    public void Saved_files_offers_to_change_what_can_be_changed() => Run(window =>
+    {
+        window.GoToPage("Saved Files");
+        var was = SettingsStore.Current.SavedFolders.ToDictionary();
+        var store = SettingsStore.Directory;
+        SettingsStore.Directory = Path.Combine(Path.GetTempPath(), "petal-places-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var mine = Path.GetTempPath().TrimEnd('\\') + @"\My Recordings";
+            window.SetPlace(SavedKind.Recordings, mine);
+            Assert.Equal(mine, Petal.App.Screen.ScreenRecorder.Folder);
+            Assert.Contains(mine, window.PlacesShown);
+            window.SetPlace(SavedKind.Recordings, null);
+            Assert.Equal(SavedPlaces.Usual(SavedKind.Recordings), Petal.App.Screen.ScreenRecorder.Folder);
+        }
+        finally
+        {
+            SettingsStore.Current.SavedFolders = was;
+            SettingsStore.Directory = store;
+        }
+    });
+
+    [Fact]
     public void Results_are_said_to_go_where_the_setting_says()
     {
         var settings = new AppSettings { Output = OutputLocation.BesideOriginal, OutputFolder = @"C:\Chosen" };
@@ -215,6 +272,25 @@ public sealed class MainWindowTests
 [Collection("Language")]
 public sealed class LanguageSwitchTests
 {
+    [Fact]
+    public void The_usual_folders_have_the_same_english_names_in_every_language()
+    {
+        try
+        {
+            foreach (var language in L.Languages.Select(l => l.Language))
+            {
+                L.Configure(language);
+                foreach (var kind in Enum.GetValues<SavedKind>())
+                    Assert.All(SavedPlaces.Usual(kind).Split('\\').TakeLast(1), name => Assert.DoesNotMatch(@"\p{IsArabic}", kind == SavedKind.Tables || kind == SavedKind.FromPhone ? "" : name));
+                Assert.Equal("Scans", Path.GetFileName(SavedPlaces.Usual(SavedKind.Scans)));
+            }
+        }
+        finally
+        {
+            L.Configure(UiLanguage.English);
+        }
+    }
+
     private static async Task Until(Func<bool> done)
     {
         for (int i = 0; i < 500 && !done(); i++)
@@ -277,5 +353,125 @@ public sealed class LanguageSwitchTests
             L.Configure(UiLanguage.English);
             Directory.Delete(folder, true);
         }
+    });
+}
+
+/// <summary>The bar that ends a recording: other programs can't take it away, and only finishing closes it.</summary>
+[Collection(PdfEditorWindowTests.OneApplication)]
+public sealed class KeepOnTopTests
+{
+    private static System.Windows.Window Bar() => new()
+    {
+        Width = 120,
+        Height = 40,
+        WindowStyle = WindowStyle.None,
+        ShowInTaskbar = false,
+        ShowActivated = false,
+        Topmost = true,
+        WindowStartupLocation = WindowStartupLocation.Manual,
+        Left = -30000,
+        Top = -30000,
+    };
+
+    private static bool OnTop(System.Windows.Window window)
+    {
+        var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+        return Petal.App.Screen.ScreenNative.IsWindowVisible(handle) && !Petal.App.Screen.ScreenNative.IsIconic(handle)
+            && ((long)Petal.App.Interop.NativeMethods.GetWindowLongPtr(handle, Petal.App.Interop.NativeMethods.GWL_EXSTYLE) & Petal.App.Interop.NativeMethods.WS_EX_TOPMOST) != 0;
+    }
+
+    [Fact]
+    public void A_bar_that_lost_its_place_comes_back() => PdfEditorWindowTests.RunOnInterface(() =>
+    {
+        var bar = Bar();
+        bar.Show();
+        var handle = new System.Windows.Interop.WindowInteropHelper(bar).Handle;
+        var keep = Petal.App.Screen.KeepOnTop.Start(bar);
+        try
+        {
+            Assert.True(OnTop(bar));
+
+            // Another program took "always on top" away.
+            Petal.App.Interop.NativeMethods.SetWindowPos(handle, new IntPtr(-2), 0, 0, 0, 0, Petal.App.Interop.NativeMethods.SWP_NOMOVE | Petal.App.Interop.NativeMethods.SWP_NOSIZE | Petal.App.Interop.NativeMethods.SWP_NOACTIVATE);
+            Assert.False(OnTop(bar));
+            keep.Check();
+            Assert.True(OnTop(bar));
+
+            // Show Desktop or a minimize.
+            Petal.App.Screen.ScreenNative.ShowWindow(handle, Petal.App.Screen.ScreenNative.SW_MINIMIZE);
+            Assert.False(OnTop(bar));
+            keep.Check();
+            Assert.True(OnTop(bar));
+
+            // Hidden outright.
+            bar.Hide();
+            Assert.False(OnTop(bar));
+            keep.Check();
+            Assert.True(OnTop(bar));
+        }
+        finally
+        {
+            bar.Close();
+        }
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public void Windows_under_the_bar_come_back_and_the_bar_stays_over_them() => PdfEditorWindowTests.RunOnInterface(() =>
+    {
+        var (bar, frame) = (Bar(), Bar());
+        frame.Show();
+        bar.Show();
+        var keep = Petal.App.Screen.KeepOnTop.Start(bar, () => [frame]);
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(frame).Handle;
+            Petal.App.Screen.ScreenNative.ShowWindow(handle, Petal.App.Screen.ScreenNative.SW_MINIMIZE);
+            keep.Check();
+            Assert.True(OnTop(frame));
+            Assert.True(OnTop(bar));
+        }
+        finally
+        {
+            bar.Close();
+            frame.Close();
+        }
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public void A_bar_on_no_monitor_is_put_back() => PdfEditorWindowTests.RunOnInterface(() =>
+    {
+        var bar = Bar();
+        bar.Show();
+        int lost = 0;
+        var keep = Petal.App.Screen.KeepOnTop.Start(bar, lost: () => lost++);
+        try
+        {
+            keep.Check();
+            Assert.Equal(1, lost);
+        }
+        finally
+        {
+            bar.Close();
+        }
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public void Only_finishing_closes_the_bar() => PdfEditorWindowTests.RunOnInterface(() =>
+    {
+        var bar = Bar();
+        bar.Show();
+        bool finished = false, closed = false;
+        bar.Closed += (_, _) => closed = true;
+        Petal.App.Screen.KeepOnTop.CloseOnlyWhen(bar, () => finished);
+        bar.Close();
+        Assert.False(closed);
+        Assert.True(bar.IsVisible);
+        finished = true;
+        bar.Close();
+        Assert.True(closed);
+        return Task.CompletedTask;
     });
 }

@@ -17,7 +17,7 @@ namespace Petal.App.Screen;
 internal sealed class StepGuideWindow : ToolWindow
 {
     /// <summary>Where finished guides are saved.</summary>
-    public static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Guides");
+    public static string Folder => Settings.SavedPlaces.Folder(Settings.SavedKind.Guides);
 
     private readonly List<GuideStep> _steps;
     private readonly string _folder;

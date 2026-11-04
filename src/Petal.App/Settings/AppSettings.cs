@@ -102,6 +102,9 @@ public sealed class AppSettings
     /// <summary>Where Scan with Phone saves its PDFs; null is Documents\Scans.</summary>
     public string? ScanFolder { get; set; }
 
+    /// <summary>The folders chosen for what DropWheel saves, by <see cref="SavedKind"/>; what isn't here goes to its usual folder.</summary>
+    public Dictionary<string, string> SavedFolders { get; set; } = [];
+
     /// <summary>An update feed (update.json over https, or a file path). Empty: no updates are looked for.</summary>
     public string UpdateFeed { get; set; } = "";
     public bool CheckForUpdates { get; set; } = true;

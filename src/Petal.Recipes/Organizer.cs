@@ -40,7 +40,7 @@ public sealed record OrganizeOptions
 /// <summary>
 /// Sorts arriving files (a Downloads folder, say) into folders by what they are: screenshots,
 /// invoices and receipts by their content, then by kind. Folder names follow whichever already
-/// exists, English or Arabic, or are made in the given language.
+/// exists, English or Arabic; a new one is always in English, whatever the interface's language.
 /// </summary>
 public static partial class Organizer
 {
@@ -176,8 +176,8 @@ public static partial class Organizer
         }
     }
 
-    /// <summary>The category's folder inside <paramref name="root"/>: one that exists already (any language), else a new one named in <paramref name="arabic"/> or English.</summary>
-    public static string FolderFor(string root, FileCategory category, bool arabic)
+    /// <summary>The category's folder inside <paramref name="root"/>: one that exists already (any language), else a new one in English.</summary>
+    public static string FolderFor(string root, FileCategory category)
     {
         var names = Names(category);
         foreach (var name in names)
@@ -186,7 +186,7 @@ public static partial class Organizer
             if (Directory.Exists(existing))
                 return existing;
         }
-        return Path.Combine(root, arabic ? names[1] : names[0]);
+        return Path.Combine(root, names[0]);
     }
 
     /// <summary>The folder names the organizer may make, so a watcher can leave them alone.</summary>
@@ -221,14 +221,14 @@ public static partial class Organizer
     /// Moves the file into its folder (renamed by date when asked), never over another file.
     /// Returns the new path, or null when it stays where it is.
     /// </summary>
-    public static async Task<string?> OrganizeAsync(string path, string root, OrganizeOptions options, bool arabic,
+    public static async Task<string?> OrganizeAsync(string path, string root, OrganizeOptions options,
         ConverterRegistry converters, ConversionSettings settings, CancellationToken cancellationToken = default)
     {
         var category = await CategoryAsync(path, options, converters, settings, cancellationToken);
         string? stem = options.RenameByDate ? await DateNameAsync(path, cancellationToken) : null;
         if (category is null && stem is null)
             return null;
-        var folder = category is { } c ? FolderFor(root, c, arabic) : Path.GetDirectoryName(path)!;
+        var folder = category is { } c ? FolderFor(root, c) : Path.GetDirectoryName(path)!;
         var current = Path.GetFileNameWithoutExtension(path);
         bool sameFolder = string.Equals(Path.GetFullPath(folder), Path.GetFullPath(Path.GetDirectoryName(path)!), StringComparison.OrdinalIgnoreCase);
         // Already named after its date ("… 2" included): nothing to do, or it would be renamed for ever.

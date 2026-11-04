@@ -31,7 +31,7 @@ internal static class ScreenRecorder
 
     public static bool IsRecording => _session?.Recording == true;
 
-    public static string Folder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Screen Recordings");
+    public static string Folder => Settings.SavedPlaces.Folder(Settings.SavedKind.Recordings);
 
     public static void Toggle(Action<string, ScreenPoint>? openFiles)
     {
@@ -130,6 +130,9 @@ internal sealed class RecordingSession
         _bar = new RecordBar(this);
         _bar.Show();
         _bar.PlaceNear(area, monitor);
+        // Whatever else opens and closes, the way to stop is there until it is used.
+        KeepOnTop.CloseOnlyWhen(_bar, () => _closed);
+        KeepOnTop.Start(_bar, () => _bubble is null ? [_frame] : [_frame, _bubble], () => _bar.PlaceNear(area, monitor));
         if (Settings.SettingsStore.Current.RecordCamera)
             _ = SetCameraAsync(true);
     }
@@ -832,13 +835,21 @@ internal sealed class RecordBar : Window
         Background = Brushes.Transparent;
         ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false;
+        ShowActivated = false;
         Topmost = true;
         SizeToContent = SizeToContent.WidthAndHeight;
         Title = L.T("Screen Recording");
         L.Apply(this, mirror: false);
         Content = ScreenUi.Strip(_row, 22);
         ScreenUi.DragFromBackground(this, _row);
-        SourceInitialized += (_, _) => ScreenNative.SetWindowDisplayAffinity(new WindowInteropHelper(this).Handle, ScreenNative.WDA_EXCLUDEFROMCAPTURE);
+        SourceInitialized += (_, _) =>
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            // Pressing it doesn't take the keyboard from what is being recorded, and it isn't a window to Alt+Tab away from.
+            long ex = (long)GetWindowLongPtr(handle, GWL_EXSTYLE) | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW;
+            SetWindowLongPtr(handle, GWL_EXSTYLE, new IntPtr(ex));
+            ScreenNative.SetWindowDisplayAffinity(handle, ScreenNative.WDA_EXCLUDEFROMCAPTURE);
+        };
         _tick.Tick += (_, _) =>
         {
             if (_time is not null)

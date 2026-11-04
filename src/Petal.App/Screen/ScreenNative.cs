@@ -37,6 +37,10 @@ internal static partial class ScreenNative
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool IsWindowVisible(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool IsWindow(IntPtr hWnd);
 
     [LibraryImport("user32.dll")]

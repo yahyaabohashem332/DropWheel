@@ -38,7 +38,7 @@ internal static class MeetingRecorder
 
     public static bool IsRecording => _pill is not null;
 
-    public static string Folder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Meetings");
+    public static string Folder => Settings.SavedPlaces.Folder(Settings.SavedKind.Meetings);
 
     public static void Toggle()
     {
@@ -85,6 +85,7 @@ internal static class MeetingRecorder
         foreach (var t in Tracks)
             t.Start();
         _pill = new MeetingPill();
+        Screen.KeepOnTop.Start(_pill);
         _pill.Stop += () => _ = StopAsync();
         _pill.Cancel += Cancel;
         _pill.Show();

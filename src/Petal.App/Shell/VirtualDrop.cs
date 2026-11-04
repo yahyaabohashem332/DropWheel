@@ -39,7 +39,7 @@ public static class VirtualDrop
     public static string StagingRoot => Path.Combine(Path.GetTempPath(), "Petal Drops");
 
     /// <summary>Where they go once dropped on a petal.</summary>
-    public static string Downloads => Actions.PhoneWindow.DownloadsFolder();
+    public static string Downloads => Settings.SavedPlaces.Folder(Settings.SavedKind.FromPhone);
 
     /// <summary>Whether the drag offers something this can read, without reading it.</summary>
     public static bool Offers(DataObject data)

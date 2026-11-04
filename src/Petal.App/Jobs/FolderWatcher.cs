@@ -148,13 +148,12 @@ public sealed class FolderWatcher : IDisposable
             Invoices = rule.SortInvoices,
             RenameByDate = rule.RenameByDate,
         };
-        bool arabic = Localization.L.IsArabic;
         var moves = new List<RenamedPath>();
         foreach (var file in files)
         {
             try
             {
-                var moved = await Task.Run(() => Petal.Recipes.Organizer.OrganizeAsync(file, rule.Folder, options, arabic, _jobs.Converters, SettingsStore.Current.Conversion));
+                var moved = await Task.Run(() => Petal.Recipes.Organizer.OrganizeAsync(file, rule.Folder, options, _jobs.Converters, SettingsStore.Current.Conversion));
                 if (moved is not null)
                     moves.Add(new RenamedPath(file, moved));
             }

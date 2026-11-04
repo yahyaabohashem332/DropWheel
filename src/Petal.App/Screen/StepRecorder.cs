@@ -171,6 +171,7 @@ internal static class StepRecorder
         _pill.Finish += Finish;
         _pill.Cancel += Cancel;
         _pill.Show();
+        KeepOnTop.Start(_pill);
     }
 
     private static void Stop()

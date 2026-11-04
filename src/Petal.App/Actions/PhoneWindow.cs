@@ -113,7 +113,8 @@ public sealed class PhoneWindow : ToolWindow
         Body.Children.Add(Text(FileLabel(_share.Items.Select(i => i.Path).ToList()) + " · " + Sizes.Format(total), "Petal.Label"));
 
         var upload = new CheckBox { Content = L.T("Let the phone send files to this PC"), Margin = new Thickness(0, 10, 0, 0) };
-        var downloads = DownloadsFolder();
+        var downloads = SavedPlaces.Folder(SavedKind.FromPhone);
+        Directory.CreateDirectory(downloads);
         upload.Click += (_, _) => _share.UploadFolder = upload.IsChecked == true ? downloads : null;
         Body.Children.Add(upload);
         Body.Children.Add(Text(L.F("They're saved in {0}. Reload the page on the phone after turning this on.", Path.GetFileName(downloads)), "Petal.Caption").WithMargin(24, 2, 0, 0));

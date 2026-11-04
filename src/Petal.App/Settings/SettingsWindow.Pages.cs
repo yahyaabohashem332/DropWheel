@@ -97,7 +97,7 @@ public sealed partial class SettingsWindow
             Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection())));
         Group("App");
         AddPage("Saved Files", "folderOpen", CardsPage("Saved Files", "Where each thing DropWheel makes is saved. Open any folder from here, or copy its path.",
-            Card("What You Make", null, _placesMade),
+            Card("What You Make", "Change any folder: new files go there, and what is already saved stays where it is.", _placesMade),
             Card("DropWheel's Own Files", null, _placesOwn)));
         AddPage("System", "settings", CardsPage("System", "Starting with Windows, helper programs, backup and updates.",
             Card("General", null, GeneralSection()),
@@ -229,6 +229,25 @@ public sealed partial class SettingsWindow
         words.Children.Add(where);
         var row = new Grid { Margin = new Thickness(0, 0, 0, 14), ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
         row.Children.Add(words);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(10, 0, 0, 0) };
+        if (place.Kind is { } kind)
+        {
+            var change = ChangeButton();
+            change.Click += (_, _) => ChangePlace(kind, place);
+            buttons.Children.Add(change);
+            if (SavedPlaces.Chosen(kind, _s) is not null)
+            {
+                var usual = ToolWindowParts.IconButton("rotateCcw", "Back to the Usual Folder");
+                usual.Click += (_, _) => SetPlace(kind, null);
+                buttons.Children.Add(usual);
+            }
+        }
+        else if (place.Title == L.T("Conversions and tools"))
+        {
+            var change = ChangeButton();
+            change.Click += (_, _) => Show(_cards["Results"], mark: true);
+            buttons.Children.Add(change);
+        }
         if (place.Path is { } path)
         {
             var open = ToolWindowParts.IconButton("folderOpen", "Open Folder");
@@ -248,11 +267,37 @@ public sealed partial class SettingsWindow
                 };
                 time.Start();
             };
-            var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(10, 0, 0, 0), Children = { open, copy } };
-            Grid.SetColumn(buttons, 1);
-            row.Children.Add(buttons);
+            buttons.Children.Add(open);
+            buttons.Children.Add(copy);
         }
+        Grid.SetColumn(buttons, 1);
+        row.Children.Add(buttons);
         return row;
+    }
+
+    /// <summary>In words, as a button: this is what people come here to do, and an icon alone is easily missed.</summary>
+    private static Button ChangeButton()
+    {
+        var change = new Button { Content = L.T("Change…"), ToolTip = L.T("Change Folder…"), Padding = new Thickness(10, 3, 10, 4), MinHeight = 26, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
+        System.Windows.Automation.AutomationProperties.SetName(change, L.T("Change Folder…"));
+        return change;
+    }
+
+    private void ChangePlace(SavedKind kind, SavedPlace place)
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog { Title = L.F("Save {0} in", place.Title), InitialDirectory = place.Path };
+        if (dialog.ShowDialog(this) == true)
+            SetPlace(kind, dialog.FolderName);
+    }
+
+    /// <summary>Saves this kind in a folder from now on, or the usual one, and shows it.</summary>
+    internal void SetPlace(SavedKind kind, string? folder)
+    {
+        SavedPlaces.Choose(kind, folder, _s);
+        Save();
+        if (kind == SavedKind.FromPcs)
+            _ = Actions.PcDrop.RestartAsync();
+        FillPlaces();
     }
 
     /// <summary>Opens a folder, made first if nothing has been saved there yet.</summary>

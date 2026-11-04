@@ -19,7 +19,7 @@ namespace Petal.App.Wheels;
 /// </summary>
 internal static class Screenshots
 {
-    public static string Folder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+    public static string Folder => Settings.SavedPlaces.Folder(Settings.SavedKind.Screenshots);
 
     /// <summary>The monitor under the pointer, in physical pixels.</summary>
     public static (BitmapSource Picture, RECT Bounds)? CaptureScreenUnderPointer()

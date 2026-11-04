@@ -171,12 +171,7 @@ public sealed class ScanWindow : ToolWindow
     }
 
     /// <summary>The folder chosen before, else Documents\Scans.</summary>
-    internal static string SaveFolder()
-    {
-        if (SettingsStore.Current.ScanFolder is { Length: > 0 } chosen && Directory.Exists(chosen))
-            return chosen;
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), L.T("Scans"));
-    }
+    private static string SaveFolder() => SavedPlaces.Folder(SavedKind.Scans);
 
     private static ScanPageText PageText() => new()
     {
