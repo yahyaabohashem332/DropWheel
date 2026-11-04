@@ -3577,5 +3577,17 @@ internal static class Arabic
         ["{0} question"] = "{0} سؤال",
         ["{0} questions"] = "{0} أسئلة",
         ["The model didn't find anything to make notes from in this file."] = "لم يجد النموذج في هذا الملف ما يصلح لإعداد ملاحظات.",
+        ["Blur Faces and Plates"] = "طمس الوجوه واللوحات",
+        ["AUTO BLUR"] = "طمس تلقائي",
+        ["Number plates"] = "لوحات السيارات",
+        ["Save Blurred Copy"] = "حفظ نسخة مطموسة",
+        ["Looking through the video…"] = "جارٍ فحص الفيديو…",
+        ["No faces or number plates were found in this video."] = "لم يُعثر على وجوه أو لوحات في هذا الفيديو.",
+        ["Found {0} faces and {1} plates, each counted again if it left and came back. Untick any that should stay visible."] = "وُجد {0} وجهًا و{1} لوحة، ويُعد الواحد مرة أخرى إن غاب ثم عاد. ألغِ تحديد ما يجب أن يبقى ظاهرًا.",
+        ["A face turned away, very small or behind something can be missed, and plates from some countries are found less well: watch the result before sharing it."] = "قد يفوته وجه مُدار أو صغير جدًا أو خلف شيء، ولوحات بعض الدول أصعب في الاكتشاف: شاهد النتيجة قبل مشاركتها.",
+        ["Blurring faces and plates"] = "جارٍ طمس الوجوه واللوحات",
+        ["Blurred copy saved"] = "حُفظت النسخة المطموسة",
+        ["The face model isn't downloaded yet."] = "لم يُنزَّل نموذج الوجوه بعد.",
+        ["The number plate model isn't downloaded yet."] = "لم يُنزَّل نموذج اللوحات بعد.",
     };
 }

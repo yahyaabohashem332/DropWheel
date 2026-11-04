@@ -802,6 +802,27 @@
    "buzlama"
   ]
  },
+ "tool:AutoBlur": {
+  "category": "video",
+  "summary": "Videodaki yüzleri ve plakaları bulur, kutu çizmeden nereye giderlerse örter.",
+  "details": "Bul'a basın: video iki küçük modelle (yaklaşık 4 MB, bir kez iner) saniyede yaklaşık altı kez taranır. Her yüz ve plaka kareden kareye izlenir; pencere bulunanları gösterir, görünür kalması gerekenlerin işaretini kaldırabilirsiniz. Bulanık Kopya Kaydet kalanları, ilk görünmeden biraz öncesinden son görünmesinden biraz sonrasına kadar her karede, geri netleştirilemeyen ortalama renklerle örter; ses kalır. Yana dönük, çok küçük veya bir şeyin arkasındaki yüz kaçabilir; plaka modeli Çin plakalarıyla eğitildi, diğerlerinde daha az emindir, bu yüzden paylaşmadan önce sonucu izleyin. Kaçanları Videoyu Sansürle elle örter.",
+  "how": "Bir videoyu sürükleyin, Ctrl'ye dokunun ve OTOMATİK BULANIK üzerine bırakın; Bul'a basın, görünür kalacakların işaretini kaldırın, sonra Bulanık Kopya Kaydet.",
+  "worksOn": "Tek seferde bir video.",
+  "examples": [
+   "Sosyal medya için sokak videosu: yoldan geçenler ve plakalar tek seferde gizlenir.",
+   "Yalnızca kendi çocuğunuzun göründüğü okul etkinliği videosu.",
+   "Sigorta başvurusu için araç kamerası kaydı, diğer plakalar örtülü."
+  ],
+  "keywords": [
+   "yüz bulanıklaştırma",
+   "plaka bulanıklaştırma",
+   "videoda yüz gizleme",
+   "video anonimleştirme",
+   "yüz sansürü",
+   "otomatik bulanık",
+   "gizlilik"
+  ]
+ },
  "tool:JoinVideos": {
   "category": "video",
   "summary": "Birkaç videoyu belirlediğin sırayla tek bir MP4'te birleştirir.",

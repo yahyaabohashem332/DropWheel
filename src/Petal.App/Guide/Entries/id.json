@@ -819,6 +819,27 @@
    "privasi"
   ]
  },
+ "tool:AutoBlur": {
+  "category": "video",
+  "summary": "Menemukan wajah dan pelat nomor di video lalu menutupinya ke mana pun bergerak, tanpa menggambar kotak.",
+  "details": "Tekan Cari: video diperiksa sekitar enam kali per detik dengan dua model kecil (sekitar 4 MB, diunduh sekali). Tiap wajah dan pelat diikuti antarbingkai, dan jendela menampilkan temuan agar Anda bisa menghapus centang yang harus tetap terlihat. Simpan Salinan Buram menutup sisanya di setiap bingkai, dari sedikit sebelum pertama terlihat hingga sedikit setelah terakhir terlihat, dengan warna rata-rata yang tak bisa ditajamkan kembali; suaranya tetap. Wajah yang menoleh, sangat kecil, atau terhalang bisa terlewat, dan model pelat dilatih dengan pelat Tiongkok sehingga kurang yakin pada pelat lain, jadi tonton hasilnya sebelum membagikan.",
+  "how": "Seret video, ketuk Ctrl, dan lepaskan di SAMARKAN; tekan Cari, hapus centang yang tetap terlihat, lalu Simpan Salinan Buram.",
+  "worksOn": "Satu video setiap kali.",
+  "examples": [
+   "Klip jalanan untuk media sosial: pejalan kaki dan pelat disembunyikan sekaligus.",
+   "Video acara sekolah yang hanya menampilkan anak Anda.",
+   "Rekaman dashcam untuk klaim asuransi dengan pelat lain tertutup."
+  ],
+  "keywords": [
+   "samarkan wajah",
+   "samarkan pelat nomor",
+   "sembunyikan wajah di video",
+   "anonimkan video",
+   "sensor wajah",
+   "buram otomatis",
+   "privasi"
+  ]
+ },
  "tool:JoinVideos": {
   "category": "video",
   "summary": "Menggabungkan beberapa video menjadi satu MP4, sesuai urutan yang Anda atur.",

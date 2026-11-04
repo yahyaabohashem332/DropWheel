@@ -786,6 +786,29 @@
    "privacy"
   ]
  },
+ "tool:AutoBlur": {
+  "category": "video",
+  "summary": "Finds the faces and number plates in a video and covers them wherever they go, without drawing a box.",
+  "details": "Press Find and the video is looked through about six times a second with two small models (about 4 MB, downloaded once). Each face and plate is followed from frame to frame, and the window shows what was found so you can untick any that should stay visible, such as the person the video is about. Save Blurred Copy covers the rest in every frame, from a little before each is first seen to a little after it was last seen, with colours averaged from a few cells so it can't be sharpened back; the sound stays. A face turned away, very small or behind something can be missed, and the plate model was trained on Chinese plates and is less sure of others, so watch the result before sharing it. For anything it missed, Redact Video covers a place by hand.",
+  "how": "Drag a video, tap Ctrl and drop on AUTO BLUR; press Find, untick what should stay visible, then Save Blurred Copy.",
+  "examples": [
+   "A street clip for social media: passers-by and parked cars' plates hidden in one go.",
+   "A school event video with only your own child left visible.",
+   "Dashcam footage for an insurance claim, with other drivers' plates covered."
+  ],
+  "worksOn": "One video at a time.",
+  "keywords": [
+   "blur faces",
+   "blur license plate",
+   "hide faces in video",
+   "anonymize video",
+   "censor faces",
+   "blur number plate",
+   "privacy video",
+   "face blur automatic",
+   "pixelate faces"
+  ]
+ },
  "tool:JoinVideos": {
   "category": "video",
   "summary": "Joins several videos into one MP4, in the order you set.",

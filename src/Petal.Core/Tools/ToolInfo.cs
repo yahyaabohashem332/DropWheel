@@ -71,6 +71,7 @@ public enum ToolId
     TranslatePicture,
     IdPhoto,
     StudyNotes,
+    AutoBlur,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

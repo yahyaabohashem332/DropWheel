@@ -18,6 +18,18 @@ public static class ModelCatalog
         "https://huggingface.co/onnx-community/BiRefNet_lite-ONNX/resolve/main/onnx/model.onnx",
         "5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333", 224_005_088, "MIT");
 
+    /// <summary>YuNet (MIT), OpenCV's small face detector: finds faces in a video to cover them.</summary>
+    public static readonly ModelInfo FaceFinder = new(
+        "yunet-face", "YuNet", "face_detection_yunet_2026may.onnx",
+        "https://media.githubusercontent.com/media/opencv/opencv_zoo/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/face_detection_yunet/face_detection_yunet_2026may.onnx",
+        "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0", 229_738, "MIT");
+
+    /// <summary>LPD-YuNet (Apache-2.0), OpenCV's number plate detector, trained on Chinese plates.</summary>
+    public static readonly ModelInfo PlateFinder = new(
+        "yunet-plate", "LPD-YuNet", "license_plate_detection_lpd_yunet_2023mar.onnx",
+        "https://huggingface.co/opencv/opencv_zoo/resolve/d4938dfc9d4ec5d098bfa33e98b3f3345a236586/models/license_plate_detection_yunet/license_plate_detection_lpd_yunet_2023mar.onnx",
+        "6d4978a7b6d25514d5e24811b82bfb511d166bdd8ca3b03aa63c1623d4d039c7", 4_146_213, "Apache-2.0");
+
     /// <summary>Real-ESRGAN general x4v3 (BSD-3-Clause), Qualcomm's ONNX export: 4× enlargement. Ships with Petal.</summary>
     public static readonly ModelInfo Upscaler = new(
         "realesrgan-x4v3", "Real-ESRGAN general x4v3", @"realesrgan-x4v3\real_esrgan_general_x4v3.onnx",

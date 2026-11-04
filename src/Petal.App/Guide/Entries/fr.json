@@ -801,6 +801,27 @@
    "anonymiser une vidéo"
   ]
  },
+ "tool:AutoBlur": {
+  "category": "video",
+  "summary": "Trouve les visages et plaques d’immatriculation d’une vidéo et les couvre où qu’ils aillent, sans dessiner de cadre.",
+  "details": "Appuyez sur Chercher : la vidéo est analysée environ six fois par seconde avec deux petits modèles (environ 4 Mo, téléchargés une fois). Chaque visage et plaque est suivi d’une image à l’autre, et la fenêtre montre ce qui a été trouvé pour décocher ce qui doit rester visible. Enregistrer une copie floutée couvre le reste à chaque image, d’un peu avant sa première apparition à un peu après la dernière, avec des couleurs moyennes qu’on ne peut pas ramener à la netteté ; le son reste. Un visage de profil, très petit ou caché peut échapper, et le modèle de plaques, entraîné sur des plaques chinoises, est moins sûr pour les autres : regardez le résultat avant de le partager.",
+  "how": "Faites glisser une vidéo, appuyez sur Ctrl et déposez-la sur FLOU AUTO ; appuyez sur Chercher, décochez ce qui reste visible, puis Enregistrer une copie floutée.",
+  "worksOn": "Une vidéo à la fois.",
+  "examples": [
+   "Une vidéo de rue pour les réseaux : passants et plaques masqués d’un coup.",
+   "Une vidéo de fête d’école où seul votre enfant reste visible.",
+   "Une vidéo de caméra embarquée pour l’assurance, les autres plaques couvertes."
+  ],
+  "keywords": [
+   "flouter les visages",
+   "flouter une plaque",
+   "cacher les visages",
+   "anonymiser une vidéo",
+   "censurer les visages",
+   "flou automatique",
+   "confidentialité"
+  ]
+ },
  "tool:JoinVideos": {
   "category": "video",
   "summary": "Assemble plusieurs vidéos en un seul MP4, dans l'ordre choisi.",

@@ -57,10 +57,10 @@ public class RegistryTests
     }
 
     [Fact]
-    public void There_are_69_tools_and_16_actions()
+    public void There_are_70_tools_and_16_actions()
     {
-        Assert.Equal(69, ToolRegistry.All.Count);
-        Assert.Equal(69, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
+        Assert.Equal(70, ToolRegistry.All.Count);
+        Assert.Equal(70, ToolRegistry.All.Select(t => t.Id).Distinct().Count());
         Assert.Equal(Enum.GetValues<ToolId>().Length, ToolRegistry.All.Count);
         Assert.Equal(16, Petal.Core.Actions.FileActionRegistry.All.Count);
     }

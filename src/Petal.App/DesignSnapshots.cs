@@ -385,6 +385,7 @@ internal static class DesignSnapshots
             ("erase", () => new Tools.Windows.EraseObjectWindow(T(Petal.Core.Tools.ToolId.EraseObject), file("landscape.jpg"), jobs, at)),
             ("translate", () => new Tools.Windows.TranslateSubtitlesWindow(T(Petal.Core.Tools.ToolId.TranslateSubtitles), [file("weekend.srt")], jobs, at)),
             ("translatedocument", () => new Tools.Windows.TranslateDocumentWindow(T(Petal.Core.Tools.ToolId.TranslateDocument), [file("album.pdf")], jobs, at)),
+            ("autoblur", () => new Tools.Windows.AutoBlurWindow(T(Petal.Core.Tools.ToolId.AutoBlur), file("weekend.mp4"), jobs, at)),
             ("studynotes", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at)),
             ("studynotesdone", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at, new Petal.Recipes.Study.StudyPack(Localization.L.T("Summary"), [new Petal.Recipes.Study.StudyCard("Photosynthesis", "Making food from light.", "Page 1")], [new Petal.Recipes.Study.StudyQuestion("Where does it happen?", ["Leaves", "Roots", "Soil", "Air"], 0, "The text says so.", "Page 1")]))),
             ("idphoto", () => new Tools.Windows.IdPhotoWindow(T(Petal.Core.Tools.ToolId.IdPhoto), file("landscape.jpg"), jobs, at)),

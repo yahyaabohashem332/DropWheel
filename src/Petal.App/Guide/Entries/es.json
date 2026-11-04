@@ -815,6 +815,27 @@
    "privacidad"
   ]
  },
+ "tool:AutoBlur": {
+  "category": "video",
+  "summary": "Encuentra las caras y matrículas de un vídeo y las cubre vayan donde vayan, sin dibujar ningún recuadro.",
+  "details": "Pulsa Buscar: el vídeo se revisa unas seis veces por segundo con dos modelos pequeños (unos 4 MB, se descargan una vez). Cada cara y matrícula se sigue de fotograma en fotograma, y la ventana muestra lo encontrado para desmarcar lo que deba seguir visible. Guardar copia difuminada cubre el resto en cada fotograma, desde poco antes de su primera aparición hasta poco después de la última, con colores promediados que no pueden volver a enfocarse; el sonido se queda. Una cara girada, muy pequeña o tapada puede escaparse, y el modelo de matrículas se entrenó con matrículas chinas y está menos seguro con otras, así que mira el resultado antes de compartirlo.",
+  "how": "Arrastra un vídeo, pulsa Ctrl y suéltalo en DIFUMINAR; pulsa Buscar, desmarca lo que siga visible y luego Guardar copia difuminada.",
+  "worksOn": "Un vídeo cada vez.",
+  "examples": [
+   "Un vídeo callejero para redes: transeúntes y matrículas ocultos de una vez.",
+   "Un vídeo de una fiesta escolar donde solo se ve a tu hijo.",
+   "Grabación de cámara de coche para el seguro, con las demás matrículas cubiertas."
+  ],
+  "keywords": [
+   "difuminar caras",
+   "difuminar matrícula",
+   "ocultar caras en vídeo",
+   "anonimizar vídeo",
+   "censurar caras",
+   "difuminado automático",
+   "privacidad"
+  ]
+ },
  "tool:JoinVideos": {
   "category": "video",
   "summary": "Une varios videos en un solo MP4, en el orden que fijes.",
