@@ -371,6 +371,11 @@ public static class WheelActions
             Note = () => Screen.FocusMode.IsOn ? Petal.Core.Text.Durations.Format(Screen.FocusMode.Left) : null,
             Run = Do(Screen.FocusMode.Toggle),
         },
+        new("work.time", "TIME", "Time Tracker", "timer", "Where your time goes: which programs were in front and for how long, kept only on this PC.", "Work")
+        {
+            State = () => Work.TimeTracker.IsOn,
+            Run = Do(() => new Work.TimeTrackerWindow().Show()),
+        },
         new("work.meeting", "MEETING", "Meeting Notes", "notebook", "Records the meeting, then writes the transcript, a summary, the decisions and the action items, on this PC.", "Work")
         {
             State = () => Words.MeetingRecorder.IsRecording,

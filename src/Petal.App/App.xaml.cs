@@ -173,6 +173,7 @@ public partial class App : Application
         _wheelKeys.Apply(settings.Wheels);
         SettingsStore.Saved += s => Dispatcher.BeginInvoke(() => _wheelKeys?.Apply(s.Wheels));
         LaunchAtLogin.Apply(settings.LaunchAtStartup);
+        Work.TimeTracker.Resume();
         ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
         // The clipboard history listens from the start; notes come back where they were.
         Clips.ClipboardHistory.Start();
@@ -498,6 +499,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        Work.TimeTracker.Flush();
         _tray?.Dispose();
         _instanceMutex?.Dispose();
         base.OnExit(e);

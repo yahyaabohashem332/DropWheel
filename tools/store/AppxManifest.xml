@@ -181,8 +181,15 @@
               <uap:FileType>.xd</uap:FileType>
               <uap:FileType>.prproj</uap:FileType>
               <uap:FileType>.aep</uap:FileType>
+              <uap:FileType>.pages</uap:FileType>
+              <uap:FileType>.numbers</uap:FileType>
+              <uap:FileType>.key</uap:FileType>
               <uap:FileType>.ase</uap:FileType>
               <uap:FileType>.aco</uap:FileType>
+              <uap:FileType>.ttf</uap:FileType>
+              <uap:FileType>.otf</uap:FileType>
+              <uap:FileType>.woff</uap:FileType>
+              <uap:FileType>.woff2</uap:FileType>
             </uap:SupportedFileTypes>
             <uap2:SupportedVerbs>
               <uap3:Verb Id="convert" Parameters="--wheel &quot;%1&quot;">ms-resource:ConvertVerb</uap3:Verb>

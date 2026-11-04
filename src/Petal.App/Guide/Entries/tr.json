@@ -4615,6 +4615,26 @@
    "odaklan"
   ]
  },
+ "do:work.time": {
+  "category": "work",
+  "summary": "Zamanınızın nereye gittiğini gösterir: hangi programlar ne kadar önde kaldı; yalnızca bu bilgisayarda tutulur.",
+  "details": "Takibi Başlat'a basana kadar kapalıdır, sonra siz durdurana kadar yeniden başlatmadan sonra da sürer. Her beş saniyede öndeki programı not eder; üç dakika klavye veya fare kullanılmazsa yok sayılırsınız. Yalnızca program adları ve saniyeler, %LOCALAPPDATA%\\Petal\\time altında günde bir küçük dosyada tutulur; yazdığınız, okuduğunuz veya açtığınız hiçbir şey tutulmaz ve hiçbir şey bu bilgisayardan çıkmaz. Pencere başlıklarını da tut siz açmadıkça kapalıdır; başlıklar özel sözcükler içerebilir, karar sizindir. Göster bugünü, dünü, 7 veya 30 günü seçer. CSV olarak kaydet her gün ve program için bir satır verir, Tümünü Sil her şeyi unutur, bir yıldan eski günler kendiliğinden gider.",
+  "how": "Dosyasız çarktan (ZAMAN) veya Kılavuzdan açın, sonra Takibi Başlat'a basın.",
+  "worksOn": "",
+  "examples": [
+   "Bir projenin gerçekte ne kadar sürdüğü, müşteriye adil fatura için.",
+   "Az açtığınızı sandığınız tarayıcıya günde bir saat gittiğini görmek.",
+   "Bir öğrencinin haftası: ne kadarı ders programlarında geçti."
+  ],
+  "keywords": [
+   "zaman takibi",
+   "ekran süresi",
+   "verimlilik",
+   "uygulama kullanımı",
+   "çalışma saatleri",
+   "gizli zaman takibi"
+  ]
+ },
  "do:work.meeting": {
   "category": "work",
   "summary": "Bir toplantıyı kaydeder, sonra dökümü, bir özeti, kararları ve eylem maddelerini bu bilgisayarda yazar.",

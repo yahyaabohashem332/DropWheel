@@ -388,6 +388,7 @@ internal static class DesignSnapshots
             ("autoblur", () => new Tools.Windows.AutoBlurWindow(T(Petal.Core.Tools.ToolId.AutoBlur), file("weekend.mp4"), jobs, at)),
             ("studynotes", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at)),
             ("studynotesdone", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at, new Petal.Recipes.Study.StudyPack(Localization.L.T("Summary"), [new Petal.Recipes.Study.StudyCard("Photosynthesis", "Making food from light.", "Page 1")], [new Petal.Recipes.Study.StudyQuestion("Where does it happen?", ["Leaves", "Roots", "Soil", "Air"], 0, "The text says so.", "Page 1")]))),
+            ("timetracker", () => new Work.TimeTrackerWindow(SampleTimeLog())),
             ("checksum", () => new Actions.ChecksumWindow(file("landscape.jpg"), "0000000000000000000000000000000000000000000000000000000000000000")),
             ("tracesvg", () => new Tools.Windows.TraceToSvgWindow(T(Petal.Core.Tools.ToolId.TraceToSvg), [file("figures.png")], jobs, at)),
             ("idphoto", () => new Tools.Windows.IdPhotoWindow(T(Petal.Core.Tools.ToolId.IdPhoto), file("landscape.jpg"), jobs, at)),
@@ -919,6 +920,18 @@ internal static class DesignSnapshots
             new Screen.Workspace { Name = Localization.L.IsArabic ? "الدراسة" : "Study" },
         ];
         s.PetalColours = new() { ["tool:Compress"] = "#30A46C", ["tool:Watermark"] = "#0090FF", ["action:Share"] = "#D6409F" };
+    }
+
+    /// <summary>A day's time, in a folder of its own, for looking at the window with.</summary>
+    private static Petal.Core.Time.TimeLog SampleTimeLog()
+    {
+        var log = new Petal.Core.Time.TimeLog(Path.Combine(Path.GetTempPath(), "Petal", "time-sample-" + Guid.NewGuid().ToString("N")));
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        log.Add(today, "Microsoft Word", 9300);
+        log.Add(today, "Google Chrome", 5400);
+        log.Add(today, "Visual Studio Code", 2700);
+        log.Add(today, "Telegram", 700);
+        return log;
     }
 
     /// <summary>A shop sign with its words already translated, for looking at the window with them.</summary>

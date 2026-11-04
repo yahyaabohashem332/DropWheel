@@ -4449,6 +4449,29 @@
    "deep work"
   ]
  },
+ "do:work.time": {
+  "category": "work",
+  "summary": "Shows where your time goes: which programs were in front and for how long, kept only on this PC.",
+  "details": "It is off until you press Start Tracking, and then goes on after a restart until you stop it. Every five seconds it notes which program is in front; after three minutes without the keyboard or mouse you count as away. Only programs' names and seconds are kept, in a small file a day under %LOCALAPPDATA%\\Petal\\time; what you type, read or open never is, and nothing leaves this PC. Keep window titles too is off unless you turn it on, and then shows the titles when you rest on a program; a title can hold private words, so it is your choice. Show picks today, yesterday, 7 or 30 days. Save as CSV gives a row for each day and program for a spreadsheet, Delete All forgets everything, and days older than a year go by themselves.",
+  "how": "Open it from the wheel without files (TIME) or the Guide, then press Start Tracking.",
+  "examples": [
+   "How long a project really took, to bill a client fairly.",
+   "Seeing that an hour a day went on a browser you thought you hardly opened.",
+   "A student's week: how much of it was in the study programs."
+  ],
+  "worksOn": "",
+  "keywords": [
+   "time tracker",
+   "track time",
+   "screen time",
+   "productivity",
+   "app usage",
+   "where does my time go",
+   "timesheet",
+   "private time tracking",
+   "hours worked"
+  ]
+ },
  "do:work.meeting": {
   "category": "work",
   "summary": "Records a meeting, then writes the transcript, a summary, the decisions and action items on this PC.",

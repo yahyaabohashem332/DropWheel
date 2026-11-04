@@ -4476,6 +4476,26 @@
    "focus"
   ]
  },
+ "do:work.time": {
+  "category": "work",
+  "summary": "Montre où va votre temps : quels programmes étaient au premier plan et combien de temps, gardé sur ce PC seulement.",
+  "details": "Il reste arrêté jusqu’à ce que vous appuyiez sur Démarrer le suivi, puis continue après un redémarrage jusqu’à ce que vous l’arrêtiez. Toutes les cinq secondes il note le programme au premier plan ; après trois minutes sans clavier ni souris, vous comptez comme absent. Seuls les noms des programmes et les secondes sont gardés, dans un petit fichier par jour sous %LOCALAPPDATA%\\Petal\\time ; ce que vous tapez, lisez ou ouvrez ne l’est jamais, et rien ne quitte ce PC. Garder aussi les titres des fenêtres reste désactivé sauf si vous l’activez ; un titre peut contenir des mots privés. Afficher choisit aujourd’hui, hier, 7 ou 30 jours. Le CSV donne une ligne par jour et par programme, Tout supprimer oublie tout, et les jours de plus d’un an partent seuls.",
+  "how": "Ouvrez-le depuis la roue sans fichiers (TEMPS) ou le Guide, puis appuyez sur Démarrer le suivi.",
+  "worksOn": "",
+  "examples": [
+   "Le temps qu’un projet a vraiment pris, pour facturer un client équitablement.",
+   "Voir qu’une heure par jour part dans un navigateur que vous pensiez peu ouvrir.",
+   "La semaine d’un étudiant : quelle part dans les logiciels d’étude."
+  ],
+  "keywords": [
+   "suivi du temps",
+   "temps d’écran",
+   "productivité",
+   "utilisation des applications",
+   "heures travaillées",
+   "suivi privé"
+  ]
+ },
  "do:work.meeting": {
   "category": "work",
   "summary": "Enregistre une réunion, puis rédige la transcription, un résumé, les décisions et les tâches à faire, sur ce PC.",

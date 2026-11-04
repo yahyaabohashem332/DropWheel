@@ -4597,6 +4597,26 @@
    "deep work"
   ]
  },
+ "do:work.time": {
+  "category": "work",
+  "summary": "Menunjukkan ke mana waktu Anda pergi: program mana yang di depan dan berapa lama, disimpan hanya di PC ini.",
+  "details": "Mati sampai Anda menekan Mulai Pelacakan, lalu berlanjut setelah mulai ulang sampai Anda menghentikannya. Setiap lima detik ia mencatat program di depan; setelah tiga menit tanpa keyboard atau mouse Anda dianggap pergi. Hanya nama program dan detik yang disimpan, dalam satu file kecil per hari di %LOCALAPPDATA%\\Petal\\time; yang Anda ketik, baca, atau buka tidak pernah, dan tidak ada yang keluar dari PC ini. Simpan juga judul jendela mati kecuali Anda menyalakannya; judul bisa memuat kata pribadi. Tampilkan memilih hari ini, kemarin, 7 atau 30 hari. Simpan sebagai CSV memberi satu baris per hari dan program, Hapus Semua melupakan semuanya, dan hari yang lebih tua dari setahun hilang sendiri.",
+  "how": "Buka dari roda tanpa file (WAKTU) atau Panduan, lalu tekan Mulai Pelacakan.",
+  "worksOn": "",
+  "examples": [
+   "Berapa lama proyek sebenarnya, untuk menagih klien dengan adil.",
+   "Melihat sejam sehari habis di peramban yang Anda kira jarang dibuka.",
+   "Minggu seorang pelajar: berapa banyak di program belajar."
+  ],
+  "keywords": [
+   "pelacak waktu",
+   "lacak waktu",
+   "waktu layar",
+   "produktivitas",
+   "penggunaan aplikasi",
+   "jam kerja"
+  ]
+ },
  "do:work.meeting": {
   "category": "work",
   "summary": "Merekam rapat, lalu menulis transkrip, ringkasan, keputusan, dan tindak lanjut di PC ini.",

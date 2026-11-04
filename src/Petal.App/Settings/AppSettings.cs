@@ -187,6 +187,15 @@ public sealed class AppSettings
 
     public string IdPhotoPaper { get; set; } = "";
 
+    /// <summary>The time tracker goes on after a restart if it was on. It is off until asked for.</summary>
+    public bool TimeTrackerOn { get; set; }
+
+    /// <summary>Window titles are kept too; off, only programs' names are.</summary>
+    public bool TimeTrackerTitles { get; set; }
+
+    /// <summary>Programs whose time isn't counted.</summary>
+    public List<string> TimeTrackerLeftOut { get; set; } = [];
+
     /// <summary>The language live captions are translated into; empty for the one the interface speaks.</summary>
     public string CaptionsInto { get; set; } = "";
 

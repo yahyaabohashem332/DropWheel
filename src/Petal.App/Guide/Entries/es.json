@@ -2109,7 +2109,7 @@
   "category": "files",
   "summary": "Muestra el SHA-256 de un archivo y dice si coincide con lo que indica su editor, para saber que una descarga es la auténtica.",
   "details": "Calcula el valor al momento, por grande que sea el archivo. El del editor lo encuentra solo si puede: de lo que copiaste de la página de descarga o de un archivo de sumas junto al archivo (name.sha256, SHA256SUMS, checksums.txt y similares); si no, pégalo. Su longitud indica el tipo, así que MD5, SHA-1, SHA-384 y SHA-512 también funcionan, pero MD5 y SHA-1 solo muestran que la descarga no está dañada. Dice claramente si coinciden; si no, no abras el archivo. Nada sale de este PC. Sirve con un sitio de confianza: un valor en una página pirateada no prueba nada.",
-  "how": "Copia el valor de la página de descarga, arrastra el archivo, pulsa Alt y suéltalo en COMPROBAR (en Más).",
+  "how": "Copia el valor de la página de descarga, arrastra el archivo, pulsa Alt y suéltalo en REVISAR (en Más).",
   "worksOn": "Un archivo cada vez.",
   "examples": [
    "Una ISO de Windows o Linux: ¿es el archivo del editor?",
@@ -4515,6 +4515,26 @@
    "dejar de procrastinar",
    "trabajo profundo",
    "enfoque"
+  ]
+ },
+ "do:work.time": {
+  "category": "work",
+  "summary": "Muestra a dónde va tu tiempo: qué programas estuvieron delante y cuánto, guardado solo en este PC.",
+  "details": "Está apagado hasta que pulsas Iniciar registro, y luego sigue tras reiniciar hasta que lo detengas. Cada cinco segundos anota qué programa está delante; tras tres minutos sin teclado ni ratón cuentas como ausente. Solo se guardan los nombres de los programas y los segundos, en un archivo pequeño por día en %LOCALAPPDATA%\\Petal\\time; lo que escribes, lees o abres nunca, y nada sale de este PC. Guardar también los títulos de ventana está apagado salvo que lo actives; un título puede contener palabras privadas. Mostrar elige hoy, ayer, 7 o 30 días. Guardar como CSV da una fila por día y programa, Eliminar todo lo olvida todo, y los días de más de un año se van solos.",
+  "how": "Ábrelo desde la rueda sin archivos (TIEMPO) o la Guía, y pulsa Iniciar registro.",
+  "worksOn": "",
+  "examples": [
+   "Cuánto llevó de verdad un proyecto, para cobrar a un cliente con justicia.",
+   "Ver que una hora al día se va en un navegador que creías abrir poco.",
+   "La semana de un estudiante: cuánta fue en programas de estudio."
+  ],
+  "keywords": [
+   "registro de tiempo",
+   "controlar el tiempo",
+   "tiempo de pantalla",
+   "productividad",
+   "uso de aplicaciones",
+   "horas trabajadas"
   ]
  },
  "do:work.meeting": {
