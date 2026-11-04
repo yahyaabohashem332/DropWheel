@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,6 +61,8 @@ public sealed partial class SettingsWindow
     private readonly StackPanel _nav = new() { Margin = new Thickness(12, 4, 12, 8) };
     private readonly StackPanel _found = new() { Margin = new Thickness(12, 4, 12, 8), Visibility = Visibility.Collapsed };
     private readonly TextBox _search = new();
+    private readonly StackPanel _placesMade = new();
+    private readonly StackPanel _placesOwn = new();
     private ComboBox _sideLanguage = null!;
     private List<(FrameworkElement Card, string Title, string Words)>? _index;
     private Page? _current;
@@ -90,6 +94,9 @@ public sealed partial class SettingsWindow
             Card("Results", null, OutputSection()),
             Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection())));
         Group("App");
+        AddPage("Saved Files", "folderOpen", CardsPage("Saved Files", "Where each thing DropWheel makes is saved. Open any folder from here, or copy its path.",
+            Card("What You Make", null, _placesMade),
+            Card("DropWheel's Own Files", null, _placesOwn)));
         AddPage("System", "settings", CardsPage("System", "Starting with Windows, helper programs, backup and updates.",
             Card("General", null, GeneralSection()),
             Card("Helpers", "DropWheel uses these programs when they're installed, on this PC.", EnginesSection()),
@@ -181,6 +188,83 @@ public sealed partial class SettingsWindow
         }
         _scroll.Content = page.Content;
         _scroll.ScrollToTop();
+        if (page.Title == "Saved Files")
+            FillPlaces();
+    }
+
+    // ---------- where things are saved ----------
+
+    /// <summary>Filled each time the page opens: the folders chosen on other pages may have changed.</summary>
+    private void FillPlaces()
+    {
+        _placesMade.Children.Clear();
+        foreach (var place in SavedPlaces.Made(_s))
+            _placesMade.Children.Add(PlaceRow(place));
+        _placesOwn.Children.Clear();
+        foreach (var place in SavedPlaces.Own())
+            _placesOwn.Children.Add(PlaceRow(place));
+    }
+
+    private UIElement PlaceRow(SavedPlace place)
+    {
+        var words = new StackPanel();
+        var title = Text(place.Title);
+        title.FontWeight = FontWeights.SemiBold;
+        words.Children.Add(title);
+        var detail = Text(place.Detail, "Petal.Caption").WithMargin(0, 1, 0, 3);
+        detail.TextWrapping = TextWrapping.Wrap;
+        words.Children.Add(detail);
+        var where = Text(place.Path ?? L.T("Beside the original file (you can choose a folder on the Conversions page)."));
+        where.TextWrapping = TextWrapping.Wrap;
+        if (place.Path is not null)
+        {
+            // A path reads left to right, whatever the language around it.
+            where.FlowDirection = FlowDirection.LeftToRight;
+            where.TextAlignment = L.IsRightToLeft ? TextAlignment.Right : TextAlignment.Left;
+            where.ToolTip = place.Path;
+            where.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Accent");
+        }
+        words.Children.Add(where);
+        var row = new Grid { Margin = new Thickness(0, 0, 0, 14), ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
+        row.Children.Add(words);
+        if (place.Path is { } path)
+        {
+            var open = ToolWindowParts.IconButton("folderOpen", "Open Folder");
+            open.Click += (_, _) => OpenPlace(path);
+            var copy = ToolWindowParts.IconButton("copyPlain", "Copy Path");
+            copy.Click += (_, _) =>
+            {
+                if (!Words.SelectedText.TrySet(path))
+                    return;
+                var shown = copy.Content;
+                copy.Content = ThemedIcon("check", 15, "Petal.Accent");
+                var time = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1.2) };
+                time.Tick += (_, _) =>
+                {
+                    time.Stop();
+                    copy.Content = shown;
+                };
+                time.Start();
+            };
+            var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(10, 0, 0, 0), Children = { open, copy } };
+            Grid.SetColumn(buttons, 1);
+            row.Children.Add(buttons);
+        }
+        return row;
+    }
+
+    /// <summary>Opens a folder, made first if nothing has been saved there yet.</summary>
+    private static void OpenPlace(string path)
+    {
+        try
+        {
+            Directory.CreateDirectory(path);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            Log.Error(ex, $"Opening {path}");
+        }
     }
 
     /// <summary>Goes to the page a card is on, and shows the card there.</summary>
@@ -403,7 +487,9 @@ public sealed partial class SettingsWindow
 
     // ---------- for checking by eye ----------
 
-    internal static int PageCount => 10;
+    internal static int PageCount => 11;
+
+    internal IReadOnlyList<string> PlacesShown => [.. WordsIn(_placesMade), .. WordsIn(_placesOwn)];
 
     internal static SettingsWindow? Open => _open;
 

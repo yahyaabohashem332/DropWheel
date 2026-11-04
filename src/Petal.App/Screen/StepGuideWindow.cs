@@ -16,6 +16,9 @@ namespace Petal.App.Screen;
 /// <summary>A recorded guide: its title and steps to edit, reorder or remove, saved as PDF, Word, a web page or Markdown.</summary>
 internal sealed class StepGuideWindow : ToolWindow
 {
+    /// <summary>Where finished guides are saved.</summary>
+    public static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Guides");
+
     private readonly List<GuideStep> _steps;
     private readonly string _folder;
     private Task<string>? _saving;
@@ -171,7 +174,7 @@ internal sealed class StepGuideWindow : ToolWindow
             var title = _title.Text;
             var format = _format.Value;
             var steps = _steps.ToList();
-            var saving = Task.Run(() => Save(title, steps, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel Guides"), format,
+            var saving = Task.Run(() => Save(title, steps, Folder, format,
                 App.Current.Controller.Jobs.Converters, Settings.SettingsStore.Current.Conversion.Clone()));
             _saving = saving;
             var path = await saving;

@@ -171,7 +171,7 @@ public sealed class ScanWindow : ToolWindow
     }
 
     /// <summary>The folder chosen before, else Documents\Scans.</summary>
-    private static string SaveFolder()
+    internal static string SaveFolder()
     {
         if (SettingsStore.Current.ScanFolder is { Length: > 0 } chosen && Directory.Exists(chosen))
             return chosen;

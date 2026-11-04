@@ -273,7 +273,7 @@ internal sealed partial class CircleWindow
     {
         if (c.Table is not { } table)
             return;
-        var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var folder = Settings.SavedPlaces.Tables;
         var stamp = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
         var output = Petal.Core.Jobs.OutputNaming.Unique(folder, L.T("Table") + " " + stamp, "xlsx");
         await Task.Run(() => PictureTables.SaveXlsx(table, output, L.T("Table")), ct);

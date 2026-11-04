@@ -81,6 +81,46 @@ public sealed class MainWindowTests
     });
 
     [Fact]
+    public void Saved_files_lists_each_folder_with_its_real_path() => Run(window =>
+    {
+        window.GoToPage("Saved Files");
+        var shown = window.PlacesShown;
+        foreach (var path in new[] { Petal.App.Wheels.Screenshots.Folder, Petal.App.Screen.ScreenRecorder.Folder, Petal.App.Words.MeetingRecorder.Folder,
+            Petal.App.Screen.StepGuideWindow.Folder, Petal.App.Actions.PcDrop.Folder, Petal.Core.Models.ModelStore.Folder, Petal.Core.Recording.StudioLibrary.Folder })
+            Assert.Contains(path, shown);
+    });
+
+    [Fact]
+    public void Results_are_said_to_go_where_the_setting_says()
+    {
+        var settings = new AppSettings { Output = OutputLocation.BesideOriginal, OutputFolder = @"C:\Chosen" };
+        Assert.Null(SavedPlaces.Made(settings)[0].Path);
+        settings.Output = OutputLocation.Folder;
+        Assert.Equal(@"C:\Chosen", SavedPlaces.Made(settings)[0].Path);
+    }
+
+    [Fact]
+    public void Every_place_says_what_goes_there_and_where()
+    {
+        foreach (var place in SavedPlaces.Made(new AppSettings()).Skip(1).Concat(SavedPlaces.Own()))
+        {
+            Assert.False(string.IsNullOrWhiteSpace(place.Title));
+            Assert.False(string.IsNullOrWhiteSpace(place.Detail));
+            Assert.True(Path.IsPathRooted(place.Path), place.Title);
+        }
+    }
+
+    [Fact]
+    public void An_automation_says_where_it_converts_to()
+    {
+        var settings = new AppSettings();
+        settings.Automations.Add(new Petal.Core.Jobs.WatchRule { Folder = @"C:\In" });
+        var last = SavedPlaces.Made(settings)[^1];
+        Assert.Equal(settings.Automations[0].OutputFolder, last.Path);
+        Assert.Contains("In", last.Detail);
+    }
+
+    [Fact]
     public void Each_page_opens() => Run(window =>
     {
         foreach (var title in window.PageTitles)

@@ -71,9 +71,12 @@ public static class ClipboardSource
 
     private static string Stamp => DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>Where copied text is kept when it becomes a file.</summary>
+    public static string TextFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel");
+
     private static string SaveImage(BitmapSource image)
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+        var folder = Wheels.Screenshots.Folder;
         Directory.CreateDirectory(folder);
         var path = Petal.Core.Jobs.OutputNaming.Unique(folder, $"Clipboard {Stamp}", "png");
         var encoder = new PngBitmapEncoder();
@@ -85,7 +88,7 @@ public static class ClipboardSource
 
     private static string SaveText(string text)
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DropWheel");
+        var folder = TextFolder;
         Directory.CreateDirectory(folder);
         var path = Petal.Core.Jobs.OutputNaming.Unique(folder, $"Clipboard {Stamp}", "txt");
         File.WriteAllText(path, text, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));

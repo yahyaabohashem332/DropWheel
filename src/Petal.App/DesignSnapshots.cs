@@ -470,6 +470,7 @@ internal static class DesignSnapshots
             ("main7", () => Settings.SettingsWindow.ForPage(7)),
             ("main8", () => Settings.SettingsWindow.ForPage(8)),
             ("main9", () => Settings.SettingsWindow.ForPage(9)),
+            ("main10", () => Settings.SettingsWindow.ForPage(10)),
             ("mainsmall", () => Settings.SettingsWindow.ForPage(1, 960, 700)),
             ("mainmid", () => Settings.SettingsWindow.ForPage(5, 1320, 880)),
             ("dubbest", () => Dub(window => window.FinestForSnapshot())),
