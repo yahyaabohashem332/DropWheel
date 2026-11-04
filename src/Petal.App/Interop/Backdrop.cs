@@ -21,6 +21,14 @@ internal static class Backdrop
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
+    /// <summary>Windows won't animate this window as it opens or closes.</summary>
+    public static void NoAnimation(System.Windows.Window window)
+    {
+        int on = 1;
+        // DWMWA_TRANSITIONS_FORCEDISABLED
+        DwmSetWindowAttribute(new System.Windows.Interop.WindowInteropHelper(window).Handle, 3, ref on, sizeof(int));
+    }
+
     [DllImport("dwmapi.dll")]
     private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 

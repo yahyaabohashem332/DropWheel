@@ -31,10 +31,14 @@ public sealed partial class SettingsWindow : ToolWindow
             _open.Activate();
             return;
         }
-        _open = new SettingsWindow();
-        _open.Closed += (_, _) => _open = null;
-        _open.Show();
-        _open.Activate();
+        var window = _open = new SettingsWindow();
+        window.Closed += (_, _) =>
+        {
+            if (_open == window)
+                _open = null;
+        };
+        window.Show();
+        window.Activate();
     }
 
     private SettingsWindow() : base("DropWheel", 1320)
@@ -206,28 +210,9 @@ public sealed partial class SettingsWindow : ToolWindow
     private UIElement AppearanceSection()
     {
         var panel = new StackPanel();
-        // Each language by its own name, so anyone can find theirs.
-        var language = Choice(new[] { (UiLanguage.System, L.T("Automatic")) }.Concat(L.Languages.Select(l => (l.Language, l.Name))), _s.Language);
+        var language = LanguagePicker();
         language.MinWidth = 220;
         language.HorizontalAlignment = HorizontalAlignment.Left;
-        language.SelectionChanged += (_, _) =>
-        {
-            var l = ValueOf<UiLanguage>(language);
-            if (l == _s.Language)
-                return;
-            _s.Language = l;
-            Save();
-            // Rebuild this window in the new language and direction, where it was.
-            var (left, top) = (Left, Top);
-            L.Configure(l);
-            Close();
-            ShowSingle();
-            if (_open is not null)
-            {
-                _open.WindowStartupLocation = WindowStartupLocation.Manual;
-                (_open.Left, _open.Top) = (left, top);
-            }
-        };
         panel.Children.Add(Text("Language & Colours", "Petal.Label"));
         panel.Children.Add(Row("Language", language, 150, 0));
         panel.Children.Add(Text("Automatic follows the Windows display language.", "Petal.Caption").WithMargin(150, 4, 0, 0));

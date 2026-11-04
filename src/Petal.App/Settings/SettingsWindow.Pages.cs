@@ -59,6 +59,7 @@ public sealed partial class SettingsWindow
     private readonly StackPanel _nav = new() { Margin = new Thickness(12, 4, 12, 8) };
     private readonly StackPanel _found = new() { Margin = new Thickness(12, 4, 12, 8), Visibility = Visibility.Collapsed };
     private readonly TextBox _search = new();
+    private ComboBox _sideLanguage = null!;
     private List<(FrameworkElement Card, string Title, string Words)>? _index;
     private Page? _current;
 
@@ -101,6 +102,17 @@ public sealed partial class SettingsWindow
         note.FontSize = 11;
         DockPanel.SetDock(note, Dock.Bottom);
         side.Children.Add(note);
+        // The language is always here, whichever page is open.
+        _sideLanguage = LanguagePicker();
+        var globe = ThemedIcon("globe", 17, "Petal.TextSecondary");
+        globe.Margin = new Thickness(0, 0, 10, 0);
+        globe.VerticalAlignment = VerticalAlignment.Center;
+        var languageRow = new DockPanel { Margin = new Thickness(20, 8, 16, 0) };
+        DockPanel.SetDock(globe, Dock.Left);
+        languageRow.Children.Add(globe);
+        languageRow.Children.Add(_sideLanguage);
+        DockPanel.SetDock(languageRow, Dock.Bottom);
+        side.Children.Add(languageRow);
         var finder = SearchBox();
         DockPanel.SetDock(finder, Dock.Top);
         side.Children.Add(finder);
@@ -392,6 +404,14 @@ public sealed partial class SettingsWindow
     // ---------- for checking by eye ----------
 
     internal static int PageCount => 10;
+
+    internal static SettingsWindow? Open => _open;
+
+    internal void ChooseLanguageForTest(UiLanguage language) =>
+        _sideLanguage.SelectedItem = _sideLanguage.Items.OfType<ComboBoxItem>().First(item => (UiLanguage)item.Tag == language);
+
+    /// <summary>The language shown as chosen, in each of the two places it can be chosen.</summary>
+    internal UiLanguage LanguageShown => ValueOf<UiLanguage>(_sideLanguage);
 
     internal IReadOnlyList<string> PageTitles => _pages.Select(page => page.Title).ToList();
 

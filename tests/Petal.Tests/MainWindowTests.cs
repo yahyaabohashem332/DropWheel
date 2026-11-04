@@ -117,3 +117,72 @@ public sealed class MainWindowTests
         });
     }
 }
+
+/// <summary>Changing the language from the main window: everywhere at once, and nothing else moves.</summary>
+[Collection("Language")]
+public sealed class LanguageSwitchTests
+{
+    private static async Task Until(Func<bool> done)
+    {
+        for (int i = 0; i < 500 && !done(); i++)
+            await Task.Delay(20);
+        Assert.True(done());
+    }
+
+    [Fact]
+    public void The_language_changes_at_once_and_the_window_stays_where_it_was() => PdfEditorWindowTests.RunOnInterface(async () =>
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "petal-language-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        var store = SettingsStore.Directory;
+        var was = SettingsStore.Current.Language;
+        SettingsStore.Directory = folder;
+        L.Configure(UiLanguage.English);
+        SettingsStore.Current.Language = UiLanguage.English;
+        var window = (SettingsWindow)SettingsWindow.ForPage(7);
+        window.ShowInTaskbar = false;
+        window.ShowActivated = false;
+        window.WindowStartupLocation = WindowStartupLocation.Manual;
+        (window.Left, window.Top, window.Width, window.Height) = (-30000, -30000, 1200, 800);
+        window.Show();
+        var (page, left) = (window.CurrentPage, window.Left);
+        bool closed = false;
+        window.Closed += (_, _) => closed = true;
+        SettingsWindow? next = null;
+        try
+        {
+            window.ChooseLanguageForTest(UiLanguage.Arabic);
+            Assert.Equal("ar", L.Code);
+            Assert.Equal(UiLanguage.Arabic, SettingsStore.Current.Language);
+            await Until(() => closed);
+            next = SettingsWindow.Open;
+            Assert.NotNull(next);
+            Assert.NotSame(window, next);
+            Assert.Equal(FlowDirection.RightToLeft, next.FlowDirection);
+            Assert.Equal(page, next.CurrentPage);
+            Assert.Equal(UiLanguage.Arabic, next.LanguageShown);
+            Assert.Equal((left, 1200d, 800d), (next.Left, next.Width, next.Height));
+            Assert.Equal(WindowState.Normal, next.WindowState);
+
+            // And back, as many times as anyone likes.
+            bool closedAgain = false;
+            next.Closed += (_, _) => closedAgain = true;
+            var second = next;
+            second.ChooseLanguageForTest(UiLanguage.French);
+            Assert.Equal("fr", L.Code);
+            await Until(() => closedAgain);
+            next = SettingsWindow.Open;
+            Assert.NotSame(second, next);
+            Assert.Equal(FlowDirection.LeftToRight, next!.FlowDirection);
+            Assert.Equal(UiLanguage.French, next.LanguageShown);
+        }
+        finally
+        {
+            next?.Close();
+            SettingsStore.Current.Language = was;
+            SettingsStore.Directory = store;
+            L.Configure(UiLanguage.English);
+            Directory.Delete(folder, true);
+        }
+    });
+}

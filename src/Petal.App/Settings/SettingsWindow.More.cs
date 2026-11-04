@@ -514,6 +514,69 @@ public sealed partial class SettingsWindow
     }
 
     /// <summary>
+    /// This window built again, as it is now, and put in its place: the same page, place in it, size and state. The new
+    /// one is ready before the old one goes and neither animates, so all that is seen is the window changing.
+    /// </summary>
+    private void Rebuild(bool focusLanguage = false)
+    {
+        var bounds = WindowState == WindowState.Normal || RestoreBounds.IsEmpty ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        var (state, offset) = (WindowState, _scroll.VerticalOffset);
+        var next = new SettingsWindow
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            Left = bounds.Left,
+            Top = bounds.Top,
+            Width = bounds.Width,
+            Height = bounds.Height,
+            WindowState = state,
+            ShowInTaskbar = ShowInTaskbar,
+        };
+        next.SourceInitialized += (_, _) => Interop.Backdrop.NoAnimation(next);
+        next.Closed += (_, _) =>
+        {
+            if (_open == next)
+                _open = null;
+        };
+        next.ContentRendered += (_, _) =>
+        {
+            next._scroll.ScrollToVerticalOffset(offset);
+            Interop.Backdrop.NoAnimation(this);
+            Close();
+            if (focusLanguage)
+                next._sideLanguage.Focus();
+        };
+        _open = next;
+        next.Show();
+        next.Activate();
+    }
+
+    /// <summary>The interface's languages, each by its own name so anyone can find theirs. Choosing one changes everything here at once.</summary>
+    private ComboBox LanguagePicker()
+    {
+        var picker = Choice(new[] { (UiLanguage.System, L.T("Automatic")) }.Concat(L.Languages.Select(l => (l.Language, l.Name))), _s.Language);
+        System.Windows.Automation.AutomationProperties.SetName(picker, L.T("Language"));
+        void Apply()
+        {
+            var language = ValueOf<UiLanguage>(picker);
+            if (language == _s.Language)
+                return;
+            _s.Language = language;
+            Save();
+            L.Configure(language);
+            // Once the list has closed.
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () => Rebuild(focusLanguage: picker == _sideLanguage));
+        }
+        // Moving through an open list only looks: the choice is where it closes.
+        picker.SelectionChanged += (_, _) =>
+        {
+            if (!picker.IsDropDownOpen)
+                Apply();
+        };
+        picker.DropDownClosed += (_, _) => Apply();
+        return picker;
+    }
+
+    /// <summary>
     /// Settings read again from the file (an import, or an edit by hand) are shown at once: this window is
     /// built again where it was, at the same place in the page.
     /// </summary>
@@ -522,17 +585,9 @@ public sealed partial class SettingsWindow
         void Reloaded(AppSettings _) => Dispatcher.BeginInvoke(() =>
         {
             if (!IsLoaded) return;
-            var (left, top, width, height, state, offset) = (Left, Top, Width, Height, WindowState, _scroll.VerticalOffset);
             Closed -= Unhook;
             SettingsStore.Reloaded -= Reloaded;
-            Close();
-            ShowSingle();
-            if (_open is not null)
-            {
-                _open.WindowStartupLocation = WindowStartupLocation.Manual;
-                (_open.Left, _open.Top, _open.Width, _open.Height, _open.WindowState) = (left, top, width, height, state);
-                _open.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => _open._scroll.ScrollToVerticalOffset(offset));
-            }
+            Rebuild();
         });
         void Unhook(object? sender, EventArgs e) => SettingsStore.Reloaded -= Reloaded;
         SettingsStore.Reloaded += Reloaded;
