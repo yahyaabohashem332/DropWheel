@@ -24,25 +24,21 @@ public sealed partial class SettingsWindow
     // ---------- the wheels without files ----------
 
     private readonly StackPanel _wheels = new();
+    private WheelGalleryList? _gallery;
 
     private UIElement WheelsSection()
     {
         var panel = new StackPanel();
-        panel.Children.Add(_wheels);
-        var buttons = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
-        var add = new Button { Content = L.T("New Wheel…"), Margin = new Thickness(0, 0, 8, 6) };
-        var ready = new Button { Content = L.T("Ready-Made Wheels…"), Margin = new Thickness(0, 0, 8, 6) };
-        var tryIt = new Button { Content = L.T("Try Them"), Margin = new Thickness(0, 0, 8, 6) };
-        var gallery = new Button { Content = L.T("Wheel Gallery…"), Margin = new Thickness(0, 0, 8, 6) };
+        var buttons = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
+        var add = new Button { Content = L.T("New Wheel…"), Style = (Style)FindResource("Petal.PrimaryButton"), Margin = new Thickness(0, 0, 8, 6) };
         var import = new Button { Content = L.T("Import…"), Margin = new Thickness(0, 0, 8, 6) };
+        var tryIt = new Button { Content = L.T("Try Them"), Margin = new Thickness(0, 0, 8, 6) };
         buttons.Children.Add(add);
-        buttons.Children.Add(ready);
-        buttons.Children.Add(gallery);
         buttons.Children.Add(import);
         buttons.Children.Add(tryIt);
-        gallery.Click += (_, _) => new WheelGalleryWindow(FillWheels) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
-        import.Click += (_, _) => new ImportWheelWindow(FillWheels) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
         panel.Children.Add(buttons);
+        panel.Children.Add(_wheels);
+        import.Click += (_, _) => new ImportWheelWindow(FillWheels) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
         add.Click += (_, _) =>
         {
             var wheel = WheelTemplates.Custom(L.T("My Wheel"));
@@ -52,24 +48,6 @@ public sealed partial class SettingsWindow
                 Save();
                 FillWheels();
             }
-        };
-        ready.Click += (_, _) =>
-        {
-            var menu = new ContextMenu { PlacementTarget = ready, Placement = PlacementMode.Bottom };
-            L.Apply(menu);
-            foreach (var template in WheelTemplates.All())
-            {
-                var present = _s.Wheels.Any(w => w.Template == template.Template);
-                var item = new MenuItem { Header = L.T(template.Name), IsEnabled = !present, ToolTip = present ? L.T("Already on your list") : null };
-                item.Click += (_, _) =>
-                {
-                    _s.Wheels.Add(template);
-                    Save();
-                    FillWheels();
-                };
-                menu.Items.Add(item);
-            }
-            menu.IsOpen = true;
         };
         tryIt.Click += async (_, _) =>
         {
@@ -88,8 +66,19 @@ public sealed partial class SettingsWindow
         return editor.ShowDialog() == true;
     }
 
+    /// <summary>The gallery, always open beside the wheels; its list takes the height the page has, so both are seen together.</summary>
+    private UIElement GallerySection()
+    {
+        _gallery = new WheelGalleryList(FillWheels);
+        void Fit() => _gallery.Scroller.MaxHeight = Math.Max(320, _scroll.ActualHeight - 290);
+        _scroll.SizeChanged += (_, _) => Fit();
+        Fit();
+        return _gallery;
+    }
+
     private void FillWheels()
     {
+        _gallery?.Refresh();
         _wheels.Children.Clear();
         if (_s.Wheels.Count == 0)
         {

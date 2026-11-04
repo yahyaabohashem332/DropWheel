@@ -9,48 +9,101 @@ using Petal.App.Wheels;
 
 namespace Petal.App.Settings;
 
-/// <summary>The gallery: wheels for apps that have none yet and for kinds of work, each added with one click.</summary>
-internal sealed class WheelGalleryWindow : ToolWindow
+/// <summary>
+/// The gallery, open beside the list of wheels: the ready-made wheels, and wheels for apps that have none yet and for
+/// kinds of work, each added with one click. What is on the list says so here, and can be added again once it is taken off.
+/// </summary>
+internal sealed class WheelGalleryList : StackPanel
 {
     private readonly Action _added;
+    private readonly List<(FrameworkElement Card, Button Add, string Words, Func<bool> Present)> _cards = [];
+    private readonly List<(TextBlock Heading, int From, int To)> _groups = [];
+    private readonly TextBox _find = new();
+    private readonly TextBlock _nothing;
 
-    public WheelGalleryWindow(Action added) : base("Wheel Gallery", 560)
+    /// <summary>The list that scrolls by itself, so the gallery and the wheels are seen together.</summary>
+    public ScrollViewer Scroller { get; }
+
+    public WheelGalleryList(Action added)
     {
         _added = added;
-        Body.Children.Add(Text("Wheels made for apps and for kinds of work. Add one and change it as you like; it doesn't replace yours.", "Petal.Caption"));
-        var list = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
-        foreach (var entry in WheelGallery.All)
-            list.Children.Add(Card(entry));
-        Body.Children.Add(new ScrollViewer { Content = list, MaxHeight = 470, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
-        PrimaryButton.Content = L.T("Done");
-        PrimaryButton.Click += (_, _) => Close();
+        var hint = ToolWindow.PlainText("Find a wheel", "Petal.Caption");
+        hint.IsHitTestVisible = false;
+        hint.VerticalAlignment = VerticalAlignment.Center;
+        hint.Margin = new Thickness(10, 0, 10, 0);
+        System.Windows.Automation.AutomationProperties.SetName(_find, hint.Text);
+        _find.TextChanged += (_, _) =>
+        {
+            hint.Visibility = _find.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            Filter();
+        };
+        Children.Add(new Grid { Margin = new Thickness(0, 0, 0, 10), Children = { _find, hint } });
+
+        var list = new StackPanel();
+        Group(list, "Ready-Made Wheels", WheelTemplates.All().Select(template =>
+        (
+            Sample: template,
+            Icon: template.Kind switch { WheelKind.Quick => "sparkles", WheelKind.Media => "disc", WheelKind.App => "appWindow", _ => "layers" },
+            Description: template.Kind == WheelKind.App ? L.F("First while {0} is in front", string.Join(", ", template.Apps)) : "",
+            Make: (Func<UserWheel>)(() => WheelTemplates.Fresh(template.Template) ?? template),
+            Present: (Func<bool>)(() => SettingsStore.Current.Wheels.Any(w => w.Template == template.Template))
+        )));
+        Group(list, "For Apps and Work", WheelGallery.All.Select(entry =>
+        {
+            var sample = entry.Make();
+            return
+            (
+                Sample: sample,
+                Icon: entry.Icon,
+                Description: L.T(entry.Description),
+                Make: entry.Make,
+                Present: (Func<bool>)(() => SettingsStore.Current.Wheels.Any(w => w.Name == sample.Name || L.T(w.Name) == L.T(sample.Name)))
+            );
+        }));
+        _nothing = ToolWindow.PlainText("No wheel matches.", "Petal.Caption");
+        _nothing.Visibility = Visibility.Collapsed;
+        list.Children.Add(_nothing);
+        Scroller = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        Children.Add(Scroller);
+        Refresh();
     }
 
-    private Border Card(WheelGallery.Entry entry)
+    private void Group(StackPanel list, string title, IEnumerable<(UserWheel Sample, string Icon, string Description, Func<UserWheel> Make, Func<bool> Present)> wheels)
     {
-        var sample = entry.Make();
-        var icon = ThemedIcon(entry.Icon, 20, "Petal.Accent");
+        var heading = ToolWindow.PlainText(title, "Petal.Label");
+        heading.Margin = new Thickness(0, list.Children.Count == 0 ? 0 : 10, 0, 6);
+        list.Children.Add(heading);
+        int from = _cards.Count;
+        foreach (var wheel in wheels)
+            list.Children.Add(Card(wheel.Sample, wheel.Icon, wheel.Description, wheel.Make, wheel.Present));
+        _groups.Add((heading, from, _cards.Count));
+    }
+
+    private Border Card(UserWheel sample, string iconName, string description, Func<UserWheel> make, Func<bool> present)
+    {
+        var icon = ToolWindow.ThemedIcon(iconName, 20, "Petal.Accent");
         icon.Margin = new Thickness(0, 2, 12, 0);
         icon.VerticalAlignment = VerticalAlignment.Top;
-        var name = Text(entry.Name, "Petal.Body");
+        var name = ToolWindow.PlainText(sample.Name, "Petal.Body");
         name.FontWeight = FontWeights.SemiBold;
-        var words = new StackPanel { Children = { name, Text(entry.Description, "Petal.Caption") } };
-        var petals = Text(string.Join(" · ", sample.Items.Select(Label)), "Petal.Caption");
+        var words = new StackPanel { Children = { name } };
+        if (description.Length > 0)
+            words.Children.Add(ToolWindow.PlainText(description, "Petal.Caption"));
+        var labels = string.Join(" · ", sample.Items.Select(Label));
+        var petals = ToolWindow.PlainText(labels, "Petal.Caption");
         petals.TextWrapping = TextWrapping.Wrap;
         petals.Opacity = 0.75;
         petals.Margin = new Thickness(0, 4, 0, 0);
         words.Children.Add(petals);
-        bool present = SettingsStore.Current.Wheels.Any(w => w.Name == sample.Name || L.T(w.Name) == L.T(sample.Name));
-        var add = new Button { Content = L.T(present ? "Added" : "Add"), IsEnabled = !present, VerticalAlignment = VerticalAlignment.Center, MinWidth = 76, Padding = new Thickness(14, 6, 14, 6), BorderThickness = new Thickness(1) };
+        var add = new Button { VerticalAlignment = VerticalAlignment.Center, MinWidth = 76, Margin = new Thickness(10, 0, 0, 0), Padding = new Thickness(14, 6, 14, 6), BorderThickness = new Thickness(1) };
         // Lighter than the card it sits on, so it reads as a button.
-        add.SetResourceReference(BackgroundProperty, "Petal.Popup");
-        add.SetResourceReference(BorderBrushProperty, "Petal.ControlBorder");
+        add.SetResourceReference(Control.BackgroundProperty, "Petal.Popup");
+        add.SetResourceReference(Control.BorderBrushProperty, "Petal.ControlBorder");
+        System.Windows.Automation.AutomationProperties.SetName(add, L.F("Add {0}", L.T(sample.Name)));
         add.Click += (_, _) =>
         {
-            SettingsStore.Current.Wheels.Add(entry.Make());
+            SettingsStore.Current.Wheels.Add(make());
             SettingsStore.Save();
-            add.Content = L.T("Added");
-            add.IsEnabled = false;
             _added();
         };
         var row = new DockPanel();
@@ -61,11 +114,45 @@ internal sealed class WheelGalleryWindow : ToolWindow
         row.Children.Add(words);
         var card = new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10, 12, 10), Margin = new Thickness(0, 0, 0, 8), Child = row };
         card.SetResourceReference(Border.BackgroundProperty, "Petal.Control");
+        _cards.Add((card, add, $"{L.T(sample.Name)} {sample.Name} {description} {labels}", present));
         return card;
+    }
+
+    /// <summary>Says again what is on the list, after a wheel is added or taken off.</summary>
+    public void Refresh()
+    {
+        foreach (var (_, add, _, present) in _cards)
+        {
+            bool on = present();
+            add.Content = L.T(on ? "Added" : "Add");
+            add.IsEnabled = !on;
+        }
+    }
+
+    private void Filter()
+    {
+        var words = _find.Text.Trim();
+        bool any = false;
+        foreach (var (card, _, text, _) in _cards)
+        {
+            bool shown = words.Length == 0 || text.Contains(words, StringComparison.CurrentCultureIgnoreCase);
+            card.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
+            any |= shown;
+        }
+        foreach (var (heading, from, to) in _groups)
+            heading.Visibility = _cards.Skip(from).Take(to - from).Any(c => c.Card.Visibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+        _nothing.Visibility = any ? Visibility.Collapsed : Visibility.Visible;
     }
 
     /// <summary>A petal's short name, as the wheel shows it.</summary>
     private static string Label(WheelEntry e) => e.Kind == EntryKind.Action && WheelActions.Get(e.Action) is { } a ? L.T(a.Name) : L.T(e.Name ?? e.Label ?? "");
+
+    internal void FindForTest(string words) => _find.Text = words;
+
+    internal IReadOnlyList<(string Words, bool Shown, bool CanAdd)> CardsForTest =>
+        _cards.Select(c => (c.Words, c.Card.Visibility == Visibility.Visible, c.Add.IsEnabled)).ToList();
+
+    internal void AddForTest(int index) => _cards[index].Add.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
 }
 
 /// <summary>Brings in a wheel someone shared: a .petalwheel file or the line of text they sent.</summary>

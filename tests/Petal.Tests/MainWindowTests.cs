@@ -74,7 +74,8 @@ public sealed class MainWindowTests
         }
         while (tour.Next());
         Assert.Equal(9, seen.Count);
-        Assert.Equal("Keys & Wheels", seen[0]);
+        Assert.Equal("Keys & Behaviour", seen[0]);
+        Assert.Equal("Wheels", seen[1]);
         Assert.Equal("Appearance", seen[2]);
         Assert.Contains("Home", seen);
         Assert.Equal("System", seen[^1]);
@@ -119,6 +120,58 @@ public sealed class MainWindowTests
         Assert.Equal(settings.Automations[0].OutputFolder, last.Path);
         Assert.Contains("In", last.Detail);
     }
+
+    [Fact]
+    public void The_gallery_is_open_beside_the_wheels() => Run(window =>
+    {
+        window.GoToPage("Wheels");
+        window.UpdateLayout();
+        Assert.True(window.GalleryForTest.IsVisible);
+        var cards = window.GalleryForTest.CardsForTest;
+        // The ready-made wheels are there too, and every one of the gallery's.
+        Assert.True(cards.Count >= Petal.App.Wheels.WheelGallery.All.Count + Petal.App.Wheels.WheelTemplates.All().Count);
+    });
+
+    [Fact]
+    public void A_wheel_from_the_gallery_goes_on_the_list_and_can_come_back() => Run(window =>
+    {
+        var wheels = SettingsStore.Current.Wheels;
+        var kept = wheels.ToList();
+        var store = SettingsStore.Directory;
+        SettingsStore.Directory = Path.Combine(Path.GetTempPath(), "petal-gallery-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            wheels.Clear();
+            var gallery = window.GalleryForTest;
+            gallery.Refresh();
+            Assert.True(gallery.CardsForTest[0].CanAdd);
+            gallery.AddForTest(0);
+            Assert.Single(wheels);
+            Assert.False(gallery.CardsForTest[0].CanAdd);
+            wheels.Clear();
+            gallery.Refresh();
+            Assert.True(gallery.CardsForTest[0].CanAdd);
+        }
+        finally
+        {
+            wheels.Clear();
+            wheels.AddRange(kept);
+            SettingsStore.Directory = store;
+        }
+    });
+
+    [Fact]
+    public void The_gallery_finds_a_wheel_by_a_word_in_it() => Run(window =>
+    {
+        var gallery = window.GalleryForTest;
+        var first = gallery.CardsForTest[0].Words;
+        gallery.FindForTest(first.Split(' ')[0]);
+        Assert.True(gallery.CardsForTest[0].Shown);
+        gallery.FindForTest("no wheel says this");
+        Assert.DoesNotContain(gallery.CardsForTest, card => card.Shown);
+        gallery.FindForTest("");
+        Assert.All(gallery.CardsForTest, card => Assert.True(card.Shown));
+    });
 
     [Fact]
     public void Each_page_opens() => Run(window =>

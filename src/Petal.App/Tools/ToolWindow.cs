@@ -287,6 +287,9 @@ public abstract class ToolWindow : Window
         return path;
     }
 
+    /// <summary>The same words as <see cref="Text"/>, for the parts of a window that aren't windows themselves.</summary>
+    internal static TextBlock PlainText(string text, string style = "Petal.Body") => Text(text, style);
+
     protected static TextBlock Text(string text, string style = "Petal.Body") => new()
     {
         Text = L.T(text),

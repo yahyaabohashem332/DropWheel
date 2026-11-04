@@ -72,10 +72,12 @@ public sealed partial class SettingsWindow
     {
         AddPage("Home", "appWindow", HomePage());
         Group("The Wheel");
-        AddPage("Keys & Wheels", "keyboard", CardsPage("Keys & Wheels", "What opens the wheel, how it behaves, and the wheels that need no files.",
+        AddPage("Keys & Behaviour", "keyboard", CardsPage("Keys & Behaviour", "What opens the wheel, and how it behaves.",
             Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()),
-            Card("The Wheel", "How the wheel behaves under the pointer.", BehaviourSection()),
-            Card("Wheels", "Wheels that need no files: quick actions, what's playing, shortcuts for the app in front, and your own. The quick shortcut opens them when nothing is selected; Tab or the mouse wheel goes to the next.", WheelsSection())));
+            Card("The Wheel", "How the wheel behaves under the pointer.", BehaviourSection())));
+        AddPage("Wheels", "layers", CardsPage("Wheels", "Your wheels, and more to add from the gallery beside them.",
+            Card("Wheels", "Wheels that need no files: quick actions, what's playing, shortcuts for the app in front, and your own. The quick shortcut opens them when nothing is selected; Tab or the mouse wheel goes to the next.", WheelsSection()),
+            Card("Wheel Gallery", "Wheels made for apps and for kinds of work. Add one and change it as you like; it doesn't replace yours.", GallerySection())));
         AddPage("Appearance", "palette", CardsPage("Appearance", "Language, theme, colours, and how the wheel looks and sounds.", Split(AppearanceSection(), "Appearance")));
         AddPage("Actions & Favourites", "star", CardsPage("Actions & Favourites", "What comes first on the wheels.",
             Card("Actions Wheel", "The actions on the wheel itself (the rest are under More), and folders that dropped files are copied or moved to.", ActionsWheelSection()),
@@ -487,7 +489,11 @@ public sealed partial class SettingsWindow
 
     // ---------- for checking by eye ----------
 
-    internal static int PageCount => 11;
+    internal static int PageCount => 12;
+
+    internal WheelGalleryList GalleryForTest => _gallery!;
+
+    internal int WheelsListed => _s.Wheels.Count;
 
     internal IReadOnlyList<string> PlacesShown => [.. WordsIn(_placesMade), .. WordsIn(_placesOwn)];
 

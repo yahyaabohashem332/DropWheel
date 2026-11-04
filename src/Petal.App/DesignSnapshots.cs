@@ -439,7 +439,6 @@ internal static class DesignSnapshots
                 ];
                 return new Settings.SnippetsWindow();
             }),
-            ("gallery", () => new Settings.WheelGalleryWindow(() => { })),
             ("importwheel", () => new Settings.ImportWheelWindow(() => { })),
             ("sendtopc", () => Actions.SendToPcWindow.ForSnapshot([file("landscape.jpg"), file("album.pdf")],
             [
@@ -471,6 +470,7 @@ internal static class DesignSnapshots
             ("main8", () => Settings.SettingsWindow.ForPage(8)),
             ("main9", () => Settings.SettingsWindow.ForPage(9)),
             ("main10", () => Settings.SettingsWindow.ForPage(10)),
+            ("main11", () => Settings.SettingsWindow.ForPage(11)),
             ("mainsmall", () => Settings.SettingsWindow.ForPage(1, 960, 700)),
             ("mainmid", () => Settings.SettingsWindow.ForPage(5, 1320, 880)),
             ("dubbest", () => Dub(window => window.FinestForSnapshot())),
