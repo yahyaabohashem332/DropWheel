@@ -8,9 +8,9 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_342_paths()
+    public void Conversion_matrix_has_354_paths()
     {
-        Assert.Equal(342, ConversionMatrix.TotalPaths);
+        Assert.Equal(354, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

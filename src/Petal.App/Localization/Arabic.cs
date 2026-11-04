@@ -3589,5 +3589,9 @@ internal static class Arabic
         ["Blurred copy saved"] = "حُفظت النسخة المطموسة",
         ["The face model isn't downloaded yet."] = "لم يُنزَّل نموذج الوجوه بعد.",
         ["The number plate model isn't downloaded yet."] = "لم يُنزَّل نموذج اللوحات بعد.",
+        ["This isn't a font file."] = "هذا ليس ملف خط.",
+        ["This font file is damaged."] = "ملف الخط هذا تالف.",
+        ["This is a collection of several fonts: DropWheel converts single fonts."] = "هذه مجموعة من عدة خطوط: يحوّل DropWheel الخطوط المفردة.",
+        ["This font uses CFF2 variable outlines, which DropWheel can't convert."] = "يستخدم هذا الخط مخططات CFF2 المتغيرة، ولا يستطيع DropWheel تحويلها.",
     };
 }

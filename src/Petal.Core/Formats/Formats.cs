@@ -35,6 +35,11 @@ public static class Formats
     public static readonly FileFormat Ase = new("ase", "ASE", FormatFamily.Palette, ["ase"]);
     public static readonly FileFormat Aco = new("aco", "ACO", FormatFamily.Palette, ["aco"]);
 
+    public static readonly FileFormat Ttf = new("ttf", "TTF", FormatFamily.Font, ["ttf"]);
+    public static readonly FileFormat Otf = new("otf", "OTF", FormatFamily.Font, ["otf"]);
+    public static readonly FileFormat Woff = new("woff", "WOFF", FormatFamily.Font, ["woff"]);
+    public static readonly FileFormat Woff2 = new("woff2", "WOFF2", FormatFamily.Font, ["woff2"]);
+
     // Audio
     public static readonly FileFormat Mp3 = new("mp3", "MP3", FormatFamily.Audio, ["mp3"]);
     public static readonly FileFormat M4a = new("m4a", "M4A", FormatFamily.Audio, ["m4a", "aac"]);
@@ -92,6 +97,7 @@ public static class Formats
         Psd, Psb, Raw, Ai, Eps,
         Indd, Idml, Xd, Prproj, Aep,
         Ase, Aco,
+        Ttf, Otf, Woff, Woff2,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif,
         Pdf, Docx, Odt, Rtf, Md, Html, Txt, Epub,

@@ -2042,7 +2042,7 @@
  "kind:format": {
   "category": "general",
   "summary": "Converts the dropped files to another format, such as JPG, WEBP, MP4, MP3, PDF or DOCX, saved beside them.",
-  "details": "The Shift wheel shows your starred favourites first, then every format the files can become; the centre names the format with a few words on what it is good for (AVIF · Smallest, same look) and, while you rest on a picture, sound or video format, how big the result will be. Results are saved next to the originals with the new extension (photo.heic gives photo.jpg), or in one folder if you choose that in Settings › Results; a dropped folder is converted into a copy beside it, such as 'Trip (WEBP)', and the original is never touched. Quality comes from Settings › Quality: Image quality (90 at first, for JPG, WEBP, HEIC and AVIF), Page images DPI (300), Video quality (Best, High, Balanced or Small; High at first), Audio kbps (256), GIF frame rate (15), GIF width (720) and Hardware video encoding. A favourite such as 'WEBP 1600' adds its own size and quality, and a dim, dashed format petal needs something first, such as Ghostscript or Office, which the centre names.",
+  "details": "The Shift wheel shows your starred favourites first, then every format the files can become; the centre names the format with a few words on what it is good for (AVIF · Smallest, same look) and, while you rest on a picture, sound or video format, how big the result will be. Results are saved next to the originals with the new extension (photo.heic gives photo.jpg), or in one folder if you choose that in Settings › Results; a dropped folder is converted into a copy beside it, such as 'Trip (WEBP)', and the original is never touched. Quality comes from Settings › Quality: Image quality (90 at first, for JPG, WEBP, HEIC and AVIF), Page images DPI (300), Video quality (Best, High, Balanced or Small; High at first), Audio kbps (256), GIF frame rate (15), GIF width (720) and Hardware video encoding. A favourite such as 'WEBP 1600' adds its own size and quality, and a dim, dashed format petal needs something first, such as Ghostscript or Office, which the centre names. Fonts convert between TTF, OTF, WOFF and WOFF2: the web's packings keep the font exactly, and between TTF and OTF the outlines are rewritten and hinting is left out, while letters, spacing and shaping stay. A variable font comes out at its default weight. Check that a font's licence allows converting it.",
   "how": "Drag the files, tap Shift and drop on the petal of the format you want, such as JPG or MP4.",
   "examples": [
    "iPhone HEIC photos that won't open on an old PC: drop them on JPG.",
@@ -2061,7 +2061,10 @@
    "pdf to word",
    "webp",
    "file converter",
-   "save as"
+   "save as",
+   "ttf to woff2",
+   "otf to ttf",
+   "convert font"
   ]
  },
  "kind:favourite": {

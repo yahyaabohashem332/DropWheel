@@ -19,6 +19,8 @@ public enum FormatFamily
     Project,
     /// <summary>Colour swatches (Adobe Swatch Exchange and Photoshop swatches).</summary>
     Palette,
+    /// <summary>Fonts, on the desktop and for the web.</summary>
+    Font,
 }
 
 /// <summary>A file format Petal knows how to read and/or write.</summary>

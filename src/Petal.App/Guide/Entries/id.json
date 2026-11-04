@@ -2121,7 +2121,7 @@
  "kind:format": {
   "category": "general",
   "summary": "Mengonversi file yang dilepas ke format lain, seperti JPG, WEBP, MP4, MP3, PDF, atau DOCX, disimpan di sampingnya.",
-  "details": "Roda Shift menampilkan favorit berbintang Anda terlebih dahulu, lalu setiap format yang bisa dihasilkan dari file tersebut; bagian tengah menyebutkan format beserta beberapa kata tentang kegunaannya (AVIF · Terkecil, tampilan sama) dan, saat Anda menahan penunjuk di atas format gambar, suara, atau video, seberapa besar hasilnya nanti. Hasil disimpan di samping file asli dengan ekstensi baru (photo.heic menghasilkan photo.jpg), atau di satu folder jika Anda memilihnya di Pengaturan › Hasil; folder yang dilepas dikonversi menjadi salinan di sampingnya, misalnya 'Trip (WEBP)', dan file aslinya tidak pernah disentuh. Kualitas diambil dari Pengaturan › Kualitas: Kualitas gambar (awalnya 90, untuk JPG, WEBP, HEIC, dan AVIF), DPI gambar halaman (300), Kualitas video (Terbaik, Tinggi, Seimbang, atau Kecil; awalnya Tinggi), kbps audio (256), Laju bingkai GIF (15), Lebar GIF (720), dan Enkode video dengan perangkat keras. Favorit seperti 'WEBP 1600' menambahkan ukuran dan kualitasnya sendiri, dan kelopak format yang redup dan bergaris putus-putus memerlukan sesuatu terlebih dahulu, seperti Ghostscript atau Office, yang disebutkan di bagian tengah.",
+  "details": "Roda Shift menampilkan favorit berbintang Anda terlebih dahulu, lalu setiap format yang bisa dihasilkan dari file tersebut; bagian tengah menyebutkan format beserta beberapa kata tentang kegunaannya (AVIF · Terkecil, tampilan sama) dan, saat Anda menahan penunjuk di atas format gambar, suara, atau video, seberapa besar hasilnya nanti. Hasil disimpan di samping file asli dengan ekstensi baru (photo.heic menghasilkan photo.jpg), atau di satu folder jika Anda memilihnya di Pengaturan › Hasil; folder yang dilepas dikonversi menjadi salinan di sampingnya, misalnya 'Trip (WEBP)', dan file aslinya tidak pernah disentuh. Kualitas diambil dari Pengaturan › Kualitas: Kualitas gambar (awalnya 90, untuk JPG, WEBP, HEIC, dan AVIF), DPI gambar halaman (300), Kualitas video (Terbaik, Tinggi, Seimbang, atau Kecil; awalnya Tinggi), kbps audio (256), Laju bingkai GIF (15), Lebar GIF (720), dan Enkode video dengan perangkat keras. Favorit seperti 'WEBP 1600' menambahkan ukuran dan kualitasnya sendiri, dan kelopak format yang redup dan bergaris putus-putus memerlukan sesuatu terlebih dahulu, seperti Ghostscript atau Office, yang disebutkan di bagian tengah. Font dikonversi antara TTF, OTF, WOFF, dan WOFF2: format web menjaga font persis sama, sedangkan antara TTF dan OTF garisnya ditulis ulang dan hinting ditinggalkan, sementara huruf, spasi, dan pembentukan tetap. Font variabel keluar dengan bobot bawaannya. Pastikan lisensi font mengizinkan konversi.",
   "how": "Seret file, ketuk Shift, lalu lepaskan di kelopak format yang Anda inginkan, seperti JPG atau MP4.",
   "worksOn": "Gambar, video, audio, dokumen, spreadsheet, slide, e-book, subtitel, arsip, dan file desain; satu atau banyak, atau folder.",
   "examples": [
@@ -2141,7 +2141,9 @@
    "pdf ke word",
    "webp",
    "konverter file",
-   "simpan sebagai"
+   "simpan sebagai",
+   "konversi font",
+   "ttf ke woff2"
   ]
  },
  "kind:favourite": {

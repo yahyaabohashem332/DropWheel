@@ -38,6 +38,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         converters.Register(new MediaConverter());
         converters.Register(new ArchiveConverter());
         converters.Register(new SubtitleConverter());
+        converters.Register(new Petal.Engines.Files.Fonts.FontConverter());
         DocumentEngine.Register(converters);
         return converters;
     }

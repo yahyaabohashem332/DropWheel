@@ -71,6 +71,7 @@ public static class EngineSetup
         converters.Register(new Petal.Engines.Media.MediaConverter());
         converters.Register(new ArchiveConverter());
         converters.Register(new SubtitleConverter());
+        converters.Register(new Petal.Engines.Files.Fonts.FontConverter());
         Petal.Engines.Documents.DocumentEngine.Register(converters);
         return converters;
     }

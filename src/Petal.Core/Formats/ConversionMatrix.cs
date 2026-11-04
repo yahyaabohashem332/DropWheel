@@ -34,6 +34,11 @@ public static class ConversionMatrix
         map[Ase] = [Aco, Png];
         map[Aco] = [Ase, Png];
 
+        map[Ttf] = [Woff2, Otf, Woff];
+        map[Otf] = [Woff2, Ttf, Woff];
+        map[Woff] = [Ttf, Otf, Woff2];
+        map[Woff2] = [Ttf, Otf, Woff];
+
         foreach (var audio in AudioFormats)
             map[audio] = [.. AudioFormats.Where(f => f != audio)];
 
