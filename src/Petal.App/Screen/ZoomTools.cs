@@ -228,7 +228,7 @@ internal sealed class Lens : Window
         // A small cross where the pointer is.
         glass.Children.Add(new System.Windows.Shapes.Path
         {
-            Data = Geometry.Parse($"M {Size / 2 - 7},{Size / 2} H {Size / 2 + 7} M {Size / 2},{Size / 2 - 7} V {Size / 2 + 7}"),
+            Data = Geometry.Parse(FormattableString.Invariant($"M {Size / 2 - 7},{Size / 2} H {Size / 2 + 7} M {Size / 2},{Size / 2 - 7} V {Size / 2 + 7}")),
             Stroke = new SolidColorBrush(Color.FromArgb(0xC0, 0xFF, 0x3B, 0x30)),
             StrokeThickness = 1.5,
         });

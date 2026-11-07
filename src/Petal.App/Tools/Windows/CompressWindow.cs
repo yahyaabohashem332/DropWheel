@@ -165,7 +165,7 @@ public sealed class CompressWindow : ToolWindow
     private CompressRequest Request()
     {
         long? target = null;
-        if (_mode.Value == CompressMode.TargetSize && double.TryParse(_target.Text, NumberStyles.Float, CultureInfo.CurrentCulture, out var mb) && mb > 0)
+        if (_mode.Value == CompressMode.TargetSize && double.TryParse(_target.Text.Replace(',', '.'), NumberStyles.Float, CultureInfo.CurrentCulture, out var mb) && mb > 0)
             target = (long)(mb * 1_000_000);
         int? percent = _mode.Value == CompressMode.Percentage ? (int)_percent.Value : null;
         int max = ValueOf<int>(_size);

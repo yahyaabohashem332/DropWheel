@@ -31,6 +31,8 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // Before anything else: numbers are written 3.4, never "3,4", whatever the PC's region.
+        Petal.Core.Util.PlainNumbers.Apply();
         base.OnStartup(e);
 
         // "--lang ar|en|tr|…" forces a language (used for design snapshots).

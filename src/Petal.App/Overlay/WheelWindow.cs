@@ -1450,7 +1450,7 @@ public sealed partial class WheelWindow : Window
         _infoMark.Children.Add(new Ellipse { Width = 2 * InfoRadius, Height = 2 * InfoRadius });
         var bang = new Path
         {
-            Data = Geometry.Parse($"M {InfoRadius},{InfoRadius - 4.6} L {InfoRadius},{InfoRadius + 1.2}"),
+            Data = new LineGeometry(new Point(InfoRadius, InfoRadius - 4.6), new Point(InfoRadius, InfoRadius + 1.2)),
             StrokeThickness = 2,
             StrokeStartLineCap = PenLineCap.Round,
             StrokeEndLineCap = PenLineCap.Round,
