@@ -153,6 +153,8 @@ Read all of it before touching anything. The user writes in Arabic. Write your f
 - **1.16.0** (2026-11-03):
   - Dub's fourth level "Best" (الأدق), using Gemma 4 12B;
   - the licence audit: lessac-based voices removed; Linda added; complete notices; Settings › Helpers has an "Open-source licences" button.
+- **1.17.0 to 1.19.0** (to 2026-11-04): built on the user's PC. **1.19.0 is the code of `master` at `b9b212e`** ("Time Tracker", 2026-11-04 23:01); its `DropWheel-1.19.0-win-x64.zip` was made a minute later. The version is never in git (it is `build.ps1 -Version`), so read the latest one from the user's `dist` or ask; never guess it from the code.
+- **1.19.1** (2026-11-07, branch `claude/inspiring-allen-0jcb5x`): DropWheel starts on PCs whose region writes 3.4 as "3,4" (`PlainNumbers`); a part that can't start no longer leaves DropWheel half started (`StartupParts`, a Start-up row in Health); the tray icon retries. Built by `.github/workflows/build.yml` on GitHub Actions (Windows Server 2025), whose `VERSION` default must be raised with each release.
 
 ## 7. What each big feature does, and what was learned (keep these)
 

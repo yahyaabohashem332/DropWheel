@@ -12,7 +12,7 @@ on:
       version:
         description: Version
         required: true
-        default: '1.17.0'
+        default: '1.19.1'
       notes:
         description: What's new (English, shown in the update window)
         required: false
@@ -28,7 +28,8 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 180
     env:
-      VERSION: ${{ inputs.version || '1.17.0' }}
+      # The version isn't kept in git: it is given to build.ps1. Raise it here with each release (1.19.0 is out).
+      VERSION: ${{ inputs.version || '1.19.1' }}
       NOTES: ${{ inputs.notes || 'DropWheel starts on PCs whose region writes 3.4 as 3,4, and a part that cannot start no longer stops the others.' }}
       DOTNET_NOLOGO: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
