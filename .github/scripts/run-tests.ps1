@@ -56,3 +56,4 @@ if ($stillFailing.Count -gt 0) {
     throw "$($stillFailing.Count) test(s) failed."
 }
 Write-Host "`nEvery test that can run here passed."
+exit 0
