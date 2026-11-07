@@ -11,6 +11,10 @@
   x64 (the default) or arm64: Petal for ARM64 PCs, its own ZIP, Setup and update feed
   (update-arm64.json). FFmpeg and ExifTool stay x64 programs, which Windows 11 runs on ARM64.
 
+.PARAMETER NoFeed
+  Leaves out update.json: a build to try out or send by hand, made where the update signing key
+  isn't (the build machine on GitHub). Installed copies are never offered such a build as an update.
+
 .EXAMPLE
   pwsh tools\scripts\build.ps1
 #>
@@ -19,7 +23,8 @@ param(
     [string]$Notes = '',
     [ValidateSet('x64', 'arm64')]
     [string]$Arch = 'x64',
-    [switch]$SkipTests
+    [switch]$SkipTests,
+    [switch]$NoFeed
 )
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
@@ -133,6 +138,10 @@ if ($iscc) {
     $setup = Join-Path $dist $setupName
     Write-Host "Installer: $setup"
 
+    if ($NoFeed) {
+        Write-Host 'No update.json (-NoFeed): this build is for trying out and sending by hand.'
+        return
+    }
     # The update feed: host update.json next to the installer (the url is relative to it).
     $manifest = [ordered]@{
         version = $Version

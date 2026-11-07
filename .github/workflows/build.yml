@@ -1,0 +1,85 @@
+# DropWheel for Windows x64: the tests, then the installer and the portable ZIP, on a clean Windows PC.
+# The files are kept as this run's artifact. update.json is signed only when the UPDATE_SIGNING_KEY secret
+# holds the key; without it the build is for trying out and sending by hand, not for the update feed.
+name: Build DropWheel (x64)
+
+on:
+  push:
+    branches: [ 'claude/inspiring-allen-0jcb5x' ]
+    paths-ignore: [ '**.md' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        required: true
+        default: '1.17.0'
+      notes:
+        description: What's new (English, shown in the update window)
+        required: false
+        default: ''
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 180
+    env:
+      VERSION: ${{ inputs.version || '1.17.0' }}
+      NOTES: ${{ inputs.notes || 'DropWheel starts on PCs whose region writes 3.4 as 3,4, and a part that cannot start no longer stops the others.' }}
+      DOTNET_NOLOGO: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup --no-progress -y }
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\Languages\Arabic.isl")) { throw 'Inno Setup has no Arabic' }
+
+      - name: Helper programs (FFmpeg, ExifTool)
+        shell: pwsh
+        run: ./tools/scripts/fetch-tools.ps1
+
+      - name: Tests
+        shell: pwsh
+        run: ./.github/scripts/run-tests.ps1
+
+      - name: Installer and ZIP
+        shell: pwsh
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          $feed = @()
+          if ($env:UPDATE_SIGNING_KEY) {
+            New-Item -ItemType Directory -Force (Join-Path $env:USERPROFILE '.petal') | Out-Null
+            Set-Content (Join-Path $env:USERPROFILE '.petal\update-signing-key.pem') $env:UPDATE_SIGNING_KEY -NoNewline
+          } else {
+            $feed = @('-NoFeed')
+          }
+          # The tests ran in the step before, every one that can run here.
+          ./tools/scripts/build.ps1 -Version $env:VERSION -Notes $env:NOTES -SkipTests @feed
+          & dist/Petal/Petal.com version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DropWheel-${{ env.VERSION }}-win-x64
+          path: |
+            dist/DropWheel-Setup-*.exe
+            dist/DropWheel-*-win-x64.zip
+            dist/update.json
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results/**/*.trx
+          if-no-files-found: ignore
