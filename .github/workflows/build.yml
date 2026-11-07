@@ -58,12 +58,12 @@ jobs:
         env:
           UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
         run: |
-          $feed = @()
+          $feed = @{}
           if ($env:UPDATE_SIGNING_KEY) {
             New-Item -ItemType Directory -Force (Join-Path $env:USERPROFILE '.petal') | Out-Null
             Set-Content (Join-Path $env:USERPROFILE '.petal\update-signing-key.pem') $env:UPDATE_SIGNING_KEY -NoNewline
           } else {
-            $feed = @('-NoFeed')
+            $feed = @{ NoFeed = $true }
           }
           # The tests ran in the step before, every one that can run here.
           ./tools/scripts/build.ps1 -Version $env:VERSION -Notes $env:NOTES -SkipTests @feed
