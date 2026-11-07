@@ -314,7 +314,8 @@ public sealed class LanguageSwitchTests
         window.WindowStartupLocation = WindowStartupLocation.Manual;
         (window.Left, window.Top, window.Width, window.Height) = (-30000, -30000, 1200, 800);
         window.Show();
-        var (page, left) = (window.CurrentPage, window.Left);
+        // As Windows placed it: on a screen smaller than 1200 by 800 it keeps the window inside the screen.
+        var (page, left, width, height) = (window.CurrentPage, window.Left, window.Width, window.Height);
         bool closed = false;
         window.Closed += (_, _) => closed = true;
         SettingsWindow? next = null;
@@ -330,7 +331,7 @@ public sealed class LanguageSwitchTests
             Assert.Equal(FlowDirection.RightToLeft, next.FlowDirection);
             Assert.Equal(page, next.CurrentPage);
             Assert.Equal(UiLanguage.Arabic, next.LanguageShown);
-            Assert.Equal((left, 1200d, 800d), (next.Left, next.Width, next.Height));
+            Assert.Equal((left, width, height), (next.Left, next.Width, next.Height));
             Assert.Equal(WindowState.Normal, next.WindowState);
 
             // And back, as many times as anyone likes.

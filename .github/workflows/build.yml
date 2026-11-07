@@ -24,7 +24,8 @@ concurrency:
 
 jobs:
   build:
-    runs-on: windows-2022
+    # Windows Server 2025 is Windows 11 underneath: it has the fonts the wheel is measured with (Segoe UI Variable).
+    runs-on: windows-2025
     timeout-minutes: 180
     env:
       VERSION: ${{ inputs.version || '1.17.0' }}

@@ -126,11 +126,12 @@ public sealed class ConnectTests
     public async Task Petal_Health_looks_at_everything_and_says_so()
     {
         var checks = await Health.RunAsync();
-        Assert.Equal(11, checks.Count);
+        Assert.Equal(12, checks.Count);
         Assert.All(checks, c => Assert.False(string.IsNullOrWhiteSpace(c.Summary)));
         var text = Health.Text(checks);
         Assert.Contains("Disk space", text);
         Assert.Contains("Helper programs", text);
+        Assert.Contains("Start-up", text);
         _ = Health.GraphicsCards();
     }
 }

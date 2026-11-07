@@ -16,7 +16,8 @@ public sealed class FontConverterTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_folder, true); } catch (IOException) { }
+        // Windows' font engine can still hold a font it read; what is left in Temp is no failure.
+        try { Directory.Delete(_folder, true); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>The glyph outlines of some letters as Windows reads the font: bounds in font units, with the advance.</summary>

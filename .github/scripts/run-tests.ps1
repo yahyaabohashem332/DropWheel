@@ -42,7 +42,7 @@ foreach ($test in $failed) {
     Write-Host "Running again alone: $method"
     dotnet test $project -c Release --nologo --no-build --filter "FullyQualifiedName=$method" --logger "trx;LogFileName=again-$($stillFailing.Count + $needSamples.Count).trx" --results-directory $results
     if ($LASTEXITCODE -ne 0) {
-        $stillFailing += "$name`n    $($message.Split("`n")[0])"
+        $stillFailing += "$name`n    " + ($message.Trim() -replace "`r?`n", "`n    ")
     }
 }
 
