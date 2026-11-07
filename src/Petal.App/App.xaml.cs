@@ -132,77 +132,104 @@ public partial class App : Application
             args.SetObserved();
         };
 
-        var settings = SettingsStore.Load();
-        // Ready-made wheels the settings don't have yet (all of them on first run).
-        if (Wheels.WheelTemplates.Upgrade(settings))
-            SettingsStore.Save();
-        if (langArg < 0)
-            L.Initialize(settings.Language);
-        Jobs.History.Enabled = () => SettingsStore.Current.KeepHistory;
-        L.Changed += () =>
+        // The heart of DropWheel: without these nothing works, so a failure here is said plainly and DropWheel
+        // closes, rather than staying open with no icon, no keys and no shortcuts.
+        AppSettings settings;
+        ConverterRegistry converters;
+        try
         {
-            BuildTrayMenu();
-            ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
-        };
-        Theme.Configure(settings.Theme, settings.AccentColour, settings.AccentCustom);
-        AiSetup.Apply(settings);
-        ThemeResources.Install(this);
-        SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
+            settings = SettingsStore.Load();
+            // Ready-made wheels the settings don't have yet (all of them on first run).
+            if (Wheels.WheelTemplates.Upgrade(settings))
+                SettingsStore.Save();
+            if (langArg < 0)
+                L.Initialize(settings.Language);
+            Jobs.History.Enabled = () => SettingsStore.Current.KeepHistory;
+            L.Changed += () =>
+            {
+                BuildTrayMenu();
+                ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
+            };
+            Theme.Configure(settings.Theme, settings.AccentColour, settings.AccentCustom);
+            AiSetup.Apply(settings);
+            ThemeResources.Install(this);
+            SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
 
-        var converters = EngineSetup.CreateConverters();
-        Jobs.FolderLease.Install();
+            converters = EngineSetup.CreateConverters();
+            Jobs.FolderLease.Install();
 
-        _controller = new PetalController(converters, Dispatcher);
-        _controller.Start();
-        ApplyLocalApi(settings.LocalApi);
-        Search.SearchService.Start(converters);
+            _controller = new PetalController(converters, Dispatcher);
+            _controller.Start();
+        }
+        catch (Exception ex)
+        {
+            CouldNotStart(ex);
+            return;
+        }
 
-        CreateTray();
+        // Everything else starts part by part: one that fails is named in a card and in DropWheel Health,
+        // and the others start all the same.
+        StartupParts.Run("Other programs", () => ApplyLocalApi(settings.LocalApi));
+        StartupParts.Run("Search by Meaning", () => Search.SearchService.Start(converters));
+
+        StartupParts.Run("The icon by the clock", CreateTray);
         Shell.UpdateService.Found += _ => Dispatcher.BeginInvoke(() =>
         {
             _tray?.SetBadge(true, Theme.Current.Accent);
             BuildTrayMenu();
         });
-        SettingsStore.Watch(Dispatcher);
+        StartupParts.Run("Settings", () => SettingsStore.Watch(Dispatcher));
         SettingsStore.Reloaded += ApplyReloaded;
         SettingsStore.Saved += _ => Dispatcher.BeginInvoke(BuildTrayMenu);
-        _hotkey = new GlobalHotkey();
-        _hotkey.Pressed += OnShortcut;
-        if (Input.Shortcut.Parse(settings.QuickShortcut) is { } shortcut && !_hotkey.Register(shortcut))
-            Log.Info($"{shortcut} is already used by another program");
-        _wheelKeys = new Shell.WheelHotkeys();
-        _wheelKeys.Pressed += OnWheelShortcut;
-        _wheelKeys.Apply(settings.Wheels);
+        StartupParts.Run("Shortcuts", () =>
+        {
+            _hotkey = new GlobalHotkey();
+            _hotkey.Pressed += OnShortcut;
+            if (Input.Shortcut.Parse(settings.QuickShortcut) is { } shortcut && !_hotkey.Register(shortcut))
+                Log.Info($"{shortcut} is already used by another program");
+            _wheelKeys = new Shell.WheelHotkeys();
+            _wheelKeys.Pressed += OnWheelShortcut;
+            _wheelKeys.Apply(settings.Wheels);
+        });
         SettingsStore.Saved += s => Dispatcher.BeginInvoke(() => _wheelKeys?.Apply(s.Wheels));
-        LaunchAtLogin.Apply(settings.LaunchAtStartup);
-        Work.TimeTracker.Resume();
-        ContextMenuRegistration.Apply(settings.ExplorerContextMenu);
+        StartupParts.Run("Start with Windows", () => LaunchAtLogin.Apply(settings.LaunchAtStartup));
+        StartupParts.Run("Time Tracker", Work.TimeTracker.Resume);
+        StartupParts.Run("File Explorer", () => ContextMenuRegistration.Apply(settings.ExplorerContextMenu));
         // The clipboard history listens from the start; notes come back where they were.
-        Clips.ClipboardHistory.Start();
-        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Notes.StickyNotes.Restore);
-        if (!Words.Dictation.RegisterShortcut())
-            Log.Info($"{settings.DictationShortcut} is already used by another program");
-        Commands.PaletteSources.Register();
-        if (!Commands.CommandPalette.RegisterShortcut())
-            Log.Info($"{settings.PaletteShortcut} is already used by another program");
-        if (!Words.VoiceCommand.RegisterShortcut())
-            Log.Info($"{settings.VoiceShortcut} is already used by another program");
-        if (!Screen.CircleWindow.RegisterShortcut())
-            Log.Info($"{settings.CircleShortcut} is already used by another program");
-        Words.TextExpander.Start();
+        StartupParts.Run("Clipboard History", Clips.ClipboardHistory.Start);
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => StartupParts.Run("Notes", Notes.StickyNotes.Restore));
+        StartupParts.Run("Shortcuts", () =>
+        {
+            if (!Words.Dictation.RegisterShortcut())
+                Log.Info($"{settings.DictationShortcut} is already used by another program");
+        });
+        StartupParts.Run("Command Palette", () =>
+        {
+            Commands.PaletteSources.Register();
+            if (!Commands.CommandPalette.RegisterShortcut())
+                Log.Info($"{settings.PaletteShortcut} is already used by another program");
+        });
+        StartupParts.Run("Shortcuts", () =>
+        {
+            if (!Words.VoiceCommand.RegisterShortcut())
+                Log.Info($"{settings.VoiceShortcut} is already used by another program");
+            if (!Screen.CircleWindow.RegisterShortcut())
+                Log.Info($"{settings.CircleShortcut} is already used by another program");
+        });
+        StartupParts.Run("Snippets", Words.TextExpander.Start);
         _ = Task.Run(Shell.VirtualDrop.Tidy);
         var thumbnails = settings.ExplorerThumbnails;
         _ = Task.Run(() => Shell.ExplorerThumbnails.Apply(thumbnails));
-        Shell.QuickLook.Start(Dispatcher, (files, at) =>
+        StartupParts.Run("Quick Look", () => Shell.QuickLook.Start(Dispatcher, (files, at) =>
         {
             Controller.OpenWheelNow(files, at);
             return true;
-        });
-        _ = Actions.PcDrop.ApplyAsync(settings.ReceiveFromPcs);
+        }));
+        StartupParts.Run("Receiving files from other PCs", () => _ = Actions.PcDrop.ApplyAsync(settings.ReceiveFromPcs));
         if (command is not null)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => Handle(command));
         else if (!settings.OnboardingDone && !e.Args.Contains("--background"))
-            Onboarding.WelcomeWindow.ShowSingle();
+            StartupParts.Run("Welcome to DropWheel", Onboarding.WelcomeWindow.ShowSingle);
         else if (e.Args.Contains("--installed"))
             // Started by the setup after an update: the main window, and a word on where Petal lives.
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
@@ -212,7 +239,7 @@ public partial class App : Application
                     L.F("DropWheel {0} is installed", UpdateService.Current.ToString(3)),
                     L.T("It waits in the notification area, by the clock."), null);
             });
-        _ = UpdateService.CheckInBackgroundAsync();
+        StartupParts.Run("Updates", () => _ = UpdateService.CheckInBackgroundAsync());
         if (Shell.Packaged.IsPackaged)
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () =>
             {
@@ -221,6 +248,8 @@ public partial class App : Application
                     Shell.TrialEndedWindow.ShowSingle();
             });
         Log.Info($"DropWheel started, {converters.Converters.Count} converters");
+        // Last of all, once the notes have had their turn: a word about any part that didn't start.
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, TellWhatDidNotStart);
     }
 
     private readonly CommandChannel _commands = new();
@@ -410,6 +439,56 @@ public partial class App : Application
         menu.Items.Add(new Separator());
         menu.Items.Add(quit);
         _tray.Menu = menu;
+    }
+
+    /// <summary>The icon is in the notification area (false while Windows hasn't taken it yet).</summary>
+    public bool TrayShown => _tray?.Shown == true;
+
+    /// <summary>
+    /// The heart of DropWheel didn't start: says so with the reason, offers the activity log to send with a
+    /// question, and closes, so opening DropWheel again tries afresh instead of finding a broken copy running.
+    /// </summary>
+    private void CouldNotStart(Exception ex)
+    {
+        Log.Error(ex, "Start-up: DropWheel couldn't start");
+        var reason = new StartupFailure("", ex).Reason;
+        var options = L.IsRightToLeft ? MessageBoxOptions.RtlReading | MessageBoxOptions.RightAlign : MessageBoxOptions.None;
+        var answer = MessageBox.Show(
+            L.T("Something on this PC stopped DropWheel while it was starting:") + "\n\n" + reason + "\n\n"
+                + L.T("The details are in DropWheel's activity log. Show it, to send it with your question?"),
+            L.T("DropWheel couldn't start"), MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.Yes, options);
+        if (answer == MessageBoxResult.Yes)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{Log.FilePath}\"") { UseShellExecute = true });
+            }
+            catch (Exception open) when (open is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                Log.Error(open, "Showing the activity log");
+            }
+        }
+        _commands.Dispose();
+        Shutdown(1);
+    }
+
+    /// <summary>Names the parts that didn't start, once, in a card that opens DropWheel Health.</summary>
+    private void TellWhatDidNotStart()
+    {
+        var parts = StartupParts.Failed.Select(f => f.Part).ToList();
+        if (parts.Count == 0)
+            return;
+        try
+        {
+            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(
+                L.T("Some parts of DropWheel didn't start"),
+                L.F("{0}. Everything else works; click for DropWheel Health.", StartupParts.Names(parts)),
+                Settings.HealthWindow.ShowSingle);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Telling what didn't start");
+        }
     }
 
     public void ShowSettings() => SettingsWindow.ShowSingle();

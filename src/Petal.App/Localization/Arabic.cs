@@ -3639,5 +3639,14 @@ internal static class Arabic
         ["In all: {0}"] = "الإجمالي: {0}",
         ["Minutes"] = "الدقائق",
         ["Delete all the time counted so far? This can't be undone."] = "حذف كل الوقت المحسوب حتى الآن؟ لا يمكن التراجع عن ذلك.",
+        ["The icon by the clock"] = "الأيقونة بجانب الساعة",
+        ["Something on this PC stopped DropWheel while it was starting:"] = "شيء ما على هذا الجهاز أوقف DropWheel أثناء بدء تشغيله:",
+        ["The details are in DropWheel's activity log. Show it, to send it with your question?"] = "التفاصيل في سجل نشاط DropWheel. هل تريد عرضه لترسله مع سؤالك؟",
+        ["DropWheel couldn't start"] = "تعذّر تشغيل DropWheel",
+        ["Some parts of DropWheel didn't start"] = "بعض أجزاء DropWheel لم تبدأ",
+        ["{0}. Everything else works; click for DropWheel Health."] = "{0}. كل ما عدا ذلك يعمل؛ انقر لفتح صحة DropWheel.",
+        ["Start-up"] = "بدء التشغيل",
+        ["Every part of DropWheel started"] = "بدأت كل أجزاء DropWheel",
+        ["Didn't start: {0}"] = "لم يبدأ: {0}",
     };
 }

@@ -36,7 +36,7 @@ public sealed class TrayIcon : IDisposable
         public IntPtr hBalloonIcon;
     }
 
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool Shell_NotifyIcon(int message, ref NOTIFYICONDATA data);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -80,11 +80,43 @@ public sealed class TrayIcon : IDisposable
 
     public event Action? Clicked;
 
+    /// <summary>Windows has the icon in the notification area.</summary>
+    public bool Shown { get; private set; }
+
+    private System.Windows.Threading.DispatcherTimer? _retry;
+    private int _tries;
+
+    /// <summary>
+    /// Puts the icon in the notification area. Windows can refuse while File Explorer is still starting (just
+    /// after signing in) or busy, and asks programs to try again: every 2 seconds for 2 minutes, and again
+    /// whenever File Explorer restarts.
+    /// </summary>
     private void Add()
     {
-        Shell_NotifyIcon(NIM_ADD, ref _data);
-        _data.uVersion = NOTIFYICON_VERSION_4;
-        Shell_NotifyIcon(NIM_SETVERSION, ref _data);
+        // Already there (File Explorer announced itself twice): bringing it up to date is enough.
+        Shown = Shell_NotifyIcon(NIM_ADD, ref _data) || Shell_NotifyIcon(NIM_MODIFY, ref _data);
+        if (Shown)
+        {
+            _data.uVersion = NOTIFYICON_VERSION_4;
+            Shell_NotifyIcon(NIM_SETVERSION, ref _data);
+            _retry?.Stop();
+            _tries = 0;
+            return;
+        }
+        if (_tries == 0)
+            Log.Info($"The notification area refused DropWheel's icon (error {Marshal.GetLastPInvokeError()}); trying again");
+        if (++_tries > 60)
+        {
+            _retry?.Stop();
+            Log.Error("The notification area kept refusing DropWheel's icon");
+            return;
+        }
+        if (_retry is null)
+        {
+            _retry = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            _retry.Tick += (_, _) => Add();
+        }
+        _retry.Start();
     }
 
     private IntPtr _badged;
@@ -205,6 +237,7 @@ public sealed class TrayIcon : IDisposable
 
     public void Dispose()
     {
+        _retry?.Stop();
         Shell_NotifyIcon(NIM_DELETE, ref _data);
         if (_badged != IntPtr.Zero)
             DestroyIcon(_badged);

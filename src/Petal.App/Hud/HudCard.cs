@@ -269,11 +269,13 @@ public sealed class HudCard : Window
         DismissAfter(TimeSpan.FromSeconds(_wasOnTaskbar ? 8 : 2.6));
     }
 
-    public void Fail(string title, string subtitle)
+    /// <summary>Ends the card as failed; <paramref name="onClick"/>, when given, is what clicking it does.</summary>
+    public void Fail(string title, string subtitle, Action? onClick = null)
     {
         FromTaskbar();
         _finished = true;
-        _card.Cursor = Cursors.Arrow;
+        OnClick = onClick;
+        _card.Cursor = onClick is null ? Cursors.Arrow : Cursors.Hand;
         SetText(title, subtitle);
         _indeterminateShift.BeginAnimation(TranslateTransform.XProperty, null);
         _bar.Visibility = Visibility.Collapsed;

@@ -31,6 +31,7 @@ public static class Health
         var checks = new List<HealthCheck>
         {
             Version(),
+            StartUp(),
             Input(),
             Shortcuts(),
         };
@@ -52,6 +53,20 @@ public static class Health
         var where = Shell.Packaged.IsPackaged ? L.T("from the Microsoft Store") : L.T("from DropWheel's own setup");
         return new HealthCheck("DropWheel", HealthState.Good, L.F("DropWheel {0}, {1}", PetalVersion, where),
             $"Windows {Environment.OSVersion.Version} · .NET {Environment.Version} · {SettingsStore.Directory}");
+    }
+
+    /// <summary>Whether every part of DropWheel started, the icon by the clock included, and why one didn't.</summary>
+    private static HealthCheck StartUp()
+    {
+        var failed = StartupParts.Failed;
+        var parts = failed.Select(f => f.Part).ToList();
+        if ((System.Windows.Application.Current as App)?.TrayShown == false)
+            parts.Add("The icon by the clock");
+        if (parts.Count == 0)
+            return new HealthCheck("Start-up", HealthState.Good, L.T("Every part of DropWheel started"));
+        return new HealthCheck("Start-up", HealthState.Problem, L.F("Didn't start: {0}", StartupParts.Names(parts)),
+            failed.Count == 0 ? null : string.Join("\n", failed.Select(f => $"{L.T(f.Part)}: {f.Reason}")),
+            L.T("Open the Activity Log"), () => Open(Log.FilePath));
     }
 
     private static HealthCheck Input()
