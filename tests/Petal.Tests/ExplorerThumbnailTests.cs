@@ -146,67 +146,136 @@ public sealed class ExplorerThumbnailTests
     }
 
     /// <summary>
-    /// Windows asks for a thumbnail the way File Explorer does, for a file type registered for the test
-    /// only: the handler runs in Windows' thumbnail process and answers with the Photoshop file's picture.
+    /// The handler's place is registered the way .NET Framework writes it itself, nothing escaped: the
+    /// runtime reads "%20" as those three characters, not as a space.
+    /// </summary>
+    [Fact]
+    public void The_handlers_place_is_written_with_nothing_escaped()
+    {
+        Assert.Equal("file:///C:/Users/Ayşe Gül/AppData/Local/Programs/Petal/shell/Petal.Shell.dll",
+            Petal.App.Shell.ExplorerThumbnails.CodeBase(@"C:\Users\Ayşe Gül\AppData\Local\Programs\Petal\shell\Petal.Shell.dll"));
+        Assert.Equal("file:///D:/100% #1/يحيى/Petal.Shell.dll", Petal.App.Shell.ExplorerThumbnails.CodeBase(@"D:\100% #1\يحيى\Petal.Shell.dll"));
+        Assert.Equal("file://server/share/Petal/shell/Petal.Shell.dll", Petal.App.Shell.ExplorerThumbnails.CodeBase(@"\\server\share\Petal\shell\Petal.Shell.dll"));
+    }
+
+#if DEBUG
+    private const string Configuration = "Debug";
+#else
+    private const string Configuration = "Release";
+#endif
+
+    /// <summary>A class of the test's own: what DropWheel registered on this PC for its thumbnails is never touched.</summary>
+    private const string TestClassId = "{BC5AF004-CA5F-489B-B057-D27F7E048259}";
+
+    // How Windows' thumbnail cache is asked (WTS_FLAGS): the handler is run now, and its picture isn't kept.
+    private const int Afresh = 0x4 /* WTS_FORCEEXTRACTION */ | 0x20 /* WTS_EXTRACTDONOTCACHE */;
+    private const int InThisProcess = 0x100; // WTS_EXTRACTINPROC
+
+    /// <summary>
+    /// Windows' thumbnail cache, the one File Explorer asks, is asked for the picture of a file whose type
+    /// and class are registered for the test only, by the code that registers DropWheel's own: Windows finds
+    /// the handler, runs it in its thumbnail process, and gets the Photoshop file's picture. The handler sits
+    /// in a folder named as a user's own can be, with spaces, Arabic and Turkish letters, a # and a %.
     /// </summary>
     [Fact]
     public void Windows_gets_the_picture_from_the_handler()
     {
-        var dll = Path.Combine(Repo(), "src", "Petal.Shell", "bin", "Debug", "net48", "Petal.Shell.dll");
-        Assert.True(File.Exists(dll), dll);
+        var built = Path.Combine(Repo(), "src", "Petal.Shell", "bin", Configuration, "net48", "Petal.Shell.dll");
+        Assert.True(File.Exists(built), built);
         const string ext = ".petalthumbtest";
-        var clsidPath = $@"Software\Classes\CLSID\{Petal.App.Shell.ExplorerThumbnails.ClassId}";
-        bool hadClass = Registry.CurrentUser.OpenSubKey(clsidPath) is { } k && Dispose(k);
-        var file = Path.Combine(Path.GetTempPath(), "petal-thumb-" + Guid.NewGuid().ToString("N")[..8] + ext);
+        var clsidPath = $@"Software\Classes\CLSID\{TestClassId}";
+        const string approvals = @"Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Cached";
+        // What an earlier run couldn't delete, Windows' thumbnail process still holding the handler.
+        foreach (var old in Directory.GetDirectories(Path.GetTempPath(), "petal-thumb-*"))
+            if (Directory.GetCreationTimeUtc(old) < DateTime.UtcNow.AddHours(-1))
+                Delete(old);
+        var folder = Path.Combine(Path.GetTempPath(), "petal-thumb-" + Guid.NewGuid().ToString("N")[..8]);
+        var dll = Path.Combine(folder, "يحيى Ayşe Gül #1 100%", "Petal.Shell.dll");
+        Directory.CreateDirectory(Path.GetDirectoryName(dll)!);
+        File.Copy(built, dll);
+        var file = Path.Combine(folder, "layers" + ext);
         File.Copy(Data("layers.psd"), file);
         try
         {
-            using (var clsid = Registry.CurrentUser.CreateSubKey(clsidPath))
-            using (var server = clsid.CreateSubKey("InprocServer32"))
-            {
-                server.SetValue(null, "mscoree.dll");
-                server.SetValue("ThreadingModel", "Both");
-                server.SetValue("Class", "Petal.Shell.ThumbnailProvider");
-                server.SetValue("Assembly", "Petal.Shell, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
-                server.SetValue("RuntimeVersion", "v4.0.30319");
-                server.SetValue("CodeBase", new Uri(dll).AbsoluteUri);
-            }
+            Petal.App.Shell.ExplorerThumbnails.RegisterClass(Registry.CurrentUser, TestClassId, dll);
             using (var handler = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ext}\ShellEx\{{e357fccd-a995-4576-b01f-234630154e96}}"))
-                handler.SetValue(null, Petal.App.Shell.ExplorerThumbnails.ClassId);
+                handler.SetValue(null, TestClassId);
             SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
 
-            var size = OnSta(() =>
+            // Started from a packaged app (the Claude app is one), what this process writes to the registry
+            // goes to a copy that is the app's own, and Windows' thumbnail process never sees the class:
+            // there Windows runs the handler in this process instead. All the rest is the same.
+            int flags = Afresh | (WindowsSees(clsidPath + @"\InprocServer32") ? 0 : InThisProcess);
+            using var got = OnSta(() =>
             {
-                var iid = typeof(IShellItemImageFactory).GUID;
-                Marshal.ThrowExceptionForHR(SHCreateItemFromParsingName(file, IntPtr.Zero, ref iid, out var factory));
-                int hr = factory.GetImage(new SIZE { cx = 256, cy = 256 }, 0x8 /* SIIGBF_THUMBNAILONLY */, out var hbitmap);
-                Marshal.ThrowExceptionForHR(hr);
-                try
-                {
-                    using var bitmap = Image.FromHbitmap(hbitmap);
-                    return (bitmap.Width, bitmap.Height);
-                }
-                finally
-                {
-                    DeleteObject(hbitmap);
-                }
+                var iid = typeof(IShellItem).GUID;
+                Marshal.ThrowExceptionForHR(SHCreateItemFromParsingName(file, IntPtr.Zero, ref iid, out var item));
+                var cache = (IThumbnailCache)new LocalThumbnailCache();
+                Marshal.ThrowExceptionForHR(cache.GetThumbnail(item, 256, flags, out var shared, IntPtr.Zero, IntPtr.Zero));
+                // The bitmap stays the cache's own: it is copied here, not deleted.
+                Marshal.ThrowExceptionForHR(shared!.GetSharedBitmap(out var hbitmap));
+                return Image.FromHbitmap(hbitmap);
             });
-            Assert.True(size.Width > 32 && size.Height > 32, size.ToString());
+            // The file's own picture, as the reader gives it, came through Windows: not just any bitmap.
+            using var stream = File.OpenRead(Data("layers.psd"));
+            using var own = EmbeddedPreview.Read(stream, 256);
+            Assert.NotNull(own);
+            Assert.True(own.Width > 32 && own.Height > 32, $"{own.Width}×{own.Height}");
+            Assert.Equal((own.Width, own.Height), (got.Width, got.Height));
+            for (int y = 2; y < own.Height; y += 8)
+                for (int x = 2; x < own.Width; x += 8)
+                {
+                    var (a, b) = (own.GetPixel(x, y), got.GetPixel(x, y));
+                    Assert.True(Math.Abs(a.R - b.R) <= 2 && Math.Abs(a.G - b.G) <= 2 && Math.Abs(a.B - b.B) <= 2, $"At {x},{y}: {a} in the file, {b} from Windows");
+                }
         }
         finally
         {
             Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\{ext}", throwOnMissingSubKey: false);
-            if (!hadClass)
-                Registry.CurrentUser.DeleteSubKeyTree(clsidPath, throwOnMissingSubKey: false);
+            Registry.CurrentUser.DeleteSubKeyTree(clsidPath, throwOnMissingSubKey: false);
+            // Windows notes each handler it let in; the test's goes with the rest.
+            using (var noted = Registry.CurrentUser.OpenSubKey(approvals, writable: true))
+                noted?.DeleteValue($"{TestClassId} {{E357FCCD-A995-4576-B01F-234630154E96}} 0xFFFF", throwOnMissingValue: false);
             SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
-            try { File.Delete(file); } catch (IOException) { }
+            Delete(folder);
         }
     }
 
-    private static bool Dispose(RegistryKey key)
+    /// <summary>
+    /// Whether the rest of Windows sees a key this process wrote in the user's registry: WMI's registry
+    /// provider is asked, which reads it in a process of Windows' own. Taken as seen when WMI can't say.
+    /// </summary>
+    private static bool WindowsSees(string key)
     {
-        key.Dispose();
-        return true;
+        try
+        {
+            dynamic locator = Activator.CreateInstance(Type.GetTypeFromProgID("WbemScripting.SWbemLocator", throwOnError: true)!)!;
+            dynamic registry = locator.ConnectServer(".", @"root\default").Get("StdRegProv");
+            dynamic asked = registry.Methods_.Item("EnumValues").InParameters.SpawnInstance_();
+            asked.Properties_.Item("hDefKey").Value = unchecked((int)0x80000001); // HKEY_CURRENT_USER
+            asked.Properties_.Item("sSubKeyName").Value = key;
+            dynamic answer = registry.ExecMethod_("EnumValues", asked);
+            return (int)answer.Properties_.Item("ReturnValue").Value == 0;
+        }
+        catch (Exception ex) when (ex is COMException or InvalidCastException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Whoever ran the handler can still hold its file: the rest goes now, and that with a later run.
+    /// </summary>
+    private static void Delete(string folder)
+    {
+        try
+        {
+            foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
+                try { File.Delete(file); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            Directory.Delete(folder, recursive: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     private static T OnSta<T>(Func<T> work)
@@ -226,25 +295,33 @@ public sealed class ExplorerThumbnailTests
         return result;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct SIZE
+    [ComImport, Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellItem
     {
-        public int cx, cy;
     }
 
-    [ComImport, Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IShellItemImageFactory
+    [ComImport, Guid("f676c15d-596a-4ce2-8234-33996f445db1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IThumbnailCache
     {
         [PreserveSig]
-        int GetImage(SIZE size, int flags, out IntPtr bitmap);
+        int GetThumbnail(IShellItem item, uint size, int flags, out ISharedBitmap? bitmap, IntPtr cacheFlags, IntPtr id);
+    }
+
+    [ComImport, Guid("091162a4-bc96-411f-aae8-c5122cd03363"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface ISharedBitmap
+    {
+        [PreserveSig]
+        int GetSharedBitmap(out IntPtr bitmap);
+    }
+
+    [ComImport, Guid("50ef4544-ac9f-4a8e-b21b-8a26180db13f")]
+    private class LocalThumbnailCache
+    {
     }
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
-    private static extern int SHCreateItemFromParsingName(string path, IntPtr bindContext, ref Guid iid, out IShellItemImageFactory item);
+    private static extern int SHCreateItemFromParsingName(string path, IntPtr bindContext, ref Guid iid, out IShellItem item);
 
     [DllImport("shell32.dll")]
     private static extern void SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
-
-    [DllImport("gdi32.dll")]
-    private static extern bool DeleteObject(IntPtr handle);
 }

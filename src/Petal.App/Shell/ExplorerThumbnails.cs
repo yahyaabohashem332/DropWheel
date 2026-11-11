@@ -53,29 +53,51 @@ public static class ExplorerThumbnails
         return key?.GetValue(null) as string;
     }
 
-    internal static void Register(RegistryKey root, string dll)
+    /// <summary>
+    /// Where the handler is, written the way .NET Framework writes it itself (Assembly.CodeBase, which
+    /// regasm /codebase registers): a file address with nothing escaped. The runtime takes it letter for
+    /// letter, so the "%20" a <see cref="Uri"/> writes for a space is a folder that isn't there, and no
+    /// thumbnail came for anyone whose user name has a space or a letter outside ASCII.
+    /// </summary>
+    internal static string CodeBase(string dll)
+    {
+        var path = Path.GetFullPath(dll).Replace('\\', '/');
+        // A network path has its two slashes already: file://server/share/…
+        return "file:" + (path.StartsWith("//", StringComparison.Ordinal) ? path : "///" + path);
+    }
+
+    /// <summary>
+    /// Writes the class Windows asks for: mscoree, which finds the handler by these values. Those under the
+    /// version are the ones the runtime reads when they are there, so both say the same. True when the
+    /// handler's place changed.
+    /// </summary>
+    internal static bool RegisterClass(RegistryKey root, string classId, string dll)
     {
         bool changed = false;
-        var codeBase = new Uri(dll).AbsoluteUri;
-        using (var clsid = root.CreateSubKey($@"Software\Classes\CLSID\{ClassId}"))
+        var codeBase = CodeBase(dll);
+        using var clsid = root.CreateSubKey($@"Software\Classes\CLSID\{classId}");
+        clsid.SetValue(null, "DropWheel thumbnails");
+        foreach (var key in new[] { "InprocServer32", @"InprocServer32\1.0.0.0" })
         {
-            clsid.SetValue(null, "DropWheel thumbnails");
-            foreach (var key in new[] { "InprocServer32", @"InprocServer32\1.0.0.0" })
+            using var server = clsid.CreateSubKey(key);
+            if (server.GetValue("CodeBase") as string != codeBase)
+                changed = true;
+            if (key == "InprocServer32")
             {
-                using var server = clsid.CreateSubKey(key);
-                if (server.GetValue("CodeBase") as string != codeBase)
-                    changed = true;
-                if (key == "InprocServer32")
-                {
-                    server.SetValue(null, "mscoree.dll");
-                    server.SetValue("ThreadingModel", "Both");
-                }
-                server.SetValue("Class", ClassName);
-                server.SetValue("Assembly", AssemblyName);
-                server.SetValue("RuntimeVersion", "v4.0.30319");
-                server.SetValue("CodeBase", codeBase);
+                server.SetValue(null, "mscoree.dll");
+                server.SetValue("ThreadingModel", "Both");
             }
+            server.SetValue("Class", ClassName);
+            server.SetValue("Assembly", AssemblyName);
+            server.SetValue("RuntimeVersion", "v4.0.30319");
+            server.SetValue("CodeBase", codeBase);
         }
+        return changed;
+    }
+
+    internal static void Register(RegistryKey root, string dll)
+    {
+        bool changed = RegisterClass(root, ClassId, dll);
         foreach (var ext in Extensions)
         {
             if (HasOtherHandler(ext))
