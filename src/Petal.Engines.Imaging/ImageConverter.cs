@@ -7,7 +7,7 @@ namespace Petal.Engines.Imaging;
 
 /// <summary>
 /// Raster and SVG conversions to any raster format or PDF. Decoding and most encoders are
-/// ImageMagick; HEIC is encoded with FFmpeg's libx265 and a built-in HEIF muxer, and PDFs are
+/// ImageMagick; HEIC is read by Windows and encoded with Windows' HEVC encoder into a built-in HEIF muxer, and PDFs are
 /// written directly (JPEGs are embedded without re-compression).
 /// </summary>
 public sealed class ImageConverter : IConverter, IResaver

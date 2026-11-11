@@ -42,12 +42,13 @@ public static class ConversionMatrix
         map[Woff] = [Ttf, Otf, Woff2];
         map[Woff2] = [Ttf, Otf, Woff];
 
+        // WMV and WMA are read (Windows decodes them) but not written: only formats DropWheel can write are targets.
         foreach (var audio in AudioFormats)
-            map[audio] = [.. AudioFormats.Where(f => f != audio)];
+            map[audio] = [.. AudioFormats.Where(f => f != audio && f.CanWrite)];
 
         foreach (var video in VideoFormats)
-            map[video] = [.. VideoFormats.Where(f => f != video), Gif, Mp3];
-        map[Gif] = [.. VideoFormats];
+            map[video] = [.. VideoFormats.Where(f => f != video && f.CanWrite), Gif, Mp3];
+        map[Gif] = [.. VideoFormats.Where(f => f.CanWrite)];
 
         map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, Epub, Txt, Md, Html];
 

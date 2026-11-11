@@ -55,7 +55,7 @@ internal sealed record EncodePlan
 
     public bool MaxFlacCompression { get; init; }
 
-    /// <summary>Try NVENC for H.264 (falls back to libx264 if it fails).</summary>
+    /// <summary>Try the graphics card's H.264 encoder through Windows (Windows' software encoder if it fails).</summary>
     public bool Hardware { get; init; }
 
     /// <summary>Duration of the output in seconds, for progress.</summary>
@@ -64,7 +64,7 @@ internal sealed record EncodePlan
     public GifSettings? Gif { get; init; }
 }
 
-/// <summary>Runs an <see cref="EncodePlan"/>: GIF palettes, two-pass bitrate targets and the NVENC → x264 fallback.</summary>
+/// <summary>Runs an <see cref="EncodePlan"/>: GIF palettes, two-pass bitrate targets and the graphics card → software fallback.</summary>
 internal static class MediaEncoder
 {
     /// <summary>Encodes the plan; returns FFmpeg's output of the final pass (stderr holds filter reports at "info" level).</summary>
@@ -87,8 +87,8 @@ internal static class MediaEncoder
     }
 
     /// <summary>
-    /// Encodes with NVENC when asked and available, silently retrying with the software encoder if NVENC fails
-    /// (size limits, busy sessions, old drivers).
+    /// Encodes with the graphics card's H.264 encoder when asked and available, silently retrying with Windows'
+    /// software encoder if it fails (size limits, busy sessions, old drivers).
     /// </summary>
     internal static async Task<ProcessResult> EncodeWithFallbackAsync(
         Func<bool, List<string>> buildArgs,
@@ -111,7 +111,17 @@ internal static class MediaEncoder
                 // Fall through to the software encoder.
             }
         }
-        return await Ffmpeg.EncodeAsync(buildArgs(false), outputPath, muxer, duration, progress, cancellationToken, logLevel).ConfigureAwait(false);
+        try
+        {
+            return await Ffmpeg.EncodeAsync(buildArgs(false), outputPath, muxer, duration, progress, cancellationToken, logLevel).ConfigureAwait(false);
+        }
+        catch (ExternalToolException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // An N edition of Windows without the Media Feature Pack has no H.264 or AAC encoder at all: then that is
+            // said. Any other failure is FFmpeg's own, and stays so.
+            Foundation.MediaFoundationRuntime.Ensure();
+            throw;
+        }
     }
 
     /// <summary>Longest filter put on the command line; Windows allows 32,767 characters for the whole of it.</summary>
@@ -206,7 +216,7 @@ internal static class MediaEncoder
                 if (!string.IsNullOrEmpty(plan.AudioFilter))
                     AddFilter(args, "af", plan.AudioFilter);
                 var depth = plan.AudioBitDepth ?? Containers.BitDepthOf(src.Audio);
-                args.AddRange(Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, depth, plan.MaxFlacCompression));
+                args.AddRange(Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, depth, plan.MaxFlacCompression, src.Audio));
             }
         }
         if (analysisPass || !audioMapped)

@@ -6,26 +6,20 @@ namespace Petal.Engines.Media;
 public static class MediaCapabilities
 {
     private static readonly Lock Gate = new();
-    private static Task<bool>? _nvenc;
-    private static Task<bool>? _rubberband;
+    private static Task<bool>? _hardware;
 
     /// <summary>FFmpeg and FFprobe were both found.</summary>
     public static bool IsAvailable => Ffmpeg.IsAvailable;
 
     /// <summary>
-    /// True when NVIDIA's H.264 encoder actually opens (the build may include NVENC while the GPU or driver cannot run it).
+    /// True when the graphics card's H.264 encoder actually opens through Windows (a PC may have one whose driver
+    /// can't run it, or none).
     /// </summary>
     public static Task<bool> HasHardwareH264Async()
     {
         lock (Gate)
-            return _nvenc ??= ProbeAsync(["-f", "lavfi", "-i", "color=c=black:s=256x256:r=25:d=0.2", "-frames:v", "3", "-c:v", "h264_nvenc", "-f", "null", "-"]);
-    }
-
-    /// <summary>The Rubber Band time-stretching filter is present (better quality than atempo at extreme speeds).</summary>
-    internal static Task<bool> HasRubberbandAsync()
-    {
-        lock (Gate)
-            return _rubberband ??= ProbeAsync(["-f", "lavfi", "-i", "sine=f=440:r=44100:d=0.3", "-af", "rubberband=tempo=2", "-f", "null", "-"]);
+            return _hardware ??= ProbeAsync(["-f", "lavfi", "-i", "color=c=black:s=256x256:r=25:d=0.2", "-frames:v", "3",
+                "-c:v", "h264_mf", "-hw_encoding", "1", "-rate_control", "quality", "-quality", "70", "-pix_fmt", "nv12", "-f", "null", "-"]);
     }
 
     private static async Task<bool> ProbeAsync(string[] args)

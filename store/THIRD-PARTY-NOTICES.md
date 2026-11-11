@@ -3,17 +3,52 @@
 DropWheel is built on open-source programs, libraries and AI models. Each one below is licensed by its
 authors under its own licence; nothing in DropWheel's terms limits the rights those licences give you.
 The full texts of the licences are at the end of this file and in the `licenses` folder in DropWheel's
-install folder: `Apache-2.0.txt`, `GPL-3.0.txt`, `CC-BY-4.0.txt`, `FFmpeg.txt`, `ExifTool.txt`,
-`DirectML.txt`, and in `packages`, each library's own licence and notice files as its authors wrote them.
+install folder: `Apache-2.0.txt`, `GPL-3.0.txt`, `CC-BY-4.0.txt`, `FFmpeg.txt` (the GNU LGPL version 2.1),
+`ExifTool.txt`, `DirectML.txt`; in `ffmpeg\licenses`, the licence files of every library inside FFmpeg; and in
+`packages`, each library's own licence and notice files as its authors wrote them.
 
 All AI models run on this PC. DropWheel uses each one as it is published at the address given for it.
 
 
 ## Programs DropWheel runs
 
-- FFmpeg (BtbN "gpl-shared" build: ffmpeg.exe, ffprobe.exe and their DLLs), by the FFmpeg developers.
-  GPL-3.0-or-later. https://ffmpeg.org; build scripts at https://github.com/BtbN/FFmpeg-Builds.
-  Its version is in `licenses\FFmpeg-version.txt`.
+- FFmpeg 9.0.2 (ffmpeg.exe, ffprobe.exe and their DLLs), by the FFmpeg developers. LGPL-2.1-or-later.
+  https://ffmpeg.org. This software uses libraries from the FFmpeg project under the LGPLv2.1. DropWheel's own
+  build: https://github.com/yahyaabohashem332/dropwheel-ffmpeg, with the libraries compiled from pinned sources
+  by FFmpeg-Builds (https://github.com/BtbN/FFmpeg-Builds, MIT). It holds no decoder or encoder of any format
+  still under patent; `licenses\ffmpeg\configuration.txt` gives its exact configuration, `stages.txt` the
+  repository and commit of every library, and `BUILD.txt` how it was made. The libraries inside its DLLs, each
+  with its licence files in `licenses\ffmpeg\licenses`:
+  - dav1d, Copyright (c) VideoLAN and dav1d authors. BSD-2-Clause.
+  - libaom, Copyright (c) the Alliance for Open Media. BSD-2-Clause, with the Alliance for Open Media Patent
+    License 1.0. With VMAF, Copyright (c) Netflix, Inc. BSD-2-Clause-Patent.
+  - SVT-AV1, Copyright (c) the Alliance for Open Media. BSD-3-Clause-Clear, with the Alliance for Open Media
+    Patent License 1.0.
+  - libvpx and libwebp, Copyright (c) the WebM project authors (Google). BSD-3-Clause, with Google's patent
+    grant.
+  - LAME, Copyright (c) the LAME project. LGPL-2.0-or-later.
+  - Opus, Copyright (c) Xiph.Org Foundation, Skype, Microsoft and others. BSD-3-Clause, with the Opus patent
+    licences.
+  - Ogg and Vorbis, Copyright (c) Xiph.Org Foundation. BSD-3-Clause.
+  - soxr, Copyright (c) Rob Sykes. LGPL-2.1-or-later.
+  - zimg, Copyright (c) sekrit-twc. WTFPL.
+  - libass, Copyright (c) the libass contributors. ISC.
+  - FreeType, Copyright (c) The FreeType Project. The FreeType License: portions of this software are
+    copyright (c) The FreeType Project (www.freetype.org). All rights reserved.
+  - HarfBuzz, Copyright (c) the HarfBuzz authors. MIT ("Old MIT").
+  - FriBidi, Copyright (c) the FriBidi authors. LGPL-2.1-or-later.
+  - Fontconfig, Copyright (c) Keith Packard and others. MIT-style (HPND).
+  - libunibreak, Copyright (c) Wu Yongwei and others. zlib.
+  - libxml2, Copyright (c) Daniel Veillard. MIT.
+  - zlib, Copyright (c) Jean-loup Gailly and Mark Adler. zlib.
+  - liblzma (XZ Utils), by Lasse Collin and others. 0BSD.
+  - libiconv, Copyright (c) Free Software Foundation, Inc. LGPL-2.1-or-later.
+  - The mingw-w64 runtime and winpthreads, Copyright (c) the mingw-w64 project. ZPL-2.1, MIT and BSD-3-Clause;
+    with the GCC runtime libraries under the GPL with the GCC Runtime Library Exception.
+- Windows Media Foundation, part of Windows, with the HEIF Image Extensions and HEVC Video Extensions from the
+  Microsoft Store where they are installed: Windows' own decoders and encoders, which read and write H.264,
+  HEVC, AAC, Windows Media and HEIC for DropWheel. They are licensed to you by Microsoft with Windows and with
+  those extensions; DropWheel carries no decoder or encoder for these formats.
 - ExifTool, Copyright Phil Harvey, with the Perl that runs it. Perl's terms (the Artistic License or the
   GPL). https://exiftool.org
 - Piper, Copyright (c) 2022 Michael Hansen. MIT. https://github.com/rhasspy/piper
@@ -31,15 +66,18 @@ Store edition; other copies download them from the addresses above the first tim
 
 ### Source code for the GPL and LGPL programs and libraries
 
-FFmpeg and espeak-ng are distributed under the GNU General Public License version 3, and some libraries
-inside Magick.NET (see below) under the GNU Lesser General Public License. DropWheel runs FFmpeg and
-espeak-ng as separate programs and does not link to them. Their complete source code is available from
-the addresses in this file, at the versions DropWheel ships: FFmpeg at the version in
-`licenses\FFmpeg-version.txt`; espeak-ng as included in Piper release 2023.11.14-2; Magick.NET's native
-library at https://github.com/dlemstra/Magick.Native, at the Magick.NET version below. For three years
-from the date you received DropWheel, the developer will also send you, on request to the support
-address in the Microsoft Store listing, a copy of that complete source code on a medium customarily used
-for software interchange, for no more than the cost of making and sending it.
+FFmpeg and four of the libraries inside it (LAME, soxr, FriBidi and libiconv) are under the GNU Lesser General
+Public License, version 2.1 or later; DropWheel runs FFmpeg as a separate program, and its DLLs are files you
+may replace with your own build. Their exact source code, with the scripts that built them, comes with
+DropWheel: `licenses\sources\ffmpeg-n9.0.2-dropwheel-win64-source.tar.gz`. Some libraries inside
+Magick.NET's native library (see below) are under the GNU Lesser General Public License; espeak-ng, which Piper
+uses, is under the GNU General Public License version 3, and DropWheel runs Piper as a separate program.
+Their complete source code is available from the addresses in this file, at the versions DropWheel uses:
+espeak-ng as included in Piper release 2023.11.14-2; Magick.NET's native library at
+https://github.com/dlemstra/Magick.Native, at the Magick.NET version below. For three years from the date you
+received DropWheel, the developer will also send you, on request to the support address in the Microsoft
+Store listing, a copy of any of that complete source code on a medium customarily used for software
+interchange, for no more than the cost of making and sending it.
 
 
 ## Libraries inside DropWheel
@@ -120,8 +158,8 @@ download:
   (sentence-transformers). Apache-2.0.
   https://huggingface.co/sentence-transformers/clip-ViT-B-32-multilingual-v1
 - Hybrid Transformer Demucs, Copyright (c) Meta Platforms, Inc. and affiliates. MIT.
-  https://github.com/facebookresearch/demucs. As one ONNX file by timcsy:
-  https://huggingface.co/timcsy/demucs-web-onnx
+  https://github.com/facebookresearch/demucs. As one ONNX file by timcsy, made by the demucs-web project
+  (MIT, https://github.com/timcsy/demucs-web): https://huggingface.co/timcsy/demucs-web-onnx
 - TIGER for Divide and Remaster, by Tsinghua University. Apache-2.0. https://github.com/JusperLee/TIGER.
   8-bit ONNX by audiojs: https://huggingface.co/audiojs/tiger-dnr
 - LaMa (big-lama), Copyright (c) Samsung Research (advimman/lama). Apache-2.0.
@@ -129,7 +167,8 @@ download:
 - Chatterbox Multilingual V3, Copyright (c) 2025 Resemble AI. MIT.
   https://github.com/resemble-ai/chatterbox. ONNX exports by Masterx
   (https://huggingface.co/Masterx/chatterbox-multilingual-v3-ONNX) and KitsuMate
-  (https://huggingface.co/KitsuMate/chatterbox-multilingual-v3-onnx).
+  (https://huggingface.co/KitsuMate/chatterbox-multilingual-v3-onnx; DropWheel uses its flow and vocoder
+  graphs, under Chatterbox's MIT licence, as its THIRD_PARTY_NOTICES.md says).
 - DeepFilterNet 3 (inside the DeepFilterNet program above). MIT or Apache-2.0.
 
 ### Opus-MT (Creative Commons Attribution 4.0)

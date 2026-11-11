@@ -191,18 +191,42 @@ internal static class RecordingPolish
                 faces.ArgumentList.Add(a);
         }
         var encode = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardError = true };
-        foreach (var a in new[]
-        {
+        foreach (var a in (string[])
+        [
             "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", $"{width}x{height}", "-framerate", fps.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "-i", "-", "-i", input, "-map", "0:v", "-map", "1:a?", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-pix_fmt", "yuv420p",
+            "-i", "-", "-i", input, "-map", "0:v", "-map", "1:a?", .. Petal.Engines.Media.MediaEncoders.H264(19, hardware: false),
             "-c:a", "copy", "-shortest", "-movflags", "+faststart", "-y", output,
-        })
+        ])
             encode.ArgumentList.Add(a);
-        using var reader = Process.Start(decode);
-        using var writer = Process.Start(encode);
-        using var faceReader = faces is null ? null : Process.Start(faces);
-        if (reader is null || writer is null)
+        // The recording is H.264, which Windows decodes for FFmpeg.
+        Petal.Engines.Media.Foundation.FfmpegRun readerRun, writerRun;
+        Petal.Engines.Media.Foundation.FfmpegRun? faceRun = null;
+        try
+        {
+            readerRun = await Petal.Engines.Media.Foundation.FfmpegRun.StartAsync(decode, cancellationToken);
+        }
+        catch (Petal.Engines.Media.MediaException ex)
+        {
+            Log.Info($"Polishing the recording: {ex.Message}");
             return false;
+        }
+        await using var readerOwner = readerRun;
+        try
+        {
+            writerRun = await Petal.Engines.Media.Foundation.FfmpegRun.StartAsync(encode, cancellationToken);
+            if (faces is not null)
+                faceRun = await Petal.Engines.Media.Foundation.FfmpegRun.StartAsync(faces, cancellationToken);
+        }
+        catch (Petal.Engines.Media.MediaException ex)
+        {
+            Log.Info($"Polishing the recording: {ex.Message}");
+            return false;
+        }
+        await using var writerOwner = writerRun;
+        await using var faceOwner = faceRun;
+        var reader = readerRun.Process;
+        var writer = writerRun.Process;
+        var faceReader = faceRun?.Process;
         _ = reader.StandardError.ReadToEndAsync(cancellationToken);
         _ = writer.StandardError.ReadToEndAsync(cancellationToken);
         if (faceReader is not null)
@@ -272,9 +296,11 @@ internal static class RecordingPolish
             await reader.WaitForExitAsync(cancellationToken);
             if (faceReader is { HasExited: false })
                 faceReader.Kill();
+            await readerRun.FinishAsync();
+            await writerRun.FinishAsync();
             return writer.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0;
         }
-        catch (Exception ex) when (ex is IOException or OperationCanceledException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or OperationCanceledException or InvalidOperationException or Petal.Engines.Media.MediaException)
         {
             foreach (var p in new[] { reader, writer, faceReader })
                 try { if (p is { HasExited: false }) p.Kill(); } catch (InvalidOperationException) { }

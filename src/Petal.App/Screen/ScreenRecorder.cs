@@ -75,6 +75,12 @@ internal sealed class RecordingSession
     private readonly Stopwatch _clock = new();
     private bool _showedClicks;
     private int _fps = 30;
+
+    /// <summary>Whether the graphics card's encoder works, found out while the frame to record is being chosen.</summary>
+    private readonly Task<bool> _hardwareProbe = Petal.Engines.Media.MediaEncoders.HardwareH264Async();
+
+    /// <summary>The recording goes to the graphics card's encoder when it is asked for and works, else to Windows' quickest.</summary>
+    private bool _hardware => Settings.SettingsStore.Current.Conversion.HardwareVideoEncoding && _hardwareProbe.IsCompletedSuccessfully && _hardwareProbe.Result;
     private string? _warning;
     // For polishing: the pointer in every frame, and the clicks, in the recording's pixels.
     private bool _polish;
@@ -241,11 +247,11 @@ internal sealed class RecordingSession
             RedirectStandardInput = true,
             RedirectStandardError = true,
         };
-        foreach (var arg in new[]
-        {
+        foreach (var arg in (string[])
+        [
             "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", $"{_area.Width}x{_area.Height}", "-framerate", _fps.ToString(),
-            "-i", "-", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20", "-pix_fmt", "yuv420p", "-y", System.IO.Path.Combine(_work, "video.mkv"),
-        })
+            "-i", "-", .. Petal.Engines.Media.MediaEncoders.H264(20, _hardware, fast: true), "-y", System.IO.Path.Combine(_work, "video.mkv"),
+        ])
             start.ArgumentList.Add(arg);
         try
         {
@@ -559,7 +565,7 @@ internal sealed class RecordingSession
             args.AddRange(["-map", "0:v", "-map", "1:a"]);
         args.AddRange(["-c:v", "copy"]);
         if (sounds.Count > 0)
-            args.AddRange(["-c:a", "aac", "-b:a", "160k", "-shortest"]);
+            args.AddRange([.. Petal.Engines.Media.MediaEncoders.Aac(160), "-shortest"]);
         args.AddRange(["-movflags", "+faststart", "-y", output]);
         var start = new ProcessStartInfo(ToolLocator.Ffmpeg!) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
         foreach (var a in args)

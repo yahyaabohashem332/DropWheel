@@ -54,6 +54,8 @@ internal static class ImageLoader
             image = LoadDrawing(path, format, options);
         else if (format == F.Svg)
             image = new MagickImage(path, CreateReadSettings(path, format, options)); // relative hrefs need the path
+        else if (format == F.Heic)
+            image = WindowsHeif.Read(path, options.DecodeSizeHint); // HEVC, decoded by Windows
         else
         {
             // Read from a stream: given a path, ImageMagick lets the extension pick the decoder,

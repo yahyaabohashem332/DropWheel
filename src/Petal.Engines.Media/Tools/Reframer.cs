@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Petal.Engines.Media.Internal;
+using Petal.Engines.Media.Foundation;
 
 namespace Petal.Engines.Media;
 
@@ -44,7 +45,9 @@ public static class Reframer
         string filter;
         if (options.Mode == ReframeMode.Blurred)
         {
-            filter = Invariant($"split[a][b];[a]scale={outW}:{outH}:force_original_aspect_ratio=increase,crop={outW}:{outH},boxblur=24:4,eq=brightness=-0.06[bg];") +
+            // gblur and hue, not boxblur and eq, which FFmpeg has only under the GPL: four passes of a 49-pixel box are a
+            // Gaussian of sigma 28; hue's b of -0.6 darkens as eq's brightness of -0.06 does (15 of 255).
+            filter = Invariant($"split[a][b];[a]scale={outW}:{outH}:force_original_aspect_ratio=increase,crop={outW}:{outH},gblur=sigma=28,hue=b=-0.6[bg];") +
                      Invariant($"[b]scale={outW}:{outH}:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2");
             progress?.Report(0.05);
         }
@@ -106,7 +109,8 @@ public static class Reframer
         var start = new ProcessStartInfo(Ffmpeg.Exe) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
         foreach (var a in new[] { "-hide_banner", "-nostdin", "-loglevel", "error", "-i", input, "-an", "-sn", "-vf", Invariant($"fps=2,scale={W}:{h},format=gray"), "-f", "rawvideo", "-" })
             start.ArgumentList.Add(a);
-        using var process = Process.Start(start) ?? throw new MediaException("FFmpeg didn't start.");
+        await using var run = await FfmpegRun.StartAsync(start, ct).ConfigureAwait(false);
+        var process = run.Process;
         _ = process.StandardError.ReadToEndAsync(ct);
         var stream = process.StandardOutput.BaseStream;
         var frame = new byte[W * h];
@@ -132,6 +136,7 @@ public static class Reframer
                 try { process.Kill(); } catch (InvalidOperationException) { }
         }
         await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+        await run.FinishAsync().ConfigureAwait(false);
         return samples;
     }
 

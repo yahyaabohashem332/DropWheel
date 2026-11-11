@@ -29,7 +29,6 @@ public class AudioToolTests
     [InlineData("audio.m4a", CompressPreset.Balanced)]
     [InlineData("audio.opus", CompressPreset.Strong)]
     [InlineData("audio.ogg", CompressPreset.Balanced)]
-    [InlineData("audio.wma", CompressPreset.Strong)]
     [InlineData("audio.flac", CompressPreset.Balanced)]
     public async Task Compress_lossy_audio_keeps_the_format_and_shrinks(string fixture, CompressPreset preset)
     {
@@ -41,6 +40,21 @@ public class AudioToolTests
         var info = await MediaAssert.ValidAsync(output, source.DurationSeconds);
         Assert.Equal(source.AudioCodec, info.AudioCodec);
         Assert.True(result.OutputBytes <= result.OriginalBytes, $"{result.OutputBytes} > {result.OriginalBytes}");
+        progress.AssertCompleteAndMonotonic();
+    }
+
+    [Fact]
+    public async Task Compress_wma_makes_an_m4a()
+    {
+        // DropWheel reads WMA without writing it: the smaller copy is AAC in M4A.
+        var input = await Fixtures.GetAsync("audio.wma");
+        var source = await MediaProbe.ProbeAsync(input);
+        Assert.Equal("m4a", MediaCompressor.CompressedExtension(input));
+        var output = Path.Combine(Fixtures.NewDir(), "c." + MediaCompressor.CompressedExtension(input));
+        var progress = new RecordingProgress();
+        await MediaCompressor.CompressAsync(input, output, new CompressOptions(CompressPreset.Strong), progress);
+        var info = await MediaAssert.ValidAsync(output, source.DurationSeconds);
+        Assert.Equal("aac", info.AudioCodec);
         progress.AssertCompleteAndMonotonic();
     }
 

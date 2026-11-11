@@ -69,9 +69,10 @@ public sealed class HeicTests
     public async Task IrotIsAppliedOnceEvenWithExifOrientation()
     {
         var dir = Fixtures.NewDirectory();
-        using var image = Fixtures.Quadrants();
+        // Graphics cards' HEVC encoders take nothing much smaller.
+        using var image = Fixtures.Quadrants(256, 192);
         var rgb = image.GetPixels().ToByteArray(PixelMapping.RGB)!;
-        var annexB = await FfmpegStillEncoder.EncodeHevcAsync(new MemoryStream(rgb), 64, 48, 90, "fast", true, default);
+        var annexB = await FfmpegStillEncoder.EncodeHevcAsync(new MemoryStream(rgb), 256, 192, 90, "fast", true, default);
         var stream = HevcBitstream.Parse(annexB);
         var exif = new ExifProfile();
         exif.SetValue(ExifTag.Orientation, (ushort)6);
@@ -80,7 +81,7 @@ public sealed class HeicTests
         {
             HeifMuxer.Write(fs, new HeifImageSpec
             {
-                Width = 64, Height = 48, CodedWidth = 64, CodedHeight = 48,
+                Width = 256, Height = 192, CodedWidth = 256, CodedHeight = 192,
                 HvcC = stream.BuildHvcC(), Pictures = stream.Pictures,
                 Exif = [.. "Exif\0\0"u8, .. StripExifHeader(exif.ToByteArray()!)],
                 RotationQuarterTurns = 3, // 270° counter-clockwise = 90° clockwise, as iPhones write it
@@ -88,16 +89,16 @@ public sealed class HeicTests
         }
 
         var info = ImageInspector.Read(path);
-        Assert.Equal((48, 64), (info.DisplayWidth, info.DisplayHeight));
+        Assert.Equal((192, 256), (info.DisplayWidth, info.DisplayHeight));
         var preview = await ImagePreview.DecodeBgraAsync(path, 1000);
-        Assert.Equal((48, 64), (preview.Width, preview.Height));
+        Assert.Equal((192, 256), (preview.Width, preview.Height));
 
         using var loaded = ImageLoader.Load(path);
-        Assert.Equal(48u, loaded.Width);
-        Assert.Equal(64u, loaded.Height);
+        Assert.Equal(192u, loaded.Width);
+        Assert.Equal(256u, loaded.Height);
         // Rotated 90° clockwise once: the red top-left quadrant ends up top-right.
-        Fixtures.AssertColor(Fixtures.Red, Fixtures.PixelAt(loaded, 36, 16), 12, "TR");
-        Fixtures.AssertColor(Fixtures.Blue, Fixtures.PixelAt(loaded, 12, 16), 12, "TL");
+        Fixtures.AssertColor(Fixtures.Red, Fixtures.PixelAt(loaded, 144, 64), 12, "TR");
+        Fixtures.AssertColor(Fixtures.Blue, Fixtures.PixelAt(loaded, 48, 64), 12, "TL");
     }
 
     [Fact]
@@ -117,14 +118,14 @@ public sealed class HeicTests
     [Fact]
     public async Task HvcCMatchesSpsFields()
     {
-        var rgb = new byte[64 * 48 * 3];
-        var annexB = await FfmpegStillEncoder.EncodeHevcAsync(new MemoryStream(rgb), 64, 48, 80, "fast", true, default);
+        var rgb = new byte[256 * 192 * 3];
+        var annexB = await FfmpegStillEncoder.EncodeHevcAsync(new MemoryStream(rgb), 256, 192, 80, "fast", true, default);
         var stream = HevcBitstream.Parse(annexB);
         var info = new HevcBitstream.SpsInfo(stream.Sps);
         Assert.Equal(1, info.ChromaFormatIdc);
         Assert.Equal(0, info.BitDepthLumaMinus8);
-        Assert.Equal(64, info.Width);
-        Assert.Equal(48, info.Height);
+        Assert.Equal(256, info.Width);
+        Assert.Equal(192, info.Height);
         Assert.Single(stream.Pictures);
         var hvcC = stream.BuildHvcC();
         Assert.Equal(1, hvcC[0]);

@@ -119,7 +119,7 @@ public sealed class AutoBlurTests(ITestOutputHelper output)
         try
         {
             var input = Path.Combine(folder, "in.mp4");
-            await Run("-f", "lavfi", "-i", "testsrc2=size=320x240:rate=15:duration=2,noise=alls=70:allf=t", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "libx264", "-crf", "12", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", input);
+            await Run("-f", "lavfi", "-i", "testsrc2=size=320x240:rate=15:duration=2,noise=alls=70:allf=t", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "95", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-sample_fmt", "s16", "-shortest", input);
             var track = Assert.Single(AutoBlur.Follow(Enumerable.Range(0, 5).Select(i => At(i * 0.5, See(0.25, 0.25, 0.5, 0.5))).ToList()));
             var result = Path.Combine(folder, "out.mp4");
             await AutoBlur.ApplyAsync(input, result, [track]);
@@ -128,14 +128,15 @@ public sealed class AutoBlurTests(ITestOutputHelper output)
             Assert.Equal(240, info.Height);
             Assert.True(info.HasAudio);
             Assert.InRange(info.DurationSeconds, 1.8, 2.2);
-            double Sharp(string file) => MiddleDifference(file);
-            Assert.True(Sharp(result) * 3 < Sharp(input), $"{Sharp(result)} against {Sharp(input)}");
+            var (blurred, original) = (await MiddleDifferenceAsync(result), await MiddleDifferenceAsync(input));
+            Assert.True(blurred * 3 < original, $"{blurred} against {original}");
 
             // Kept, it isn't covered.
             track.Keep = true;
             var kept = Path.Combine(folder, "kept.mp4");
             await AutoBlur.ApplyAsync(input, kept, [track]);
-            Assert.True(Sharp(kept) * 2 > Sharp(input), $"{Sharp(kept)} against {Sharp(input)}");
+            var sharp = await MiddleDifferenceAsync(kept);
+            Assert.True(sharp * 2 > original, $"{sharp} against {original}");
         }
         finally
         {
@@ -144,15 +145,13 @@ public sealed class AutoBlurTests(ITestOutputHelper output)
     }
 
     /// <summary>How much neighbouring pixels differ in the middle of a frame: a blurred one hardly at all.</summary>
-    private static double MiddleDifference(string video)
+    private static async Task<double> MiddleDifferenceAsync(string video)
     {
-        var start = new ProcessStartInfo(Ffmpeg.Exe) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-ss", "1", "-i", video, "-frames:v", "1", "-vf", "crop=120:90:100:75,format=gray", "-f", "rawvideo", "-" })
-            start.ArgumentList.Add(a);
-        using var process = Process.Start(start)!;
+        // Through DropWheel's own way of running FFmpeg: H.264 comes through Windows.
         using var memory = new MemoryStream();
-        process.StandardOutput.BaseStream.CopyTo(memory);
-        process.WaitForExit();
+        await FfmpegProcess.RunReadingStdoutAsync(Ffmpeg.Exe,
+            ["-hide_banner", "-loglevel", "error", "-ss", "1", "-i", video, "-frames:v", "1", "-vf", "crop=120:90:100:75,format=gray", "-f", "rawvideo", "-"],
+            (s, ct) => s.CopyToAsync(memory, ct), default);
         var bytes = memory.ToArray();
         double sum = 0;
         for (int i = 1; i < bytes.Length; i++)
@@ -187,7 +186,7 @@ public sealed class AutoBlurTests(ITestOutputHelper output)
             foreach (var picture in Directory.EnumerateFiles(folder).Where(f => Path.GetExtension(f) is ".jpg" or ".png"))
             {
                 var video = Path.Combine(results, Path.GetFileNameWithoutExtension(picture) + ".mp4");
-                await Run("-loop", "1", "-i", picture, "-t", "2", "-r", "15", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-pix_fmt", "yuv420p", video);
+                await Run("-loop", "1", "-i", picture, "-t", "2", "-r", "15", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", video);
                 var clock = Stopwatch.StartNew();
                 var tracks = await AutoBlur.FindAsync(video, new AutoBlurOptions());
                 output.WriteLine($"{Path.GetFileName(picture)}: {tracks.Count(t => t.Kind == BlurKind.Face)} faces, {tracks.Count(t => t.Kind == BlurKind.Plate)} plates, {clock.Elapsed.TotalSeconds:0.0}s for 12 looks");

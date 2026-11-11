@@ -4,23 +4,24 @@ using Petal.Engines.Imaging.Heif;
 namespace Petal.Engines.Imaging;
 
 /// <summary>
-/// HEIC encoder. Magick.NET ships libheif without an HEVC encoder, so pixels are coded with
-/// FFmpeg's libx265 and wrapped in a HEIF container here. Up to ~8.9 MP is one coded image;
-/// larger photos become a grid of 512 px tiles exactly like iPhone HEICs, which keeps every
-/// tile within HEVC level limits that phone and Windows decoders enforce.
+/// HEIC encoder. The pixels are coded by Windows' HEVC encoder (the graphics card's, or the HEVC Video
+/// Extensions'), through FFmpeg, and wrapped in a HEIF container here: DropWheel carries no HEVC encoder of
+/// its own. Up to ~8.9 MP is one coded image; larger photos become a grid of 512 px tiles exactly like iPhone
+/// HEICs, which keeps every tile within HEVC level limits that phone and Windows decoders enforce.
 /// </summary>
 internal static class HeifWriter
 {
     internal const int TileSize = 512;
     internal const long SingleImageMaxPixels = 8_912_896; // HEVC level 5.1 picture size
-    private const int MinCodedSize = 16;
+    /// <summary>Graphics cards' encoders refuse very small pictures; the padding is hidden by the crop.</summary>
+    private const int MinCodedSize = 256;
 
     public static bool IsAvailable => FfmpegStillEncoder.CanEncodeHevc;
 
     public static async Task EncodeAsync(MagickImage image, Stream output, ImageWriteOptions options, CancellationToken cancellationToken)
     {
         if (!IsAvailable)
-            throw new NotSupportedException("Saving HEIC needs FFmpeg with the libx265 encoder, which was not found.");
+            throw new NotSupportedException(FfmpegStillEncoder.NoHevcText);
 
         MagickImage work = image;
         bool owned = false;
@@ -58,7 +59,7 @@ internal static class HeifWriter
         }
         else
         {
-            // 4:2:0 needs even dimensions and x265 at least 16 px; the padding is hidden again
+            // 4:2:0 needs even dimensions and the encoders a few dozen pixels; the padding is hidden again
             // with a clean-aperture crop.
             codedW = Math.Max(MinCodedSize, width + (width & 1));
             codedH = Math.Max(MinCodedSize, height + (height & 1));
@@ -66,10 +67,21 @@ internal static class HeifWriter
 
         // HEIC pixels are always coded as colour, so only an RGB profile describes them (not a grey one).
         var icc = options.KeepColorProfile && image.GetColorProfile() is { ColorSpace: ColorSpace.sRGB } profile ? profile.ToByteArray() : null;
-        byte[] annexB;
-        using (var frames = new TileFrameStream(image, codedW, codedH, columns, rows))
-            annexB = await FfmpegStillEncoder.EncodeHevcAsync(frames, codedW, codedH, options.Quality, options.HeicPreset,
-                signalSrgb: icc is null, cancellationToken);
+        // The graphics card's encoder first; should it refuse (busy, or a size it won't take), Windows' software one.
+        byte[]? annexB = null;
+        var modes = FfmpegStillEncoder.HevcModes;
+        for (var i = 0; annexB is null; i++)
+        {
+            try
+            {
+                using var frames = new TileFrameStream(image, codedW, codedH, columns, rows);
+                annexB = await FfmpegStillEncoder.EncodeHevcAsync(frames, codedW, codedH, options.Quality, options.HeicPreset,
+                    signalSrgb: icc is null, cancellationToken, modes[i]);
+            }
+            catch (Petal.Core.Util.ExternalToolException) when (i + 1 < modes.Count && !cancellationToken.IsCancellationRequested)
+            {
+            }
+        }
 
         var stream = HevcBitstream.Parse(annexB);
         var spec = new HeifImageSpec
@@ -88,6 +100,8 @@ internal static class HeifWriter
             // With an ICC profile the profile defines the colours; only the YCbCr matrix is signalled.
             ColourPrimaries = (ushort)(icc is null ? 1 : 2),
             TransferCharacteristics = (ushort)(icc is null ? 13 : 2),
+            // The matrix the pixels were converted with (Windows' encoder leaves it out of the stream).
+            MatrixCoefficients = 1,
         };
         HeifMuxer.Write(output, spec);
     }

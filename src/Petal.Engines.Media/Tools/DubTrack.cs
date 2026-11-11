@@ -202,7 +202,7 @@ public static class DubTrack
     }
 
     /// <summary>
-    /// A line's sound at another rate and quicker (pitch kept, by Rubber Band), through FFmpeg, as loud as it was:
+    /// A line's sound at another rate and quicker (pitch kept, by FFmpeg's atempo), through FFmpeg, as loud as it was:
     /// stretching leaves speech a decibel or more quieter, which is given back.
     /// </summary>
     public static async Task<float[]> ReshapeAsync(float[] sound, int fromRate, int toRate, double speed, CancellationToken cancellationToken)
@@ -215,7 +215,7 @@ public static class DubTrack
             var output = Path.Combine(folder, "out.raw");
             await File.WriteAllBytesAsync(input, System.Runtime.InteropServices.MemoryMarshal.AsBytes(sound.AsSpan()).ToArray(), cancellationToken).ConfigureAwait(false);
             var filter = Math.Abs(speed - 1) > 0.01
-                ? $"rubberband=tempo={speed.ToString("0.###", CultureInfo.InvariantCulture)}:pitchq=quality,aresample={toRate}"
+                ? $"{Tempo(speed)},aresample={toRate}"
                 : $"aresample={toRate}";
             List<string> args = ["-f", "f32le", "-ar", fromRate.ToString(CultureInfo.InvariantCulture), "-ac", "1", "-i", input, "-af", filter, "-f", "f32le", "-ar", toRate.ToString(CultureInfo.InvariantCulture), "-ac", "1", output];
             await Ffmpeg.RunAsync(args, 0, null, cancellationToken).ConfigureAwait(false);
@@ -234,6 +234,17 @@ public static class DubTrack
         {
             try { Directory.Delete(folder, recursive: true); } catch (IOException) { }
         }
+    }
+
+    /// <summary>atempo stages for a speed: each between half and twice.</summary>
+    internal static string Tempo(double speed)
+    {
+        var stages = new List<string>();
+        var f = speed;
+        while (f > 2.0) { stages.Add("atempo=2"); f /= 2; }
+        while (f < 0.5) { stages.Add("atempo=0.5"); f /= 0.5; }
+        stages.Add($"atempo={f.ToString("0.#####", CultureInfo.InvariantCulture)}");
+        return string.Join(',', stages);
     }
 
     /// <summary>Samples (interleaved, when there are several channels) as a 32-bit float WAV file.</summary>
@@ -279,12 +290,12 @@ public static class DubTrack
             args.AddRange(["-map", "3:0"]);
         // The picture as it was when MP4 can hold it; otherwise H.264.
         bool copy = info.VideoCodec is "h264" or "hevc" or "av1" or "vp9" or "mpeg4";
-        args.AddRange(copy ? ["-c:v", "copy"] : ["-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p"]);
+        args.AddRange(copy ? ["-c:v", "copy"] : MediaEncoders.H264(20, hardware: false));
         if (copy && info.VideoCodec == "hevc")
             args.AddRange(["-tag:v", "hvc1"]);
         // Each track named as players show it (MP4 keeps a track's name as its handler's).
         string dubbed = $"{CultureInfo.GetCultureInfo(language).EnglishName} (dubbed)";
-        args.AddRange(["-c:a", "aac", "-b:a", "192k", "-metadata:s:a:0", $"language={code}", "-metadata:s:a:0", $"title={dubbed}",
+        args.AddRange([.. MediaEncoders.Aac(192, 2, 48000), "-metadata:s:a:0", $"language={code}", "-metadata:s:a:0", $"title={dubbed}",
             "-metadata:s:a:0", $"handler_name={dubbed}", "-disposition:a:0", "default"]);
         if (originalTitle is not null && info.Audio is not null)
             args.AddRange(["-metadata:s:a:1", $"title={originalTitle}", "-metadata:s:a:1", $"handler_name={originalTitle}", "-disposition:a:1", "0"]);

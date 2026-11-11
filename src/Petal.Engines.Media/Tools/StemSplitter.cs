@@ -341,7 +341,7 @@ public static class StemSplitter
         await File.WriteAllBytesAsync(raw, MemoryMarshal.AsBytes(interleaved.AsSpan()).ToArray(), ct).ConfigureAwait(false);
         var target = Containers.ForOutput(path, source);
         List<string> args = ["-f", "f32le", "-ar", Inv.I(Rate), "-ac", "2", "-i", raw, "-map", "0:a"];
-        args.AddRange(Containers.AudioEncoderArgs(target.Audio, options.EffectiveSettings.AudioBitrateKbps, 16, false));
+        args.AddRange(Containers.AudioEncoderArgs(target.Audio, options.EffectiveSettings.AudioBitrateKbps, 16, false, new MediaStreamInfo { Index = 0, Kind = MediaStreamKind.Audio, Codec = "pcm_f32le", Channels = 2, SampleRate = Rate }));
         await Ffmpeg.EncodeAsync(args, path, target.Muxer, length / (double)Rate, progress, ct).ConfigureAwait(false);
     }
 }

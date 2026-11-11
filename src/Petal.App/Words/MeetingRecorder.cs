@@ -133,7 +133,7 @@ internal static class MeetingRecorder
             var audio = Petal.Core.Jobs.OutputNaming.Unique(Folder, $"Meeting {stamp}", "m4a");
             var speech = System.IO.Path.Combine(work, "speech.wav");
             await FfmpegAsync(Mix(sounds, ["-ac", "1", "-ar", "16000", "-y", speech]));
-            await FfmpegAsync(Mix(sounds, ["-c:a", "aac", "-b:a", "96k", "-y", audio]));
+            await FfmpegAsync(Mix(sounds, [.. Petal.Engines.Media.MediaEncoders.Aac(96), "-y", audio]));
             var model = Listener.Models.Reverse().First(ModelStore.IsAvailable);
             var progress = new Progress<double>(p => card.SetProgress(p * 0.8));
             var transcript = await Transcriber.TranscribeAsync(speech, new TranscribeOptions(ModelStore.Find(model)!, SettingsStore.Current.DictationLanguage), progress);

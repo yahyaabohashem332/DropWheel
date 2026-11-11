@@ -170,8 +170,9 @@ public static class ShortClip
             }
             else
             {
-                // The whole picture over a blurred, enlarged copy of itself.
-                picture.Append(Inv($",split[a][b];[a]scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},boxblur=24:4,eq=brightness=-0.08[bg];"));
+                // The whole picture over a blurred, darkened, enlarged copy of itself (gblur and hue: FFmpeg has boxblur
+                // and eq only under the GPL).
+                picture.Append(Inv($",split[a][b];[a]scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},gblur=sigma=28,hue=b=-0.8[bg];"));
                 picture.Append(Inv($"[b]scale={width}:{height}:force_original_aspect_ratio=decrease:flags=lanczos[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1"));
             }
         }

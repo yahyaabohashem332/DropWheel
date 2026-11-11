@@ -8,9 +8,10 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_363_paths()
+    public void Conversion_matrix_has_350_paths()
     {
-        Assert.Equal(363, ConversionMatrix.TotalPaths);
+        // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
+        Assert.Equal(350, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

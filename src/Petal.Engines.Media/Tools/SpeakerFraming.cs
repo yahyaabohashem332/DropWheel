@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using Petal.Engines.Media.Internal;
+using Petal.Engines.Media.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Media.FaceAnalysis;
 
@@ -61,7 +62,8 @@ internal static class SpeakerFraming
         foreach (var a in new[] { "-hide_banner", "-nostdin", "-loglevel", "error", "-ss", Inv(start), "-t", Inv(Math.Max(0.1, end - start)), "-i", video,
                      "-an", "-sn", "-dn", "-vf", $"fps={Inv(Rate)},scale={w}:{h},format=gray", "-f", "rawvideo", "-" })
             startInfo.ArgumentList.Add(a);
-        using var process = Process.Start(startInfo) ?? throw new MediaException("FFmpeg didn't start.");
+        await using var run = await FfmpegRun.StartAsync(startInfo, ct).ConfigureAwait(false);
+        var process = run.Process;
         _ = process.StandardError.ReadToEndAsync(ct);
         var stream = process.StandardOutput.BaseStream;
         var frame = new byte[w * h];
@@ -92,6 +94,7 @@ internal static class SpeakerFraming
                 try { process.Kill(); } catch (InvalidOperationException) { }
         }
         await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+        await run.FinishAsync().ConfigureAwait(false);
         return all;
     }
 

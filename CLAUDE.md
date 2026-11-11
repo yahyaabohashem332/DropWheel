@@ -257,8 +257,14 @@ The user ruled out the "Encoders only" option (BtbN's LGPL FFmpeg as-is).
     - audio: mp1/2/3 (+float), flac, alac, opus, vorbis, ac3(+fixed), ape, tta, wavpack, gsm(+ms), all pcm_*, adpcm ima_wav/ima_qt/ms/yamaha/swf/g726(le);
     - subtitles: ass, ssa, srt, subrip, movtext, webvtt, text, microdvd, subviewer(1), sami, realtext, mpl2, pjs, jacosub, vplayer, stl, dvdsub, dvbsub, pgssub, xsub, ccaption.
   - **Encoders:** h264_mf, hevc_mf, aac_mf, libaom_av1, libsvtav1, libvpx_vp8, libvpx_vp9, mpeg4, mjpeg, png, apng, gif, libwebp(+anim), ffv1, utvideo, rawvideo, bmp, tiff, wrapped_avframe (needed by `-f null`), libmp3lame, libopus, opus, libvorbis, flac, alac, pcm_*, ass, ssa, srt, subrip, movtext, webvtt, text.
-  - **Parsers:** ac3, av1, dirac, dvbsub, dvdsub, flac, gif, h261, h263, jpeg2000, mjpeg, mpeg4video, mpegaudio, mpegvideo, opus, png, pnm, vorbis, vp3, vp8, vp9, webp, bmp, qoi. **No** h264/hevc/aac parsers.
-  - **Bitstream filters:** aac_adtstoasc (header conversion for AAC stream copy), chomp, dump_extradata, null, setts, pgs_frame_merge, mpeg4_unpack_bframes, text2movsub, mov2textsub, vp9_*, av1_*. extract_extradata and filter_units were removed because they carry H.264/HEVC parsing code.
+  - **Parsers:** ac3, av1, dirac, dvbsub, dvdsub, flac, gif, h261, h263, jpeg2000, mjpeg, mpeg4video, mpegaudio, mpegvideo, opus, png, pnm, vorbis, vp3, vp8, vp9, webp, bmp, qoi,
+    and (since 2026-11-11) h264, hevc, aac, dca, mlp, tak, evc and apv, which FFmpeg's demuxers of those streams ask for.
+    A parser only finds where each frame begins and reads headers, so a stream can be copied untouched; none decodes.
+  - **Bitstream filters:** aac_adtstoasc (header conversion for AAC stream copy), chomp, dump_extradata, null, setts, pgs_frame_merge, mpeg4_unpack_bframes, text2movsub, mov2textsub, vp9_*, av1_*,
+    and the ones muxers ask for: extract_extradata, h264/hevc/vvc_mp4toannexb, evc_frame_merge, eia608_to_smpte436m,
+    pcm_rechunk. They only rewrite headers or split and join packets. filter_units is left out.
+  - **Decoders also hold** `wrapped_avframe` (added after run 42967588007): what `-f lavfi` sources hand on; without
+    it the graphics card's H.264 probe, the HEIC encoder's probe and the tests' samples fail.
 - **Output** (workflow artifact `ffmpeg-win64`; a release when run with `release: true`): `ffmpeg-n9.0.2-dropwheel-win64.zip` (exe, DLLs, LICENSE.txt, configuration.txt, libraries.txt, BUILD.txt) plus `ffmpeg-n9.0.2-source.tar.gz`, needed for LGPL compliance.
 - **winarm64 is not built yet.** BtbN's arm64 image lacks libvpx and libaom, so its flags must differ.
 - **To do once it finishes:**
@@ -293,7 +299,57 @@ The user ruled out the "Encoders only" option (BtbN's LGPL FFmpeg as-is).
 - **Already decoded by Windows:** WPF MediaElement previews, MediaPlayer, Windows.Media (camera, faces, OCR, speech). NAudio is used only for capture, playback and WAV.
 - **Tests tied to codecs:** tests/Petal.Engines.Media.Tests/Fixtures.cs (makes the libx264/aac/wmv2/libx265 fixtures), ConverterTests, AudioToolTests, VideoToolTests, VoiceCleanerTests, DubbingTests, TranscribeTests, TextCut/ShortClip/AnimatedCaptions tests, Petal.Tests StudioRenderTests/PolishTests/DuplicateTests, and Imaging HeicTests/ConversionTests/ToolTests/PhotoEditTests/MetadataTests.
 
-**Planned design** (not started in code):
+**Done for 1.20.0 (2026-11-11):**
+- `dropwheel-ffmpeg` builds every library itself from FFmpeg-Builds' stage scripts at commit `c9fe511`, trimmed to the
+  libraries named in `build.sh`; `collect.py` gathers each library's licence files and the LGPL sources (LAME,
+  soxr, FriBidi, libiconv). `--enable-d3d11va` (mfenc needs D3D11 types), `--disable-network`, no Audible
+  demuxers, `-liconv` named at the link. Each build is a zip + `-source.tar.gz`; `fetch-tools.ps1` pins them by
+  SHA-256 (from the private repo through `gh release download`). build.ps1 ships `licenses\ffmpeg\` and
+  `licenses\sources\`.
+- **The Windows bridge** (`src/Petal.Engines.Media/Foundation`): `WindowsReader` (Media Foundation Source Reader,
+  NV12/P010 and float), `WindowsBridge` (Matroska over a named pipe; P010 becomes yuv420p10le; AAC lead-in moved by
+  the first packet's time, as FFmpeg skips it and Windows doesn't), `FfmpegCommand` (rewrites `-map`s, filter
+  labels and FFmpeg's own stream choice; `-ss/-t/-to` go into the bridge), `FfmpegRun` for code that starts
+  FFmpeg itself. `FfmpegProcess` prepares every FFmpeg command. `WindowsMedia.ForceWindows(...)` lets tests send
+  a format FFmpeg could decode through Windows (WindowsBridgeTests: pictures equal to the pixel, sound aligned).
+- **Encoders**: `MediaEncoders.H264` (h264_mf, High profile, quality from a CRF by an SSIM-measured table,
+  software `-compression_level 100`, `fast` for live recording) and `Aac` (aac_mf: 96–192 kbps, 1/2/6 channels,
+  44.1/48 kHz). Graphics card first where asked (`HasHardwareH264Async` probes h264_mf `-hw_encoding 1`). No
+  two-pass for H.264: Compress re-encodes once when one pass lands >5 % over. Rubber Band gone (atempo).
+- **What the first real run of the bridge taught** (all in `Foundation/`, with tests in WindowsBridgeTests):
+  - Windows doesn't keep a file's order of streams: an MP4's or MOV's sound tracks come last first, before the
+    picture (Matroska keeps its order), and its stream identifiers are its own count, not track IDs. Where a file has
+    several streams of a kind, `FfmpegCommand.TellTaleAsync` takes 32 bytes from a packet only that stream holds
+    (FFprobe `-show_data`), and `WindowsReader.Find` looks for them in each of Windows' streams, read undecoded by a
+    second reader (a stream read undecoded can't be decoded after).
+  - Without FFmpeg's decoder FFprobe has no pixel format, nor an HEVC profile: more than 8 bits is read from the
+    profile ("High 10"), or for HEVC from the hvcC (byte 17, low 3 bits).
+  - A cut leaves a few samples of the frame it falls in: FFmpeg 9's FLAC encoder takes its block size from the first
+    frame and refuses 2. Sound shorter than 1024 frames is held and sent with what follows.
+  - A time past the end gives no samples: an empty cluster after the header lets FFmpeg open the stream all the same.
+  - "No Media Foundation" is said only when `MediaFoundationRuntime.Ensure` fails; any other error stays FFmpeg's.
+- **FFmpeg's GPL-only filters are not in the LGPL build**: boxblur and eq were in use (Reframer, Make Shorts) and are
+  now gblur and hue. Never use blackframe, boxblur, colormatrix, cover_rect, cropdetect, delogo, eq, find_rect, fspp,
+  histeq, hqdn3d, interlace, kerndeint, mcdeint, mpdecimate, nnedi, owdenoise, perspective, phase, pp, pp7, pullup,
+  repeatfields, sab, signature, smartblur, spp, stereo3d, tinterlace, uspp or vaguedenoiser.
+- **Compress to a size** (`Internal/SizeFit.cs`): Windows' H.264 bitrate modes overshoot short videos and small
+  sizes (1.2–19x on 4 s 720p clips; within 5 % only on long videos well above its floor), and its lowest quality has
+  a floor (about 0.03 bits a pixel at 720p30). Its quality setting gives the same size every run, and six 3 s windows
+  predicted a 48 s video within 0.2 %. So the setting is searched for (on the whole video up to 45 s), the picture
+  shrinks when only a setting under 15 fits, and `SizeTooSmallException` tells how small the video can get.
+- **WMV/WMA are read only** (CanWrite false; ConversionMatrix 350 paths). Tools write MP4/M4A for them
+  (`OutputNaming.WritableExtensionOf`); a fast cut copies only into a container that can hold the streams.
+- **HEIC**: read by WIC (`WindowsHeif`, metadata by `HeifMetadata`), written with hevc_mf (graphics card, then
+  software) into our own HEIF; BT.709 full range (Windows' encoder writes no matrix), at least 256 px coded.
+- Test samples that can't be made any more (WMV, WMA, HEVC) are in `tests/Petal.Engines.Media.Tests/Samples`.
+- Notices, terms (they replace the Store's standard terms, as Partner Center does when the field is filled,
+  and allow what the LGPL asks), privacy policy and Settings' FFmpeg line are updated.
+
+**Still to do:** Magick.Native without libde265/openh264 (files ready in `D:\.dropwheel-sdk\repos\dropwheel-magick`;
+publishing a workflow needs the `workflow` scope, `gh auth refresh -h github.com -s workflow`, which only the user
+can grant); WMV/WMA writing through a Media Foundation Sink Writer if wanted; the support e-mail in the store texts.
+
+**Planned design** (written before the work; kept for its reasoning):
 1. **Windows decoding bridge**, new code in Engines.Media:
    - Media Foundation Source Reader over COM interop (MFStartup, MFCreateSourceReaderFromURL, SetCurrentMediaType NV12 or P010 for video and Float for audio, ReadSample, SetCurrentPosition for seeking; crop to MF_MT_MINIMUM_DISPLAY_APERTURE; pass on MF_MT_VIDEO_ROTATION and the colour attributes).
    - It writes a streaming Matroska: V_UNCOMPRESSED with ColourSpace "NV12", A_PCM/FLOAT/IEEE, unknown-size Segment and Clusters, SimpleBlocks.

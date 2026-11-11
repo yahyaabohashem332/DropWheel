@@ -12,6 +12,10 @@ internal static class FfmpegProcess
 {
     private const int MaxCapturedChars = 256 * 1024;
 
+    /// <summary>
+    /// Runs a tool and collects its output. An FFmpeg command whose inputs hold formats DropWheel's FFmpeg can't decode
+    /// reads them through Windows (<see cref="FfmpegCommand"/>); a failure there is thrown, as the output would be short.
+    /// </summary>
     public static async Task<ProcessResult> RunAsync(
         string exe,
         IReadOnlyList<string> arguments,
@@ -19,6 +23,31 @@ internal static class FfmpegProcess
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (!IsFfmpeg(exe))
+            return await RunCoreAsync(exe, arguments, onStdoutLine, cancellationToken).ConfigureAwait(false);
+        var prepared = await FfmpegCommand.PrepareAsync(arguments, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var result = await RunCoreAsync(exe, prepared.Arguments, onStdoutLine, cancellationToken).ConfigureAwait(false);
+            await prepared.DisposeAsync().ConfigureAwait(false);
+            if (prepared.Failure is { } failure)
+                throw failure;
+            return result;
+        }
+        finally
+        {
+            await prepared.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    internal static bool IsFfmpeg(string exe) => string.Equals(Path.GetFileNameWithoutExtension(exe), "ffmpeg", StringComparison.OrdinalIgnoreCase);
+
+    private static async Task<ProcessResult> RunCoreAsync(
+        string exe,
+        IReadOnlyList<string> arguments,
+        Action<string>? onStdoutLine,
+        CancellationToken cancellationToken)
+    {
         using var process = Create(exe, arguments);
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
@@ -63,6 +92,41 @@ internal static class FfmpegProcess
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (!IsFfmpeg(exe))
+        {
+            await RunReadingStdoutCoreAsync(exe, arguments, readStdout, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+        var prepared = await FfmpegCommand.PrepareAsync(arguments, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            try
+            {
+                await RunReadingStdoutCoreAsync(exe, prepared.Arguments, readStdout, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ExternalToolException)
+            {
+                await prepared.DisposeAsync().ConfigureAwait(false);
+                if (prepared.Failure is { } cause)
+                    throw cause;
+                throw;
+            }
+            await prepared.DisposeAsync().ConfigureAwait(false);
+            if (prepared.Failure is { } failure)
+                throw failure;
+        }
+        finally
+        {
+            await prepared.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunReadingStdoutCoreAsync(
+        string exe,
+        IReadOnlyList<string> arguments,
+        Func<Stream, CancellationToken, Task> readStdout,
+        CancellationToken cancellationToken)
+    {
         using var process = Create(exe, arguments, binaryStdout: true);
         var stderr = new StringBuilder();
         process.ErrorDataReceived += (_, e) =>

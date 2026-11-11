@@ -53,7 +53,8 @@ public static class Formats
     public static readonly FileFormat Ogg = new("ogg", "OGG", FormatFamily.Audio, ["ogg", "oga"]);
     public static readonly FileFormat Opus = new("opus", "OPUS", FormatFamily.Audio, ["opus"]);
     public static readonly FileFormat Aiff = new("aiff", "AIFF", FormatFamily.Audio, ["aiff", "aif", "aifc"]);
-    public static readonly FileFormat Wma = new("wma", "WMA", FormatFamily.Audio, ["wma"]);
+    // Read through Windows' own decoders; not written, as their encoders aren't free to ship.
+    public static readonly FileFormat Wma = new("wma", "WMA", FormatFamily.Audio, ["wma"], CanWrite: false);
 
     // Video (GIF behaves like a video: it converts to and from video formats)
     public static readonly FileFormat Mp4 = new("mp4", "MP4", FormatFamily.Video, ["mp4", "m4v"]);
@@ -61,7 +62,7 @@ public static class Formats
     public static readonly FileFormat Mkv = new("mkv", "MKV", FormatFamily.Video, ["mkv"]);
     public static readonly FileFormat Webm = new("webm", "WEBM", FormatFamily.Video, ["webm"]);
     public static readonly FileFormat Avi = new("avi", "AVI", FormatFamily.Video, ["avi"]);
-    public static readonly FileFormat Wmv = new("wmv", "WMV", FormatFamily.Video, ["wmv"]);
+    public static readonly FileFormat Wmv = new("wmv", "WMV", FormatFamily.Video, ["wmv"], CanWrite: false);
     public static readonly FileFormat Gif = new("gif", "GIF", FormatFamily.Video, ["gif"]);
 
     // Documents

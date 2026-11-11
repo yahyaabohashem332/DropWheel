@@ -393,11 +393,11 @@ internal sealed class CameraTrack : IDisposable
     public bool Start()
     {
         var start = new ProcessStartInfo(ToolLocator.Ffmpeg!) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardError = true };
-        foreach (var arg in new[]
-        {
+        foreach (var arg in (string[])
+        [
             "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", $"{CameraFeed.Side}x{CameraFeed.Side}", "-framerate", _fps.ToString(),
-            "-i", "-", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18", "-pix_fmt", "yuv420p", "-y", Path,
-        })
+            "-i", "-", .. Petal.Engines.Media.MediaEncoders.H264(18, hardware: false, fast: true), "-y", Path,
+        ])
             start.ArgumentList.Add(arg);
         try
         {

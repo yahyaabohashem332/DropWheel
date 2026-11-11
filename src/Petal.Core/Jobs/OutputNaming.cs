@@ -62,9 +62,20 @@ public static class OutputNaming
         {
             ToolOutputKind.Folder => Unique(dir, stem, null),
             ToolOutputKind.FixedFormat => Unique(dir, stem, tool.OutputExtension),
-            _ => Unique(dir, stem, ExtensionOf(inputPath)),
+            _ => Unique(dir, stem, WritableExtensionOf(inputPath)),
         };
     }
+
+    /// <summary>
+    /// The input's own extension, unless DropWheel reads that format without writing it: then the nearest one it
+    /// writes, so a tool's result of a WMV is an MP4 and of a WMA an M4A.
+    /// </summary>
+    public static string WritableExtensionOf(string inputPath) => Formats.Formats.FromPath(inputPath) switch
+    {
+        { } f when f == Formats.Formats.Wmv => Formats.Formats.Mp4.WriteExtension,
+        { } f when f == Formats.Formats.Wma => Formats.Formats.M4a.WriteExtension,
+        _ => ExtensionOf(inputPath),
+    };
 
     /// <summary>Picks "stem.ext", then "stem 2.ext", "stem 3.ext"… until nothing exists there.</summary>
     public static string Unique(string directory, string stem, string? extension, Func<string, bool>? exists = null)

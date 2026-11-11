@@ -38,6 +38,15 @@ public sealed record MediaStreamInfo
 
     public string? PixelFormat { get; init; }
 
+    /// <summary>FFmpeg's names for the picture's colour: matrix ("bt709"), range ("tv", "pc"), transfer and primaries.</summary>
+    public string? ColorSpace { get; init; }
+
+    public string? ColorRange { get; init; }
+
+    public string? ColorTransfer { get; init; }
+
+    public string? ColorPrimaries { get; init; }
+
     public double FrameRate { get; init; }
 
     public int Channels { get; init; }
@@ -84,6 +93,9 @@ public sealed record MediaInfo
     public string? ContainerLongName { get; init; }
 
     public TimeSpan Duration { get; init; }
+
+    /// <summary>Where the file's timeline starts (FFmpeg counts its streams' times from here).</summary>
+    public TimeSpan StartTime { get; init; }
 
     public double DurationSeconds => Duration.TotalSeconds;
 

@@ -158,8 +158,11 @@ public static class VideoTools
         var info = await MediaProbe.ProbeAsync(input, cancellationToken).ConfigureAwait(false);
         ToolSupport.RequireVideo(info);
         var safe = new SafeProgress(progress);
-        var lastFrame = info.DurationSeconds > 0
-            ? Math.Max(0, info.DurationSeconds - 1.0 / Math.Max(1, info.FrameRate))
+        // A time past the last picture's start gives no picture: times are kept to the video's own end (the sound can
+        // run longer), less half a frame more than one, so that rounding still lands on the last picture.
+        var videoEnd = info.Video!.Duration is { TotalSeconds: > 0 } own ? own.TotalSeconds : info.DurationSeconds;
+        var lastFrame = videoEnd > 0
+            ? Math.Max(0, videoEnd - 1.5 / Math.Max(1, info.FrameRate))
             : double.MaxValue;
 
         var written = new List<string>();
@@ -198,7 +201,7 @@ public static class VideoTools
 
         var safe = new SafeProgress(progress);
         var baseName = F.BaseName(input);
-        var extension = OutputNaming.ExtensionOf(input);
+        var extension = OutputNaming.WritableExtensionOf(input);
         var written = new List<string>();
         var done = 0.0;
         for (var i = 0; i < bounds.Count - 1; i++)
@@ -413,7 +416,9 @@ public static class VideoTools
     {
         var target = Containers.ForOutput(output, input);
         var length = end - start;
-        if (fastCopy && !target.IsGif)
+        // A fast cut copies the streams; into a container that can't hold them (a WMV's into MP4) it encodes instead.
+        var copyable = info.Video is { } v && target.CopyVideo.Contains(v.Codec) && info.AudioStreams.All(a => target.CopyAudio.Contains(a.Codec));
+        if (fastCopy && !target.IsGif && copyable)
         {
             List<string> args = ["-ss", Inv.N(start), "-i", input, "-t", Inv.N(length), "-map", $"0:{info.Video!.Index}", "-map", "0:a?",
                 "-c", "copy", "-avoid_negative_ts", "make_zero", "-map_metadata", "0", .. Containers.MuxerArgs(target)];
@@ -430,7 +435,7 @@ public static class VideoTools
         await MediaEncoder.RunAsync(plan, output, progress, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Tempo change keeping pitch (Rubber Band, else an atempo chain), or a plain resample when pitch may change.</summary>
+    /// <summary>Tempo change keeping pitch (an atempo chain), or a plain resample when pitch may change.</summary>
     internal static async Task<string> SpeedAudioFilterAsync(double factor, bool preservePitch, int sampleRate)
     {
         if (!preservePitch)
@@ -438,9 +443,7 @@ public static class VideoTools
             var rate = sampleRate > 0 ? sampleRate : 44100;
             return $"asetrate={Inv.I((long)Math.Round(rate * factor))},aresample={Inv.I(rate)}";
         }
-        if (await MediaCapabilities.HasRubberbandAsync().ConfigureAwait(false))
-            return $"rubberband=tempo={Inv.N(factor)}:pitchq=quality";
-
+        await Task.CompletedTask.ConfigureAwait(false);
         var stages = new List<string>();
         var f = factor;
         while (f > 2.0) { stages.Add("atempo=2"); f /= 2; }

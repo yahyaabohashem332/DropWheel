@@ -137,10 +137,14 @@ internal static class StudioExport
         var (width, height) = StudioLayout.OutputSize(project.Width, project.Height, edit.Look, edit.Output);
         int fps = Math.Clamp(edit.Output.Fps, 15, 60);
         string sourceFps = project.Fps.ToString("0.###", CultureInfo.InvariantCulture);
-        var decode = Start(ffmpeg, ["-v", "error", "-i", project.PathOf(project.Video), "-vf", $"fps={sourceFps},scale={project.Width}:{project.Height}", "-f", "rawvideo", "-pix_fmt", "bgra", "-"], output: true);
-        Process? faces = null;
+        // The recording and the camera are H.264, which Windows decodes for FFmpeg.
+        await using var decodeRun = await StartAsync(ffmpeg, ["-v", "error", "-i", project.PathOf(project.Video), "-vf", $"fps={sourceFps},scale={project.Width}:{project.Height}", "-f", "rawvideo", "-pix_fmt", "bgra", "-"], output: true, cancellationToken: cancellationToken);
+        var decode = decodeRun.Process;
+        Petal.Engines.Media.Foundation.FfmpegRun? facesRun = null;
         if (project.Camera is { } camera && File.Exists(project.PathOf(camera)) && project.CameraSide > 0 && project.CameraPlaces.Count > 0)
-            faces = Start(ffmpeg, ["-v", "error", "-i", project.PathOf(camera), "-vf", $"fps={sourceFps}", "-s", $"{project.CameraSide}x{project.CameraSide}", "-f", "rawvideo", "-pix_fmt", "bgra", "-"], output: true);
+            facesRun = await StartAsync(ffmpeg, ["-v", "error", "-i", project.PathOf(camera), "-vf", $"fps={sourceFps}", "-s", $"{project.CameraSide}x{project.CameraSide}", "-f", "rawvideo", "-pix_fmt", "bgra", "-"], output: true, cancellationToken: cancellationToken);
+        await using var facesOwner = facesRun;
+        var faces = facesRun?.Process;
         var args = new List<string>
         {
             "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", $"{width}x{height}", "-framerate", fps.ToString(CultureInfo.InvariantCulture), "-i", "-",
@@ -149,9 +153,10 @@ internal static class StudioExport
             args.AddRange(["-i", sound]);
         args.AddRange(["-map", "0:v"]);
         if (sound is not null)
-            args.AddRange(["-map", "1:a", "-c:a", "aac", "-b:a", "192k"]);
-        args.AddRange(["-c:v", "libx264", "-preset", "veryfast", "-crf", "17", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output]);
-        var encode = Start(ffmpeg, args, input: true);
+            args.AddRange(["-map", "1:a", .. Petal.Engines.Media.MediaEncoders.Aac(192)]);
+        args.AddRange([.. Petal.Engines.Media.MediaEncoders.H264(17, hardware: false), "-movflags", "+faststart", "-y", output]);
+        await using var encodeRun = await StartAsync(ffmpeg, args, input: true, cancellationToken: cancellationToken);
+        var encode = encodeRun.Process;
         var errors = new StringBuilder();
         foreach (var p in new[] { decode, encode, faces })
             if (p is not null)
@@ -160,6 +165,8 @@ internal static class StudioExport
         {
             await Task.Run(() => Draw(project, timeline, width, height, fps, decode, faces, encode, progress, cancellationToken), cancellationToken);
             await encode.WaitForExitAsync(cancellationToken);
+            await decode.WaitForExitAsync(cancellationToken);
+            await decodeRun.FinishAsync();
             if (encode.ExitCode != 0 || !File.Exists(output) || new FileInfo(output).Length == 0)
             {
                 Log.Info($"The studio's video failed: {errors.ToString().Trim()}");
@@ -171,7 +178,6 @@ internal static class StudioExport
             foreach (var p in new[] { decode, encode, faces })
             {
                 try { if (p is { HasExited: false }) p.Kill(); } catch (InvalidOperationException) { }
-                p?.Dispose();
             }
         }
     }
@@ -247,17 +253,20 @@ internal static class StudioExport
         }
     }
 
-    private static Process Start(string ffmpeg, IEnumerable<string> args, bool input = false, bool output = false)
+    /// <summary>Starts FFmpeg; what it can't decode itself (the recording's H.264) Windows decodes for it.</summary>
+    private static async Task<Petal.Engines.Media.Foundation.FfmpegRun> StartAsync(string ffmpeg, IEnumerable<string> args, bool input = false, bool output = false,
+        CancellationToken cancellationToken = default)
     {
         var info = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, RedirectStandardInput = input, RedirectStandardOutput = output };
         foreach (var a in args)
             info.ArgumentList.Add(a);
-        return Process.Start(info) ?? throw new InvalidOperationException("FFmpeg didn't start.");
+        return await Petal.Engines.Media.Foundation.FfmpegRun.StartAsync(info, cancellationToken);
     }
 
     private static async Task<(int Code, string Errors)> RunAsync(string ffmpeg, IEnumerable<string> args, CancellationToken cancellationToken)
     {
-        using var process = Start(ffmpeg, args);
+        await using var run = await StartAsync(ffmpeg, args, cancellationToken: cancellationToken);
+        var process = run.Process;
         var errors = process.StandardError.ReadToEndAsync(cancellationToken);
         try
         {
@@ -268,6 +277,7 @@ internal static class StudioExport
             try { process.Kill(); } catch (InvalidOperationException) { }
             throw;
         }
+        await run.FinishAsync();
         return (process.ExitCode, await errors);
     }
 

@@ -279,11 +279,15 @@ internal sealed class StudioWindow : ToolWindow
             var preview = Path.Combine(folder, "preview.mp4");
             var ffmpeg = ToolLocator.Ffmpeg ?? throw new InvalidOperationException("FFmpeg was not found. Install FFmpeg or place ffmpeg.exe in DropWheel's tools folder.");
             var start = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
-            foreach (var a in new[] { "-v", "error", "-i", file, "-vf", "scale=-2:'min(ih,1080)'", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-y", preview })
+            foreach (var a in (string[])["-v", "error", "-i", file, "-vf", "scale=-2:'min(ih,1080)'", .. Petal.Engines.Media.MediaEncoders.H264(23, hardware: false, fast: true),
+                         .. Petal.Engines.Media.MediaEncoders.Aac(128), "-y", preview])
                 start.ArgumentList.Add(a);
-            using var process = Process.Start(start) ?? throw new InvalidOperationException("FFmpeg didn't start.");
+            // What FFmpeg can't decode (H.264, HEVC, AAC) Windows decodes for it.
+            await using var run = await Petal.Engines.Media.Foundation.FfmpegRun.StartAsync(start);
+            var process = run.Process;
             await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
+            await run.FinishAsync();
             if (process.ExitCode != 0 || !File.Exists(preview))
                 throw new InvalidOperationException("This video couldn't be read.");
             project.Preview = "preview.mp4";

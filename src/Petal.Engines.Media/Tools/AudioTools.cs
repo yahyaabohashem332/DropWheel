@@ -218,9 +218,7 @@ public static partial class AudioTools
         {
             var args = new List<string>(inputs) { "-filter_complex", graph, "-map", "[v]", "-map", $"0:{info.Audio!.Index}" };
             args.AddRange(Containers.VideoEncoderArgs(VideoCodecKind.H264, new VideoQuality(settings.VideoCrf, "veryfast"), hardware));
-            if (!hardware)
-                args.AddRange(["-tune", options.Style == VisualizerStyle.StillImage ? "stillimage" : "animation"]);
-            args.AddRange(Containers.AudioEncoderArgs(AudioCodecKind.Aac, Math.Min(ToolSupport.AudioKbps(info, settings), 256), 16));
+            args.AddRange(Containers.AudioEncoderArgs(AudioCodecKind.Aac, Math.Min(ToolSupport.AudioKbps(info, settings), 256), 16, source: info.Audio));
             if (duration > 0)
                 args.AddRange(["-t", Inv.N(duration)]);
             args.AddRange(["-shortest", "-map_metadata", "0", "-map_chapters", "-1", .. Containers.MuxerArgs(target)]);

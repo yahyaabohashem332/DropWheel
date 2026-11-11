@@ -137,8 +137,15 @@ public static class ImageLoader
         int w = bgra.PixelWidth, h = bgra.PixelHeight;
         var pixels = new byte[w * h * 4];
         bgra.CopyPixels(pixels, w * 4, 0);
-        using var magick = new MagickImage(pixels, new PixelReadSettings((uint)w, (uint)h, StorageType.Char, PixelMapping.BGRA));
         var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is ".heic" or ".heif")
+        {
+            // HEIC is coded by Windows' HEVC encoder, which the imaging engine drives; ImageMagick has none.
+            Petal.Engines.Imaging.ImageSaver.SaveAsync(new Petal.Engines.Imaging.BgraBitmap(w, h, pixels), path, Petal.Core.Formats.Formats.Heic,
+                new Petal.Engines.Imaging.ImageSaveOptions { Quality = quality }).GetAwaiter().GetResult();
+            return;
+        }
+        using var magick = new MagickImage(pixels, new PixelReadSettings((uint)w, (uint)h, StorageType.Char, PixelMapping.BGRA));
         if (ext is ".jpg" or ".jpeg" or ".bmp")
         {
             magick.BackgroundColor = MagickColors.White;

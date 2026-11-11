@@ -1245,7 +1245,6 @@ internal static class Arabic
         ["FFmpeg was not found."] = "لم يُعثر على FFmpeg.",
         ["FFprobe was not found. Install FFmpeg or place ffprobe.exe in DropWheel's tools folder."] = "لم يُعثر على FFprobe. ثبّت FFmpeg أو ضع ffprobe.exe في مجلد أدوات DropWheel.",
         ["HEIC output needs FFmpeg, which was not found."] = "يتطلب الإخراج بصيغة HEIC برنامج FFmpeg، ولم يُعثر عليه.",
-        ["Saving HEIC needs FFmpeg with the libx265 encoder, which was not found."] = "يتطلب حفظ HEIC برنامج FFmpeg مع المرمّز libx265، ولم يُعثر عليه.",
         ["LibreOffice is not installed."] = "LibreOffice غير مثبّت.",
         ["No Windows OCR language is installed. Add one under Settings › Time & language › Language."] = "لا توجد لغة مثبّتة للتعرّف على النصوص في Windows. أضف لغة من الإعدادات › الوقت واللغة › اللغة.",
         ["Not an archive."] = "ليس ملف أرشيف.",
@@ -3648,5 +3647,14 @@ internal static class Arabic
         ["Start-up"] = "بدء التشغيل",
         ["Every part of DropWheel started"] = "بدأت كل أجزاء DropWheel",
         ["Didn't start: {0}"] = "لم يبدأ: {0}",
+        ["This edition of Windows has no Media Foundation, which DropWheel needs for H.264, HEVC and AAC. Add the Media Feature Pack in Settings › System › Optional features."] = "نسخة Windows هذه بلا Media Foundation، وهي ما يحتاجه DropWheel لملفات H.264 وHEVC وAAC. أضف «حزمة ميزات الوسائط» (Media Feature Pack) من الإعدادات › النظام › الميزات الاختيارية.",
+        ["Windows can't read this file's HEVC video. The HEVC Video Extensions from the Microsoft Store add it."] = "لا يستطيع Windows قراءة فيديو HEVC في هذا الملف. تضيفه «ملحقات فيديو HEVC» من Microsoft Store.",
+        ["Windows can't decode this file's video, and DropWheel's FFmpeg doesn't carry its format."] = "لا يستطيع Windows فكّ ترميز فيديو هذا الملف، وFFmpeg الذي يأتي مع DropWheel لا يحمل صيغته.",
+        ["Windows can't decode this file's sound, and DropWheel's FFmpeg doesn't carry its format."] = "لا يستطيع Windows فكّ ترميز صوت هذا الملف، وFFmpeg الذي يأتي مع DropWheel لا يحمل صيغته.",
+        ["Windows can't read this HEIC photo. The HEIF Image Extensions and HEVC Video Extensions from the Microsoft Store add it."] = "لا يستطيع Windows قراءة صورة HEIC هذه. تضيفها «ملحقات صور HEIF» و«ملحقات فيديو HEVC» من Microsoft Store.",
+        ["Saving HEIC needs Windows' HEVC encoder: a graphics card that encodes HEVC, or the HEVC Video Extensions from the Microsoft Store."] = "يحتاج حفظ HEIC إلى مرمّز HEVC في Windows: بطاقة رسوميات ترمّز HEVC، أو «ملحقات فيديو HEVC» من Microsoft Store.",
+        ["This software uses libraries from the FFmpeg project under the LGPLv2.1."] = "يستخدم هذا البرنامج مكتبات من مشروع FFmpeg بموجب رخصة LGPLv2.1.",
+        ["DropWheel reads WMV and WMA files but doesn't write them, as their encoders aren't free to ship. Choose MP4 or M4A instead."] = "يقرأ DropWheel ملفات WMV وWMA لكنه لا يكتبها، فأدوات ترميزها ليست حرّة ليأتي بها. اختر MP4 أو M4A بدلًا منها.",
+        ["This size is too small for this video. The smallest it can be is about {0}."] = "هذا الحجم أصغر مما يمكن لهذا الفيديو. أصغر حجم ممكن له نحو {0}.",
     };
 }

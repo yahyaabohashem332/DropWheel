@@ -36,7 +36,7 @@ public sealed class VoiceCleanerTests(ITestOutputHelper output)
                 "-c:a", "pcm_s16le", noisy]);
             var length = (await MediaProbe.ProbeAsync(noisy)).DurationSeconds;
             await RunFfmpegAsync(["-f", "lavfi", "-i", $"testsrc2=s=320x240:r=15:d={length.ToString(System.Globalization.CultureInfo.InvariantCulture)}", "-i", noisy,
-                "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", video]);
+                "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "192k", "-ar", "48000", "-sample_fmt", "s16", "-shortest", video]);
 
             var clean = await VoiceCleaner.CleanAsync(noisy, Path.Combine(dir, "clean.wav"));
             var truth = (await MediaPreview.DecodePcmAsync(voice, new PcmDecodeOptions(Rate, 1))).Samples;

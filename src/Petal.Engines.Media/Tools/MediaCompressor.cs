@@ -40,7 +40,7 @@ public static class MediaCompressor
     public static string CompressedExtension(string inputPath)
     {
         var format = F.FromPath(inputPath);
-        return format == F.Wav || format == F.Aiff ? F.Flac.WriteExtension : OutputNaming.ExtensionOf(inputPath);
+        return format == F.Wav || format == F.Aiff ? F.Flac.WriteExtension : OutputNaming.WritableExtensionOf(inputPath);
     }
 
     public static async Task<CompressResult> CompressAsync(string input, string output, CompressOptions? options = null, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
@@ -83,30 +83,65 @@ public static class MediaCompressor
             // Leave ~4 % for the container, then share the budget between audio and video.
             var totalKbps = bytes * 8 / 1000.0 / duration * 0.96;
             if (info.HasAudio)
+            {
                 audioKbps = totalKbps >= 1000 ? 128 : totalKbps >= 400 ? 96 : totalKbps >= 160 ? 64 : 32;
+                // Windows' AAC encoder goes no lower than 96 kbps: the picture's share is what is left after it.
+                if (target.Audio == AudioCodecKind.Aac)
+                    audioKbps = MediaEncoders.AacKbpsFor(audioKbps);
+            }
             else
+            {
                 audioKbps = 0;
-            videoKbps = (int)Math.Max(24, totalKbps - audioKbps);
+            }
+            // FFmpeg's own one-pass encoders land a little over the bitrate asked for. (H.264 is fitted by its quality
+            // setting, below; its bitrate here only picks the picture size to start from.)
+            var share = Containers.SupportsTwoPass(target.Video) || target.Video == VideoCodecKind.H264 ? 1.0 : 0.9;
+            videoKbps = (int)Math.Max(24, (totalKbps - audioKbps) * share);
             maxShortSide ??= ShortSideForBitrate(info, videoKbps.Value);
         }
 
-        var filters = new List<string>();
         var shortSide = Math.Min(info.Width, info.Height);
-        if (maxShortSide is { } limit && limit > 0 && shortSide > limit)
-            filters.Add(info.Width >= info.Height ? $"scale=-2:{limit}:flags=lanczos" : $"scale={limit}:-2:flags=lanczos");
         var fpsCap = strong ? 30 : 60;
-        if (info.FrameRate > fpsCap + 0.5)
-            filters.Add($"fps={fpsCap}");
+        string? FilterFor(int? side)
+        {
+            var filters = new List<string>();
+            if (side is { } limit && limit > 0 && shortSide > limit)
+                filters.Add(info.Width >= info.Height ? $"scale=-2:{limit}:flags=lanczos" : $"scale={limit}:-2:flags=lanczos");
+            if (info.FrameRate > fpsCap + 0.5)
+                filters.Add($"fps={fpsCap}");
+            return filters.Count == 0 ? null : string.Join(',', filters);
+        }
 
         var plan = ToolSupport.Plan(input, info, target, options.EffectiveSettings) with
         {
-            VideoFilter = filters.Count == 0 ? null : string.Join(',', filters),
+            VideoFilter = FilterFor(maxShortSide),
             Quality = new VideoQuality(crf, preset, videoKbps),
             AudioKbps = Math.Max(32, audioKbps),
-            // NVENC needs far more bits for the same quality; compression is about size.
+            // Windows' software encoder, the same on every PC: compression is about size.
             Hardware = false,
         };
+
+        // Windows' H.264 encoder misses a bitrate on short videos and small sizes by up to several times: a size is
+        // met through its quality setting instead.
+        if (targetBytes is { } fitTo && videoKbps is not null && target.Video == VideoCodecKind.H264)
+        {
+            var start = maxShortSide is { } most and > 0 ? Math.Min(most, shortSide) : shortSide;
+            await SizeFit.RunAsync(plan, output, fitTo, start, side => FilterFor(side), progress as SafeProgress ?? new SafeProgress(progress), cancellationToken).ConfigureAwait(false);
+            return;
+        }
         await MediaEncoder.RunAsync(plan, output, progress, cancellationToken).ConfigureAwait(false);
+
+        // FFmpeg's own one-pass encoders can land over the size: then once more, with the picture's bitrate cut by as
+        // much as it was over.
+        if (targetBytes is { } wanted && videoKbps is { } kbps && !Containers.SupportsTwoPass(target.Video) && new FileInfo(output).Length is var made && made > wanted * 1.05)
+        {
+            var soundBytes = info.HasAudio ? audioKbps * 1000 / 8.0 * duration : 0;
+            var pictureMade = Math.Max(1, made - soundBytes);
+            var pictureWanted = Math.Max(1, wanted * 0.97 - soundBytes);
+            var again = (int)Math.Max(16, kbps * pictureWanted / pictureMade);
+            File.Delete(output);
+            await MediaEncoder.RunAsync(plan with { Quality = plan.Quality with { BitrateKbps = again } }, output, progress, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>Picks a resolution that leaves enough bits per pixel for a watchable picture at a tight bitrate.</summary>

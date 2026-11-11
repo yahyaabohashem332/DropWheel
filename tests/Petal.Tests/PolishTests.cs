@@ -94,7 +94,7 @@ public sealed class PolishTests : IDisposable
         var input = Path.Combine(_dir, "plain.mp4");
         var make = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
         foreach (var a in new[] { "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=30:duration=3", "-f", "lavfi", "-i", "sine=frequency=440:duration=3",
-                     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", "-y", input })
+                     "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-sample_fmt", "s16", "-shortest", "-y", input })
             make.ArgumentList.Add(a);
         using (var p = Process.Start(make)!)
         {
@@ -128,10 +128,11 @@ public sealed class PolishTests : IDisposable
         await p.WaitForExitAsync();
     }
 
+    /// <summary>A frame as DropWheel reads one: what its FFmpeg doesn't decode (H.264) comes through Windows.</summary>
     private static async Task<SKBitmap> FrameAsync(string ffmpeg, string video, double seconds, string dir)
     {
         var png = Path.Combine(dir, $"at {seconds}.png");
-        await MakeAsync(ffmpeg, png, "-ss", seconds.ToString(System.Globalization.CultureInfo.InvariantCulture), "-i", video, "-frames:v", "1");
+        await File.WriteAllBytesAsync(png, await Petal.Engines.Media.MediaPreview.ExtractFrameAsync(video, TimeSpan.FromSeconds(seconds)));
         return SKBitmap.Decode(png);
     }
 
@@ -151,10 +152,10 @@ public sealed class PolishTests : IDisposable
             return;
         var input = Path.Combine(_dir, "screen.mp4");
         await MakeAsync(ffmpeg, input, "-f", "lavfi", "-i", "color=c=blue:size=320x240:rate=30:duration=3", "-f", "lavfi", "-i", "sine=frequency=440:duration=3",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest");
+            "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-sample_fmt", "s16", "-shortest");
         // A camera that only shows red, as the recording writes it: square and in time with the screen.
         var camera = Path.Combine(_dir, "camera.mkv");
-        await MakeAsync(ffmpeg, camera, "-f", "lavfi", "-i", "color=c=red:size=480x480:rate=30:duration=3", "-c:v", "libx264", "-pix_fmt", "yuv420p");
+        await MakeAsync(ffmpeg, camera, "-f", "lavfi", "-i", "color=c=red:size=480x480:rate=30:duration=3", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12");
         var output = Path.Combine(_dir, "with camera.mp4");
         var overlay = new CameraOverlay(camera, 480, [new BubbleSample(0, 250, 170, 100), new BubbleSample(1.5, 60, 60, 80)]);
         var cursor = Enumerable.Range(0, 90).Select(_ => new CursorSample(0, 0, false)).ToList();

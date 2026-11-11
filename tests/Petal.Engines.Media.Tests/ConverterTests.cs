@@ -24,7 +24,10 @@ public class ConverterTests
     public void Matrix_has_every_audio_and_video_path_covered_by_this_converter()
     {
         var paths = MediaPaths();
-        Assert.Equal(8 * 7 + 6 * 7 + 6, paths.Count);
+        // Each of the 8 audio formats into every other one DropWheel writes (all but WMA, which it only reads), each
+        // of the 6 video formats into every other written one (all but WMV) and into GIF and MP3, and GIF into the 5
+        // written video formats.
+        Assert.Equal(7 * 6 + 7 + 5 * 6 + 7 + 5, paths.Count);
         foreach (var (from, to) in ConversionMatrix.AllPaths().Where(p => p.From.Family is FormatFamily.Audio or FormatFamily.Video))
             Assert.True(Converter.CanConvert(from, to), $"{from} → {to}");
     }
@@ -82,7 +85,6 @@ public class ConverterTests
         VideoCodecKind.H264 => "h264",
         VideoCodecKind.Vp9 => "vp9",
         VideoCodecKind.Mpeg4 => "mpeg4",
-        VideoCodecKind.Wmv2 => "wmv2",
         VideoCodecKind.Gif => "gif",
         _ => "none",
     };
@@ -167,7 +169,8 @@ public class ConverterTests
 
         var info = await MediaAssert.ValidAsync(output, 1.0, 0.3);
         Assert.Equal((160, 120), (info.Width, info.Height));
-        Assert.Equal("yuv420p", info.Video!.PixelFormat);
+        // H.264's High profile is 8-bit 4:2:0 (yuv420p) only; FFprobe knows no pixel format without a decoder of its own.
+        Assert.Equal("High", info.Video!.Profile);
         Assert.False(info.HasAudio);
     }
 

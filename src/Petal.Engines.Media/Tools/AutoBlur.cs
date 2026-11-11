@@ -3,6 +3,7 @@ using System.Globalization;
 using Petal.Core.Jobs;
 using Petal.Core.Models;
 using Petal.Engines.Media.Internal;
+using Petal.Engines.Media.Foundation;
 
 namespace Petal.Engines.Media;
 
@@ -156,7 +157,9 @@ public static class AutoBlur
         foreach (var a in new[] { "-hide_banner", "-nostdin", "-loglevel", "error", "-i", input, "-an", "-sn", "-dn",
                      "-vf", $"fps={Inv(LookRate)},scale={width}:{height}", "-pix_fmt", "bgr24", "-f", "rawvideo", "-" })
             start.ArgumentList.Add(a);
-        using var process = Process.Start(start) ?? throw new MediaException("FFmpeg didn't start.");
+        var run = FfmpegRun.StartAsync(start, cancellationToken).GetAwaiter().GetResult();
+        using var finish = new Finally(() => run.DisposeAsync().AsTask().GetAwaiter().GetResult());
+        var process = run.Process;
         _ = process.StandardError.ReadToEndAsync(cancellationToken);
         var frames = new List<(double, IReadOnlyList<BlurSighting>)>();
         var largest = new List<(BlurSighting Sighting, double Time, byte[] Picture)>();
@@ -185,6 +188,8 @@ public static class AutoBlur
             if (!process.HasExited)
                 try { process.Kill(); } catch (InvalidOperationException) { }
         }
+        process.WaitForExit();
+        run.FinishAsync().GetAwaiter().GetResult();
         var tracks = Follow(frames);
         foreach (var track in tracks)
         {
@@ -331,11 +336,10 @@ public static class AutoBlur
             "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", $"{width}x{height}", "-r", Inv(rate), "-i", "-",
             "-i", input, "-map", "0:v:0", "-map", "1:a?", "-map_metadata", "1" };
         args.AddRange(Containers.VideoEncoderArgs(target.Video, plan.Quality, hardware: false));
-        args.AddRange(["-pix_fmt", "yuv420p"]);
         args.AddRange(ToolSupport.CopyAudioIfPossible(info, target) switch
         {
             StreamMode.Copy => ["-c:a", "copy"],
-            StreamMode.Encode => Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, 16),
+            StreamMode.Encode => Containers.AudioEncoderArgs(target.Audio, plan.AudioKbps, 16, source: info.Audio),
             _ => ["-an"],
         });
         if (target.FastStart)
@@ -343,8 +347,12 @@ public static class AutoBlur
         args.AddRange(["-shortest", "-f", target.Muxer, temporary]);
         foreach (var a in args)
             write.ArgumentList.Add(a);
-        using var reader = Process.Start(read) ?? throw new MediaException("FFmpeg didn't start.");
-        using var writer = Process.Start(write) ?? throw new MediaException("FFmpeg didn't start.");
+        var readRun = FfmpegRun.StartAsync(read, CancellationToken.None).GetAwaiter().GetResult();
+        using var finishRead = new Finally(() => readRun.DisposeAsync().AsTask().GetAwaiter().GetResult());
+        var writeRun = FfmpegRun.StartAsync(write, CancellationToken.None).GetAwaiter().GetResult();
+        using var finishWrite = new Finally(() => writeRun.DisposeAsync().AsTask().GetAwaiter().GetResult());
+        var reader = readRun.Process;
+        var writer = writeRun.Process;
         var writeErrors = writer.StandardError.ReadToEndAsync(CancellationToken.None);
         _ = reader.StandardError.ReadToEndAsync(CancellationToken.None);
         try
@@ -368,6 +376,9 @@ public static class AutoBlur
             }
             sink.Close();
             writer.WaitForExit();
+            reader.WaitForExit();
+            readRun.FinishAsync().GetAwaiter().GetResult();
+            writeRun.FinishAsync().GetAwaiter().GetResult();
             if (writer.ExitCode != 0)
                 throw new MediaException("FFmpeg couldn't write the video: " + writeErrors.GetAwaiter().GetResult());
             if (number == 0)
@@ -388,5 +399,11 @@ public static class AutoBlur
             if (!reader.HasExited)
                 try { reader.Kill(); } catch (InvalidOperationException) { }
         }
+    }
+
+    /// <summary>Runs an action when disposed: the bridges of the FFmpeg runs above go when the method does.</summary>
+    private sealed class Finally(Action action) : IDisposable
+    {
+        public void Dispose() => action();
     }
 }

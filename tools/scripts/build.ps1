@@ -82,15 +82,29 @@ if ($Arch -eq 'x64') {
 # Licences of everything we ship.
 $licences = Join-Path $publish 'licenses'
 New-Item -ItemType Directory -Force $licences | Out-Null
-Copy-Item (Join-Path $root 'tools\bin\ffmpeg\LICENSE.txt') (Join-Path $licences 'FFmpeg.txt') -ErrorAction SilentlyContinue
+# FFmpeg is LGPL: its licence, the licence files of every library built into its DLLs, how it was built, and the
+# exact source of FFmpeg and of its LGPL libraries with the scripts that built them.
+$ffLicences = Join-Path $root 'tools\bin\ffmpeg-licenses'
+if (-not (Test-Path (Join-Path $ffLicences 'LICENSE.txt'))) { throw "FFmpeg's licences are missing: run fetch-tools.ps1" }
+Copy-Item (Join-Path $ffLicences 'LICENSE.txt') (Join-Path $licences 'FFmpeg.txt')
+Copy-Item $ffLicences (Join-Path $licences 'ffmpeg') -Recurse
+$sources = Join-Path $licences 'sources'
+New-Item -ItemType Directory -Force $sources | Out-Null
+Copy-Item (Join-Path $root 'tools\bin\ffmpeg-source\*.tar.gz') $sources
+if (-not (Get-ChildItem $sources -Filter '*-source.tar.gz')) { throw "FFmpeg's source is missing: run fetch-tools.ps1" }
 Copy-Item (Join-Path $root 'tools\bin\exiftool\README.txt') (Join-Path $licences 'ExifTool.txt') -ErrorAction SilentlyContinue
+# Where NuGet keeps packages on this PC.
+$nuget = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
 # DirectML.dll ships beside Petal (Windows 10's own copy is too old for ONNX Runtime): its licence goes too.
-$directml = Get-ChildItem (Join-Path $env:USERPROFILE '.nuget\packages\microsoft.ai.directml') -Directory -ErrorAction SilentlyContinue |
+$directml = Get-ChildItem (Join-Path $nuget 'microsoft.ai.directml') -Directory -ErrorAction SilentlyContinue |
     Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
 if ($directml) { Copy-Item (Join-Path $directml.FullName 'LICENSE.txt') (Join-Path $licences 'DirectML.txt') }
 # Which FFmpeg build ships, for anyone who wants its source; and the list of everything Petal is built on, as a text
 # file that Settings opens in Notepad, with the full texts of the licences it names.
-& (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -version | Select-Object -First 2 | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
+$ffmpegVersion = & (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -version | Select-Object -First 2
+# Only DropWheel's own LGPL build may ship: any other (a GPL build, one with patented codecs) stops the release.
+if (($ffmpegVersion | Select-Object -First 1) -notmatch 'dropwheel') { throw "The FFmpeg in the build isn't DropWheel's own LGPL build: $ffmpegVersion" }
+$ffmpegVersion | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
 Remove-Item (Join-Path $licences 'THIRD-PARTY-NOTICES.md') -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.txt')
 Copy-Item (Join-Path $root 'store\licenses\*.txt') $licences
@@ -100,7 +114,7 @@ $packages = Join-Path $licences 'packages'
 New-Item -ItemType Directory -Force $packages | Out-Null
 foreach ($library in $deps.libraries.PSObject.Properties) {
     if ($library.Value.type -ne 'package') { continue }
-    $folder = Join-Path $env:USERPROFILE ('.nuget\packages\' + $library.Value.path)
+    $folder = Join-Path $nuget $library.Value.path
     $files = Get-ChildItem $folder -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^(licen[cs]e|notice|third-?party-?notices)' }
     foreach ($file in $files) {
         Copy-Item $file.FullName (Join-Path $packages (($library.Name -replace '/.*$', '') + ' - ' + $file.Name))

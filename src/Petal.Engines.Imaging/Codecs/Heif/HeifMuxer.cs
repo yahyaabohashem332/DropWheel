@@ -34,7 +34,7 @@ internal sealed class HeifImageSpec
 
     public ushort TransferCharacteristics { get; init; } = 13; // sRGB
 
-    public ushort MatrixCoefficients { get; init; } = 6;  // BT.601
+    public ushort MatrixCoefficients { get; init; } = 1;  // BT.709: what decoders take for Windows' encoder's streams
 
     public bool FullRange { get; init; } = true;
 

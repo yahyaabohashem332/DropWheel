@@ -271,6 +271,7 @@ public sealed class JobRunner(ConverterRegistry converters)
     {
         Petal.Engines.Documents.Pdf.PdfOpenException { LockedForChanges: true } => L.T("Its author has locked this PDF against changes."),
         Petal.Engines.Documents.Pdf.PdfOpenException { NeedsPassword: true } => L.T("This PDF is protected by a password."),
+        Petal.Engines.Media.SizeTooSmallException small => L.F("This size is too small for this video. The smallest it can be is about {0}.", Petal.App.Util.Sizes.Format(small.SmallestBytes)),
         UnauthorizedAccessException => L.T("DropWheel is not allowed to save in that folder."),
         IOException io when io.HResult == unchecked((int)0x80070070) => L.T("The disk is full."),
         _ => Shorten(L.T(ex.Message)),

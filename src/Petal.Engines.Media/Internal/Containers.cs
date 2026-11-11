@@ -29,8 +29,12 @@ internal sealed record ContainerSpec(
     public bool IsIsoMp4 => Muxer is "mp4" or "mov" or "ipod";
 }
 
-/// <summary>Video quality: CRF-style constant quality, or an average bitrate (two-pass where the encoder supports it).</summary>
-internal sealed record VideoQuality(int Crf, string Preset = "medium", int? BitrateKbps = null);
+/// <summary>
+/// Video quality: CRF-style constant quality, or an average bitrate (two-pass where the encoder supports it).
+/// <paramref name="WindowsQuality"/> is Windows' own quality setting (1–100) for its H.264 encoder, used as it is in
+/// place of the one a CRF gives.
+/// </summary>
+internal sealed record VideoQuality(int Crf, string Preset = "medium", int? BitrateKbps = null, int? WindowsQuality = null);
 
 internal static class Containers
 {
@@ -124,21 +128,8 @@ internal static class Containers
         var bitrate = q.BitrateKbps is { } kb ? Math.Max(16, kb) : (int?)null;
         switch (kind)
         {
-            case VideoCodecKind.H264 when hardware:
-                args.AddRange(["-c:v", "h264_nvenc", "-preset", "p5", "-tune", "hq", "-rc", "vbr"]);
-                if (bitrate is { } hb)
-                    args.AddRange(["-b:v", $"{hb}k", "-maxrate", $"{hb * 3 / 2}k", "-bufsize", $"{hb * 2}k"]);
-                else
-                    args.AddRange(["-cq", Inv.I(Math.Clamp(q.Crf + 2, 1, 51)), "-b:v", "0"]);
-                args.AddRange(["-pix_fmt", "yuv420p", "-profile:v", "high"]);
-                break;
             case VideoCodecKind.H264:
-                args.AddRange(["-c:v", "libx264", "-preset", q.Preset]);
-                if (bitrate is { } xb)
-                    args.AddRange(["-b:v", $"{xb}k", "-maxrate", $"{xb * 2}k", "-bufsize", $"{xb * 4}k"]);
-                else
-                    args.AddRange(["-crf", Inv.I(Math.Clamp(q.Crf, 0, 51))]);
-                args.AddRange(["-pix_fmt", "yuv420p", "-profile:v", "high"]);
+                args.AddRange(MediaEncoders.H264(q.Crf, hardware, fast: q.Preset is "ultrafast" or "superfast", bitrate, q.WindowsQuality));
                 break;
             case VideoCodecKind.Vp9:
                 args.AddRange(["-c:v", "libvpx-vp9", "-row-mt", "1", "-deadline", "good", "-cpu-used", "4"]);
@@ -155,25 +146,24 @@ internal static class Containers
                 args.AddRange(["-pix_fmt", "yuv420p"]);
                 break;
             case VideoCodecKind.Wmv2:
-                args.Add("-c:v");
-                args.Add("wmv2");
-                args.AddRange(bitrate is { } wb ? ["-b:v", $"{wb}k"] : ["-q:v", Inv.I(QScale(q.Crf))]);
-                args.AddRange(["-pix_fmt", "yuv420p"]);
-                break;
+                // An ASF file is still copied into untouched; encoding into it is what DropWheel no longer does.
+                throw new MediaException(Foundation.WindowsMedia.WmvText);
             default:
                 throw new NotSupportedException($"No encoder for {kind}");
         }
 
-        if (pass > 0 && passLog is not null && kind is VideoCodecKind.H264 or VideoCodecKind.Vp9 && !hardware)
+        if (pass > 0 && passLog is not null && SupportsTwoPass(kind))
             args.AddRange(["-pass", Inv.I(pass), "-passlogfile", passLog]);
         return args;
     }
 
-    public static bool SupportsTwoPass(VideoCodecKind kind) => kind is VideoCodecKind.H264 or VideoCodecKind.Vp9;
+    /// <summary>Windows' H.264 encoder has no two-pass mode; it meets a bitrate in one.</summary>
+    public static bool SupportsTwoPass(VideoCodecKind kind) => kind is VideoCodecKind.Vp9;
 
-    public static List<string> AudioEncoderArgs(AudioCodecKind kind, int kbps, int bitDepth, bool maxFlacCompression = false) => kind switch
+    /// <summary>The encoder for a kind of sound; <paramref name="source"/> is the sound it is made from, when known.</summary>
+    public static List<string> AudioEncoderArgs(AudioCodecKind kind, int kbps, int bitDepth, bool maxFlacCompression = false, MediaStreamInfo? source = null) => kind switch
     {
-        AudioCodecKind.Aac => ["-c:a", "aac", "-b:a", $"{Math.Clamp(kbps, 24, 512)}k"],
+        AudioCodecKind.Aac => MediaEncoders.Aac(kbps, source?.Channels ?? 2, source?.SampleRate ?? 48000),
         AudioCodecKind.Mp3 => ["-c:a", "libmp3lame", "-b:a", $"{Mp3Bitrate(kbps)}k"],
         AudioCodecKind.Opus => ["-c:a", "libopus", "-b:a", $"{Math.Clamp(kbps, 8, 256)}k", "-vbr", "on"],
         AudioCodecKind.Vorbis => ["-c:a", "libvorbis", "-q:a", Inv.I(VorbisQuality(kbps))],
@@ -182,7 +172,7 @@ internal static class Containers
         // A fixed 4608-sample block: FFmpeg 9 otherwise copies the source's frame size (47, 576,
         // 1152… samples), and Windows can't play FLAC with such blocks.
         AudioCodecKind.Flac => ["-c:a", "flac", "-compression_level", maxFlacCompression ? "8" : "5", "-sample_fmt", bitDepth >= 24 ? "s32" : "s16", "-frame_size", "4608"],
-        AudioCodecKind.Wma => ["-c:a", "wmav2", "-b:a", $"{Math.Clamp(kbps, 32, 192)}k"],
+        AudioCodecKind.Wma => throw new MediaException(Foundation.WindowsMedia.WmvText),
         _ => throw new NotSupportedException($"No encoder for {kind}"),
     };
 

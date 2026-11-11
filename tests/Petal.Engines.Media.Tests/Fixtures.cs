@@ -48,34 +48,31 @@ internal static class Fixtures
     private static readonly Dictionary<string, string[]> Recipes = new()
     {
         // One-second clips in every source format of the matrix.
-        ["video.mp4"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
-        ["video.mov"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
-        ["video.mkv"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
+        ["video.mp4"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
+        ["video.mov"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
+        ["video.mkv"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         ["video.webm"] = [.. AV, "-c:v", "libvpx-vp9", "-deadline", "realtime", "-cpu-used", "8", "-b:v", "300k", "-c:a", "libopus", "-b:a", "64k", "-shortest"],
         ["video.avi"] = [.. AV, "-c:v", "mpeg4", "-q:v", "4", "-c:a", "libmp3lame", "-b:a", "128k", "-shortest"],
-        ["video.wmv"] = [.. AV, "-c:v", "wmv2", "-q:v", "4", "-c:a", "wmav2", "-b:a", "128k", "-shortest"],
         ["video.gif"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=10:d=1", "-c:v", "gif"],
         ["audio.mp3"] = [.. A, "-c:a", "libmp3lame", "-b:a", "192k"],
-        ["audio.m4a"] = [.. A, "-c:a", "aac", "-b:a", "192k"],
-        ["audio.aac"] = [.. A, "-c:a", "aac", "-b:a", "192k"],
+        ["audio.m4a"] = [.. A, "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16"],
+        ["audio.aac"] = [.. A, "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16"],
         ["audio.wav"] = [.. A, "-c:a", "pcm_s16le"],
         ["audio.flac"] = [.. A, "-c:a", "flac"],
         ["audio.ogg"] = [.. A, "-c:a", "libvorbis", "-q:a", "5"],
         ["audio.opus"] = [.. A, "-c:a", "libopus", "-b:a", "96k"],
         ["audio.aiff"] = [.. A, "-c:a", "pcm_s16be"],
-        ["audio.wma"] = [.. A, "-c:a", "wmav2", "-b:a", "128k"],
 
         // Special cases.
-        ["silent.mp4"] = ["-f", "lavfi", "-i", Picture, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p"],
+        ["silent.mp4"] = ["-f", "lavfi", "-i", Picture, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12"],
         ["odd.mkv"] = ["-f", "lavfi", "-i", "testsrc2=s=161x121:r=15:d=1", "-c:v", "ffv1"],
         ["odd.gif"] = ["-f", "lavfi", "-i", "testsrc2=s=161x121:r=10:d=1", "-c:v", "gif"],
-        ["hevc.mov"] = [.. AV, "-c:v", "libx265", "-preset", "ultrafast", "-x265-params", "log-level=error", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest"],
-        ["big.mov"] = ["-f", "lavfi", "-i", "testsrc2=s=320x180:r=30:d=1", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p"],
+        ["big.mov"] = ["-f", "lavfi", "-i", "testsrc2=s=320x180:r=30:d=1", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12"],
         // Five seconds, near-lossless, a keyframe every second: room to compress, trim, split and change speed.
         ["hq.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=320x240:r=15:d=5", "-f", "lavfi", "-i", "sine=f=440:r=44100:d=5", "-ac", "2",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "8", "-g", "15", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest"],
+            "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "95", "-g", "15", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         ["long.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=640x480:r=30:d=20", "-f", "lavfi", "-i", "sine=f=440:r=44100:d=20",
-            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest"],
+            "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         ["music.mp3"] = ["-f", "lavfi", "-i", "sine=f=440:r=44100:d=3", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "256k"],
         ["mono.wav"] = ["-f", "lavfi", "-i", Tone, "-c:a", "pcm_s16le"],
         ["left_only.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.5*sin(2*PI*440*t)|0:s=44100:d=1", "-c:a", "pcm_s16le"],
@@ -83,17 +80,17 @@ internal static class Fixtures
         ["padded.wav"] = ["-f", "lavfi", "-i", "aevalsrc='if(between(t,1,2)+between(t,2.5,3.5),0.3*sin(2*PI*440*t),0)':s=44100:d=4.5", "-c:a", "pcm_s16le"],
         // Tone 0–1 s, pause 1–3 s, tone 3–4 s, pause 4–5.5 s, tone 5.5–6.5 s: two pauses to remove.
         ["pauses.wav"] = ["-f", "lavfi", "-i", Pauses, "-c:a", "pcm_s16le"],
-        ["pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=6.5", "-f", "lavfi", "-i", Pauses, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
+        ["pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=6.5", "-f", "lavfi", "-i", Pauses, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         // A tone for 0.3 s of every second, 130 times: 129 pauses, 130 parts to keep.
         ["many-pauses.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=15:d=130", "-f", "lavfi", "-i", "aevalsrc='if(lt(mod(t,1),0.3),0.3*sin(2*PI*440*t),0)':s=44100:d=130",
-            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
+            "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         ["quiet.wav"] = ["-f", "lavfi", "-i", "aevalsrc=0.03*sin(2*PI*440*t):s=44100:d=6", "-ac", "2", "-c:a", "pcm_s16le"],
         // Twelve seconds of a wide picture with "speech" (a wavering tone) at 1–3, 4.5–6.5, 7–9.5 and 10–11.5 s.
         ["talk.mp4"] = ["-f", "lavfi", "-i", "testsrc2=s=1280x720:r=30:d=12", "-f", "lavfi", "-i",
             "aevalsrc='if(between(t,1,3)+between(t,4.5,6.5)+between(t,7,9.5)+between(t,10,11.5),0.3*sin(2*PI*220*t)*(0.6+0.4*sin(2*PI*3*t)),0)':s=44100:d=12",
-            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-shortest"],
+            "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
         ["cover.jpg"] = ["-f", "lavfi", "-i", "color=c=orange:s=64x64", "-frames:v", "1"],
-        ["tagged.mp4"] = [.. AV, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",
+        ["tagged.mp4"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-ar", "44100", "-sample_fmt", "s16", "-shortest",
             "-metadata", "title=Clip Title", "-metadata", "comment=Hello"],
         ["image.png"] = ["-f", "lavfi", "-i", "testsrc2=s=320x240:d=1", "-frames:v", "1", "-c:v", "png"],
     };
@@ -112,8 +109,18 @@ internal static class Fixtures
         _ => $"video.{format.WriteExtension}",
     });
 
+    /// <summary>Samples DropWheel's FFmpeg can't make (WMV, WMA, HEVC), made once with another build: see Samples\README.md.</summary>
+    private static readonly HashSet<string> Made = ["video.wmv", "audio.wma", "hevc.mov", "hevc10.mkv"];
+
     private static async Task<string> CreateAsync(string name)
     {
+        if (Made.Contains(name))
+        {
+            var path = Path.Combine(Root, "fixtures", name);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.Copy(Path.Combine(AppContext.BaseDirectory, "Samples", name), path, overwrite: true);
+            return path;
+        }
         if (name == "rotated.mp4")
         {
             var source = await GetAsync("video.mp4");
@@ -156,11 +163,14 @@ internal static class Fixtures
     public static async Task<(byte[] Rgb, int Width, int Height)> RgbFrameAsync(string path, double time)
     {
         var info = await MediaProbe.ProbeAsync(path);
-        var bytes = await ProcessRunner.RunForBytesAsync(Ffmpeg,
+        // Through DropWheel's own way of running FFmpeg: what it doesn't decode (H.264) comes through Windows.
+        using var buffer = new MemoryStream();
+        await Petal.Engines.Media.Internal.FfmpegProcess.RunReadingStdoutAsync(Petal.Engines.Media.Internal.Ffmpeg.Exe,
         [
             "-hide_banner", "-nostdin", "-loglevel", "error", "-ss", time.ToString(System.Globalization.CultureInfo.InvariantCulture),
             "-i", path, "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
-        ]);
+        ], (s, ct) => s.CopyToAsync(buffer, ct), default);
+        var bytes = buffer.ToArray();
         Assert.Equal(info.Width * info.Height * 3, bytes.Length);
         return (bytes, info.Width, info.Height);
     }

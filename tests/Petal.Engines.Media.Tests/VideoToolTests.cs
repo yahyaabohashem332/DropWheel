@@ -36,6 +36,37 @@ public class VideoToolTests
     }
 
     [Fact]
+    public async Task Compress_a_long_video_to_a_size_found_on_windows_of_it()
+    {
+        // Over 45 s, Windows' quality setting for the size is found on windows spread over the video.
+        var input = await Fixtures.GetAsync("many-pauses.mp4");
+        var target = new FileInfo(input).Length * 7 / 10;
+        var progress = new RecordingProgress();
+
+        var result = await MediaCompressor.CompressAsync(input, Path.Combine(Fixtures.NewDir(), "long.mp4"), new CompressOptions(TargetSizeBytes: target), progress);
+
+        Assert.InRange(result.OutputBytes, target * 0.6, target);
+        progress.AssertCompleteAndMonotonic();
+        await MediaAssert.ValidAsync(result.OutputPath, 130.0);
+    }
+
+    [Fact]
+    public async Task A_size_too_small_for_the_video_says_how_small_it_can_be()
+    {
+        var input = await Fixtures.GetAsync("hq.mp4");
+        var output = Path.Combine(Fixtures.NewDir(), "tiny.mp4");
+
+        // Its sound alone, at the 96 kbps Windows' AAC encoder goes down to, is 60 KB.
+        var error = await Assert.ThrowsAsync<SizeTooSmallException>(() => MediaCompressor.CompressAsync(input, output, new CompressOptions(TargetSizeBytes: 20_000)));
+
+        Assert.InRange(error.SmallestBytes, 60_000, 200_000);
+        Assert.False(File.Exists(output));
+        // Asking for that size works.
+        var result = await MediaCompressor.CompressAsync(input, output, new CompressOptions(TargetSizeBytes: error.SmallestBytes));
+        Assert.True(result.OutputBytes <= error.SmallestBytes, $"{result.OutputBytes} > {error.SmallestBytes}");
+    }
+
+    [Fact]
     public async Task Compress_by_percentage_and_max_resolution()
     {
         var input = await Fixtures.GetAsync("hq.mp4");

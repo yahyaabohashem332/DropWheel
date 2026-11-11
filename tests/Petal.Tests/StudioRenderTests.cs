@@ -31,7 +31,7 @@ public sealed class StudioRenderTests : IDisposable
     private async Task<StudioProject> RecordingAsync(string ffmpeg, double duration = 6)
     {
         await MakeAsync(ffmpeg, Path.Combine(_dir, "screen.mp4"), "-f", "lavfi", "-i", $"testsrc2=size=1280x720:rate=30:duration={duration}",
-            "-f", "lavfi", "-i", $"sine=frequency=440:duration={duration}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest");
+            "-f", "lavfi", "-i", $"sine=frequency=440:duration={duration}", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-sample_fmt", "s16", "-shortest");
         var pointer = new List<PointerSample>();
         for (int i = 0; i <= duration * 120; i++)
         {
@@ -161,10 +161,11 @@ public sealed class StudioRenderTests : IDisposable
         await p.WaitForExitAsync();
     }
 
+    /// <summary>A frame as DropWheel reads one: what its FFmpeg doesn't decode (H.264) comes through Windows.</summary>
     private async Task<string> FrameAsync(string ffmpeg, string video, double seconds)
     {
         var png = Path.Combine(_dir, $"source {seconds.ToString(CultureInfo.InvariantCulture)}.png");
-        await MakeAsync(ffmpeg, png, "-ss", seconds.ToString(CultureInfo.InvariantCulture), "-i", video, "-frames:v", "1");
+        await File.WriteAllBytesAsync(png, await Petal.Engines.Media.MediaPreview.ExtractFrameAsync(video, TimeSpan.FromSeconds(seconds)));
         return png;
     }
 }

@@ -29,7 +29,7 @@ public sealed class DuplicateTests(ITestOutputHelper output) : IDisposable
         var path = Path.Combine(_dir, name);
         var ffmpeg = Petal.Core.Util.ToolLocator.Ffmpeg ?? throw new InvalidOperationException("ffmpeg");
         using var process = Process.Start(new ProcessStartInfo(ffmpeg, ["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc2=duration=4:size=640x360:rate=25",
-            "-vf", $"scale={size}", "-c:v", "libx264", "-crf", crf.ToString(), "-pix_fmt", "yuv420p", "-y", path]) { CreateNoWindow = true })!;
+            "-vf", $"scale={size}", "-c:v", "h264_mf", "-rate_control", "quality", "-quality", Math.Clamp(100 - 2 * crf, 1, 100).ToString(), "-pix_fmt", "nv12", "-y", path]) { CreateNoWindow = true })!;
         process.WaitForExit();
         Assert.Equal(0, process.ExitCode);
         return path;

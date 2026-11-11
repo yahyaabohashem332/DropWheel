@@ -1,7 +1,12 @@
 <#
 .SYNOPSIS
   Fills tools\bin with the helper programs Petal ships with: FFmpeg (shared build) and ExifTool.
-  Every download is checked against a published SHA-256 before it is unpacked.
+  Every download is checked against a pinned SHA-256 before it is unpacked.
+
+.DESCRIPTION
+  FFmpeg is DropWheel's own LGPL build (https://github.com/yahyaabohashem332/dropwheel-ffmpeg): no decoder or
+  encoder of any format still under patent; Windows decodes and encodes those. Its release holds the build and
+  the exact sources the LGPL asks for, which go to tools\bin\ffmpeg-licenses and tools\bin\ffmpeg-source.
 
 .EXAMPLE
   pwsh tools\scripts\fetch-tools.ps1
@@ -9,7 +14,11 @@
 param(
     [string]$Destination = (Join-Path $PSScriptRoot '..\bin'),
     [string]$ExifToolVersion = '13.59',
-    [string]$ExifToolSha256 = '44b512b25af500724ba579d0a53c8fc5851628b692dd5e5d94ae4a15c2cba9ec'
+    [string]$ExifToolSha256 = '44b512b25af500724ba579d0a53c8fc5851628b692dd5e5d94ae4a15c2cba9ec',
+    [string]$FfmpegRepository = 'yahyaabohashem332/dropwheel-ffmpeg',
+    [string]$FfmpegRelease = 'ffmpeg-n9.0.2-dropwheel-win64',
+    [string]$FfmpegZipSha256 = 'd85c5cb454572eacae0c9e878e0b2ce2761272defa29146634900efa865171ae',
+    [string]$FfmpegSourceSha256 = '7a28f54f50df2a33f1fd79f78d213279e56794a99644bb66c4383bd3a18a60bf'
 )
 $ErrorActionPreference = 'Stop'
 $Destination = [IO.Path]::GetFullPath($Destination)
@@ -40,27 +49,53 @@ if (-not (Test-Path (Join-Path $exifDir 'exiftool.exe'))) {
 }
 Write-Host "ExifTool: $(& (Join-Path $exifDir 'exiftool.exe') -ver)"
 
-# FFmpeg: the GPL "shared" build from BtbN (DLLs shared by ffmpeg.exe and ffprobe.exe keeps it small).
+# FFmpeg: DropWheel's own LGPL build, its programs and DLLs (shared by ffmpeg.exe and ffprobe.exe, and replaceable
+# by the user, as the LGPL wants). Any other FFmpeg found here (an earlier GPL build) is replaced.
 $ffDir = Join-Path $Destination 'ffmpeg'
-if (-not (Test-Path (Join-Path $ffDir 'ffmpeg.exe'))) {
-    $release = Invoke-RestMethod 'https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest' -Headers @{ 'User-Agent' = 'petal-build' }
-    $asset = $release.assets | Where-Object { $_.name -match '^ffmpeg-n\d+(\.\d+)*-latest-win64-gpl-shared-\d+(\.\d+)*\.zip$' } | Select-Object -First 1
-    if (-not $asset) { $asset = $release.assets | Where-Object { $_.name -eq 'ffmpeg-master-latest-win64-gpl-shared.zip' } | Select-Object -First 1 }
-    $sums = Invoke-RestMethod ($release.assets | Where-Object name -eq 'checksums.sha256').browser_download_url
-    $line = ($sums -split "`n") | Where-Object { $_ -match [regex]::Escape($asset.name) } | Select-Object -First 1
-    $sha = ($line -split '\s+')[0]
-    $zip = Join-Path $downloads $asset.name
-    Get-Verified $asset.browser_download_url $zip $sha
+$ffLicences = Join-Path $Destination 'ffmpeg-licenses'
+$ffSource = Join-Path $Destination 'ffmpeg-source'
+$ffExe = Join-Path $ffDir 'ffmpeg.exe'
+$current = if (Test-Path $ffExe) { (& $ffExe -hide_banner -version | Select-Object -First 1) } else { '' }
+if ($current -notmatch 'dropwheel' -or -not (Test-Path (Join-Path $ffSource "$FfmpegRelease-source.tar.gz"))) {
+    $zipName = "$FfmpegRelease.zip"
+    $sourceName = "$FfmpegRelease-source.tar.gz"
+    $zip = Join-Path $downloads $zipName
+    $source = Join-Path $downloads $sourceName
+    foreach ($file in @(@($zip, $zipName, $FfmpegZipSha256), @($source, $sourceName, $FfmpegSourceSha256))) {
+        $path, $name, $sha = $file
+        if ((Test-Path $path) -and (Get-FileHash $path -Algorithm SHA256).Hash -eq $sha.ToUpper()) { continue }
+        # The build repository may be private: GitHub's command line, signed in, fetches from it; a public
+        # repository needs no sign-in.
+        if (Get-Command gh -ErrorAction SilentlyContinue) {
+            & gh release download $FfmpegRelease -R $FfmpegRepository -p $name -D $downloads --clobber
+        }
+        if (-not (Test-Path $path)) {
+            & curl.exe -sSL --ssl-no-revoke -o $path "https://github.com/$FfmpegRepository/releases/download/$FfmpegRelease/$name"
+        }
+        $actual = (Get-FileHash $path -Algorithm SHA256).Hash
+        if ($actual -ne $sha.ToUpper()) { throw "Checksum mismatch for $path (got $actual)" }
+    }
     $tmp = Join-Path $downloads 'ffmpeg-x'
+    if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }
     Expand-Archive $zip -DestinationPath $tmp -Force
     $root = Get-ChildItem $tmp -Directory | Select-Object -First 1
-    New-Item -ItemType Directory -Force $ffDir | Out-Null
-    Copy-Item (Join-Path $root.FullName 'bin\*') $ffDir -Force
-    Copy-Item (Join-Path $root.FullName 'LICENSE.txt') (Join-Path $ffDir 'LICENSE.txt') -ErrorAction SilentlyContinue
-    Remove-Item (Join-Path $ffDir 'ffplay.exe') -ErrorAction SilentlyContinue
+    foreach ($dir in @($ffDir, $ffLicences, $ffSource)) {
+        if (Test-Path $dir) { Remove-Item $dir -Recurse -Force }
+        New-Item -ItemType Directory -Force $dir | Out-Null
+    }
+    Copy-Item (Join-Path $root.FullName '*.exe') $ffDir -Force
+    Copy-Item (Join-Path $root.FullName '*.dll') $ffDir -Force
+    Copy-Item (Join-Path $root.FullName '*.txt') $ffLicences -Force
+    Copy-Item (Join-Path $root.FullName 'licenses') $ffLicences -Recurse -Force
+    Copy-Item $source (Join-Path $ffSource $sourceName) -Force
     Remove-Item $tmp -Recurse -Force
+    # The files keep their archive's times, older than a copy an earlier build left beside the app or the tests,
+    # which a build then leaves in place (it copies only what is newer): made new, they replace it.
+    Get-ChildItem $ffDir, $ffLicences, $ffSource -Recurse -File | ForEach-Object { $_.LastWriteTime = Get-Date }
 }
-Write-Host "FFmpeg: $((& (Join-Path $ffDir 'ffmpeg.exe') -hide_banner -version | Select-Object -First 1))"
+$version = & $ffExe -hide_banner -version | Select-Object -First 1
+if ($version -notmatch 'dropwheel') { throw "tools\bin\ffmpeg isn't DropWheel's FFmpeg build: $version" }
+Write-Host "FFmpeg: $version"
 # Real-ESRGAN general x4v3 (BSD-3-Clause), Qualcomm AI Hub's ONNX export: the AI enlargement model.
 $esrganDir = Join-Path $Destination 'models\realesrgan-x4v3'
 if (-not (Test-Path (Join-Path $esrganDir 'real_esrgan_general_x4v3.onnx'))) {

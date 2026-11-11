@@ -332,7 +332,8 @@ public sealed partial class SettingsWindow : ToolWindow
     private UIElement EnginesSection()
     {
         var panel = new StackPanel();
-        panel.Children.Add(Engine("FFmpeg", "Audio, video and GIF", ToolLocator.Ffmpeg, "https://www.gyan.dev/ffmpeg/builds/"));
+        // DropWheel ships its own FFmpeg (LGPL, with no patented codec); a reinstall brings it back.
+        panel.Children.Add(Engine("FFmpeg", "Audio, video and GIF", ToolLocator.Ffmpeg, null));
         panel.Children.Add(Engine("ExifTool", "Detailed metadata for every file type", ToolLocator.ExifTool, "https://exiftool.org/"));
         panel.Children.Add(Engine("Microsoft Office", "Exact layout for Word, Excel and PowerPoint files", OfficePath(), null));
         panel.Children.Add(Engine("LibreOffice", "Slides and office files when Office isn't installed", ToolLocator.LibreOffice, "https://www.libreoffice.org/download/"));
@@ -345,6 +346,8 @@ public sealed partial class SettingsWindow : ToolWindow
             licences.Click += (_, _) => Process.Start(new ProcessStartInfo(notices) { UseShellExecute = true });
             panel.Children.Add(licences);
         }
+        // As FFmpeg's legal checklist (ffmpeg.org/legal.html) asks of a program that ships it: always, whatever else is there.
+        panel.Children.Add(Text("This software uses libraries from the FFmpeg project under the LGPLv2.1.", "Petal.Caption").WithMargin(0, 8, 0, 0));
         return panel;
     }
 

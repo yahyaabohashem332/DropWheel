@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Samples\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Petal.Core\Petal.Core.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Media\Petal.Engines.Media.csproj" />
   </ItemGroup>
