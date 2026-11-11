@@ -131,6 +131,8 @@ Shipped with DropWheel:
 - YuNet face detector (OpenCV Zoo, Shenzhen Institute of Artificial Intelligence and Robotics for Society), MIT, and LPD-YuNet number plate detector (OpenCV Zoo, Dong Xu), Apache-2.0: downloaded when Blur Faces and Plates is first used.
 - Real-ESRGAN general x4v3, Copyright (c) 2021, Xintao Wang. BSD-3-Clause.
   https://github.com/xinntao/Real-ESRGAN. ONNX export by Qualcomm AI Hub.
+- Silero VAD 6.2, Copyright (c) 2020-present Silero Team. MIT. https://github.com/snakers4/silero-vad.
+  The whisper.cpp (ggml) file at https://huggingface.co/ggml-org/whisper-vad.
 
 Downloaded the first time a tool needs them, from the addresses below, with the licence shown before the
 download:

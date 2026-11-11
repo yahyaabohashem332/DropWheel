@@ -3664,5 +3664,7 @@ internal static class Arabic
         ["The models weren't moved: one of them may be in use. Close the AI tools and try again."] = "لم تُنقل النماذج: قد يكون أحدها قيد الاستخدام. أغلق أدوات الذكاء الاصطناعي وأعد المحاولة.",
         ["Where models are kept"] = "مكان حفظ النماذج",
         ["Downloaded models are kept in this folder. Choosing another moves the ones already downloaded there."] = "تُحفظ النماذج المنزّلة في هذا المجلد، واختيار مجلد آخر ينقل إليه ما نُزّل منها.",
+        ["Speech Model"] = "نموذج الكلام",
+        ["This PC's graphics card runs the most accurate speech model without falling behind, and the captions hear every language far better with it. It is downloaded once."] = "بطاقة الرسوميات في هذا الحاسوب تشغّل أدقّ نموذج للكلام دون أن يتأخر، وتلتقط به الترجمة الفورية كل اللغات بدقة أعلى بكثير. يُنزَّل مرة واحدة.",
     };
 }

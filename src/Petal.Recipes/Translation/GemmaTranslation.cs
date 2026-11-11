@@ -54,7 +54,10 @@ public static partial class GemmaTranslation
     /// <summary>What a translator is told about text Windows read off a picture.</summary>
     private const string ReadOffPicture = " The text was read off a picture by a machine, so some letters may be misread: read through them to the words that were meant, and don't invent anything that isn't there.";
 
-    internal static string Prompt(string text, string from, string to, IReadOnlyList<string>? earlier, bool picture = false)
+    /// <summary>What a translator is told about words a speech model wrote down.</summary>
+    private const string WrittenFromSpeech = " The text was written down from speech by a machine, so a word may be misheard or misspelt: read through it to what was said, and don't invent anything that isn't there.";
+
+    internal static string Prompt(string text, string from, string to, IReadOnlyList<string>? earlier, bool picture = false, bool heard = false)
     {
         string source = from is "" or "auto" || Name(from).Length == 0 ? "the language it is in" : Name(from);
         string target = Name(to);
@@ -62,12 +65,13 @@ public static partial class GemmaTranslation
         var asked = earlier is { Count: > 0 }
             ? (picture ? "Other text on the same picture, for context only; do not translate it:\n" : "The lines just before it, for context only; do not translate them:\n") + string.Join('\n', earlier.Select(Plain)) + "\n\nThe text to translate:\n" + words
             : words;
-        return $"<|turn>system\nYou are a professional translator. Translate the user's text from {source} into {target}. Keep its full meaning, names and numbers, and any line breaks. Write natural {target}.{(picture ? ReadOffPicture : "")} Reply with the translation only, with no notes.<turn|>\n<|turn>user\n{asked}<turn|>\n<|turn>model\n";
+        return $"<|turn>system\nYou are a professional translator. Translate the user's text from {source} into {target}. Keep its full meaning, names and numbers, and any line breaks. Write natural {target}.{(picture ? ReadOffPicture : heard ? WrittenFromSpeech : "")} Reply with the translation only, with no notes.<turn|>\n<|turn>user\n{asked}<turn|>\n<|turn>model\n";
     }
 
     /// <summary>The text in another language. <paramref name="earlier"/> are the lines before it, so a line that goes on from them reads right.</summary>
     /// <param name="live">For captions: the quickest model here rather than the most accurate.</param>
-    public static async Task<string> TranslateAsync(string text, string from, string to, IReadOnlyList<string>? earlier = null, bool live = false, CancellationToken cancellationToken = default, bool picture = false)
+    /// <param name="heard">The text was written down from speech (captions): a word may be misheard.</param>
+    public static async Task<string> TranslateAsync(string text, string from, string to, IReadOnlyList<string>? earlier = null, bool live = false, CancellationToken cancellationToken = default, bool picture = false, bool heard = false)
     {
         if (text.Trim().Length == 0)
             return text;
@@ -77,11 +81,11 @@ public static partial class GemmaTranslation
             var parts = new List<string>();
             foreach (var part in Parts(text))
             {
-                parts.Add(await TranslateAsync(part, from, to, parts.Count == 0 ? earlier : null, live, cancellationToken, picture).ConfigureAwait(false));
+                parts.Add(await TranslateAsync(part, from, to, parts.Count == 0 ? earlier : null, live, cancellationToken, picture, heard).ConfigureAwait(false));
             }
             return string.Join(' ', parts);
         }
-        var prompt = Prompt(text, from, to, earlier, picture);
+        var prompt = Prompt(text, from, to, earlier, picture, heard);
         int most = Math.Clamp(text.Length * 2 + 40, 60, 2000);
         var said = Reply(await GemmaServer.CompleteAsync(model, prompt, most, 0, 1, cancellationToken).ConfigureAwait(false));
         if (Looped(said, text))
@@ -95,8 +99,38 @@ public static partial class GemmaTranslation
         // mended, none harmed, at about twice the time; so not where that would make captions fall behind.
         if (said.Length == 0 || (live && !GemmaServer.OnCard))
             return said;
-        var read = Reply(await GemmaServer.CompleteAsync(model, ProofPrompt(text, said, from, to, picture), most, 0, 1, cancellationToken).ConfigureAwait(false));
+        var read = Reply(await GemmaServer.CompleteAsync(model, ProofPrompt(text, said, from, to, picture, heard), most, 0, 1, cancellationToken).ConfigureAwait(false));
         return Proofread(said, read, text);
+    }
+
+    /// <summary>What an interpreter is told: the words so far of a sentence that isn't over, to be followed and not finished.</summary>
+    internal static string SoFarPrompt(string text, string from, string to, IReadOnlyList<string>? earlier, string begun)
+    {
+        string source = from is "" or "auto" || Name(from).Length == 0 ? "the language it is in" : Name(from);
+        string target = Name(to);
+        var words = Plain(text).Trim();
+        var asked = earlier is { Count: > 0 }
+            ? "What was said just before, for context only; do not translate it:\n" + string.Join('\n', earlier.Select(Plain)) + "\n\nThe words so far:\n" + words
+            : words;
+        return $"<|turn>system\nYou are a simultaneous interpreter. The user gives the words a speaker has said so far in {source}; the sentence is not finished yet. Put just these words into natural {target}, keeping close to the speaker's order, and stop where the words stop. Never finish the sentence yourself and never add what was not said. Reply with the {target} words only, with no notes.<turn|>\n<|turn>user\n{asked}<turn|>\n<|turn>model\n{Plain(begun)}";
+    }
+
+    /// <summary>
+    /// The words so far of a sentence still being said, in another language, for captions that follow the speaker word by
+    /// word. <paramref name="begun"/> is the part of the translation that no longer changes: the model carries on from
+    /// it, so what is on screen grows and never jumps, and only the new words cost time.
+    /// </summary>
+    public static async Task<string> SoFarAsync(string text, string from, string to, IReadOnlyList<string>? earlier, string begun, CancellationToken cancellationToken = default)
+    {
+        if (text.Trim().Length == 0)
+            return "";
+        var model = Quick.FirstOrDefault(ModelStore.IsAvailable) ?? throw new FileNotFoundException("The translation model isn't downloaded yet.");
+        begun = begun.Trim();
+        int most = Math.Clamp(text.Length / 2 + 24, 32, 200);
+        // As the model wrote it, spaces and all: whether it starts a new word or finishes the last one given to it is told by that.
+        var more = await GemmaServer.CompleteAsync(model, SoFarPrompt(text, from, to, earlier, begun), most, 0, 1.05, cancellationToken, live: true).ConfigureAwait(false);
+        var whole = Reply(begun + more).ReplaceLineEndings(" ").Trim();
+        return Looped(whole, text) ? begun : whole;
     }
 
     /// <summary>A reply without the empty room some of these models write for their thoughts first.</summary>
@@ -107,11 +141,11 @@ public static partial class GemmaTranslation
         return (open >= 0 ? said[..open] : said).Trim();
     }
 
-    internal static string ProofPrompt(string text, string translation, string from, string to, bool picture = false)
+    internal static string ProofPrompt(string text, string translation, string from, string to, bool picture = false, bool heard = false)
     {
         string source = from is "" or "auto" || Name(from).Length == 0 ? "another language" : Name(from);
         string target = Name(to);
-        return $"<|turn>system\nYou are a meticulous {target} editor. Below are a text in {source} and its {target} translation. Check the translation word by word: wrong words, wrong grammar or agreement, and anything whose meaning differs from the original.{(picture ? " The original was read off a picture by a machine, so some of its letters may be misread." : "")} Correct what is wrong and change nothing else. If it is already right, repeat it exactly. Reply with the final {target} translation only, with no notes.<turn|>\n<|turn>user\nOriginal:\n{Plain(text).Trim()}\n\nTranslation:\n{Plain(translation)}<turn|>\n<|turn>model\n";
+        return $"<|turn>system\nYou are a meticulous {target} editor. Below are a text in {source} and its {target} translation. Check the translation word by word: wrong words, wrong grammar or agreement, and anything whose meaning differs from the original.{(picture ? " The original was read off a picture by a machine, so some of its letters may be misread." : heard ? " The original was written down from speech by a machine, so a word of it may be misheard or misspelt." : "")} Correct what is wrong and change nothing else. If it is already right, repeat it exactly. Reply with the final {target} translation only, with no notes.<turn|>\n<|turn>user\nOriginal:\n{Plain(text).Trim()}\n\nTranslation:\n{Plain(translation)}<turn|>\n<|turn>model\n";
     }
 
     /// <summary>The proofread text, unless it stopped being the same translation: an editor mends words, and doesn't lose half of them or go round.</summary>
@@ -143,6 +177,25 @@ public static partial class GemmaTranslation
             start = end;
         }
     }
+
+    /// <summary>
+    /// Has the quick model loaded and ready, for captions about to start: the first sentence is then translated in its own
+    /// time and not the model's loading too. Nothing happens when it isn't here.
+    /// </summary>
+    public static async Task PrepareAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Ready || Quick.FirstOrDefault(ModelStore.IsAvailable) is not { } model)
+            return;
+        await GemmaServer.CompleteAsync(model, "<|turn>user\nHi<turn|>\n<|turn>model\n", 1, 0, 1, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Whether the translation model now loaded runs on a graphics card.</summary>
+    public static bool OnCard => GemmaServer.OnCard;
+
+    /// <summary>Whether this PC has a graphics card of the kind that runs AI models well (not graphics built into the processor).</summary>
+    public static bool HasCard => _hasCard ??= GemmaServer.CardNamed();
+
+    private static bool? _hasCard;
 
     /// <summary>A batch is over: the model is let go soon, not in a few minutes, since whatever comes next may want the memory.</summary>
     public static void Finished() => GemmaServer.LetGoSoon();
@@ -208,7 +261,11 @@ internal static class GemmaServer
     /// <summary>For tests: a server in place of the real one.</summary>
     internal static string? TestServer { get; set; }
 
-    public static async Task<string> CompleteAsync(ModelInfo model, string prompt, int most, double temperature, double repeatPenalty, CancellationToken cancellationToken)
+    /// <param name="live">
+    /// For a line that grows as someone speaks: one line of reply, as the model wrote it (its first space kept), and what
+    /// it worked out for this prompt is kept, so the next one that starts the same costs only its new end.
+    /// </param>
+    public static async Task<string> CompleteAsync(ModelInfo model, string prompt, int most, double temperature, double repeatPenalty, CancellationToken cancellationToken, bool live = false)
     {
         await Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -231,8 +288,8 @@ internal static class GemmaServer
                             ["n_predict"] = most,
                             ["temperature"] = temperature,
                             ["repeat_penalty"] = repeatPenalty,
-                            ["stop"] = new[] { "<turn|>", "<|turn>" },
-                            ["cache_prompt"] = false,
+                            ["stop"] = live ? new[] { "<turn|>", "<|turn>", "\n" } : new[] { "<turn|>", "<|turn>" },
+                            ["cache_prompt"] = live,
                         }), Encoding.UTF8, "application/json"),
                     };
                     if (_key.Length > 0)
@@ -240,7 +297,8 @@ internal static class GemmaServer
                     using var response = await Http.SendAsync(request, limit.Token).ConfigureAwait(false);
                     response.EnsureSuccessStatusCode();
                     using var reply = JsonDocument.Parse(await response.Content.ReadAsStringAsync(limit.Token).ConfigureAwait(false));
-                    return AskPetal.CleanAnswer(reply.RootElement.GetProperty("content").GetString() ?? "");
+                    var content = reply.RootElement.GetProperty("content").GetString() ?? "";
+                    return live ? content : AskPetal.CleanAnswer(content);
                 }
                 catch (Exception ex) when (!cancellationToken.IsCancellationRequested && attempt == 0 && ex is HttpRequestException or OperationCanceledException or JsonException)
                 {
@@ -473,7 +531,7 @@ internal static class GemmaServer
     }
 
     /// <summary>Whether Windows lists a graphics card of the kind worth using.</summary>
-    private static bool CardNamed()
+    internal static bool CardNamed()
     {
         try
         {

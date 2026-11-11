@@ -96,40 +96,94 @@ public sealed class SpeechChunker
     }
 }
 
-/// <summary>Turns sound from a sound card (any rate, any number of channels) into 16 kHz mono for speech models.</summary>
-public sealed class SpeechResampler(int rate, int channels)
+/// <summary>
+/// Turns sound from a sound card (any rate, any number of channels) into 16 kHz mono for speech models. What 16 kHz
+/// can't carry is taken out first (a windowed-sinc filter): left in, the hiss of an "s" and the top of music fold back
+/// down among the sounds speech is told by, and a speech model hears them as part of the words.
+/// </summary>
+public sealed class SpeechResampler
 {
-    private double _position;
-    private float _last;
+    private const int Phases = 128;
+    private readonly int _channels;
+    private readonly double _step;
+    // The filter reaches this many samples of the incoming sound either side of each one it makes.
+    private readonly int _half;
+    private readonly float[][] _kernels;
+    // The last samples of the call before, so the sound continues smoothly, and where the next sample to make falls
+    // in them and what follows.
+    private float[] _history;
+    private double _next;
+
+    public SpeechResampler(int rate, int channels)
+    {
+        _channels = Math.Max(1, channels);
+        _step = (double)rate / SpeechChunker.Rate;
+        // Everything above this share of the incoming rate goes: a little under half of the lower of the two rates.
+        double cutoff = 0.5 * Math.Min(1, 1 / _step) * 0.92;
+        _half = (int)Math.Ceiling(8 / (2 * cutoff));
+        _kernels = new float[Phases][];
+        for (int p = 0; p < Phases; p++)
+        {
+            var kernel = new float[_half * 2];
+            double sum = 0;
+            for (int k = 0; k < kernel.Length; k++)
+            {
+                double t = k - _half + 1 - (double)p / Phases;
+                double x = 2 * cutoff * t;
+                double sinc = Math.Abs(x) < 1e-9 ? 1 : Math.Sin(Math.PI * x) / (Math.PI * x);
+                double window = Math.Abs(t) >= _half ? 0 : 0.5 + 0.5 * Math.Cos(Math.PI * t / _half);
+                kernel[k] = (float)(sinc * window);
+                sum += kernel[k];
+            }
+            for (int k = 0; k < kernel.Length; k++)
+                kernel[k] = (float)(kernel[k] / sum);
+            _kernels[p] = kernel;
+        }
+        _history = new float[_half * 2];
+        _next = _history.Length;
+    }
 
     /// <summary>Interleaved samples in; 16 kHz mono out, continuing smoothly from the call before.</summary>
     public float[] Convert(ReadOnlySpan<float> interleaved)
     {
-        int frames = interleaved.Length / channels;
+        int frames = interleaved.Length / _channels;
         if (frames == 0)
             return [];
-        var mono = new float[frames];
+        var sound = new float[_history.Length + frames];
+        _history.CopyTo(sound, 0);
         for (int f = 0; f < frames; f++)
         {
             float sum = 0;
-            for (int c = 0; c < channels; c++)
-                sum += interleaved[f * channels + c];
-            mono[f] = sum / channels;
+            for (int c = 0; c < _channels; c++)
+                sum += interleaved[f * _channels + c];
+            sound[_history.Length + f] = sum / _channels;
         }
-        double step = (double)rate / SpeechChunker.Rate;
-        var output = new List<float>((int)(frames / step) + 2);
-        // _position is where the next output sample falls, counting the previous call's last sample as -1.
-        while (_position < frames - 1)
+        var output = new float[(int)Math.Max(0, (sound.Length - _half - _next) / _step) + 2];
+        int made = 0;
+        while (true)
         {
-            int i = (int)Math.Floor(_position);
-            double t = _position - i;
-            float a = i < 0 ? _last : mono[i];
-            float b = mono[i + 1];
-            output.Add((float)(a + (b - a) * t));
-            _position += step;
+            int centre = (int)Math.Floor(_next);
+            int phase = (int)Math.Round((_next - centre) * Phases);
+            if (phase == Phases)
+            {
+                centre++;
+                phase = 0;
+            }
+            if (centre + _half >= sound.Length)
+                break;
+            var kernel = _kernels[phase];
+            int from = centre - _half + 1;
+            float value = 0;
+            for (int k = 0; k < kernel.Length; k++)
+                value += sound[from + k] * kernel[k];
+            if (made == output.Length)
+                Array.Resize(ref output, output.Length * 2);
+            output[made++] = value;
+            _next += _step;
         }
-        _position -= frames;
-        _last = mono[^1];
-        return [.. output];
+        int keep = _history.Length;
+        Array.Copy(sound, sound.Length - keep, _history, 0, keep);
+        _next -= sound.Length - keep;
+        return made == output.Length ? output : output[..made];
     }
 }

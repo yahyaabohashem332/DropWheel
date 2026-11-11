@@ -54,6 +54,15 @@ public static class ModelCatalog
         "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
         "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2", 574_041_195, "MIT");
 
+    /// <summary>
+    /// Silero VAD 6.2 (Silero Team, MIT), whisper.cpp's ggml file at a fixed revision: tells speech from music, noise and
+    /// quiet, so live captions listen to words only. Under a megabyte; ships with DropWheel.
+    /// </summary>
+    public static readonly ModelInfo VoiceFinder = new(
+        "silero-vad", "Silero VAD", "ggml-silero-v6.2.0.bin",
+        "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v6.2.0.bin",
+        "2aa269b785eeb53a82983a20501ddf7c1d9c48e33ab63a41391ac6c9f7fb6987", 885_098, "MIT", Bundled: true);
+
     /// <summary>Piper 2023.11.14-2 (MIT): the program that speaks with the natural voices, Arabic diacritics model included.</summary>
     public static readonly ModelInfo Piper = new(
         "piper", "Piper", "piper_windows_amd64.zip",
@@ -308,7 +317,7 @@ public static class ModelCatalog
          ChatterboxEncoder, ChatterboxVocoder, ChatterboxFlowStart, ChatterboxLanguage, ChatterboxVocabulary, ChatterboxEmbeddings];
 
     public static IReadOnlyList<ModelInfo> All { get; } =
-        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, Piper, VoiceLinda, VoiceLindaSettings, LlamaCpp, Qwen, QwenAnswers, GemmaTranslator, GemmaQuick, LlamaVulkan, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
+        [Background, Upscaler, WhisperFast, WhisperBalanced, WhisperAccurate, VoiceFinder, Piper, VoiceLinda, VoiceLindaSettings, LlamaCpp, Qwen, QwenAnswers, GemmaTranslator, GemmaQuick, LlamaVulkan, Passages, PassagesVocabulary, SmolVlm, SmolVlmProjector,
          ClipVision, ClipText, ClipTextProjection, ClipTextVocabulary, DeepFilter, Demucs, Tiger, Lama,
          OpusEnArEncoder, OpusEnArDecoder, OpusEnArSource, OpusEnArVocabulary, OpusArEnEncoder, OpusArEnDecoder, OpusArEnSource, OpusArEnVocabulary,
          .. Chatterbox];

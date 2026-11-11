@@ -10,6 +10,19 @@ namespace Petal.Tests;
 [Collection("Timing")]
 public sealed class LiveSpeechTests
 {
+    /// <summary>
+    /// The quick speech model, when it is on this PC: among the downloaded models, or in the folder PETAL_LIVE_MODELS
+    /// names (a PC that builds DropWheel without having it installed).
+    /// </summary>
+    private static string? SpeechModel()
+    {
+        if (ModelStore.Find(ModelCatalog.WhisperFast) is { } here)
+            return here;
+        var folder = Environment.GetEnvironmentVariable("PETAL_LIVE_MODELS");
+        var there = string.IsNullOrEmpty(folder) ? null : Path.Combine(folder, ModelCatalog.WhisperFast.FileName);
+        return File.Exists(there) ? there : null;
+    }
+
     private static float[] Tone(double seconds, double amplitude, int rate = SpeechChunker.Rate) =>
         Enumerable.Range(0, (int)(seconds * rate)).Select(i => (float)(amplitude * Math.Sin(2 * Math.PI * 220 * i / rate))).ToArray();
 
@@ -60,9 +73,27 @@ public sealed class LiveSpeechTests
     }
 
     [Fact]
+    public void What_16_kHz_cannot_carry_is_taken_out_and_not_folded_down_among_the_speech()
+    {
+        static double Level(float[] sound) => Math.Sqrt(sound.Skip(1000).Sum(v => (double)v * v) / (sound.Length - 1000));
+        static float[] Tone(double hertz) => Enumerable.Range(0, 48000).Select(i => (float)(0.5 * Math.Sin(2 * Math.PI * hertz * i / 48000.0))).ToArray();
+        // A 10 kHz tone, as the hiss of an "s" has: taken at every third sample it would come out as a 6 kHz tone just as loud.
+        Assert.True(Level(new SpeechResampler(48000, 1).Convert(Tone(10000))) < 0.02);
+        // What speech is told by passes as it was.
+        Assert.Equal(0.5 / Math.Sqrt(2), Level(new SpeechResampler(48000, 1).Convert(Tone(3000))), 2);
+        // 44.1 kHz, whose samples never fall on 16 kHz's, and a rate below it.
+        var cd = new SpeechResampler(44100, 1).Convert(Enumerable.Range(0, 44100).Select(i => (float)(0.5 * Math.Sin(2 * Math.PI * 1000 * i / 44100.0))).ToArray());
+        Assert.InRange(cd.Length, 15985, 16001);
+        Assert.Equal(0.5 / Math.Sqrt(2), Level(cd), 2);
+        var phone = new SpeechResampler(8000, 1).Convert(Enumerable.Range(0, 8000).Select(i => (float)(0.5 * Math.Sin(2 * Math.PI * 1000 * i / 8000.0))).ToArray());
+        Assert.InRange(phone.Length, 15960, 16001);
+        Assert.Equal(0.5 / Math.Sqrt(2), Level(phone), 2);
+    }
+
+    [Fact]
     public async Task Speech_is_written_down_live_when_the_model_is_here()
     {
-        if (ModelStore.Find(ModelCatalog.WhisperFast) is not { } model)
+        if (SpeechModel() is not { } model)
             return;
         var wav = Path.Combine(Path.GetTempPath(), $"petal-speech-{Guid.NewGuid():N}.wav");
         try
@@ -123,7 +154,7 @@ public sealed class LiveSpeechTests
     [Fact]
     public async Task Words_come_while_the_sentence_is_still_being_said()
     {
-        if (ModelStore.Find(ModelCatalog.WhisperFast) is not { } model)
+        if (SpeechModel() is not { } model)
             return;
         var samples = await SayAsync("The first clocks used water that dripped slowly from one bowl into another, and the level showed how much time had passed. Later, mechanical clocks appeared in the towers of European cities.");
         if (samples is null)
@@ -165,7 +196,7 @@ public sealed class LiveSpeechTests
         var words = text.Split(' ').Select(StreamWord.Normalize).ToArray();
         for (int i = 0; i + 3 < words.Length; i++)
             Assert.False(words[i] == words[i + 2] && words[i + 1] == words[i + 3], $"repeated at {i}: {text}");
-        Assert.Equal(1, Regex.Count(text, "dripped", RegexOptions.IgnoreCase));
+        Assert.True(Regex.Count(text, "dripped", RegexOptions.IgnoreCase) == 1, text);
     }
 
     [Theory]

@@ -108,5 +108,7 @@ if (-not (Test-Path (Join-Path $esrganDir 'real_esrgan_general_x4v3.onnx'))) {
     Copy-Item (Join-Path $tmp 'real_esrgan_general_x4v3-onnx-float\*') $esrganDir -Force
     Remove-Item $tmp -Recurse -Force
 }
+# Silero VAD 6.2 (MIT), whisper.cpp's ggml file: tells speech from other sound for live captions.
+Get-Verified 'https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v6.2.0.bin' (Join-Path $Destination 'models\ggml-silero-v6.2.0.bin') '2aa269b785eeb53a82983a20501ddf7c1d9c48e33ab63a41391ac6c9f7fb6987'
 Write-Host "Models: $((Get-ChildItem (Join-Path $Destination 'models') -Recurse -File).Name -join ', ')"
 Write-Host "Helper programs are in $Destination"

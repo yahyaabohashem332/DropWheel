@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -24,10 +23,12 @@ namespace Petal.App.Words;
 
 /// <summary>
 /// Live captions for anything: a video, a call, a lesson, from the PC's sound or the microphone, all on this PC.
-/// The words come as they are said: Whisper writes the talk down again about every half second and the words
-/// two passes agree on are final (<see cref="StreamingTranscriber"/>), so nothing waits for a pause. Translation
-/// runs in a lane of its own: each finished sentence properly, the sentence being said quickly in between, so
-/// a slow translation never holds the words up. When the PC can't keep up, a quicker speech model takes over.
+/// The words come as they are said: Whisper writes the sentence being said down again about every half second and
+/// what two readings agree on is settled (<see cref="StreamingTranscriber"/>), so nothing waits for a pause; a model
+/// that tells speech from other sound keeps music and quiet away from it, and a quiet video is heard like a loud one.
+/// Translation runs in a lane of its own (<see cref="LiveInterpreter"/>): the sentence being said word by word on the
+/// second line, each finished sentence properly on the first, so a slow translation never holds the words up. When the
+/// PC can't keep up, a quicker speech model takes over without a word lost.
 /// </summary>
 internal static class LiveCaptions
 {
@@ -35,14 +36,10 @@ internal static class LiveCaptions
     private static IWaveIn? _input;
     private static SpeechResampler? _resampler;
     private static StreamingTranscriber? _engine;
-    private static CancellationTokenSource? _engineStop;
+    private static LiveInterpreter? _interpreter;
     private static ModelInfo? _model;
     private static CancellationTokenSource? _stop;
-    // Finished sentences waiting for translation, with their number (the first is 1).
-    private static Channel<(int Number, StreamSentence Sentence)>? _sentences;
     private static readonly object Gate = new();
-
-    private static int _finished;
 
     public static bool IsOn => _window is not null;
 
@@ -61,152 +58,247 @@ internal static class LiveCaptions
             Start();
     }
 
+    /// <summary>
+    /// The speech model captions listen with. Where a graphics card runs it, the most accurate one here: measured on
+    /// one, it keeps up with the talk and hears Arabic, Turkish, Persian, Urdu, Indonesian and French right where the
+    /// smaller models get every third word wrong. On a processor alone, the model chosen for dictation.
+    /// </summary>
+    internal static ModelInfo? SpeechModel() =>
+        GemmaTranslation.HasCard ? Listener.Models.Reverse().FirstOrDefault(ModelStore.IsAvailable) : Listener.ReadyModel();
+
     private static void Start()
     {
-        if (Listener.ReadyModel() is not { } model)
+        if (SpeechModel() is not { } model)
         {
             DictationSetupWindow.ShowSingle();
             return;
         }
         var settings = SettingsStore.Current;
         Settle(settings);
-        _asked.Clear();
-        _before = "";
         _window = new CaptionWindow();
         _window.Show();
         _stop = new CancellationTokenSource();
-        _sentences = Channel.CreateUnbounded<(int, StreamSentence)>(new UnboundedChannelOptions { SingleReader = true });
-        _finished = 0;
         var stop = _stop.Token;
         var dispatcher = Application.Current.Dispatcher;
+        var translator = new LiveTranslator();
+        translator.Missing += () => dispatcher.BeginInvoke(() =>
+            ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", GemmaTranslation.LiveModels));
+        var interpreter = new LiveInterpreter(translator, () => Target(SettingsStore.Current.CaptionsShow));
+        interpreter.Line += line => dispatcher.BeginInvoke(() => _window?.ShowLine(line));
+        interpreter.Failed += ex => Log.Error(ex, "Translating live captions");
+        _interpreter = interpreter;
+        string spoken = settings.CaptionsLanguage;
+        bool translating = Target(settings.CaptionsShow) is { } into && into != spoken;
+        Offer(translating);
         _ = Task.Run(async () =>
         {
-            // Loading a model takes a moment (longer for the bigger ones): the window is up meanwhile.
-            if (!await BeginAsync(model, settings.CaptionsLanguage, stop))
+            // The translation model loads beside the speech model, so the first sentence is translated in its own time
+            // and not the model's loading too (measured on an 8 GB card: both fit with room to spare). The window is
+            // up meanwhile, saying so.
+            if (translating)
             {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await GemmaTranslation.PrepareAsync(stop);
+                    }
+                    catch (Exception ex) when (ex is not OutOfMemoryException)
+                    {
+                        if (ex is not OperationCanceledException)
+                            Log.Error(ex, "Preparing the captions' translation");
+                    }
+                }, stop);
+            }
+            StreamingTranscriber engine;
+            try
+            {
+                // On a graphics card a pass is quick whatever it reads, and word times are aligned to the sound; on a
+                // processor alone Whisper reads only as much as there is to hear, which is several times quicker there.
+                engine = new StreamingTranscriber(ModelStore.Find(model)!, spoken, alignWords: GemmaTranslation.HasCard, ModelStore.Find(ModelCatalog.VoiceFinder), Transcriber.Languages);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Log.Error(ex, "Starting live captions");
                 _ = dispatcher.BeginInvoke(() =>
                 {
-                    Stop();
+                    if (!stop.IsCancellationRequested)
+                        Stop();
                     Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Live Captions"), L.T("The speech model couldn't be loaded."));
                 });
                 return;
             }
-            bool listening = await dispatcher.InvokeAsync(() => IsOn && Listen(SettingsStore.Current.CaptionsSource == "mic"));
-            if (!listening)
-            {
-                _ = dispatcher.BeginInvoke(() =>
-                {
-                    if (!IsOn)
-                        return;
-                    Stop();
-                    Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Live Captions"), L.T("The sound couldn't be listened to."));
-                });
-                return;
-            }
-            _ = Task.Run(() => TranslateAsync(stop), stop);
-            await KeepUpAsync(stop);
-        }, stop);
-    }
-
-    /// <summary>Starts the speech engine with a model, warmed up first; false when it couldn't be loaded.</summary>
-    private static async Task<bool> BeginAsync(ModelInfo model, string language, CancellationToken stop)
-    {
-        StreamingTranscriber engine;
-        try
-        {
-            engine = new StreamingTranscriber(ModelStore.Find(model)!, language, alignWords: true);
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            Log.Error(ex, "Starting live captions");
-            return false;
-        }
-        try
-        {
-            await engine.WarmUpAsync(stop);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
-        {
-            Log.Error(ex, "Warming up live captions");
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        // Turned off while the model was loading.
-        if (stop.IsCancellationRequested)
-        {
-            engine.Dispose();
-            return true;
-        }
-        var dispatcher = Application.Current.Dispatcher;
-        // Only the engine in use speaks (one being replaced may still finish a pass).
-        engine.Changed += state =>
-        {
-            if (_engine != engine)
-                return;
-            _ = dispatcher.BeginInvoke(() => _window?.ShowTalk(state));
-        };
-        engine.Sentence += sentence =>
-        {
-            if (_engine != engine)
-                return;
-            _sentences?.Writer.TryWrite((Interlocked.Increment(ref _finished), sentence));
-            _wake.Release();
-        };
-        engine.Failed += ex => Log.Error(ex, "Live captions");
-        var own = CancellationTokenSource.CreateLinkedTokenSource(stop);
-        CancellationTokenSource? oldStop;
-        lock (Gate)
-        {
-            oldStop = _engineStop;
-            _engine = engine;
-            _engineStop = own;
-            _model = model;
-        }
-        oldStop?.Cancel();
-        _ = Task.Run(async () =>
-        {
             try
             {
-                await engine.RunAsync(own.Token);
+                try
+                {
+                    await engine.WarmUpAsync(stop);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
+                {
+                    Log.Error(ex, "Warming up live captions");
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                // Turned off while the models were loading.
+                if (stop.IsCancellationRequested)
+                    return;
+                engine.Changed += state =>
+                {
+                    interpreter.Heard(state);
+                    _ = dispatcher.BeginInvoke(() => _window?.ShowTalk(state));
+                };
+                engine.Sentence += interpreter.Finished;
+                engine.Failed += ex => Log.Error(ex, "Live captions");
+                lock (Gate)
+                {
+                    _engine = engine;
+                    _model = model;
+                }
+                bool listening = await dispatcher.InvokeAsync(() =>
+                {
+                    if (!IsOn || !Listen(SettingsStore.Current.CaptionsSource == "mic"))
+                        return false;
+                    _window?.Listening();
+                    return true;
+                });
+                if (!listening)
+                {
+                    _ = dispatcher.BeginInvoke(() =>
+                    {
+                        if (stop.IsCancellationRequested)
+                            return;
+                        Stop();
+                        Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Fail(L.T("Live Captions"), L.T("The sound couldn't be listened to."));
+                    });
+                    return;
+                }
+                _ = Task.Run(() => interpreter.RunAsync(stop), stop);
+                _ = Task.Run(() => KeepUpAsync(engine, stop), stop);
+                await engine.RunAsync(stop);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
             {
                 Log.Error(ex, "Live captions");
             }
             finally
             {
-                // Its last pass is over: the model can go (Dispose waits for a translation under way).
+                lock (Gate)
+                {
+                    if (_engine == engine)
+                        _engine = null;
+                }
+                // Its last pass is over: the model can go.
                 engine.Dispose();
-                own.Dispose();
+            }
+        }, stop);
+    }
+
+    // What was offered already since DropWheel started, so nothing is offered twice.
+    private static bool _offeredQuick, _offeredAccurate;
+
+    /// <summary>
+    /// Offers, once, what would make the captions better on this PC and isn't here: the quick translation model where
+    /// only the large one is, or else the most accurate speech model where a graphics card can run it. (When no
+    /// translation model is here at all, the first sentence asks for one.)
+    /// </summary>
+    private static void Offer(bool translating)
+    {
+        if (translating && !Petal.Recipes.Cloud.CloudAi.CanTranslate && GemmaTranslation.Ready && !ModelStore.IsAvailable(ModelCatalog.GemmaQuick))
+        {
+            if (!_offeredQuick)
+                ModelDownloadWindow.Show("Translation Model", "A quicker model keeps the captions up with the speaker. Until it is here, the larger one translates them, a little behind.", GemmaTranslation.LiveModels);
+            _offeredQuick = true;
+            return;
+        }
+        if (translating && !Petal.Recipes.Cloud.CloudAi.CanTranslate && !GemmaTranslation.Ready)
+            return;
+        if (GemmaTranslation.HasCard && !ModelStore.IsAvailable(ModelCatalog.WhisperAccurate) && !_offeredAccurate)
+        {
+            _offeredAccurate = true;
+            ModelDownloadWindow.Show("Speech Model", "This PC's graphics card runs the most accurate speech model without falling behind, and the captions hear every language far better with it. It is downloaded once.",
+                [ModelCatalog.WhisperAccurate], ready: UseAccurate);
+        }
+    }
+
+    /// <summary>The most accurate speech model has arrived: the captions go over to it as they run.</summary>
+    private static void UseAccurate()
+    {
+        StreamingTranscriber? engine;
+        var stop = _stop?.Token ?? CancellationToken.None;
+        lock (Gate)
+            engine = _engine;
+        if (engine is null || ModelStore.Find(ModelCatalog.WhisperAccurate) is not { } path)
+            return;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await engine.UseModelAsync(path, stop);
+                lock (Gate)
+                    _model = ModelCatalog.WhisperAccurate;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                if (ex is not OperationCanceledException)
+                    Log.Error(ex, "Changing the captions' speech model");
             }
         }, CancellationToken.None);
-        return true;
     }
 
     /// <summary>
-    /// Watches how quickly the passes go. When the speech model is too heavy for this PC (each pass takes most of
-    /// the time it covers, so the words fall behind), a smaller model that is here takes over.
+    /// Watches how quickly the passes go. When the speech model is too heavy for this PC (each pass takes long, so
+    /// the words fall behind), a smaller model that is here takes over: the sound held and the words so far stay.
     /// </summary>
-    private static async Task KeepUpAsync(CancellationToken stop)
+    private static async Task KeepUpAsync(StreamingTranscriber engine, CancellationToken stop)
     {
         double average = 0;
-        int slow = 0;
+        int slow = 0, quick = 0;
+        // The model the captions started with, and how long the PC must keep up easily before it is tried again.
+        ModelInfo? wanted = null;
+        int patience = 30;
         while (!stop.IsCancellationRequested)
         {
             try { await Task.Delay(1000, stop); } catch (OperationCanceledException) { return; }
-            StreamingTranscriber? engine;
             ModelInfo? model;
             lock (Gate)
-            {
-                engine = _engine;
                 model = _model;
-            }
-            if (engine is null || model is null || engine.LastPass <= 0)
+            if (model is null || engine.LastPass <= 0)
                 continue;
+            wanted ??= model;
             // Passes run one after another, so a pass's length is how far the words are behind the talk.
             average = average == 0 ? engine.LastPass : average * 0.7 + engine.LastPass * 0.3;
-            slow = average > 1.6 ? slow + 1 : 0;
+            // What slowed the PC down may have been passing (a game loading, another program on the graphics card):
+            // once the quicker model has had it easy for a while the better one is tried again, and each time that
+            // doesn't hold, the wait doubles.
+            quick = model != wanted && average < 0.6 ? quick + 1 : 0;
+            if (quick >= patience)
+            {
+                int now = Array.IndexOf(Listener.Models, model), top = Array.IndexOf(Listener.Models, wanted);
+                var better = Listener.Models.Skip(now + 1).Take(Math.Max(0, top - now)).FirstOrDefault(ModelStore.IsAvailable);
+                quick = 0;
+                patience *= 2;
+                if (better is not null)
+                {
+                    try
+                    {
+                        await engine.UseModelAsync(ModelStore.Find(better)!, stop);
+                        lock (Gate)
+                            _model = better;
+                        Log.Info($"Live captions: back to {better.Id}");
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
+                    {
+                        Log.Error(ex, "Changing the captions' speech model");
+                    }
+                    average = 0;
+                    slow = 0;
+                    continue;
+                }
+            }
+            // Up to about two seconds behind still reads as live, and a more accurate model is worth that; beyond it, not.
+            slow = average > 2.4 ? slow + 1 : 0;
             if (slow < 6)
                 continue;
             int at = Array.IndexOf(Listener.Models, model);
@@ -214,86 +306,21 @@ internal static class LiveCaptions
             if (quicker is null)
                 continue;
             Log.Info($"Live captions: {model.Id} is too slow here ({average:0.00}), switching to {quicker.Id}");
-            if (await BeginAsync(quicker, SettingsStore.Current.CaptionsLanguage, stop))
+            try
+            {
+                await engine.UseModelAsync(ModelStore.Find(quicker)!, stop);
+                lock (Gate)
+                    _model = quicker;
                 _ = Application.Current.Dispatcher.BeginInvoke(() => _window?.Note(L.T("A quicker speech model took over, so the captions keep up.")));
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
+            {
+                Log.Error(ex, "Changing the captions' speech model");
+            }
             average = 0;
             slow = 0;
         }
     }
-
-    private static readonly SemaphoreSlim _wake = new(0);
-
-    /// <summary>
-    /// The translation lane: finished sentences first, in order, each translated properly; when none waits, the
-    /// sentence being said, quickly, so its translation grows along with it.
-    /// </summary>
-    private static async Task TranslateAsync(CancellationToken stop)
-    {
-        var dispatcher = Application.Current.Dispatcher;
-        var sentences = _sentences!;
-        while (!stop.IsCancellationRequested)
-        {
-            try { await _wake.WaitAsync(stop); } catch (OperationCanceledException) { return; }
-            try
-            {
-                StreamingTranscriber? engine;
-                lock (Gate)
-                    engine = _engine;
-                if (engine is null)
-                    continue;
-                string? target = Target(SettingsStore.Current.CaptionsShow);
-                while (sentences.Reader.TryRead(out var item))
-                {
-                    var (finished, sentence) = item;
-                    // Behind the speaker: what has gathered goes as one, so the translation catches up and nothing is left out.
-                    var words = sentence.Text;
-                    while (sentences.Reader.TryRead(out var next))
-                    {
-                        finished = next.Item1;
-                        sentence = next.Item2;
-                        words += " " + sentence.Text;
-                    }
-                    var translated = target is null ? null : await TranslateAsync(target, words, sentence.Language, stop);
-                    _ = dispatcher.BeginInvoke(() => _window?.ShowTranslation(translated, final: true, finished));
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException)
-            {
-                Log.Error(ex, "Translating live captions");
-            }
-        }
-    }
-
-    // The translations asked for already this time, so a missing model is offered once.
-    private static readonly HashSet<(string, string)> _asked = [];
-
-    /// <summary>
-    /// Words in the language wanted, or null when they are in it already or nothing can translate them yet. Finished sentences
-    /// only: a sentence being said changes twice a second, and half a sentence is what gets translated wrongly. The sentence
-    /// before goes with it, to read it by.
-    /// </summary>
-    private static async Task<string?> TranslateAsync(string target, string text, string language, CancellationToken stop)
-    {
-        string from = language is "" or "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "" : language;
-        if (from == target)
-            return null;
-        if (Petal.Recipes.Cloud.CloudAi.CanTranslate)
-            return (await Translator.TranslateAsync([text], from.Length > 0 ? from : "auto", target, null, stop))[0];
-        if (!GemmaTranslation.Ready)
-        {
-            if (_asked.Add(("", target)))
-                _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", GemmaTranslation.LiveModels));
-            return null;
-        }
-        if (!ModelStore.IsAvailable(ModelCatalog.GemmaQuick) && _asked.Add(("quick", "")))
-            _ = Application.Current.Dispatcher.BeginInvoke(() => ModelDownloadWindow.Show("Translation Model", "A quicker model keeps the captions up with the speaker. Until it is here, the larger one translates them, a little behind.", GemmaTranslation.LiveModels));
-        var said = await GemmaTranslation.TranslateAsync(text, from, target, _before.Length > 0 ? [_before] : null, live: true, stop);
-        _before = text;
-        return target == "ar" ? Translator.Tidy(said) : said;
-    }
-
-    // The sentence before the one being translated.
-    private static string _before = "";
 
     /// <summary>
     /// The model captions are best with: one for every pair of languages, and the quickest of those.
@@ -421,16 +448,14 @@ internal static class LiveCaptions
 
     public static void Stop()
     {
+        // Cancelling ends the engine's run, and its model goes once the pass under way is over.
         _stop?.Cancel();
         _stop = null;
         StopListening();
-        _sentences?.Writer.TryComplete();
-        _sentences = null;
-        // Cancelling the engine's run lets its model go once the pass under way is over.
+        _interpreter = null;
         lock (Gate)
         {
             _engine = null;
-            _engineStop = null;
             _model = null;
         }
         _window?.Close();
@@ -476,16 +501,17 @@ internal static class LiveCaptions
         settings.CaptionsShow = order[(Array.IndexOf(order, settings.CaptionsShow) + 1) % order.Length];
         SettingsStore.Save();
         _window?.ClearTranslation();
+        _interpreter?.Afresh();
         _window?.Refresh();
     }
 }
 
 /// <summary>
-/// The caption bar: what was said rolls as the talk goes on, the final words bright and the newest (which may
-/// still change) dimmer. A translation has two lines of its own, because many languages can't be put right until
-/// their sentence ends: the first holds the last finished sentence, translated properly; the second, under it, the
-/// sentence being said, translated as it comes. When that sentence ends, it moves up to the first line.
-/// What was said is small above them.
+/// The caption bar. A translation has two lines, because many languages can't be put right until their sentence
+/// ends: the first holds the last finished sentence, translated properly; the second, under it, the sentence being
+/// said, translated word by word as it comes, its settled words brighter than its newest. The moment that sentence
+/// ends it moves up to the first line, and its proper translation takes its place there. What was said is small above
+/// them. Without a translation, what was said rolls as the talk goes on, the settled words bright and the newest dimmer.
 /// </summary>
 internal sealed class CaptionWindow : Window
 {
@@ -493,14 +519,23 @@ internal sealed class CaptionWindow : Window
     private readonly StackPanel _buttons, _text;
     private readonly StripButton _source, _show;
     private StreamState? _talk;
-    // The translation: the last finished sentence's and the sentence being said.
-    private string _sentence = "";
-    private string _partial = "";
-    // The number of the sentence the partial translation is of, and of the latest finished one translated.
-    private int _partialFor, _shownFinal;
+    // The first line: the last finished sentence's translation, the number of that sentence, when it went up, and
+    // the one before it while that hasn't been up long enough to read.
+    private string _first = "", _earlier = "";
+    private int _firstOf;
+    private bool _firstProper;
+    private TimeSpan _firstAt;
+    // The second line: the translation of the sentence being said, how much of it no longer changes, and its number.
+    private string _second = "";
+    private int _steady, _secondOf;
+
+    /// <summary>The time, for tests to set: how long a sentence has been up decides whether it stays beside the next.</summary>
+    internal Func<TimeSpan> Clock { get; set; } = () => TimeSpan.FromMilliseconds(Environment.TickCount64);
 
     private static readonly Brush Bright = Brushes.White;
     private static readonly Brush Dim = Frozen(Color.FromArgb(0x9A, 0xFF, 0xFF, 0xFF));
+    private static readonly Brush Steady = Frozen(Color.FromArgb(0xDC, 0xFF, 0xFF, 0xFF));
+    private static readonly Brush Newest = Frozen(Color.FromArgb(0x86, 0xFF, 0xFF, 0xFF));
     private static readonly Brush SmallBright = Frozen(Color.FromArgb(0xC8, 0xFF, 0xFF, 0xFF));
     private static readonly Brush SmallDim = Frozen(Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
 
@@ -579,8 +614,18 @@ internal sealed class CaptionWindow : Window
         var settings = SettingsStore.Current;
         _source.Child = Icons.Create(settings.CaptionsSource == "mic" ? "mic" : "volume", 15, Brushes.White, 1.9);
         if (_talk is null)
-            _status.Text = L.T(settings.CaptionsSource == "mic" ? "Listening to the microphone…" : "Listening to the PC's sound…");
+            _status.Text = L.T(!_listening ? "Preparing…" : settings.CaptionsSource == "mic" ? "Listening to the microphone…" : "Listening to the PC's sound…");
         Render();
+    }
+
+    // Whether the models are loaded and the sound is being listened to: until then the bar says it is getting ready.
+    private bool _listening;
+
+    /// <summary>The models are loaded and listening has begun.</summary>
+    public void Listening()
+    {
+        _listening = true;
+        Refresh();
     }
 
     /// <summary>A short line above the captions for a few seconds.</summary>
@@ -604,35 +649,61 @@ internal sealed class CaptionWindow : Window
         if (_talk is null)
             _status.Visibility = Visibility.Collapsed;
         _talk = talk;
-        Render();
+        // The talk has gone on to the next sentence: what the second line holds is of a sentence that is over, and
+        // moves up at once, whether or not the translator has got to it yet (it may still be busy with the one before).
+        if (_second.Length > 0 && talk.Number > _secondOf && _firstOf < _secondOf)
+            ShowLine(new LiveLine(_secondOf, true, _second, 0, false));
+        else
+            Render();
     }
 
     /// <summary>
-    /// A translation of sentence number <paramref name="number"/>: finished (final), or still being said. The
-    /// translation of a sentence still being said that comes after that sentence was finished is let go.
+    /// A line of translation: a finished sentence's goes to the first line (and clears the second, which held it while
+    /// it was being said); that of the sentence being said goes to the second. A line that comes late, of a sentence
+    /// already finished and shown, is let go.
     /// </summary>
-    public void ShowTranslation(string? text, bool final, int number)
+    public void ShowLine(LiveLine line)
     {
-        if (final)
+        var text = line.Text.Trim();
+        if (line.Final)
         {
-            _shownFinal = Math.Max(_shownFinal, number);
-            if (!string.IsNullOrWhiteSpace(text))
-                _sentence = text.Trim();
-            if (_partialFor <= number)
-                _partial = "";
+            if (line.Number < _firstOf || text.Length == 0)
+                return;
+            if (line.Number > _firstOf)
+            {
+                // A sentence that has only just gone up stays in front of the next one while there is room: a short one
+                // after another ("Yes. I agree.") would otherwise be gone before it was read.
+                var now = Clock();
+                _earlier = _first.Length > 0 && now - _firstAt < Reading(_first) ? _first : "";
+                _firstAt = now;
+                _firstOf = line.Number;
+            }
+            _first = text;
+            _firstProper = line.Proper;
+            if (_secondOf <= line.Number)
+            {
+                _second = "";
+                _steady = 0;
+            }
         }
-        else if (number > _shownFinal)
+        else if (line.Number > _firstOf)
         {
-            _partial = text?.Trim() ?? "";
-            _partialFor = number;
+            _second = text;
+            _steady = Math.Clamp(line.Steady, 0, text.Length);
+            _secondOf = line.Number;
         }
         Render();
     }
 
+    /// <summary>How long a sentence takes to read: a twentieth of a second a letter, between one second and three and a half.</summary>
+    private static TimeSpan Reading(string text) => TimeSpan.FromSeconds(Math.Clamp(text.Length * 0.05, 1, 3.5));
+
     public void ClearTranslation()
     {
-        _sentence = "";
-        _partial = "";
+        _first = "";
+        _earlier = "";
+        _second = "";
+        _steady = 0;
     }
 
     /// <summary>Fills the lines from what was heard and its translation, as the settings want them shown.</summary>
@@ -642,13 +713,18 @@ internal sealed class CaptionWindow : Window
             return;
         var said = (Join(talk.Previous, talk.Current), talk.Draft);
         bool translating = LiveCaptions.Target(SettingsStore.Current.CaptionsShow) is not null;
-        bool hasTranslation = translating && (_sentence.Length > 0 || _partial.Length > 0);
+        bool hasTranslation = translating && (_first.Length > 0 || _second.Length > 0);
         bool both = SettingsStore.Current.CaptionsShow == "both";
         if (hasTranslation)
         {
             // Both lines keep their room even while one is empty, so the bar doesn't jump at each sentence.
-            Fill(_main, (_sentence, ""), Bright, Dim, 3);
-            Fill(_live, (_partial, ""), Dim, Dim, 2);
+            // Just moved up, as the second line had it: a shade under full brightness until its proper translation is there.
+            if (_firstProper)
+                Fill(_main, (Join(_earlier, _first), ""), Bright, Dim, 3);
+            else
+                Fill(_main, (_earlier, _first), Bright, Steady, 3);
+            int steady = Math.Clamp(_steady, 0, _second.Length);
+            Fill(_live, (_second[..steady], _second[steady..]), Steady, Newest, 2);
             _main.MinHeight = _main.FontSize * _main.FontFamily.LineSpacing;
             _live.MinHeight = _live.FontSize * _live.FontFamily.LineSpacing;
             _live.Visibility = Visibility.Visible;
@@ -671,6 +747,9 @@ internal sealed class CaptionWindow : Window
             new TextRange(_main.ContentStart, _main.ContentEnd).Text,
             _live.Visibility == Visibility.Visible ? new TextRange(_live.ContentStart, _live.ContentEnd).Text : "");
 
+    /// <summary>The settled start of the second line (for tests).</summary>
+    internal string SteadyShown => _live.Visibility == Visibility.Visible && _live.Inlines.FirstInline is Run { Foreground: var brush } run && brush == Steady ? run.Text : "";
+
     private static string Join(string a, string b) => a.Length == 0 ? b : b.Length == 0 ? a : a + " " + b;
 
     public void Show(string original, string? translated, string? saying = null)
@@ -679,11 +758,15 @@ internal sealed class CaptionWindow : Window
         _talk = new StreamState(original, "", "", "", -1);
         _status.Visibility = Visibility.Collapsed;
         if (translated is not null)
-            ShowTranslation(translated, final: true, 1);
+            ShowLine(new LiveLine(1, true, translated, 0, true));
         else
             Render();
         if (saying is not null)
-            ShowTranslation(saying, final: false, 2);
+        {
+            // Its last word is the newest: dimmer than the settled ones before it.
+            int settled = Math.Max(0, saying.LastIndexOf(' '));
+            ShowLine(new LiveLine(2, false, saying, settled, false));
+        }
     }
 
     /// <summary>
