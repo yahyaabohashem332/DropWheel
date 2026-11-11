@@ -383,7 +383,7 @@ public static partial class AskPetal
     {
         var zip = ModelStore.Find(ModelCatalog.LlamaCpp) ?? throw new InvalidOperationException("The AI model isn't downloaded yet.");
         // Unpacked among the downloads, which can be written to even when the zip ships with the app.
-        var folder = Path.Combine(ModelStore.Folder, "llama-runtime");
+        var folder = Path.Combine(ModelStore.Folder, ModelStore.LlamaRuntime);
         if (File.Exists(Path.Combine(folder, "llama-completion.exe")))
             return folder;
         var staging = folder + ".part";
@@ -432,7 +432,7 @@ public static partial class AskPetal
             int threads = Math.Clamp(Environment.ProcessorCount - 1, 1, 8);
             // The shared start of every prompt (instructions and examples) is cached beside the
             // model, so later questions only read their own few words.
-            var cache = Path.Combine(Path.GetDirectoryName(model)!, "ask-petal.cache");
+            var cache = Path.Combine(Path.GetDirectoryName(model)!, ModelStore.AskPetalCache);
             foreach (var arg in new[] { "-m", model, "-f", prompt, "-jf", schema, "-n", "300", "--temp", "0", "-no-cnv", "--no-display-prompt",
                          "-c", "4096", "-t", threads.ToString(CultureInfo.InvariantCulture), "--prompt-cache", cache })
                 start.ArgumentList.Add(arg);

@@ -3656,5 +3656,13 @@ internal static class Arabic
         ["This software uses libraries from the FFmpeg project under the LGPLv2.1."] = "يستخدم هذا البرنامج مكتبات من مشروع FFmpeg بموجب رخصة LGPLv2.1.",
         ["DropWheel reads WMV and WMA files but doesn't write them, as their encoders aren't free to ship. Choose MP4 or M4A instead."] = "يقرأ DropWheel ملفات WMV وWMA لكنه لا يكتبها، فأدوات ترميزها ليست حرّة ليأتي بها. اختر MP4 أو M4A بدلًا منها.",
         ["This size is too small for this video. The smallest it can be is about {0}."] = "هذا الحجم أصغر مما يمكن لهذا الفيديو. أصغر حجم ممكن له نحو {0}.",
+        ["Saved in"] = "يُحفظ في",
+        ["Choose where AI models are kept"] = "اختر مكان حفظ نماذج الذكاء الاصطناعي",
+        ["That drive hasn't room for the models: they take {0}, and {1} is free."] = "لا تتسع هذه الوحدة للنماذج: حجمها {0}، والمتاح {1}.",
+        ["DropWheel can't keep models in that folder. Choose another one."] = "لا يستطيع DropWheel حفظ النماذج في هذا المجلد. اختر مجلدًا آخر.",
+        ["Moving the models: {0} of {1}"] = "نقل النماذج: {0} من {1}",
+        ["The models weren't moved: one of them may be in use. Close the AI tools and try again."] = "لم تُنقل النماذج: قد يكون أحدها قيد الاستخدام. أغلق أدوات الذكاء الاصطناعي وأعد المحاولة.",
+        ["Where models are kept"] = "مكان حفظ النماذج",
+        ["Downloaded models are kept in this folder. Choosing another moves the ones already downloaded there."] = "تُحفظ النماذج المنزّلة في هذا المجلد، واختيار مجلد آخر ينقل إليه ما نُزّل منها.",
     };
 }

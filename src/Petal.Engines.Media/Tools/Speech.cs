@@ -283,7 +283,7 @@ public static class Speech
     {
         var zip = ModelStore.Find(ModelCatalog.Piper) ?? throw new MediaException("The natural voices aren't downloaded yet.");
         // Unpacked among the downloads, which can be written to even when the zip ships with the app.
-        var folder = Path.Combine(ModelStore.Folder, "piper-runtime");
+        var folder = Path.Combine(ModelStore.Folder, ModelStore.PiperRuntime);
         var exe = Path.Combine(folder, "piper", "piper.exe");
         if (File.Exists(exe))
             return Path.GetDirectoryName(exe)!;

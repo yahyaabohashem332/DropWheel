@@ -1,7 +1,10 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Petal.App.Localization;
+using Petal.App.Tools.Parts;
+using Petal.App.Util;
 using Petal.Core.Models;
 using Petal.Recipes.Cloud;
 
@@ -118,6 +121,86 @@ public sealed partial class SettingsWindow
         void Chosen() => Dispatcher.BeginInvoke(Fill);
         AiSetup.Chosen += Chosen;
         Closed += (_, _) => AiSetup.Chosen -= Chosen;
+        return new StackPanel { Children = { panel, ModelsFolderSection() } };
+    }
+
+    /// <summary>Where downloaded models are kept, and another folder to move them to (a model's own card offers it too).</summary>
+    private UIElement ModelsFolderSection()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(Text("Where models are kept", "Petal.Label").WithMargin(0, 16, 0, 0));
+        var path = Text(ModelStore.Folder, "Petal.Caption");
+        path.TextTrimming = TextTrimming.CharacterEllipsis;
+        path.TextWrapping = TextWrapping.NoWrap;
+        path.FlowDirection = FlowDirection.LeftToRight;
+        path.VerticalAlignment = VerticalAlignment.Center;
+        path.Margin = new Thickness(10, 0, 0, 0);
+        var change = new Button { Content = L.T("Change Folder…") };
+        var open = new Button { Content = L.T("Open the Models Folder"), Margin = new Thickness(8, 0, 0, 0) };
+        var row = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
+        DockPanel.SetDock(change, Dock.Left);
+        DockPanel.SetDock(open, Dock.Left);
+        row.Children.Add(change);
+        row.Children.Add(open);
+        row.Children.Add(path);
+        panel.Children.Add(row);
+        var status = Text("", "Petal.Caption").WithMargin(0, 6, 0, 0);
+        status.Visibility = Visibility.Collapsed;
+        panel.Children.Add(status);
+        panel.Children.Add(Text("Downloaded models are kept in this folder. Choosing another moves the ones already downloaded there.", "Petal.Caption").WithMargin(0, 6, 0, 0));
+
+        void Refresh()
+        {
+            path.Text = ModelFolderChooser.Short(ModelStore.Folder);
+            path.ToolTip = ModelStore.Folder;
+        }
+        void Say(string words)
+        {
+            status.Text = words;
+            status.Visibility = words.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        Refresh();
+        open.Click += (_, _) =>
+        {
+            Directory.CreateDirectory(ModelStore.Folder);
+            Process.Start(new ProcessStartInfo(ModelStore.Folder) { UseShellExecute = true });
+        };
+        change.Click += async (_, _) =>
+        {
+            if (ModelFolderChooser.Ask(this) is not { } folder)
+                return;
+            if (ModelFolderChooser.Problem(folder) is { } problem)
+            {
+                Say(problem);
+                return;
+            }
+            change.IsEnabled = false;
+            var total = ModelStore.SizeOf(ModelStore.Folder);
+            var progress = new Progress<double>(f =>
+            {
+                if (total > 0)
+                    Say(L.F("Moving the models: {0} of {1}", Sizes.Format((long)(total * f)), Sizes.Format(total)));
+            });
+            try
+            {
+                await ModelFolderChooser.MoveAsync(folder, progress, CancellationToken.None);
+                Say("");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Moving the models to {folder}");
+                Say(ModelFolderChooser.Failure(ex));
+            }
+            finally
+            {
+                change.IsEnabled = true;
+                Refresh();
+            }
+        };
+        // Moved from a model's card while this is open.
+        void Moved() => Dispatcher.BeginInvoke(Refresh);
+        ModelStore.FolderChanged += Moved;
+        Closed += (_, _) => ModelStore.FolderChanged -= Moved;
         return panel;
     }
 

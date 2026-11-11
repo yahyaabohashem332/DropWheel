@@ -52,7 +52,9 @@ public partial class App : Application
         if (args.Length >= 3 && args[0] == "--snapshot-tools")
         {
             ThemeResources.Install(this);
-            AiSetup.Apply(SettingsStore.Load());
+            var snapshotSettings = SettingsStore.Load();
+            Petal.Core.Models.ModelStore.Folder = Petal.Core.Models.ModelStore.FolderFor(snapshotSettings.ModelsFolder);
+            AiSetup.Apply(snapshotSettings);
             Dispatcher.BeginInvoke(async () =>
             {
                 try { await DesignSnapshots.RunToolsAsync(args); }
@@ -151,6 +153,8 @@ public partial class App : Application
                 ContextMenuRegistration.Apply(SettingsStore.Current.ExplorerContextMenu);
             };
             Theme.Configure(settings.Theme, settings.AccentColour, settings.AccentCustom);
+            // The folder downloaded models are kept in, if the user chose one.
+            Petal.Core.Models.ModelStore.Folder = Petal.Core.Models.ModelStore.FolderFor(settings.ModelsFolder);
             AiSetup.Apply(settings);
             ThemeResources.Install(this);
             SystemEvents.UserPreferenceChanged += (_, _) => Dispatcher.BeginInvoke(Theme.Refresh);
@@ -292,6 +296,7 @@ public partial class App : Application
             SettingsStore.Save();
         L.Configure(s.Language);
         Theme.Configure(s.Theme, s.AccentColour, s.AccentCustom);
+        Petal.Core.Models.ModelStore.Folder = Petal.Core.Models.ModelStore.FolderFor(s.ModelsFolder);
         AiSetup.Apply(s);
         if (_hotkey is not null)
         {

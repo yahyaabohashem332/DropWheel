@@ -35,7 +35,11 @@ public sealed class ModelPanel : Border
     private readonly TextBlock _keyLabel = new() { Margin = new Thickness(0, 10, 0, 4), FontSize = 12 };
     private readonly Button _useKey = new();
     private readonly TextBlock _keyStatus = new() { Margin = new Thickness(0, 6, 0, 0), FontSize = 12, TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
+    private readonly Grid _folderRow = new() { Margin = new Thickness(0, 8, 0, 0) };
+    private readonly TextBlock _folder = new() { FontSize = 12, FlowDirection = FlowDirection.LeftToRight, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Button _changeFolder = new();
     private CancellationTokenSource? _cts;
+    private CancellationTokenSource? _moving;
     private IReadOnlyList<ModelInfo> _models;
     private bool _wanted = true;
     private bool _ready;
@@ -88,7 +92,7 @@ public sealed class ModelPanel : Border
         _byKey.Children.Add(Beside(new StackPanel { Children = { keyHeading, _keyWords } }, _ownKey));
         _byKey.Children.Add(KeyForm());
 
-        Child = new StackPanel { Children = { Beside(new StackPanel { Children = { _hereHeading, _text } }, _download), _track, _status, _byKey } };
+        Child = new StackPanel { Children = { Beside(new StackPanel { Children = { _hereHeading, _text } }, _download), FolderRow(), _track, _status, _byKey } };
 
         void Changed()
         {
@@ -97,17 +101,100 @@ public sealed class ModelPanel : Border
             else
                 Dispatcher.BeginInvoke(RunnerChanged);
         }
+        // The models moved, from this panel or another, or from Settings.
+        void Moved() => Dispatcher.BeginInvoke(Show);
         Loaded += (_, _) =>
         {
             AiSetup.Changed += Changed;
+            ModelStore.FolderChanged += Moved;
             RunnerChanged();
         };
         Unloaded += (_, _) =>
         {
             AiSetup.Changed -= Changed;
+            ModelStore.FolderChanged -= Moved;
             _cts?.Cancel();
+            _moving?.Cancel();
         };
         Show();
+    }
+
+    /// <summary>Where the download goes, with a button to choose another folder.</summary>
+    private Grid FolderRow()
+    {
+        var label = new TextBlock { Text = L.T("Saved in"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) };
+        label.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
+        _folder.SetResourceReference(TextBlock.ForegroundProperty, "Petal.Text");
+        _changeFolder.Content = L.T("Change Folder…");
+        _changeFolder.Style = (Style)Application.Current.FindResource("Petal.SubtleButton");
+        _changeFolder.Margin = new Thickness(8, 0, 0, 0);
+        _changeFolder.VerticalAlignment = VerticalAlignment.Center;
+        _changeFolder.Click += async (_, _) => await ChangeFolderAsync();
+        _folderRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        _folderRow.ColumnDefinitions.Add(new ColumnDefinition());
+        _folderRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        Grid.SetColumn(_folder, 1);
+        Grid.SetColumn(_changeFolder, 2);
+        _folderRow.Children.Add(label);
+        _folderRow.Children.Add(_folder);
+        _folderRow.Children.Add(_changeFolder);
+        return _folderRow;
+    }
+
+    /// <summary>Another folder for the models: those already downloaded move there, with their progress shown here.</summary>
+    private async Task ChangeFolderAsync()
+    {
+        if (_moving is not null)
+        {
+            _moving.Cancel();
+            return;
+        }
+        if (_cts is not null || ModelFolderChooser.Ask(Window.GetWindow(this)) is not { } folder)
+            return;
+        if (ModelFolderChooser.Problem(folder) is { } problem)
+        {
+            Tell(problem);
+            return;
+        }
+        _moving = new CancellationTokenSource();
+        _changeFolder.Content = L.T("Cancel");
+        _download.IsEnabled = false;
+        var total = ModelStore.SizeOf(ModelStore.Folder);
+        var progress = new Progress<double>(f =>
+        {
+            if (total <= 0)
+                return;
+            _track.Visibility = Visibility.Visible;
+            _fill.Width = Math.Max(0, _track.ActualWidth * f);
+            Tell(L.F("Moving the models: {0} of {1}", Sizes.Format((long)(total * f)), Sizes.Format(total)));
+        });
+        string? failure = null;
+        try
+        {
+            await ModelFolderChooser.MoveAsync(folder, progress, _moving.Token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, $"Moving the models to {folder}");
+            failure = ModelFolderChooser.Failure(ex);
+        }
+        finally
+        {
+            _moving.Dispose();
+            _moving = null;
+        }
+        Show();
+        if (failure is not null)
+            Tell(failure);
+    }
+
+    private void Tell(string words)
+    {
+        _status.Visibility = Visibility.Visible;
+        _status.Text = words;
     }
 
     private static TextBlock Heading(string words)
@@ -331,8 +418,14 @@ public sealed class ModelPanel : Border
         _keyWords.Visibility = _runner is null && here && _keyForm.Visibility != Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
         _ownKey.Content = L.T(_runner is not null ? "Change" : "Use My API Key");
         _ownKey.Visibility = _keyForm.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-        if (_cts is not null)
+        // Where a download goes, until it has arrived: there it can be changed.
+        _folderRow.Visibility = here ? Visibility.Collapsed : Visibility.Visible;
+        _folder.Text = ModelFolderChooser.Short(ModelStore.Folder);
+        _folder.ToolTip = ModelStore.Folder;
+        _changeFolder.IsEnabled = _cts is null;
+        if (_cts is not null || _moving is not null)
             return;
+        _changeFolder.Content = L.T("Change Folder…");
         _download.Content = L.T(here ? "Use This PC" : "Download");
         _download.IsEnabled = true;
         _download.Visibility = here && _runner is null ? Visibility.Collapsed : Visibility.Visible;
@@ -349,7 +442,10 @@ public sealed class ModelPanel : Border
             _cts.Cancel();
             return;
         }
+        if (_moving is not null)
+            return;
         _cts = new CancellationTokenSource();
+        _changeFolder.IsEnabled = false;
         _download.Content = L.T("Cancel");
         _track.Visibility = Visibility.Visible;
         var missing = Missing;

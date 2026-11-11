@@ -319,8 +319,299 @@ public static class ModelStore
 {
     private static readonly SemaphoreSlim Gate = new(1, 1);
 
-    /// <summary>Downloaded models: %LOCALAPPDATA%\Petal\models (overridable for tests).</summary>
-    public static string Folder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Petal", "models");
+    /// <summary>Where downloaded models are kept unless the user chooses another folder: %LOCALAPPDATA%\Petal\models.</summary>
+    public static string DefaultFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Petal", "models");
+
+    /// <summary>Downloaded models: <see cref="DefaultFolder"/>, or the folder the user chose (settable for tests).</summary>
+    public static string Folder { get; set; } = DefaultFolder;
+
+    /// <summary>Raised after the models have moved to another folder (<see cref="MoveAsync"/>).</summary>
+    public static event Action? FolderChanged;
+
+    // What DropWheel keeps beside the models: programs unpacked from the ones that are archives, a mark and a cache.
+    public const string PiperRuntime = "piper-runtime";
+    public const string LlamaRuntime = "llama-runtime";
+    public const string LlamaRuntimeVulkan = "llama-runtime-vulkan";
+    public const string LlamaCardFailed = "llama-card-failed.txt";
+    public const string AskPetalCache = "ask-petal.cache";
+
+    private static readonly string[] Unpacked = [PiperRuntime, LlamaRuntime, LlamaRuntimeVulkan, LlamaCardFailed, AskPetalCache];
+
+    /// <summary>
+    /// The folder models are kept in for a choice: the chosen one, or the usual one when none was chosen or its drive
+    /// isn't on this PC (settings brought from another).
+    /// </summary>
+    public static string FolderFor(string? chosen) =>
+        chosen is { Length: > 0 } && Path.IsPathFullyQualified(chosen) && Path.GetPathRoot(chosen) is { } root && Directory.Exists(root)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(chosen))
+            : DefaultFolder;
+
+    /// <summary>
+    /// DropWheel's own items in a models folder, as paths relative to it: each downloaded model's file and what is
+    /// unpacked beside them. Nothing else in the folder is DropWheel's to move.
+    /// </summary>
+    public static IReadOnlyList<string> ItemsIn(string folder)
+    {
+        var items = new List<string>();
+        foreach (var model in ModelCatalog.All.Where(m => !m.Bundled))
+        {
+            if (File.Exists(Path.Combine(folder, model.FileName)))
+                items.Add(model.FileName);
+        }
+        foreach (var name in Unpacked)
+        {
+            var path = Path.Combine(folder, name);
+            if (File.Exists(path) || Directory.Exists(path))
+                items.Add(name);
+        }
+        return items;
+    }
+
+    /// <summary>The bytes DropWheel's items take in a models folder.</summary>
+    public static long SizeOf(string folder) => ItemsIn(folder).Sum(item => Bytes(Path.Combine(folder, item)));
+
+    private static long Bytes(string path) =>
+        File.Exists(path) ? new FileInfo(path).Length
+        : Directory.Exists(path) ? new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length)
+        : 0;
+
+    /// <summary>
+    /// Whether <paramref name="folder"/> can take the models: made if missing, written to and read back, with room for
+    /// what moves there from another drive. Null when it can, else why not.
+    /// </summary>
+    public static ModelFolderProblem? Check(string folder)
+    {
+        string target, here;
+        try
+        {
+            target = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
+            here = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Folder));
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return new ModelFolderProblem(ModelFolderProblemKind.NotWritable, 0, 0);
+        }
+        // Not inside one of the items that would move there.
+        foreach (var item in ItemsIn(here))
+        {
+            var inside = Path.Combine(here, item);
+            if (target.Equals(inside, StringComparison.OrdinalIgnoreCase) || target.StartsWith(inside + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                return new ModelFolderProblem(ModelFolderProblemKind.NotWritable, 0, 0);
+        }
+        try
+        {
+            Directory.CreateDirectory(target);
+            var probe = Path.Combine(target, $".dropwheel-{Guid.NewGuid():N}.tmp");
+            File.WriteAllText(probe, "DropWheel");
+            var back = File.ReadAllText(probe);
+            File.Delete(probe);
+            if (back != "DropWheel")
+                return new ModelFolderProblem(ModelFolderProblemKind.NotWritable, 0, 0);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            return new ModelFolderProblem(ModelFolderProblemKind.NotWritable, 0, 0);
+        }
+        if (!SameDrive(here, target))
+        {
+            var needed = SizeOf(here);
+            var free = new DriveInfo(Path.GetPathRoot(target)!).AvailableFreeSpace;
+            // A little room to spare: a full drive helps nobody.
+            if (needed > 0 && free < needed + (64L << 20))
+                return new ModelFolderProblem(ModelFolderProblemKind.NoSpace, needed, free);
+        }
+        return null;
+    }
+
+    private static bool SameDrive(string a, string b) =>
+        string.Equals(Path.GetPathRoot(a), Path.GetPathRoot(b), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Moves DropWheel's items from the models folder to <paramref name="to"/>, then keeps models there: all of them,
+    /// or, when it fails or is cancelled part way, none (what was copied is taken away again and the originals stay
+    /// where they were). On one drive each is renamed; to another it is copied, then the originals are removed. Waits
+    /// for a download under way, and no download starts while it moves.
+    /// </summary>
+    public static async Task MoveAsync(string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        await Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var from = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Folder));
+            var target = Path.TrimEndingDirectorySeparator(Path.GetFullPath(to));
+            if (string.Equals(from, target, StringComparison.OrdinalIgnoreCase))
+                return;
+            Directory.CreateDirectory(target);
+            var items = ItemsIn(from);
+            if (SameDrive(from, target))
+                Rename(from, target, items, progress);
+            else
+                await CopyAsync(from, target, items, progress, cancellationToken).ConfigureAwait(false);
+            Folder = target;
+            progress?.Report(1);
+        }
+        finally
+        {
+            Gate.Release();
+        }
+        FolderChanged?.Invoke();
+    }
+
+    /// <summary>On one drive: each item renamed into place, and all renamed back if one can't be (a model in use).</summary>
+    private static void Rename(string from, string to, IReadOnlyList<string> items, IProgress<double>? progress)
+    {
+        var done = new List<(string From, string To)>();
+        var already = new List<string>();
+        try
+        {
+            for (var i = 0; i < items.Count; i++)
+            {
+                var source = Path.Combine(from, items[i]);
+                var target = Path.Combine(to, items[i]);
+                if (File.Exists(target) && File.Exists(source) && new FileInfo(target).Length == new FileInfo(source).Length || Directory.Exists(target))
+                {
+                    // Already there whole (the same model, or a program unpacked again): the original goes at the end.
+                    already.Add(source);
+                    continue;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                if (Directory.Exists(source))
+                    Directory.Move(source, target);
+                else
+                    File.Move(source, target, overwrite: true);
+                done.Add((source, target));
+                progress?.Report((i + 1.0) / Math.Max(1, items.Count));
+            }
+        }
+        catch
+        {
+            foreach (var (back, there) in Enumerable.Reverse(done))
+            {
+                try
+                {
+                    if (Directory.Exists(there))
+                        Directory.Move(there, back);
+                    else
+                        File.Move(there, back);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                }
+            }
+            RemoveEmptyFolders(to, items);
+            throw;
+        }
+        foreach (var path in already)
+            Remove(path);
+        RemoveEmptyFolders(from, items);
+    }
+
+    /// <summary>To another drive: everything copied first, and the originals removed only once all of it is there.</summary>
+    private static async Task CopyAsync(string from, string to, IReadOnlyList<string> items, IProgress<double>? progress, CancellationToken cancellationToken)
+    {
+        var files = new List<(string Source, string Target)>();
+        foreach (var item in items)
+        {
+            var source = Path.Combine(from, item);
+            if (Directory.Exists(source))
+                files.AddRange(Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Select(f => (f, Path.Combine(to, Path.GetRelativePath(from, f)))));
+            else
+                files.Add((source, Path.Combine(to, item)));
+        }
+        long total = Math.Max(1, files.Sum(f => new FileInfo(f.Source).Length)), copied = 0;
+        var made = new List<string>();
+        try
+        {
+            var buffer = new byte[1 << 20];
+            foreach (var (source, target) in files)
+            {
+                var length = new FileInfo(source).Length;
+                if (File.Exists(target) && new FileInfo(target).Length == length)
+                {
+                    copied += length;
+                    continue;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                var part = target + ".part";
+                await using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 20, useAsync: true))
+                await using (var output = new FileStream(part, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 20, useAsync: true))
+                {
+                    int read;
+                    while ((read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                    {
+                        await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                        copied += read;
+                        progress?.Report(Math.Min(0.99, (double)copied / total));
+                    }
+                }
+                File.Move(part, target, overwrite: true);
+                made.Add(target);
+            }
+        }
+        catch
+        {
+            foreach (var path in made.Concat(files.Select(f => f.Target + ".part")))
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                }
+            }
+            RemoveEmptyFolders(to, items, everyLevel: true);
+            throw;
+        }
+        foreach (var item in items)
+            Remove(Path.Combine(from, item));
+        RemoveEmptyFolders(from, items);
+    }
+
+    /// <summary>Takes an original away once it has a copy; one still in use stays, unused, rather than undoing the move.</summary>
+    private static void Remove(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: true);
+            else if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// The folders a model of several files had (chatterbox-v3\...), when the move left them empty; with
+    /// <paramref name="everyLevel"/>, also the unpacked programs' folders a copy that was undone left empty.
+    /// </summary>
+    private static void RemoveEmptyFolders(string root, IReadOnlyList<string> items, bool everyLevel = false)
+    {
+        var folders = items.Select(Path.GetDirectoryName).Where(d => !string.IsNullOrEmpty(d)).Select(d => d!);
+        if (everyLevel)
+            folders = folders.Concat(items.Where(i => Directory.Exists(Path.Combine(root, i))));
+        foreach (var folder in folders.Distinct())
+        {
+            var path = Path.Combine(root, folder);
+            try
+            {
+                if (!Directory.Exists(path))
+                    continue;
+                foreach (var inner in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
+                {
+                    if (!Directory.EnumerateFileSystemEntries(inner).Any())
+                        Directory.Delete(inner);
+                }
+                if (!Directory.EnumerateFileSystemEntries(path).Any())
+                    Directory.Delete(path);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+    }
 
     /// <summary>Bundled models, next to the app.</summary>
     public static string BundledFolder { get; set; } = Path.Combine(AppContext.BaseDirectory, "tools", "models");
@@ -423,3 +714,16 @@ public static class ModelStore
         return client;
     });
 }
+
+public enum ModelFolderProblemKind
+{
+    /// <summary>The folder can't be made, written to or read back, or lies inside a model's own folder.</summary>
+    NotWritable,
+
+    /// <summary>The drive hasn't room for the models moving there.</summary>
+    NoSpace,
+}
+
+/// <summary>Why a folder can't take the models; for <see cref="ModelFolderProblemKind.NoSpace"/>, the bytes needed and free.</summary>
+public sealed record ModelFolderProblem(ModelFolderProblemKind Kind, long Needed, long Free);
+

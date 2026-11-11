@@ -55,6 +55,10 @@ Read all of it before touching anything. The user writes in Arabic. Write your f
   - It has 15 files: `.gitkeep`, album.pdf, brand.ase, figures.png, "landscape 2.webp", landscape.heic, landscape.jpg, landscape.pdf, landscape.webp, layers.psd, leaflet.idml, mixtape.mp3, weekend.mov, weekend.mp4, weekend.srt.
 - **Memory notes** of earlier sessions (all summarised in this file) are on the old PC in `C:\Users\YAHYA\.claude\projects\D--plugins-Tangerine\memory\`.
 - **Data the app keeps** in %LOCALAPPDATA%\Petal: `models\` (downloaded AI models), `studio\` (recording projects) and the dub cache.
+  - Since 1.20.0 the user can keep the models in another folder (the `ModelsFolder` setting), chosen with Change
+    Folder… on a model's download card or in Settings › AI. `ModelStore.MoveAsync` moves only DropWheel's items
+    (the catalogue's files, the unpacked runtimes and caches named in `ModelStore`), all or none, under the
+    download lock. A new file DropWheel keeps beside the models must be named there too, or it won't move.
   - The installed DropWheel on the old PC is `C:\Users\YAHYA\AppData\Local\Programs\Petal\Petal.exe`. Never touch the installed copy.
 
 ## 3. Solution layout

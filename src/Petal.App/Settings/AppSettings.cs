@@ -212,6 +212,9 @@ public sealed class AppSettings
     /// <summary>The model chosen from each provider, by the provider's name.</summary>
     public Dictionary<string, string> AiModels { get; set; } = [];
 
+    /// <summary>The folder downloaded AI models are kept in; empty for the usual one (%LOCALAPPDATA%\Petal\models).</summary>
+    public string ModelsFolder { get; set; } = "";
+
     /// <summary>Focus sessions: the length chosen last, the apps that wait, and whether the sound is muted.</summary>
     public int FocusMinutes { get; set; } = 25;
     public List<string> FocusApps { get; set; } = [];

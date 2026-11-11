@@ -383,7 +383,7 @@ internal static class GemmaServer
     /// <summary>Whether the model now running is on a graphics card, where a second reading costs little.</summary>
     public static bool OnCard => _onCard;
 
-    private static string CardFailedMark => Path.Combine(ModelStore.Folder, "llama-card-failed.txt");
+    private static string CardFailedMark => Path.Combine(ModelStore.Folder, ModelStore.LlamaCardFailed);
 
     /// <summary>
     /// The card failed: not used again in this run, nor for a week. Should it have hung, every run wouldn't hang it again;
@@ -498,7 +498,7 @@ internal static class GemmaServer
     {
         if (ModelStore.Find(ModelCatalog.LlamaVulkan) is not { } zip)
             return null;
-        var folder = Path.Combine(ModelStore.Folder, "llama-runtime-vulkan");
+        var folder = Path.Combine(ModelStore.Folder, ModelStore.LlamaRuntimeVulkan);
         if (File.Exists(Path.Combine(folder, "llama-server.exe")))
             return folder;
         var staging = folder + ".part";
