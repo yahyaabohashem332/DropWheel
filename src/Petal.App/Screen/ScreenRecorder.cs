@@ -70,7 +70,7 @@ internal sealed class RecordingSession
     private readonly string _work = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "Petal recording " + Guid.NewGuid().ToString("N")[..8]);
     private Process? _ffmpeg;
     private Thread? _grabber;
-    private volatile bool _stopping;
+    private volatile bool _stopping, _cancelled;
     private readonly List<AudioTrack> _tracks = [];
     private readonly Stopwatch _clock = new();
     private bool _showedClicks;
@@ -337,33 +337,36 @@ internal sealed class RecordingSession
         }
     }
 
-    /// <summary>Frames at a steady rate; when the PC falls behind, the last frame is sent again so the video keeps time with the sound.</summary>
+    /// <summary>
+    /// Frames at a steady rate; when the PC falls behind, the last frame is sent again so the video keeps time with the
+    /// sound. They go to FFmpeg through a pipe of their own, which holds them while FFmpeg starts its encoder.
+    /// </summary>
     private void Grab()
     {
         // Polished recordings draw a smoother pointer of their own later, so the real one stays out.
         using var grabber = new FrameGrabber(_area, drawCursor: !_polish);
-        var input = _ffmpeg!.StandardInput.BaseStream;
-        byte[] frame = [];
-        try
+        // FFmpeg going away ends the frames; Stop reports it.
+        using var pipe = new FramePipe(_ffmpeg!.StandardInput.BaseStream, _area.Width * _area.Height * 4, _fps, "Petal screen frames to FFmpeg");
+        FramePipe.Fill grab = into =>
         {
-            FramePace.Run(_clock, _fps, () => _stopping,
-                take: _ =>
-                {
-                    frame = grabber.Grab();
-                    input.Write(frame, 0, frame.Length);
-                    _cursor.Add(grabber.Cursor);
-                    return true;
-                },
-                again: () =>
-                {
-                    input.Write(frame, 0, frame.Length);
-                    _cursor.Add(grabber.Cursor);
-                });
-        }
-        catch (IOException)
-        {
-            // FFmpeg went away; Stop reports it.
-        }
+            grabber.Grab(into);
+            return true;
+        };
+        FramePace.Run(_clock, _fps, () => _stopping || pipe.Broken,
+            take: _ =>
+            {
+                pipe.Send(grab);
+                _cursor.Add(grabber.Cursor);
+                return true;
+            },
+            again: () =>
+            {
+                pipe.Again();
+                _cursor.Add(grabber.Cursor);
+            });
+        // Saved, every frame goes into FFmpeg first; thrown away, the rest are let go.
+        if (!_cancelled)
+            pipe.Finish(TimeSpan.FromSeconds(30));
     }
 
     public async void Stop()
@@ -378,7 +381,8 @@ internal sealed class RecordingSession
         foreach (var track in _tracks)
             track.Stop(elapsed);
         _studio?.Stop();
-        await Task.Run(() => _grabber?.Join(3000));
+        // Frames still waiting for FFmpeg (a recording stopped while its encoder was starting) go in first.
+        await Task.Run(() => _grabber?.Join(TimeSpan.FromSeconds(35)));
         try { _ffmpeg?.StandardInput.Close(); } catch (IOException) { }
         if (_ffmpeg is not null)
             await _ffmpeg.WaitForExitAsync();
@@ -581,6 +585,7 @@ internal sealed class RecordingSession
 
     public void Cancel()
     {
+        _cancelled = true;
         _stopping = true;
         Recording = false;
         foreach (var track in _tracks)
@@ -655,12 +660,12 @@ internal sealed class RecordingSession
     }
 }
 
-/// <summary>Copies an area of the screen with the pointer drawn on it, reusing its buffers frame after frame.</summary>
-internal sealed class FrameGrabber : IDisposable
+/// <summary>Copies an area of the screen with the pointer drawn on it, reusing its bitmap frame after frame.</summary>
+internal sealed unsafe class FrameGrabber : IDisposable
 {
     private readonly RECT _area;
     private readonly IntPtr _screen, _memory, _dib, _old, _bits;
-    private readonly byte[] _buffer;
+    private readonly int _size;
 
     private readonly bool _drawCursor;
 
@@ -683,10 +688,11 @@ internal sealed class FrameGrabber : IDisposable
         };
         _dib = CreateDIBSection(_screen, ref header, 0, out _bits, IntPtr.Zero, 0);
         _old = SelectObject(_memory, _dib);
-        _buffer = new byte[area.Width * area.Height * 4];
+        _size = area.Width * area.Height * 4;
     }
 
-    public byte[] Grab()
+    /// <summary>The area now into <paramref name="into"/>: BGRA, four bytes a pixel, the top row first.</summary>
+    public void Grab(Span<byte> into)
     {
         BitBlt(_memory, 0, 0, _area.Width, _area.Height, _screen, _area.Left, _area.Top, SRCCOPY | CAPTUREBLT);
         var info = new ScreenNative.CURSORINFO { cbSize = Marshal.SizeOf<ScreenNative.CURSORINFO>() };
@@ -699,8 +705,7 @@ internal sealed class FrameGrabber : IDisposable
             if (icon.hbmMask != IntPtr.Zero) DeleteObject(icon.hbmMask);
             if (icon.hbmColor != IntPtr.Zero) DeleteObject(icon.hbmColor);
         }
-        Marshal.Copy(_bits, _buffer, 0, _buffer.Length);
-        return _buffer;
+        new ReadOnlySpan<byte>((void*)_bits, _size).CopyTo(into);
     }
 
     public void Dispose()

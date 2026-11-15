@@ -209,12 +209,12 @@ internal sealed class CameraFeed : IDisposable
     }
 
     /// <summary>Copies the latest picture (BGRA, <see cref="Side"/> square); false before the first.</summary>
-    public bool CopyLatest(byte[] into)
+    public bool CopyLatest(Span<byte> into)
     {
         if (Frames == 0)
             return false;
         lock (_lock)
-            Buffer.BlockCopy(_latest, 0, into, 0, _latest.Length);
+            _latest.CopyTo(into);
         return true;
     }
 
@@ -375,7 +375,7 @@ internal sealed class CameraTrack : IDisposable
     private readonly int _fps;
     private Process? _ffmpeg;
     private Thread? _writer;
-    private volatile bool _stopping;
+    private volatile bool _stopping, _killed;
 
     public CameraTrack(CameraFeed feed, Stopwatch clock, int fps, string path)
     {
@@ -418,35 +418,30 @@ internal sealed class CameraTrack : IDisposable
 
     /// <summary>
     /// The latest picture at each frame's time, so frame n of the camera is frame n of the screen. Until the
-    /// camera's first picture nothing is written; then that picture fills the time that went by.
+    /// camera's first picture nothing is written; then that picture fills the time that went by. Pictures wait in a
+    /// pipe of their own while FFmpeg starts.
     /// </summary>
     private void Write()
     {
-        var frame = new byte[CameraFeed.Side * CameraFeed.Side * 4];
-        var input = _ffmpeg!.StandardInput.BaseStream;
-        try
-        {
-            FramePace.Run(_clock, _fps, () => _stopping,
-                take: _ =>
-                {
-                    if (!_feed.CopyLatest(frame))
-                        return false;
-                    input.Write(frame, 0, frame.Length);
-                    HasPictures = true;
-                    return true;
-                },
-                again: () => input.Write(frame, 0, frame.Length));
-        }
-        catch (IOException)
-        {
-            // FFmpeg went away; the recording goes on without the camera.
-        }
+        // FFmpeg going away ends the pictures; the recording goes on without the camera.
+        using var pipe = new FramePipe(_ffmpeg!.StandardInput.BaseStream, CameraFeed.Side * CameraFeed.Side * 4, _fps, "Petal camera frames to FFmpeg");
+        FramePace.Run(_clock, _fps, () => _stopping || pipe.Broken,
+            take: _ =>
+            {
+                if (!pipe.Send(_feed.CopyLatest))
+                    return false;
+                HasPictures = true;
+                return true;
+            },
+            again: pipe.Again);
+        if (!_killed)
+            pipe.Finish(TimeSpan.FromSeconds(30));
     }
 
     public async Task StopAsync()
     {
         _stopping = true;
-        await Task.Run(() => _writer?.Join(3000));
+        await Task.Run(() => _writer?.Join(TimeSpan.FromSeconds(35)));
         try { _ffmpeg?.StandardInput.Close(); } catch (IOException) { }
         if (_ffmpeg is not null)
         {
@@ -458,6 +453,7 @@ internal sealed class CameraTrack : IDisposable
 
     public void Kill()
     {
+        _killed = true;
         _stopping = true;
         _writer?.Join(2000);
         try
