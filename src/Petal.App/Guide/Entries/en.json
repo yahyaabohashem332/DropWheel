@@ -1176,6 +1176,32 @@
    "test from pdf"
   ]
  },
+ "tool:StudyFile": {
+  "category": "documents",
+  "summary": "Turns a book, course material, lecture notes or a recorded lecture into one interactive page to study from and send to students: explained part by part, with its terms, cards and questions.",
+  "details": "Works on a PDF, a Word, PowerPoint or OpenDocument file, an EPUB, a Markdown, HTML or text file, or an audio or video recording, which it hears with Whisper first. DropWheel reads the file with its own structure (a PDF's bookmarks or headings, a document's headings, a presentation's sections and speaker's notes) and lists its chapters and sections; contents, an index, key-term lists, chapter summaries and review questions start unticked. The AI model then explains each part a passage at a time, in the file's language or another of the eight: its key ideas, a fuller and simpler explanation, a worked example, its terms, cards and multiple-choice questions with the reason for the right answer, each saying the page, slide or minute it comes from, with the file's own sentence where that is clear. Chapters and the whole file are summed up. It saves 'name Study.html', one page with everything inside it (no internet, fonts or servers), which opens in any browser on a computer or a phone: contents and search, terms explained on hover or tap and in a glossary, flip cards, a test on a chapter or the whole file, and progress kept in that browser. It reads right to left for Arabic, Persian and Urdu, and prints as a handout with or without the answers. It runs on this PC (about 5 GB of model the first time; a whole book can take hours, so choose some chapters: what is made is kept for the rest) or with your own API key. A model can still get something wrong: check what matters against the place it points to.",
+  "how": "Drag a book, notes or a recording, tap Ctrl and drop on STUDY FILE; untick the parts you don't need, press Make Study File, then open the page or send it.",
+  "examples": [
+   "A 300-page biology textbook in English, its third chapter explained in Arabic with the English terms in brackets.",
+   "A recorded two-hour lecture turned into a page of topics, terms and a practice test to send to the class.",
+   "A teacher's PowerPoint with speaker's notes becoming a revision page students open on their phones."
+  ],
+  "worksOn": "One file at a time: PDF, Word, PowerPoint, OpenDocument, EPUB, Markdown, HTML, text, audio or video.",
+  "keywords": [
+   "study file",
+   "interactive lesson",
+   "study guide",
+   "explain a book",
+   "course from pdf",
+   "page for students",
+   "glossary",
+   "flash cards",
+   "practice test",
+   "e-learning",
+   "revision page",
+   "offline lesson"
+  ]
+ },
  "tool:RecordingStudio": {
   "category": "video",
   "summary": "Turns a screen recording into a polished video: the view zooms in where you click and type, the pointer glides, the video sits on a background, and you cut, speed up and trim on a timeline.",

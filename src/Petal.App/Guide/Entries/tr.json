@@ -1191,6 +1191,31 @@
    "apkg"
   ]
  },
+ "tool:StudyFile": {
+  "category": "documents",
+  "summary": "Bir kitabı, ders materyalini, ders notlarını ya da kaydedilmiş bir dersi çalışmak ve öğrencilere göndermek için tek bir etkileşimli sayfaya dönüştürür: bölüm bölüm anlatılmış, terimleri, kartları ve sorularıyla.",
+  "details": "PDF, Word, PowerPoint veya OpenDocument dosyası, EPUB, Markdown, HTML ya da metin dosyası veya önce Whisper ile dinlenen ses ve video kaydında çalışır. DropWheel dosyayı kendi yapısıyla okur (PDF'nin yer imleri veya başlıkları, belgenin başlıkları, sunumun bölümleri ve konuşmacı notları) ve bölümleri ile alt bölümlerini listeler; içindekiler, dizin, terim listeleri, bölüm özetleri ve tekrar soruları işaretsiz başlar. Ardından yapay zekâ modeli her bölümü pasaj pasaj, dosyanın dilinde veya sekiz dilden birinde anlatır: ana fikirleri, daha dolu ve daha sade bir açıklama, çözümlü bir örnek, terimleri, kartlar ve doğru cevabın nedeniyle çoktan seçmeli sorular; her biri geldiği sayfayı, slaytı veya dakikayı, belli olduğunda da dosyanın kendi cümlesini söyler. Bölümler ve dosyanın tamamı özetlenir. Her şeyi içinde taşıyan tek bir sayfa olan 'ad Study.html' dosyasını kaydeder (internet, yazı tipi veya sunucu gerekmez); bilgisayarda ya da telefonda her tarayıcıda açılır: içindekiler ve arama, üzerine gelince veya dokununca ve bir sözlükte açıklanan terimler, çevrilen kartlar, bir bölümde ya da tüm dosyada test ve o tarayıcıda saklanan ilerleme. Arapça, Farsça ve Urduca için sağdan sola okunur; cevaplı ya da cevapsız bir çalışma kâğıdı olarak yazdırılır. Bu bilgisayarda (ilk seferde yaklaşık 5 GB model; bütün bir kitap saatler sürebilir, bu yüzden bazı bölümleri seçin: yapılanlar geri kalanı için saklanır) veya kendi API anahtarınızla çalışır. Model yine de yanılabilir: önemli olanı gösterdiği yerden kontrol edin.",
+  "how": "Bir kitabı, notları veya kaydı sürükleyin, Ctrl'ye dokunun ve ÇALIŞMA DOSYASI üzerine bırakın; gerekmeyen bölümlerin işaretini kaldırın, Çalışma Dosyası Oluştur'a basın, sonra sayfayı açın veya gönderin.",
+  "examples": [
+   "İngilizce 300 sayfalık bir biyoloji kitabının üçüncü bölümü, İngilizce terimleri parantez içinde, Arapça anlatılır.",
+   "Kaydedilmiş iki saatlik bir ders, sınıfa gönderilecek konular, terimler ve deneme testinden oluşan bir sayfaya dönüşür.",
+   "Konuşmacı notlu bir öğretmen sunumu, öğrencilerin telefonlarında açtığı bir tekrar sayfasına dönüşür."
+  ],
+  "worksOn": "Tek seferde bir dosya: PDF, Word, PowerPoint, OpenDocument, EPUB, Markdown, HTML, metin, ses veya video.",
+  "keywords": [
+   "çalışma dosyası",
+   "etkileşimli ders",
+   "çalışma rehberi",
+   "kitap anlatımı",
+   "ders anlatımı",
+   "öğrenci sayfası",
+   "terimler sözlüğü",
+   "bilgi kartı",
+   "deneme testi",
+   "uzaktan eğitim",
+   "tekrar"
+  ]
+ },
  "tool:RecordingStudio": {
   "category": "video",
   "summary": "Bir ekran kaydını özenli bir videoya çevirir: görüntü tıkladığınız ve yazdığınız yere yaklaşır, işaretçi akıcı kayar, video bir arka plan üzerinde durur; bir zaman çizelgesinde keser, hızlandırır ve kırparsınız.",

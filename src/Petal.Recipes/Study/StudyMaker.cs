@@ -10,10 +10,18 @@ using Petal.Recipes.Translation;
 namespace Petal.Recipes.Study;
 
 /// <summary>A card to learn from: what it asks, what it answers, and where in the file that is.</summary>
-public sealed record StudyCard(string Front, string Back, string Where);
+public sealed record StudyCard(string Front, string Back, string Where)
+{
+    /// <summary>The file's own sentence that says it, when that is clear ("" otherwise).</summary>
+    public string Quote { get; init; } = "";
+}
 
 /// <summary>A question with its choices, which one is right and why.</summary>
-public sealed record StudyQuestion(string Question, IReadOnlyList<string> Options, int Correct, string Why, string Where);
+public sealed record StudyQuestion(string Question, IReadOnlyList<string> Options, int Correct, string Why, string Where)
+{
+    /// <summary>The file's own sentence that says it, when that is clear ("" otherwise).</summary>
+    public string Quote { get; init; } = "";
+}
 
 /// <summary>What a lecture or a document comes to.</summary>
 public sealed record StudyPack(string Summary, IReadOnlyList<StudyCard> Cards, IReadOnlyList<StudyQuestion> Quiz);

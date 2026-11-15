@@ -73,6 +73,7 @@ public enum ToolId
     StudyNotes,
     AutoBlur,
     TraceToSvg,
+    StudyFile,
 }
 
 /// <summary>How a tool names what it saves next to the original.</summary>

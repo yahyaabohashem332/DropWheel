@@ -1202,6 +1202,31 @@
    "apkg"
   ]
  },
+ "tool:StudyFile": {
+  "category": "documents",
+  "summary": "Convierte un libro, material de curso, apuntes o una clase grabada en una sola página interactiva para estudiar y enviar a los estudiantes: explicada parte por parte, con sus términos, tarjetas y preguntas.",
+  "details": "Funciona con un PDF, un archivo de Word, PowerPoint u OpenDocument, un EPUB, un archivo Markdown, HTML o de texto, o una grabación de audio o vídeo, que primero escucha con Whisper. DropWheel lee el archivo con su propia estructura (los marcadores o títulos de un PDF, los títulos de un documento, las secciones y notas del orador de una presentación) y muestra sus capítulos y secciones; el índice, las listas de términos, los resúmenes de capítulo y las preguntas de repaso empiezan desmarcados. Después, el modelo de IA explica cada parte fragmento a fragmento, en el idioma del archivo o en otro de los ocho: sus ideas clave, una explicación más completa y sencilla, un ejemplo resuelto, sus términos, tarjetas y preguntas de opción múltiple con el motivo de la respuesta correcta, y cada uno indica la página, diapositiva o minuto de origen, con la frase del propio archivo cuando está clara. Los capítulos y el archivo entero se resumen. Guarda 'nombre Study.html', una sola página que lo contiene todo (sin internet, fuentes ni servidores) y se abre en cualquier navegador de un ordenador o un teléfono: índice y búsqueda, términos explicados al pasar el ratón o al tocarlos y en un glosario, tarjetas para dar la vuelta, un test sobre un capítulo o todo el archivo, y el progreso guardado en ese navegador. Se lee de derecha a izquierda en árabe, persa y urdu, y se imprime como hoja de repaso con o sin respuestas. Funciona en este PC (unos 5 GB de modelo la primera vez; un libro entero puede llevar horas, así que elige algunos capítulos: lo hecho se guarda para el resto) o con tu propia clave de API. Un modelo aún puede equivocarse: comprueba lo importante en el lugar que indica.",
+  "how": "Arrastra un libro, unos apuntes o una grabación, pulsa Ctrl y suéltalo en GUÍA DE ESTUDIO; desmarca las partes que no necesites, pulsa Crear la guía de estudio y luego abre la página o envíala.",
+  "examples": [
+   "Un libro de biología de 300 páginas en inglés cuyo tercer capítulo se explica en árabe con los términos ingleses entre paréntesis.",
+   "Una clase grabada de dos horas convertida en una página de temas, términos y un test de práctica para enviar al grupo.",
+   "El PowerPoint de un profesor con notas del orador convertido en una página de repaso que los estudiantes abren en el móvil."
+  ],
+  "worksOn": "Un archivo cada vez: PDF, Word, PowerPoint, OpenDocument, EPUB, Markdown, HTML, texto, audio o vídeo.",
+  "keywords": [
+   "guía de estudio",
+   "lección interactiva",
+   "archivo de estudio",
+   "explicar un libro",
+   "explicar una clase",
+   "página para estudiantes",
+   "glosario",
+   "tarjetas de memoria",
+   "test de práctica",
+   "e-learning",
+   "repaso"
+  ]
+ },
  "tool:RecordingStudio": {
   "category": "video",
   "summary": "Convierte una grabación de pantalla en un video pulido: la vista se acerca donde hace clic y escribe, el puntero se desliza, el video se coloca sobre un fondo, y usted corta, acelera y recorta en una línea de tiempo.",

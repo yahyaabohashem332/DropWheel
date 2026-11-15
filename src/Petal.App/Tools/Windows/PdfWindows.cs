@@ -150,6 +150,7 @@ public static class PdfToolSetup
         ToolLauncher.RegisterWindow(ToolId.TranslatePicture, (t, f, j, a) => new TranslatePictureWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.AutoBlur, (t, f, j, a) => new AutoBlurWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.StudyNotes, (t, f, j, a) => new StudyNotesWindow(t, f[0], j, a));
+        ToolLauncher.RegisterWindow(ToolId.StudyFile, (t, f, j, a) => new StudyFileWindow(t, f[0], j, a));
         ToolLauncher.RegisterDirect(ToolId.MakeSearchable, (tool, files, jobs, at) => jobs.RunAsync("Reading text", "Searchable PDF saved", SearchableWork(tool, files), at));
         ToolLauncher.RegisterDirect(ToolId.SplitPdf, (tool, files, jobs, at) => jobs.RunAsync("Splitting PDF", "PDF split",
             files.Select(f => new WorkItem(f, Path.GetFileName(f), async (p, ct) =>

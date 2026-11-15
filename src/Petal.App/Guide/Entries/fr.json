@@ -1185,6 +1185,31 @@
    "apkg"
   ]
  },
+ "tool:StudyFile": {
+  "category": "documents",
+  "summary": "Transforme un livre, un support de cours, des notes de cours ou un cours enregistré en une page interactive pour réviser et l’envoyer aux élèves : expliquée partie par partie, avec ses termes, ses cartes et ses questions.",
+  "details": "Fonctionne sur un PDF, un fichier Word, PowerPoint ou OpenDocument, un EPUB, un fichier Markdown, HTML ou texte, ou un enregistrement audio ou vidéo, écouté d’abord avec Whisper. DropWheel lit le fichier avec sa propre structure (les signets ou les titres d’un PDF, les titres d’un document, les sections et les notes de l’orateur d’une présentation) et en liste les chapitres et les sections ; le sommaire, l’index, les listes de termes, les résumés de chapitre et les questions de révision sont d’abord décochés. Le modèle d’IA explique ensuite chaque partie passage par passage, dans la langue du fichier ou l’une des huit : ses idées clés, une explication plus complète et plus simple, un exemple résolu, ses termes, des cartes et des questions à choix multiples avec la raison de la bonne réponse, chacun indiquant la page, la diapositive ou la minute d’origine, avec la phrase du fichier quand elle est claire. Les chapitres et le fichier entier sont résumés. Il enregistre « nom Study.html », une seule page qui contient tout (ni internet, ni polices, ni serveur), qui s’ouvre dans n’importe quel navigateur sur un ordinateur ou un téléphone : sommaire et recherche, termes expliqués au survol ou au toucher et dans un glossaire, cartes à retourner, test sur un chapitre ou tout le fichier, et progression gardée dans ce navigateur. Elle se lit de droite à gauche en arabe, en persan et en ourdou, et s’imprime en fiche de révision, avec ou sans les réponses. L’outil fonctionne sur ce PC (environ 5 Go de modèle la première fois ; un livre entier peut prendre des heures, alors choisissez quelques chapitres : ce qui est fait est gardé pour la suite) ou avec votre propre clé API. Un modèle peut quand même se tromper : vérifiez l’essentiel à l’endroit indiqué.",
+  "how": "Faites glisser un livre, des notes ou un enregistrement, appuyez sur Ctrl et déposez-le sur FICHIER D’ÉTUDE ; décochez les parties inutiles, appuyez sur Créer le fichier d’étude, puis ouvrez la page ou envoyez-la.",
+  "examples": [
+   "Un manuel de biologie de 300 pages en anglais, dont le troisième chapitre est expliqué en arabe avec les termes anglais entre parenthèses.",
+   "Un cours enregistré de deux heures qui devient une page de thèmes, de termes et un test d’entraînement à envoyer à la classe.",
+   "Le PowerPoint d’un enseignant avec ses notes devenu une page de révision que les élèves ouvrent sur leur téléphone."
+  ],
+  "worksOn": "Un fichier à la fois : PDF, Word, PowerPoint, OpenDocument, EPUB, Markdown, HTML, texte, audio ou vidéo.",
+  "keywords": [
+   "fichier d’étude",
+   "leçon interactive",
+   "guide d’étude",
+   "expliquer un livre",
+   "expliquer un cours",
+   "page pour les élèves",
+   "glossaire",
+   "cartes mémoire",
+   "test d’entraînement",
+   "e-learning",
+   "révision"
+  ]
+ },
  "tool:RecordingStudio": {
   "category": "video",
   "summary": "Fait d'un enregistrement d'écran une vidéo soignée : la vue s'approche là où vous cliquez et tapez, le pointeur glisse, la vidéo repose sur un arrière-plan, et vous coupez, accélérez et rognez sur une frise.",

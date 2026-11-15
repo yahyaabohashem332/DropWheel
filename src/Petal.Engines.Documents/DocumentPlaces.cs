@@ -72,19 +72,27 @@ public static class DocumentPlaces
     }
 
     /// <summary>A PDF's pages, each with its words in reading order.</summary>
-    public static async Task<List<PlacedText>> PdfPagesAsync(string path, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public static async Task<List<PlacedText>> PdfPagesAsync(string path, IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>
+        (await PdfReadAsync(path, progress, cancellationToken).ConfigureAwait(false)).Pages;
+
+    /// <summary>
+    /// A PDF's pages with their words, the headings found on them by their size (each with the line of its page it
+    /// begins, and its level, 1 the largest), and the title the file gives itself.
+    /// </summary>
+    internal static async Task<(List<PlacedText> Pages, List<PageHeading> Headings, string? Title)> PdfReadAsync(string path, IProgress<double>? progress, CancellationToken cancellationToken)
     {
         var (pages, metadata) = await PdfContent.ExtractAsync(path, new PdfContentOptions { Pictures = false }, progress, cancellationToken).ConfigureAwait(false);
         var doc = PdfLayout.Analyze(pages, metadata, new PdfLayoutOptions { KeepPageBreaks = true });
         var result = new List<PlacedText>();
-        var blocks = new List<Block>();
+        var headings = new List<PageHeading>();
+        var lines = new List<string>();
         int page = 1;
         void Flush()
         {
-            var text = Words(blocks);
+            var text = string.Join('\n', lines).Trim();
             if (text.Length > 0)
                 result.Add(new PlacedText(PlaceKind.Page, page, text));
-            blocks.Clear();
+            lines.Clear();
         }
         foreach (var block in doc.Blocks)
         {
@@ -92,12 +100,18 @@ public static class DocumentPlaces
             {
                 Flush();
                 page++;
+                continue;
             }
-            else
-                blocks.Add(block);
+            // Each block's lines as the page's text has them, so a heading knows the line it is on.
+            var words = Words([block]);
+            if (words.Length == 0)
+                continue;
+            if (block is Heading heading)
+                headings.Add(new PageHeading(page, lines.Count, heading.Level, heading.Inlines.PlainText().Replace('\n', ' ').Trim()));
+            lines.AddRange(words.Split('\n'));
         }
         Flush();
-        return result;
+        return (result, headings, metadata.Title);
     }
 
     /// <summary>
@@ -273,7 +287,7 @@ public static class DocumentPlaces
     }
 
     /// <summary>A word as compared: letters and digits only, lower case, Arabic letters in one form, no vowel marks.</summary>
-    private static string Fold(string word)
+    internal static string Fold(string word)
     {
         var sb = new StringBuilder(word.Length);
         foreach (var c in word.Normalize(NormalizationForm.FormC))
@@ -292,7 +306,7 @@ public static class DocumentPlaces
     }
 
     /// <summary>Blocks as lines of words: headings, paragraphs, list items ("• "), table rows (cells parted by " | ").</summary>
-    private static string Words(IEnumerable<Block> blocks)
+    internal static string Words(IEnumerable<Block> blocks)
     {
         var sb = new StringBuilder();
         Append(blocks, "");

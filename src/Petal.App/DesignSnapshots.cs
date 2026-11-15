@@ -303,6 +303,25 @@ internal static class DesignSnapshots
         _ = window.FindPrivateAsync();
     }
 
+    /// <summary>A textbook as read for a study file: its contents, two chapters of sections, and its index.</summary>
+    private static Petal.Engines.Documents.DocumentReading SampleStudyReading()
+    {
+        Petal.Engines.Documents.PlacedText Page(int n) => new(Petal.Engines.Documents.PlaceKind.Page, n, string.Join(" ", Enumerable.Repeat("Cells take in food and turn it into energy they can use.", 60)));
+        Petal.Engines.Documents.DocumentSection Section(string chapter, string title, int from, int to) => new(chapter, title, Enumerable.Range(from, to - from + 1).Select(Page).ToList());
+        var sections = new List<Petal.Engines.Documents.DocumentSection>
+        {
+            Section("", "Contents", 3, 4),
+            Section("Chapter 1: The cell", "Chapter 1: The cell", 5, 5),
+            Section("Chapter 1: The cell", "1.1 What cells are made of", 6, 9),
+            Section("Chapter 1: The cell", "1.2 The cell membrane", 10, 14),
+            Section("Chapter 1: The cell", "1.3 Transport across the membrane", 15, 19),
+            Section("Chapter 2: Energy in cells", "2.1 Photosynthesis", 20, 26),
+            Section("Chapter 2: Energy in cells", "2.2 Respiration", 27, 33),
+            Section("", "Index", 34, 36),
+        };
+        return new Petal.Engines.Documents.DocumentReading(sections.SelectMany(s => s.Places).ToList(), sections, "Biology for Schools");
+    }
+
     private static IEnumerable<(string, Func<Window>)> ExtraToolCases(Func<string, string> file, Jobs.JobRunner jobs, Input.ScreenPoint at)
     {
         Petal.Core.Tools.ToolInfo T(Petal.Core.Tools.ToolId id) => Petal.Core.Tools.ToolRegistry.Get(id);
@@ -388,6 +407,9 @@ internal static class DesignSnapshots
             ("autoblur", () => new Tools.Windows.AutoBlurWindow(T(Petal.Core.Tools.ToolId.AutoBlur), file("weekend.mp4"), jobs, at)),
             ("studynotes", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at)),
             ("studynotesdone", () => new Tools.Windows.StudyNotesWindow(T(Petal.Core.Tools.ToolId.StudyNotes), file("album.pdf"), jobs, at, new Petal.Recipes.Study.StudyPack(Localization.L.T("Summary"), [new Petal.Recipes.Study.StudyCard("Photosynthesis", "Making food from light.", "Page 1")], [new Petal.Recipes.Study.StudyQuestion("Where does it happen?", ["Leaves", "Roots", "Soil", "Air"], 0, "The text says so.", "Page 1")]))),
+            ("studyfile", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), null)),
+            ("studyfilemaking", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), new Petal.Recipes.Study.StudyProgress(12, 40, "1.2 The cell membrane", TimeSpan.FromMinutes(17)))),
+            ("studyfilerecording", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("weekend.mp4"), jobs, at)),
             ("timetracker", () => new Work.TimeTrackerWindow(SampleTimeLog())),
             ("checksum", () => new Actions.ChecksumWindow(file("landscape.jpg"), "0000000000000000000000000000000000000000000000000000000000000000")),
             ("tracesvg", () => new Tools.Windows.TraceToSvgWindow(T(Petal.Core.Tools.ToolId.TraceToSvg), [file("figures.png")], jobs, at)),

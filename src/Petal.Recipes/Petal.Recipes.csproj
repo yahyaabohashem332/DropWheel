@@ -20,6 +20,12 @@
     <InternalsVisibleTo Include="Petal.Tests" />
   </ItemGroup>
 
+  <!-- The study file's own style and script, written into each one. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Study\StudyFile.css" LogicalName="Petal.Recipes.Study.StudyFile.css" />
+    <EmbeddedResource Include="Study\StudyFile.js" LogicalName="Petal.Recipes.Study.StudyFile.js" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Anthropic" Version="13.4.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />

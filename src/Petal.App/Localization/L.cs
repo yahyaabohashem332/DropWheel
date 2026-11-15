@@ -192,6 +192,26 @@ public static class L
     public static string T(string english, string context) =>
         _state.Table is { } table && table.TryGetValue(context + ":" + english, out var translated) ? translated : T(english);
 
+    /// <summary>
+    /// An English interface string in one of Petal's languages chosen for what is written, not the interface's: for
+    /// a file DropWheel writes for others to read in their language (a study file).
+    /// </summary>
+    public static string In(string code, string english)
+    {
+        if (string.IsNullOrEmpty(english) || Table(code) is not { } table)
+            return english;
+        return table.TryGetValue(english, out var translated) ? Last(translated) : english;
+    }
+
+    /// <summary>A counted phrase (see <see cref="P(int, string, string)"/>) in one of Petal's languages chosen for what is written.</summary>
+    public static string P(int count, string englishOne, string englishMany, string code)
+    {
+        if (Table(code) is not { } table || !table.TryGetValue(englishMany, out var forms))
+            return string.Format(CultureInfo.InvariantCulture, count == 1 ? englishOne : englishMany, count);
+        var parts = forms.Split('|');
+        return string.Format(CultureInfo.InvariantCulture, code == "ar" ? ArabicForm(parts, count) : OtherForm(parts, count, code), count);
+    }
+
     /// <summary>The Arabic table, for the tests that check it is complete and well formed.</summary>
     public static IReadOnlyDictionary<string, string> ArabicTable => Arabic.Table;
 

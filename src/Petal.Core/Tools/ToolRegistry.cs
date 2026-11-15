@@ -63,6 +63,9 @@ public static class ToolRegistry
         // Faces and number plates found and followed through a video, and covered.
         new(AutoBlur, "AUTO BLUR", "Blur Faces and Plates", "scanFace", true, ToolSelection.Single, "Blurred"),
         new(StudyNotes, "STUDY", "Study Notes", "book", true, ToolSelection.Single, "Study", ToolOutputKind.FixedFormat, "md"),
+        // A book, course material or a lecture as one page to study from and send to students: explained part by part,
+        // its terms, cards and questions, with where in the file each comes from; it opens in any browser, offline.
+        new(StudyFile, "STUDY FILE", "Study File", "graduationCap", true, ToolSelection.Single, "Study", ToolOutputKind.FixedFormat, "html"),
         new(ExportLayers, "LAYERS", "Export Layers", "layers", true, ToolSelection.SingleOrBatch, "Layers", ToolOutputKind.Folder),
         new(SlimPhotoshop, "HISTORY", "Remove Photoshop History", "history", false, ToolSelection.SingleOrBatch, "Slim"),
         new(FileDetails, "INFO", "File Info", "info", true, ToolSelection.Single, ""),
@@ -103,16 +106,18 @@ public static class ToolRegistry
     private static readonly ToolId[] ImageSingle = [Compress, Metadata, EditPhoto, AnnotatePhoto, RemoveBackground, EraseObject, TranslatePicture, IdPhoto, TraceToSvg, AddBackground, CropImage, ResizeImage, Watermark, CopyText, RedactPhoto, DescribePicture, TableFromImage, ExtractColours];
     private static readonly ToolId[] ImageMulti = [Compress, Metadata, ResizeImage, CropImage, Watermark, RemoveBackground, TranslatePicture, TraceToSvg, CreatePdf, MakeSearchable, CreateCollage, TableFromImage];
     private static readonly ToolId[] VectorMulti = [CreatePdf, CreateCollage];
-    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, StudyNotes, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio];
+    private static readonly ToolId[] AudioSingle = [Compress, Metadata, Transcribe, EditByText, AskFile, StudyNotes, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals, AudioVisualizer, TrimAudio, AudioChannels, BleepAudio, StudyFile];
     private static readonly ToolId[] AudioMulti = [Compress, Metadata, Transcribe, NormalizeAudio, RemoveNoise, RemovePauses, SeparateVocals];
-    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, RecordingStudio, AskFile, StudyNotes, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, AutoBlur, Watermark];
+    private static readonly ToolId[] VideoSingle = [Compress, Metadata, MakeShorts, Dub, EditByText, RecordingStudio, AskFile, StudyNotes, Transcribe, AnimatedCaptions, TrimVideo, CropVideo, Reframe, RemovePauses, RemoveNoise, ChangeSpeed, VideoSnapshots, RemoveAudio, SplitVideo, RedactVideo, AutoBlur, Watermark, StudyFile];
     private static readonly ToolId[] VideoMulti = [Compress, Metadata, Transcribe, AnimatedCaptions, Reframe, RemoveNoise, RemovePauses, RemoveAudio, JoinVideos, Watermark];
     private static readonly ToolId[] SubtitleTools = [TranslateSubtitles];
     private static readonly ToolId[] GifTools = [Compress, Metadata, TrimVideo, CropVideo, ChangeSpeed];
-    private static readonly ToolId[] PdfSingle = [EditPdf, Compress, Metadata, AskFile, StudyNotes, TranslateDocument, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
-    private static readonly ToolId[] DocumentTools = [AskFile, ReadAloud];
-    private static readonly ToolId[] TranslatedDocumentTools = [AskFile, StudyNotes, TranslateDocument, ReadAloud];
+    private static readonly ToolId[] PdfSingle = [EditPdf, Compress, Metadata, AskFile, StudyNotes, StudyFile, TranslateDocument, SplitPdf, OrganizePdf, ProtectPdf, NumberPages, Watermark, SignPdf, MakeSearchable, ReadAloud, ExtractImages];
+    private static readonly ToolId[] DocumentTools = [AskFile, StudyFile, ReadAloud];
+    private static readonly ToolId[] TranslatedDocumentTools = [AskFile, StudyNotes, StudyFile, TranslateDocument, ReadAloud];
     private static readonly ToolId[] TranslatedSheetTools = [AskFile, TranslateDocument];
+    private static readonly ToolId[] SlideTools = [AskFile, StudyFile];
+    private static readonly ToolId[] TranslatedSlideTools = [AskFile, StudyFile, TranslateDocument];
     private static readonly ToolId[] PdfMulti = [Compress, Metadata, TranslateDocument, SplitPdf, MergePdfs, ProtectPdf, NumberPages, Watermark, MakeSearchable, ExtractImages];
     private static readonly ToolId[] ArchiveTools = [ExtractArchive];
     private static readonly ToolId[] PhotoshopSingle = [ExportLayers, FileDetails, ExtractColours, SlimPhotoshop];
@@ -219,7 +224,8 @@ public static class ToolRegistry
             FormatFamily.Pdf => multi ? PdfMulti : PdfSingle,
             FormatFamily.Archive => ArchiveTools,
             FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook => Translated(formats, TranslatedDocumentTools, multi ? [] : DocumentTools),
-            FormatFamily.Slides or FormatFamily.Spreadsheet => Translated(formats, TranslatedSheetTools, multi ? [] : [AskFile]),
+            FormatFamily.Slides => Translated(formats, TranslatedSlideTools, multi ? [] : SlideTools),
+            FormatFamily.Spreadsheet => Translated(formats, TranslatedSheetTools, multi ? [] : [AskFile]),
             FormatFamily.Subtitle => SubtitleTools,
             FormatFamily.Project => ProjectTools(formats, multi),
             FormatFamily.Palette => multi ? [] : [Palette],
