@@ -12,7 +12,7 @@ on:
       version:
         description: Version
         required: true
-        default: '1.19.1'
+        default: '1.20.0'
       notes:
         description: What's new (English, shown in the update window)
         required: false
@@ -28,9 +28,9 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 180
     env:
-      # The version isn't kept in git: it is given to build.ps1. Raise it here with each release (1.19.0 is out).
-      VERSION: ${{ inputs.version || '1.19.1' }}
-      NOTES: ${{ inputs.notes || 'DropWheel starts on PCs whose region writes 3.4 as 3,4, and a part that cannot start no longer stops the others.' }}
+      # The version isn't kept in git: it is given to build.ps1. Raise it here with each release (1.19.1 is out).
+      VERSION: ${{ inputs.version || '1.20.0' }}
+      NOTES: ${{ inputs.notes || 'Live captions translate on PCs without a graphics card, by small models made for each pair of languages. AI models can be kept in a folder you choose. Explorer thumbnails work when your name has a space or Arabic letters.' }}
       DOTNET_NOLOGO: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
     steps:
