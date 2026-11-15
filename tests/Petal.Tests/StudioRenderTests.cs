@@ -122,22 +122,6 @@ public sealed class StudioRenderTests : IDisposable
     }
 
     [Fact]
-    public void The_pointer_is_sampled_about_120_times_a_second()
-    {
-        // Only where the pointer is and its shape: no picture of the screen is taken.
-        var area = new Petal.App.Interop.NativeMethods.RECT { Left = 0, Top = 0, Right = 800, Bottom = 600 };
-        var clock = Stopwatch.StartNew();
-        var capture = new StudioCapture(area, clock, _dir);
-        capture.Start();
-        Thread.Sleep(1000);
-        capture.Stop();
-        Assert.InRange(capture.Pointer.Count, 90, 135);
-        Assert.All(capture.Pointer, p => Assert.True(p.Kind != PointerKind.Other || p.Shape >= 0));
-        Assert.True(capture.Pointer.Zip(capture.Pointer.Skip(1)).All(pair => pair.Second.Time >= pair.First.Time));
-        Assert.Empty(capture.Typing);
-    }
-
-    [Fact]
     public void The_sound_is_cut_sped_up_cleaned_and_evened_out_together()
     {
         var timeline = new EditTimeline(10, 0, 10, [new EditSegment(2, 3, EditKind.Cut), new EditSegment(5, 7, EditKind.Speed, 4)]);

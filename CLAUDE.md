@@ -97,6 +97,7 @@ Read all of it before touching anything. The user writes in Arabic. Write your f
   - `store/THIRD-PARTY-NOTICES.md` is still shipped in the exe build, as `licenses\THIRD-PARTY-NOTICES.txt`.
 - **Tests:** set `PETAL_SETTINGS_DIR` to a scratch `settings-test` folder so the real settings are untouched.
   - Timing tests flake under load; rerun them alone: WheelPreviewTimingTests, WheelTextTests' 1-second test, PhotoEditTests.PreviewRendersFast, OfficeTests' hung-job test.
+    - One reason, measured 2026-11-15: through a full run Windows ignores the test process's requests for finer ticks (`timeBeginPeriod`) most of the time. Since Windows 11 it may, for a program none of whose windows can be seen, and the tests' windows come and go. Sleep(1) took a whole 15.6 ms tick in 39 of 45 seconds watched. Code that keeps time waits on a high-resolution waitable timer (`StudioCapture`); its test brings on the coarse clock with `SetProcessInformation` (`StudioPointerTests`, in the Timing collection, which runs alone).
   - Gated tests use env vars:
     - PETAL_ASK and PETAL_ASK_DOCS / PETAL_ASK_KINDS (Ask a File);
     - PETAL_DUB_LINES, PETAL_DUB_LIMIT and PETAL_DUB_MODEL (dub translation);
@@ -118,6 +119,7 @@ Read all of it before touching anything. The user writes in Arabic. Write your f
   - Backslashes inside Bash heredocs or inline scripts got mangled. Write scripts with the Write tool and run them with `python -I`.
   - The Write tool turns `\uXXXX` into the character itself, so build such escapes with `chr(92)+"u200F"`.
   - The repo mixes LF and CRLF. Never `sed -i` tracked sources. In Python use `open(p, encoding='utf-8', newline='')`, then check with `git --no-pager diff --stat`.
+  - To see a file's line ends use `git --no-pager ls-files --eol -- <file>`, or count `b'\r\n'` in Python. Not grep: Git Bash's grep drops CRs unless given `-U`, and typed inline `$'\r$'` loses its backslash, so `grep -c $'\r$'` counted every line of LF files as CRLF.
   - Always `git --no-pager`.
 
 ## 5. Standing rules from the user
