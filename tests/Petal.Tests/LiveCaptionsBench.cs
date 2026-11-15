@@ -233,6 +233,27 @@ public sealed class LiveCaptionsBench
             if (a.Number == b.Number && a.Steady > 0 && !b.Text.StartsWith(a.Text[..a.Steady], StringComparison.Ordinal))
                 unsettled++;
         }
+        // How much the first line changed when the proper translation took the place of what had moved up: the share of
+        // its words that weren't there before (in order, a full stop gained not counting).
+        var swaps = new List<double>();
+        foreach (var group in lines.GroupBy(l => l.Line.Number))
+        {
+            var good = group.FirstOrDefault(l => l.Line.Final && l.Line.Proper);
+            if (good.Line is null)
+                continue;
+            var stood = group.Where(l => l.At <= good.At && !(l.Line.Final && l.Line.Proper)).Select(l => l.Line.Text).LastOrDefault();
+            if (stood is null)
+                continue;
+            static string[] Words(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w.TrimEnd('.', ',', '،', '؟', '?', '!', '۔')).ToArray();
+            var (a, b) = (Words(stood), Words(good.Line.Text));
+            if (b.Length == 0)
+                continue;
+            var run = new int[a.Length + 1, b.Length + 1];
+            for (int i = a.Length - 1; i >= 0; i--)
+                for (int j = b.Length - 1; j >= 0; j--)
+                    run[i, j] = a[i] == b[j] ? run[i + 1, j + 1] + 1 : Math.Max(run[i + 1, j], run[i, j + 1]);
+            swaps.Add(1 - (double)run[0, 0] / b.Length);
+        }
         // The same words final twice running.
         int twice = 0;
         for (int i = 1; i < sentences.Count; i++)
@@ -247,7 +268,7 @@ public sealed class LiveCaptionsBench
         report.Append($"words wrong {WordErrors(string.Join(' ', marks.Select(m => m.Text)), heard):P1}; {sentences.Count} sentences for {marks.Count} said, {twice} said twice; ");
         report.Append($"a pass {passes.DefaultIfEmpty().Average():0.00} s (worst {passes.DefaultIfEmpty().Max():0.00}), newest word {behind.DefaultIfEmpty().Average():0.00} s behind the talk; ");
         report.Append($"translation ready in {prepared:0.0} s, {(card ? $"on a graphics card {GemmaTranslation.OnCard}" : $"by small models, {SmallTranslation.Threads} threads")}; first line as it stood {moved.DefaultIfEmpty().Average():0.00} s after the sentence, properly {right.DefaultIfEmpty().Average():0.00} s (worst {right.DefaultIfEmpty().Max():0.00}); ");
-        report.Append($"second line changed {second.Count} times, {after.DefaultIfEmpty().Average():0.00} s after its words were heard (worst {after.DefaultIfEmpty().Max():0.00}), settled words changed {unsettled} times");
+        report.Append($"second line changed {second.Count} times, {after.DefaultIfEmpty().Average():0.00} s after its words were heard (worst {after.DefaultIfEmpty().Max():0.00}), settled words changed {unsettled} times; words new when the proper translation came {swaps.DefaultIfEmpty().Average():P0} (none {swaps.Count(x => x == 0)} of {swaps.Count})");
         // The same sentences as FLEURS has them in the language wanted, when they are here.
         int cut = name.IndexOf('_');
         var reference = cut > 0 ? Path.Combine(Folder, $"{name[..cut]}_{into}.json") : "";

@@ -19,7 +19,7 @@ public sealed class LiveInterpreterTests
         /// <summary>Held shut to make translating a sentence take as long as a test wants.</summary>
         public SemaphoreSlim Gate { get; } = new(free);
 
-        public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, CancellationToken cancellationToken)
+        public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, string shown, CancellationToken cancellationToken)
         {
             await Gate.WaitAsync(cancellationToken);
             lock (SentencesAsked)

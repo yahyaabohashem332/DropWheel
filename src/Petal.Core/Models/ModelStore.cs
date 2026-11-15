@@ -214,43 +214,43 @@ public static class ModelCatalog
     /// <summary>Opus-MT English → Arabic (Helsinki-NLP, CC-BY 4.0: free to use, also commercially, with credit), 8-bit ONNX: translates subtitles into Arabic.</summary>
     public static readonly ModelInfo OpusEnArEncoder = new(
         "opus-mt-en-ar-encoder", "Opus-MT English → Arabic encoder", "opus-mt-en-ar-encoder-quantized.onnx",
-        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/encoder_model_quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/onnx/encoder_model_quantized.onnx",
         "53c354d87ced44b39085fe8a46a25f09ea4578d442dbce9663f3977228f8a04e", 51_773_854, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArDecoder = new(
         "opus-mt-en-ar-decoder", "Opus-MT English → Arabic", "opus-mt-en-ar-decoder-quantized.onnx",
-        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/onnx/decoder_model_quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/onnx/decoder_model_quantized.onnx",
         "94e6bdf90866151787d014b7b77be0adb0f036418ee04d235ec01238aa8426b9", 58_707_418, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArSource = new(
         "opus-mt-en-ar-source", "Opus-MT English pieces", "opus-mt-en-ar-source.spm",
-        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/source.spm",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/source.spm",
         "81ac8f4d4ee271f4109eac67560a31f9c2d555463ba5eb95c32c6deee8ae819d", 801_074, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusEnArVocabulary = new(
         "opus-mt-en-ar-vocab", "Opus-MT vocabulary", "opus-mt-en-ar-vocab.json",
-        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/main/vocab.json",
+        "https://huggingface.co/Xenova/opus-mt-en-ar/resolve/034a684356c19021a187cda4d7f823298b913921/vocab.json",
         "8b74af9e4c1ec122b8d06362db6c38795e10ca2b0156b2110cf08d4716744b76", 2_243_581, "CC-BY-4.0");
 
     /// <summary>Opus-MT Arabic → English (Helsinki-NLP, CC-BY 4.0: free to use, also commercially, with credit), 8-bit ONNX: puts Arabic speech's words into English.</summary>
     public static readonly ModelInfo OpusArEnEncoder = new(
         "opus-mt-ar-en-encoder", "Opus-MT Arabic → English encoder", "opus-mt-ar-en-encoder-quantized.onnx",
-        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/onnx/encoder_model_quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/onnx/encoder_model_quantized.onnx",
         "d9b0d612acff86cf87634b49bda566d1ef39b312837de549786ea18fecefc708", 51_790_238, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnDecoder = new(
         "opus-mt-ar-en-decoder", "Opus-MT Arabic → English", "opus-mt-ar-en-decoder-quantized.onnx",
-        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/onnx/decoder_model_quantized.onnx",
+        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/onnx/decoder_model_quantized.onnx",
         "66f2be0af1ad3d875315f7e8ad2de4f8248fba75dc7173b1a93bf48023041e80", 58_723_930, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnSource = new(
         "opus-mt-ar-en-source", "Opus-MT Arabic pieces", "opus-mt-ar-en-source.spm",
-        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/source.spm",
+        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/source.spm",
         "484f7210e5f4466f7e5b99b660717c6ef2a6f90746196daba507795b69dc02a2", 917_407, "CC-BY-4.0");
 
     public static readonly ModelInfo OpusArEnVocabulary = new(
         "opus-mt-ar-en-vocab", "Opus-MT Arabic → English vocabulary", "opus-mt-ar-en-vocab.json",
-        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/main/vocab.json",
+        "https://huggingface.co/Xenova/opus-mt-ar-en/resolve/09c7556866400dcc53562ba8d7035119e7d9a2c1/vocab.json",
         "87b78c097c331672ca22a522c3ba24c5dc2cdff90495dcb52cf742635439a3a0", 2_257_246, "CC-BY-4.0");
 
     /// <summary>

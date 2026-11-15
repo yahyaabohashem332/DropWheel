@@ -584,6 +584,16 @@ internal sealed class CaptionWindow : Window
     // The second line: the translation of the sentence being said, how much of it no longer changes, and its number.
     private string _second = "";
     private int _steady, _secondOf;
+    // How each line's words are coloured, so that nothing on a line changes at a stroke.
+    private readonly CaptionShades _mainShades = new(), _liveShades = new(), _smallShades = new();
+    // What each line was last written with: written again only when that changes, so words on their way keep going.
+    private readonly Dictionary<TextBlock, string> _drawn = [];
+    // The first line as it stood before a sentence moved up into it, which fades out as the sentence rises.
+    private readonly TextBlock _leaving;
+    // A sentence has just moved up from the second line, which was this far below the first.
+    private bool _rising;
+    private double _riseFrom;
+    private string _left = "";
 
     /// <summary>The time, for tests to set: how long a sentence has been up decides whether it stays beside the next.</summary>
     internal Func<TimeSpan> Clock { get; set; } = () => TimeSpan.FromMilliseconds(Environment.TickCount64);
@@ -624,7 +634,11 @@ internal sealed class CaptionWindow : Window
         _buttons.Children.Add(_source);
         _buttons.Children.Add(_show);
         _buttons.Children.Add(new StripButton("x", "Turn off captions", LiveCaptions.Stop, null, 28));
-        _text = new StackPanel { Children = { _status, _small, _main, _live }, Margin = new Thickness(0, 0, 90, 0) };
+        // The sentence that leaves the first line rolls up out of it and fades, drawn over its place, taking no room,
+        // and cut off at the line's top so it never stands over the one arriving or above the card.
+        _leaving = new TextBlock { FontSize = _main.FontSize, FontWeight = _main.FontWeight, Foreground = Bright, TextWrapping = TextWrapping.Wrap, FontFamily = UiFonts.Display, TextAlignment = TextAlignment.Center, Visibility = Visibility.Collapsed, IsHitTestVisible = false, RenderTransform = new TranslateTransform() };
+        var first = new Grid { Children = { new Canvas { Children = { _leaving }, IsHitTestVisible = false, ClipToBounds = true }, _main } };
+        _text = new StackPanel { Children = { _status, _small, first, _live }, Margin = new Thickness(0, 0, 90, 0) };
         var grid = new Grid { Children = { _text, _buttons } };
         var card = new Border
         {
@@ -731,6 +745,14 @@ internal sealed class CaptionWindow : Window
                 // after another ("Yes. I agree.") would otherwise be gone before it was read.
                 var now = Clock();
                 _earlier = _first.Length > 0 && now - _firstAt < Reading(_first) ? _first : "";
+                // It was on the second line while it was said: it rises from there into the first, its words keeping
+                // the colours they had, and the sentence it takes the place of fades away above.
+                if (_secondOf == line.Number && _second.Length > 0)
+                {
+                    _rising = true;
+                    _riseFrom = _live.IsVisible && _main.IsVisible ? _live.TranslatePoint(default, _main).Y : 0;
+                    _left = _earlier.Length == 0 ? new TextRange(_main.ContentStart, _main.ContentEnd).Text : "";
+                }
                 _firstAt = now;
                 _firstOf = line.Number;
             }
@@ -760,6 +782,10 @@ internal sealed class CaptionWindow : Window
         _earlier = "";
         _second = "";
         _steady = 0;
+        _rising = false;
+        _mainShades.Clear();
+        _liveShades.Clear();
+        _drawn.Clear();
     }
 
     /// <summary>Fills the lines from what was heard and its translation, as the settings want them shown.</summary>
@@ -774,27 +800,77 @@ internal sealed class CaptionWindow : Window
         if (hasTranslation)
         {
             // Both lines keep their room even while one is empty, so the bar doesn't jump at each sentence.
-            // Just moved up, as the second line had it: a shade under full brightness until its proper translation is there.
+            // Just moved up, as the second line had it: a shade under full brightness until its proper translation is
+            // there, which then changes only the words that differ, and those gently.
+            bool rising = _rising;
+            _rising = false;
+            // A sentence rising alone into the first line comes with its words as the second line had them; one that
+            // joins a sentence still being read keeps that one's words as they are.
+            if (rising && _earlier.Length == 0)
+                _mainShades.Clear();
+            var from = rising ? _liveShades : null;
             if (_firstProper)
-                Fill(_main, (Join(_earlier, _first), ""), Bright, Dim, 3);
+                Fill(_main, _mainShades, (Join(_earlier, _first), ""), Bright, Dim, 3, from);
             else
-                Fill(_main, (_earlier, _first), Bright, Steady, 3);
+                Fill(_main, _mainShades, (_earlier, _first), Bright, Steady, 3, from);
+            if (rising && _earlier.Length == 0)
+                Rise();
             int steady = Math.Clamp(_steady, 0, _second.Length);
-            Fill(_live, (_second[..steady], _second[steady..]), Steady, Newest, 2);
+            Fill(_live, _liveShades, (_second[..steady], _second[steady..]), Steady, Newest, 2);
             _main.MinHeight = _main.FontSize * _main.FontFamily.LineSpacing;
             _live.MinHeight = _live.FontSize * _live.FontFamily.LineSpacing;
             _live.Visibility = Visibility.Visible;
             _small.Visibility = both ? Visibility.Visible : Visibility.Collapsed;
             if (both)
-                Fill(_small, said, SmallBright, SmallDim, 2);
+                Fill(_small, _smallShades, said, SmallBright, SmallDim, 2);
         }
         else
         {
+            _rising = false;
             _small.Visibility = Visibility.Collapsed;
             _live.Visibility = Visibility.Collapsed;
             _main.MinHeight = 0;
-            Fill(_main, said, Bright, Dim, 2);
+            Fill(_main, _mainShades, said, Bright, Dim, 2);
         }
+    }
+
+    // How long a sentence takes to rise from the second line into the first.
+    private static readonly Duration Rising = new(TimeSpan.FromMilliseconds(380));
+
+    /// <summary>
+    /// The sentence just moved up rises from where the second line had it, growing to the first line's size, while
+    /// the one it takes the place of fades away above. Its words keep the colours they had and go over to the first
+    /// line's on the way, so what the listener was reading never jumps.
+    /// </summary>
+    private void Rise()
+    {
+        if (_mainShades.Still || _riseFrom <= 0)
+            return;
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        double scale = _live.FontSize / _main.FontSize;
+        var grow = new ScaleTransform();
+        var move = new TranslateTransform();
+        _main.RenderTransformOrigin = new Point(0.5, 0);
+        _main.RenderTransform = new TransformGroup { Children = { grow, move } };
+        move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(_riseFrom, 0, Rising) { EasingFunction = ease });
+        grow.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(scale, 1, Rising) { EasingFunction = ease });
+        grow.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(scale, 1, Rising) { EasingFunction = ease });
+        if (_left.Trim().Length == 0)
+            return;
+        _leaving.Text = _left;
+        _leaving.FlowDirection = KeyboardLayout.LooksArabic(_left) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        _leaving.Width = _main.ActualWidth > 0 ? _main.ActualWidth : _text.ActualWidth;
+        _leaving.Visibility = Visibility.Visible;
+        var leaving = new Duration(TimeSpan.FromMilliseconds(220));
+        var leave = new DoubleAnimation(1, 0, leaving) { EasingFunction = ease };
+        leave.Completed += (_, _) =>
+        {
+            if (_leaving.Text == _left)
+                _leaving.Visibility = Visibility.Collapsed;
+        };
+        _leaving.BeginAnimation(OpacityProperty, leave);
+        ((TranslateTransform)_leaving.RenderTransform).BeginAnimation(TranslateTransform.YProperty,
+            new DoubleAnimation(0, -_main.FontSize * _main.FontFamily.LineSpacing, leaving) { EasingFunction = ease });
     }
 
     /// <summary>What the lines show now (for tests): what was said, the first line and the second.</summary>
@@ -804,13 +880,22 @@ internal sealed class CaptionWindow : Window
             _live.Visibility == Visibility.Visible ? new TextRange(_live.ContentStart, _live.ContentEnd).Text : "");
 
     /// <summary>The settled start of the second line (for tests).</summary>
-    internal string SteadyShown => _live.Visibility == Visibility.Visible && _live.Inlines.FirstInline is Run { Foreground: var brush } run && brush == Steady ? run.Text : "";
+    internal string SteadyShown => _live.Visibility == Visibility.Visible
+        ? string.Join(' ', _liveShades.Words.TakeWhile(w => w.To == ((SolidColorBrush)Steady).Color).Select(w => w.Word)) : "";
+
+    /// <summary>The first line's words as they are coloured (for tests).</summary>
+    internal IReadOnlyList<CaptionShades.Shade> FirstShades => _mainShades.Words;
+
+    /// <summary>The second line's words as they are coloured (for tests).</summary>
+    internal IReadOnlyList<CaptionShades.Shade> SecondShades => _liveShades.Words;
 
     private static string Join(string a, string b) => a.Length == 0 ? b : b.Length == 0 ? a : a + " " + b;
 
     public void Show(string original, string? translated, string? saying = null)
     {
-        // For pictures of the window: a finished sentence and its translation, and the sentence being said.
+        // For pictures of the window: a finished sentence and its translation, and the sentence being said. A picture
+        // is taken at once, so words are at their colours from the start.
+        _mainShades.Still = _liveShades.Still = _smallShades.Still = true;
         _talk = new StreamState(original, "", "", "", -1);
         _status.Visibility = Visibility.Collapsed;
         if (translated is not null)
@@ -829,33 +914,84 @@ internal sealed class CaptionWindow : Window
     /// The newest words that fit in a few lines: the final ones, then the draft dimmer. Older words go from the
     /// start, so the lines roll as the talk goes on and the newest are never cut off.
     /// </summary>
-    private void Fill(TextBlock block, (string Final, string Draft) text, Brush bright, Brush dim, int lines)
+    /// <param name="from">The words as another line had them, for words that came from there.</param>
+    private void Fill(TextBlock block, CaptionShades shades, (string Final, string Draft) text, Brush bright, Brush dim, int lines, CaptionShades? from = null)
     {
-        var final = text.Final.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-        var draft = text.Draft.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+        double width = _text.ActualWidth > 0 ? _text.ActualWidth : double.IsNaN(Width) ? 760 : Math.Max(300, Width - 134);
+        Color light = ((SolidColorBrush)bright).Color, faint = ((SolidColorBrush)dim).Color;
+        // The same as last time: written again, it would start over the words still on their way.
+        string key = $"{width:0}|{lines}|{light}|{faint}|{text.Final}\u0001{text.Draft}";
+        if (from is null && _drawn.TryGetValue(block, out var drawn) && drawn == key)
+            return;
+        _drawn[block] = key;
+        var words = text.Final.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => (w, light))
+            .Concat(text.Draft.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => (w, faint))).ToList();
+        var now = Clock();
+        var shaded = shades.Update(words, now, from);
         bool arabic = KeyboardLayout.LooksArabic(text.Final + " " + text.Draft);
         block.FlowDirection = arabic ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-        double width = _text.ActualWidth > 0 ? _text.ActualWidth : double.IsNaN(Width) ? 760 : Math.Max(300, Width - 134);
         double lineHeight = block.FontSize * block.FontFamily.LineSpacing;
-        bool cut = false;
-        while (true)
+        for (int skip = 0; ; skip++)
         {
-            block.Inlines.Clear();
-            if (cut)
-                block.Inlines.Add(new Run("… ") { Foreground = dim });
-            if (final.Count > 0)
-                block.Inlines.Add(new Run(string.Join(' ', final)) { Foreground = bright });
-            if (draft.Count > 0)
-                block.Inlines.Add(new Run((final.Count > 0 ? " " : "") + string.Join(' ', draft)) { Foreground = dim });
+            Write(block, shaded, skip, now, dim);
             block.Measure(new Size(width, double.PositiveInfinity));
-            if (block.DesiredSize.Height <= lineHeight * lines + 2 || final.Count + draft.Count <= 1)
+            if (block.DesiredSize.Height <= lineHeight * lines + 2 || shaded.Count - skip <= 1)
                 break;
-            if (final.Count > 0)
-                final.RemoveAt(0);
-            else
-                draft.RemoveAt(0);
-            cut = true;
         }
+    }
+
+    private static readonly Dictionary<Color, Brush> Solid = [];
+
+    private static Brush SolidOf(Color color)
+    {
+        if (!Solid.TryGetValue(color, out var brush))
+            Solid[color] = brush = Frozen(color);
+        return brush;
+    }
+
+    /// <summary>
+    /// The words from <paramref name="skip"/> on: those at their colours together, each one on its way with a colour
+    /// of its own that goes on from where it is.
+    /// </summary>
+    private static void Write(TextBlock block, IReadOnlyList<CaptionShades.Shade> words, int skip, TimeSpan now, Brush dim)
+    {
+        block.Inlines.Clear();
+        if (skip > 0)
+            block.Inlines.Add(new Run("… ") { Foreground = dim });
+        var still = new System.Text.StringBuilder();
+        Color? stillColor = null;
+        void Flush()
+        {
+            if (still.Length > 0)
+                block.Inlines.Add(new Run(still.ToString()) { Foreground = SolidOf(stillColor!.Value) });
+            still.Clear();
+        }
+        for (int i = skip; i < words.Count; i++)
+        {
+            var word = words[i];
+            string piece = (i > skip ? " " : "") + word.Word;
+            if (word.Still(now))
+            {
+                if (stillColor != word.To)
+                {
+                    Flush();
+                    stillColor = word.To;
+                }
+                still.Append(piece);
+                continue;
+            }
+            Flush();
+            stillColor = null;
+            var brush = new SolidColorBrush(word.ColorAt(now));
+            // Begun as long ago as the word started on its way: it carries on rather than starting again.
+            brush.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation(word.From, word.To, new Duration(CaptionShades.Fade))
+            {
+                BeginTime = word.At - now,
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            });
+            block.Inlines.Add(new Run(piece) { Foreground = brush });
+        }
+        Flush();
     }
 }
 

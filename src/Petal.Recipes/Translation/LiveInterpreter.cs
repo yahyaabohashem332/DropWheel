@@ -17,8 +17,12 @@ public sealed record LiveLine(int Number, bool Final, string Text, int Steady, b
 /// <summary>What puts live speech into another language: finished sentences properly, and the words so far of one being said.</summary>
 public interface ILiveTranslator
 {
-    /// <summary>A finished sentence in another language, read by the sentences before it; null when nothing can translate it now.</summary>
-    Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, CancellationToken cancellationToken);
+    /// <summary>
+    /// A finished sentence in another language, read by the sentences before it; null when nothing can translate it now.
+    /// <paramref name="shown"/> is its translation as the second line had it, which the listener has been reading
+    /// (empty when there was none): a translator may keep its words where they are as right as any.
+    /// </summary>
+    Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, string shown, CancellationToken cancellationToken);
 
     /// <summary>
     /// The words so far of a sentence still being said, carrying on from <paramref name="begun"/> (the part of their
@@ -147,7 +151,7 @@ public sealed class LiveInterpreter
                     }
                     if (moved is not null)
                         Line?.Invoke(new LiveLine(number, true, moved, 0, false));
-                    var translated = await _translator.SentenceAsync(text, from, into, before, cancellationToken).ConfigureAwait(false);
+                    var translated = await _translator.SentenceAsync(text, from, into, before, moved ?? "", cancellationToken).ConfigureAwait(false);
                     Remember(before, text);
                     if (!string.IsNullOrWhiteSpace(translated))
                         Line?.Invoke(new LiveLine(number, true, Flat(translated), 0, true));
@@ -312,16 +316,21 @@ public sealed class LiveTranslator : ILiveTranslator
             Missing?.Invoke(from, to);
     }
 
-    public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, CancellationToken cancellationToken)
+    public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, string shown, CancellationToken cancellationToken)
     {
         if (Cloud.CloudAi.CanTranslate)
             return (await Translator.TranslateAsync([text], from.Length > 0 ? from : "auto", to, null, cancellationToken).ConfigureAwait(false))[0];
         if (Small(from, to))
-            return await Task.Run(() => SmallTranslation.Sentence(text, from, to, cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await Task.Run(() => _soFar.Final(text, from, to, shown, cancellationToken), cancellationToken).ConfigureAwait(false);
         if (SmallWanted(from, to, Card) || !GemmaTranslation.Ready)
             Ask(from, to);
         if (!GemmaTranslation.Ready)
             return null;
+        // Written afresh and proofread, and not carried on from the words shown (as the small models do): measured on
+        // the sixteen FLEURS sentences heard three words at a time, carrying on and proofreading changed a third as many
+        // words and took 0.75 s instead of 1.3, but lost chrF on every pair (en→ar 66.0 to 62.5, en→tr 68.3 to 66.2,
+        // tr→ar 59.1 to 56.8, ar→tr 58.0 to 57.0, tr→en 77.1 to 76.3, ar→en 73.9 to 73.8). The caption window shows
+        // the change gently instead.
         var said = await GemmaTranslation.TranslateAsync(text, from, to, before.Count > 0 ? before.TakeLast(1).ToList() : null, live: true, cancellationToken, heard: Heard).ConfigureAwait(false);
         return to == "ar" ? Translator.Tidy(said) : said;
     }

@@ -1338,6 +1338,99 @@ internal static class DesignSnapshots
         await Task.Delay(1500);
     }
 
+    /// <summary>
+    /// "Petal.exe --captions-rise &lt;folder&gt;" plays a sentence's end into the caption window (off screen): it moves up
+    /// from the second line, then its proper translation takes its place. The window is drawn every 40 ms through both,
+    /// one picture under another in rise.png and proper.png, for checking by eye that nothing jumps.
+    /// </summary>
+    public static async Task RunCaptionsRiseAsync(string[] args)
+    {
+        var output = args[1];
+        Directory.CreateDirectory(output);
+        bool arabic = Localization.L.IsArabic;
+        Settings.SettingsStore.Current.CaptionsShow = arabic ? "arabic" : "english";
+        var window = new Words.CaptionWindow { ShowActivated = false };
+        window.Loaded += (_, _) => window.Left = -20000;
+        window.Show();
+        Recipes.Translation.LiveLine Saying(int n, string text) => new(n, false, text, Math.Max(0, text.LastIndexOf(' ')), false);
+        string[] growing = arabic
+            ? ["سننقل", "سننقل الإطلاق", "سننقل الإطلاق إلى الخميس", "سننقل الإطلاق إلى الخميس المقبل"]
+            : ["We will", "We will move the", "We will move the launch to", "We will move the launch to next Thursday"];
+        string proper = arabic ? "سننقل موعد الإطلاق إلى الخميس القادم." : "We'll move the launch to next Thursday.";
+        string before = arabic ? "اجتمع الفريق صباح اليوم." : "The team met this morning.";
+        window.ShowTalk(new Petal.Engines.Media.StreamState("", "The team met this morning", "", "en", 0, 0));
+        window.ShowLine(new(0, true, before, 0, true));
+        await Task.Delay(1200);
+        window.ShowTalk(new Petal.Engines.Media.StreamState("The team met this morning.", "We'll move the launch to next Thursday", "", "en", 0, 1));
+        foreach (var text in growing)
+        {
+            window.ShowLine(Saying(1, text));
+            await Task.Delay(450);
+        }
+        await Task.Delay(400);
+        var rise = new List<(BitmapSource, double)>();
+        // The talk goes on to the next sentence: the second line's moves up.
+        window.ShowTalk(new Petal.Engines.Media.StreamState("We'll move the launch to next Thursday.", "And", "", "en", 0, 2));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        for (int i = 0; i < 14; i++)
+        {
+            rise.Add((Picture(window), clock.Elapsed.TotalMilliseconds));
+            await Task.Delay(40);
+        }
+        await Task.Delay(600);
+        var right = new List<(BitmapSource, double)>();
+        window.ShowLine(new(1, true, proper, 0, true));
+        clock.Restart();
+        for (int i = 0; i < 12; i++)
+        {
+            right.Add((Picture(window), clock.Elapsed.TotalMilliseconds));
+            await Task.Delay(40);
+        }
+        Save(Strip(rise), Path.Combine(output, "rise.png"));
+        Save(Strip(right), Path.Combine(output, "proper.png"));
+        window.Close();
+    }
+
+    /// <summary>The caption window's card as it is drawn now, mirrored back for right to left.</summary>
+    private static BitmapSource Picture(Window window)
+    {
+        var content = (FrameworkElement)window.Content;
+        var drawing = new DrawingVisual();
+        using (var dc = drawing.RenderOpen())
+        {
+            dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x2B, 0x30, 0x3A)), null, new Rect(0, 0, content.ActualWidth, content.ActualHeight));
+            if (window.FlowDirection == FlowDirection.RightToLeft)
+                dc.PushTransform(new ScaleTransform(-1, 1, content.ActualWidth / 2, 0));
+            dc.DrawRectangle(new VisualBrush(content), null, new Rect(0, 0, content.ActualWidth, content.ActualHeight));
+        }
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(content.ActualWidth), (int)Math.Ceiling(content.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(drawing);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    /// <summary>Pictures one under another, each with the milliseconds since the first.</summary>
+    private static BitmapSource Strip(IReadOnlyList<(BitmapSource Image, double At)> shots)
+    {
+        var frames = shots.Select(s => s.Image).ToList();
+        int width = frames.Max(f => f.PixelWidth) + 60, height = frames.Sum(f => f.PixelHeight);
+        var drawing = new DrawingVisual();
+        using (var dc = drawing.RenderOpen())
+        {
+            dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, width, height));
+            double y = 0;
+            for (int i = 0; i < frames.Count; i++)
+            {
+                dc.DrawImage(frames[i], new Rect(60, y, frames[i].PixelWidth, frames[i].PixelHeight));
+                dc.DrawText(new FormattedText($"{shots[i].At:0}", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 14, Brushes.White, 1), new Point(6, y + 6));
+                y += frames[i].PixelHeight;
+            }
+        }
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(drawing);
+        return bitmap;
+    }
+
     private static void Save(BitmapSource image, string path)
     {
         using var stream = File.Create(path);

@@ -184,6 +184,50 @@ internal sealed class SmallSoFar
     }
 
     /// <summary>
+    /// How much less likely (in the mean log chance of a piece) the sentence carried on from the words on screen may be
+    /// than the one written afresh and still be kept. Measured on the sixteen FLEURS sentences heard three words more
+    /// at a time (SmallModelsBench), chrF and the share of the first line's words that change when it comes, written
+    /// afresh / kept within 0.2: en→ar 62.3, 27 % / 62.7, 10 %; en→tr 68.4, 10 % / 68.3, 4 %; ar→en 70.9, 12 % /
+    /// 71.5, 0 %; ar→tr 57.5, 15 % / 57.0, 13 %; tr→en 74.6, 18 % / 74.8, 16 %; tr→ar 58.2, 28 % / 58.0, 23 %. As right
+    /// on average (65.4 against 65.3), with four words in ten fewer changing. Within 0.4 it was half a point worse.
+    /// </summary>
+    internal static double Margin { get; set; } = 0.2;
+
+    /// <summary>
+    /// A finished sentence, for the first line. It is written afresh, as a whole sentence translates best; and carried
+    /// on from the words the second line showed for it (<paramref name="shown"/>), which the listener has been reading.
+    /// The one carried on is kept unless the model finds it less likely by more than <see cref="Margin"/>: then the
+    /// fresh one is clearly better and takes its place; otherwise the first line changes only where it must.
+    /// Through English, both are weighed as translations of the English written afresh. Nothing here is kept for later.
+    /// </summary>
+    public string Final(string text, string from, string to, string shown, CancellationToken cancellationToken, double? margin = null)
+    {
+        text = text.Trim();
+        if (text.Length == 0 || !text.Any(char.IsLetter))
+            return text;
+        var route = SmallTranslation.Route(from, to);
+        if (route.Count == 0)
+            throw new InvalidOperationException($"No small model translates {from} into {to}.");
+        string middle = text;
+        for (int i = 0; i < route.Count - 1; i++)
+            middle = route[i].Translate(middle, 1, null, cancellationToken).Text;
+        var model = route[^1];
+        var fresh = model.Translate(middle, 1, null, cancellationToken);
+        var chosen = fresh;
+        string pair = from + ">" + to + ">" + route.Count;
+        if (shown.Trim().Length > 0 && pair == _pair && _steps.Length == route.Count
+            && Settled(model, _steps[^1].Last, shown, to) is { Count: > 0 } begun && !begun.SequenceEqual(fresh.Pieces.Take(begun.Count)))
+        {
+            var kept = model.Translate(middle, 1, begun, cancellationToken);
+            double keptLikely = model.Likelihood(middle, kept.Pieces, cancellationToken);
+            double freshLikely = model.Likelihood(middle, fresh.Pieces, cancellationToken);
+            if (keptLikely >= freshLikely - (margin ?? Margin))
+                chosen = kept;
+        }
+        return to == "ar" ? Translator.Tidy(chosen.Text) : chosen.Text;
+    }
+
+    /// <summary>
     /// The words as the listener is shown them. Arabic is tidied, and loses its vowel marks whatever their number:
     /// tidying takes them off only once there are three, which would change words already settled on screen when a
     /// sentence's third mark came.
@@ -207,7 +251,9 @@ internal sealed class SmallSoFar
         // may be written in pieces with a space of their own.
         for (int count = 1; count <= last.Count; count++)
         {
-            if (count < last.Count && !model.Begins(last[count]))
+            // Cut where a word begins, or before a full stop or a comma the model joined to the word before: the words
+            // shown for a sentence still being said have none at their end.
+            if (count < last.Count && !model.Begins(last[count]) && !model.Mark(last[count]))
                 continue;
             var spelt = model.Words(last.Take(count));
             var shown = Plain(Shown(spelt, to));

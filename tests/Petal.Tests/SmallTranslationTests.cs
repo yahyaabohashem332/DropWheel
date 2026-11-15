@@ -99,10 +99,10 @@ public sealed class SmallTranslationTests(ITestOutputHelper output) : IDisposabl
         var asked = new List<string>();
         var translator = new LiveTranslator { Card = false };
         translator.Missing += (from, to) => asked.Add(from + ">" + to);
-        Assert.Null(await translator.SentenceAsync("Good morning.", "en", "ar", [], default));
-        Assert.Null(await translator.SentenceAsync("See you tomorrow.", "en", "ar", [], default));
+        Assert.Null(await translator.SentenceAsync("Good morning.", "en", "ar", [], "", default));
+        Assert.Null(await translator.SentenceAsync("See you tomorrow.", "en", "ar", [], "", default));
         Assert.Null(await translator.SoFarAsync("See you", "en", "ar", [], "", default));
-        Assert.Null(await translator.SentenceAsync("Günaydın.", "tr", "ar", [], default));
+        Assert.Null(await translator.SentenceAsync("Günaydın.", "tr", "ar", [], "", default));
         Assert.Equal(["en>ar", "tr>ar"], asked);
     }
 
@@ -250,6 +250,45 @@ public sealed class SmallTranslationTests(ITestOutputHelper output) : IDisposabl
         }
         Assert.True(carried >= 2, "The translation never had settled words to carry on from.");
         Assert.True(shown.Count >= words.Length / 3, "The whole sentence should be translated by its end.");
+    }
+
+    /// <summary>
+    /// The first line: a finished sentence keeps the words the second line showed for it when they are as likely as a
+    /// fresh translation, so it changes only where it must; words the model finds clearly worse give way.
+    /// </summary>
+    [Theory]
+    [InlineData("en", "tr", "The city council decided last night that the old bridge over the river will be closed for repairs.")]
+    [InlineData("ar", "en", "قرر مجلس المدينة مساء أمس إغلاق الجسر القديم فوق النهر لإصلاحه.")]
+    public void A_finished_sentence_keeps_the_words_shown_for_it_where_they_are_as_good(string from, string to, string sentence)
+    {
+        if (!Real() || !SmallTranslation.ReadyFor(from, to))
+            return;
+        var soFar = new SmallSoFar();
+        // The second line had it up to its last few words when it ended, without a full stop.
+        var words = sentence.Split(' ');
+        var shown = LiveInterpreter.Unfinished(soFar.Translate(string.Join(' ', words.SkipLast(3)), from, to, "", default));
+        var final = soFar.Final(sentence, from, to, shown, default, margin: 1e9);
+        output.WriteLine($"shown: {shown}\nfinal: {final}\nfresh: {SmallTranslation.Sentence(sentence, from, to)}");
+        Assert.StartsWith(shown, final, StringComparison.Ordinal);
+        // Weighed, a fresh translation that the model finds far likelier takes its place.
+        var nonsense = soFar.Final(sentence, from, to, shown, default, margin: -1e9);
+        Assert.Equal(SmallTranslation.Sentence(sentence, from, to), nonsense);
+    }
+
+    [Fact]
+    public void A_translation_is_likelier_than_the_same_words_jumbled()
+    {
+        if (!Real() || !SmallTranslation.ReadyFor("en", "ar"))
+            return;
+        var pair = TranslationCatalog.Pairs.First(p => p.From == "en" && p.To == "ar");
+        var model = new PairModel(pair.Files, pair.Start, pair.Mark, pair.End);
+        const string text = "Today we are going to bake bread at home.";
+        var right = model.Translate(text, 1, null, default).Pieces;
+        var jumbled = right.Reverse().ToList();
+        double a = model.Likelihood(text, right), b = model.Likelihood(text, jumbled);
+        output.WriteLine($"{a:0.000} {b:0.000}");
+        Assert.InRange(a, -3, 0);
+        Assert.True(a > b + 1);
     }
 
     [Fact]

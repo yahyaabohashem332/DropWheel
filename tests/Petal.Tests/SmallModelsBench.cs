@@ -153,6 +153,10 @@ public sealed class SmallModelsBench
                 // As captions hear it: three words more each time, and what two translations in a row agree on is settled.
                 var soFar = new SmallSoFar();
                 var grown = new List<string>();
+                // The first line by each margin: never keep what was shown, keep it within the margin, always keep it.
+                double[] margins = [-1e9, 0, 0.1, 0.2, 0.4, 1e9];
+                var finals = margins.Select(_ => new List<string>()).ToArray();
+                var finalTimes = new List<double>();
                 var times = new List<double>();
                 int changed = 0, forced = 0, calls = 0;
                 foreach (var sentence in texts[from])
@@ -182,13 +186,41 @@ public sealed class SmallModelsBench
                             break;
                     }
                     grown.Add(string.Join(' ', shown));
+                    for (int m = 0; m < margins.Length; m++)
+                    {
+                        timer.Restart();
+                        finals[m].Add(soFar.Final(sentence, from, to, string.Join(' ', shown), default, margins[m]));
+                        if (margins[m] == SmallSoFar.Margin)
+                            finalTimes.Add(timer.Elapsed.TotalSeconds);
+                    }
                 }
                 var reference = string.Join(' ', texts[to]);
                 File.AppendAllText(report, $"{from} > {to}: whole {LiveCaptionsBench.ChrF(string.Join(' ', quick), reference):0.0} ({quickSeconds:0.00}s)"
                     + $"  word by word {LiveCaptionsBench.ChrF(string.Join(' ', grown), reference):0.0} ({times.Average():0.00}s a time, worst {times.Max():0.00}s; settled words changed {changed} of {forced} times){Environment.NewLine}");
                 File.WriteAllLines(Path.Combine(talks, $"route-{from}-{to}.txt"), quick.Zip(grown, (a, b) => a + Environment.NewLine + "    " + b));
+                var row = new StringBuilder($"    first line by margin ({finalTimes.Average():0.00}s, worst {finalTimes.Max():0.00}s):");
+                for (int m = 0; m < margins.Length; m++)
+                {
+                    double renewed = finals[m].Zip(grown, (f, g) => New(g, f)).Average();
+                    row.Append($"  {(margins[m] < -1e8 ? "fresh" : margins[m] > 1e8 ? "kept" : margins[m].ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))} {LiveCaptionsBench.ChrF(string.Join(' ', finals[m]), reference):0.0}/{renewed:P0}");
+                }
+                File.AppendAllText(report, row + Environment.NewLine);
             }
         }
+    }
+
+    /// <summary>The share of the words of <paramref name="now"/> that weren't in <paramref name="before"/>, in order (a full stop gained doesn't count).</summary>
+    private static double New(string before, string now)
+    {
+        static string[] Words(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w.TrimEnd('.', ',', '،', '؟', '?', '!', '۔')).ToArray();
+        var (a, b) = (Words(before), Words(now));
+        if (b.Length == 0)
+            return 0;
+        var run = new int[a.Length + 1, b.Length + 1];
+        for (int i = a.Length - 1; i >= 0; i--)
+            for (int j = b.Length - 1; j >= 0; j--)
+                run[i, j] = a[i] == b[j] ? run[i + 1, j + 1] + 1 : Math.Max(run[i + 1, j], run[i, j + 1]);
+        return 1 - (double)run[0, 0] / b.Length;
     }
 
     [Fact]

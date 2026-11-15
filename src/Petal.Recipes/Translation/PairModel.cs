@@ -170,6 +170,14 @@ internal sealed class PairModel(IReadOnlyList<ModelInfo> files, long pad, string
         return id >= 0 && id < pieces.Length && pieces[id] is { } piece && piece.StartsWith('▁');
     }
 
+    /// <summary>Whether a piece is only a stop or a comma, or the like, without a word.</summary>
+    public bool Mark(long id)
+    {
+        var pieces = Load().Pieces;
+        return id >= 0 && id < pieces.Length && pieces[id] is { Length: > 0 } piece && !piece.StartsWith('<')
+            && piece.TrimStart('▁') is { Length: > 0 } bare && bare.All(char.IsPunctuation);
+    }
+
     /// <summary>The words some pieces spell.</summary>
     public string Words(IEnumerable<long> answer)
     {
@@ -277,6 +285,61 @@ internal sealed class PairModel(IReadOnlyList<ModelInfo> files, long pad, string
 
     private static List<long> Best(List<Beam> beams, List<Beam> finished) =>
         (finished.Count > 0 ? finished : beams).MaxBy(c => c.Score / c.Tokens.Count)!.Tokens;
+
+    /// <summary>
+    /// How likely the model finds an answer for a text: the mean, over its pieces and its end, of the log of the chance
+    /// it gives each piece where it stands (0 is certain; lower is less likely). One pass of the decoder over the whole
+    /// answer, so two translations of the same text can be weighed against each other.
+    /// </summary>
+    public double Likelihood(string text, IReadOnlyList<long> answer, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var model = Load();
+        var ids = Encode(text);
+        int length = ids.Length;
+        var mask = Enumerable.Repeat(1L, length).ToArray();
+        float[] hidden;
+        using (var idsTensor = OrtValue.CreateTensorValueFromMemory(ids, [1, length]))
+        using (var maskTensor = OrtValue.CreateTensorValueFromMemory(mask, [1, length]))
+        using (var run = new RunOptions())
+        {
+            var names = model.Encoder.InputMetadata.Keys.ToList();
+            using var encoded = model.Encoder.Run(run, names, names.Select(n => n == "input_ids" ? idsTensor : maskTensor).ToList(), [model.Encoder.OutputMetadata.Keys.First()]);
+            hidden = encoded[0].GetTensorDataAsSpan<float>().ToArray();
+        }
+        List<long> sequence = targetMark is { } target ? [pad, target] : [pad];
+        int given = sequence.Count;
+        sequence.AddRange(answer);
+        int size = hidden.Length / length, steps = sequence.Count;
+        var names2 = model.Decoder.InputMetadata.Keys.ToList();
+        using var no = OrtValue.CreateTensorValueFromMemory(new[] { false }, [1]);
+        using var nothing = model.Past is { } past ? OrtValue.CreateTensorValueFromMemory(new float[past.Heads * past.Size], [1, past.Heads, 1, past.Size]) : null;
+        using var sequenceValue = OrtValue.CreateTensorValueFromMemory(sequence.ToArray(), [1, steps]);
+        using var statesValue = OrtValue.CreateTensorValueFromMemory(hidden, [1, length, size]);
+        using var maskValue = OrtValue.CreateTensorValueFromMemory(mask, [1, length]);
+        using var decoderRun = new RunOptions();
+        var values = names2.Select(n => n == "input_ids" ? sequenceValue : n == "use_cache_branch" ? no : n == "encoder_hidden_states" ? statesValue : n.Contains("mask") ? maskValue : nothing!).ToList();
+        using var outputs = model.Decoder.Run(decoderRun, names2, values, ["logits"]);
+        var logits = outputs[0].GetTensorDataAsSpan<float>();
+        int vocabulary = logits.Length / steps;
+        double total = 0;
+        int counted = 0;
+        // The numbers at each place are for the piece after it: the answer's pieces, then its end.
+        for (int at = given - 1; at < steps; at++)
+        {
+            long next = at + 1 < steps ? sequence[at + 1] : eos;
+            var row = logits.Slice(at * vocabulary, vocabulary);
+            float max = float.NegativeInfinity;
+            foreach (var v in row)
+                max = Math.Max(max, v);
+            double sum = 0;
+            foreach (var v in row)
+                sum += Math.Exp(v - max);
+            total += row[(int)next] - max - Math.Log(sum);
+            counted++;
+        }
+        return counted == 0 ? 0 : total / counted;
+    }
 
     /// <summary>The answer by a decoder that reads all of it so far again for every word.</summary>
     private List<long> Rereading(Loaded model, float[] hidden, long[] mask, List<long> begin, int candidates, int maxLength, CancellationToken cancellationToken)

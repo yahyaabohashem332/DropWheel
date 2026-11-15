@@ -45,7 +45,7 @@ public static class Translator
     /// What the English to Arabic model leaves behind now and then, put right: an English "a" or "the" left among the Arabic
     /// words, every letter given its vowel marks (a style it picked up from some of what it learnt from, which nobody writes
     /// today; the marks a writer would keep, the doubling mark and the "an" ending as in جداً, stay), and the thousands of a
-    /// number parted by an Arabic comma (10،000).
+    /// number parted by an Arabic comma (10،000), and a space before a full stop.
     /// </summary>
     public static string Tidy(string arabic)
     {
@@ -56,7 +56,10 @@ public static class Translator
         static bool Vowel(char c) => c is >= (char)0x064C and <= (char)0x0650 or (char)0x0652;
         if (text.Count(Vowel) >= 3)
             text = new string(text.Where(c => !Vowel(c)).ToArray());
-        return System.Text.RegularExpressions.Regex.Replace(text, @"(?<=\d)،(?=\d{3}(?!\d))", ",");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"(?<=\d)،(?=\d{3}(?!\d))", ",");
+        // A space before a full stop, a comma or a question mark, as the small English to Arabic model leaves at a
+        // sentence's end: Arabic puts them straight after the word.
+        return System.Text.RegularExpressions.Regex.Replace(text, @"(?<=[\p{IsArabic}\d]) +(?=[.,،؛:!?؟](?:\s|$))", "");
     }
 
     /// <summary>Each line (in Arabic) in English; empty lines stay empty.</summary>

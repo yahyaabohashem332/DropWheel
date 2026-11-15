@@ -76,6 +76,10 @@ public sealed class DubbingRecipeTests
     // A number's thousands parted by an Arabic comma.
     [InlineData("سيكون لدينا 10،000 شخص", "سيكون لدينا 10,000 شخص")]
     [InlineData("1،000،000 دولار و3،4", "1,000,000 دولار و3،4")]
+    // A space left before a full stop or a comma (the small English to Arabic model ends a sentence so).
+    [InlineData("كانت تبلغ اكثر من الف سنة .", "كانت تبلغ اكثر من الف سنة.")]
+    [InlineData("وطريق كل محبة . ومع ذلك ، نعم ؟", "وطريق كل محبة. ومع ذلك، نعم؟")]
+    [InlineData("العدد 3 .", "العدد 3.")]
     [InlineData("", "")]
     public void Arabic_translations_are_put_right(string translated, string expected) => Assert.Equal(expected, Translator.Tidy(translated));
 

@@ -14,7 +14,7 @@ namespace Petal.Tests;
 [Collection("Language")]
 public sealed class CaptionLinesTests
 {
-    private static void OnCaptions(string show, Action<CaptionWindow> test)
+    internal static void OnCaptions(string show, Action<CaptionWindow> test)
     {
         ExceptionDispatchInfo? failure = null;
         var thread = new Thread(() =>
