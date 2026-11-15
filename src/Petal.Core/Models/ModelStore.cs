@@ -8,7 +8,8 @@ namespace Petal.Core.Models;
 /// <see cref="Sha256"/> before use.
 /// </summary>
 /// <param name="FileName">The model's file (for a bundled model, relative to tools\models).</param>
-public sealed record ModelInfo(string Id, string Name, string FileName, string Url, string Sha256, long Size, string License, bool Bundled = false);
+/// <param name="Replaces">A file an earlier DropWheel downloaded for the same job, which goes once this one is here.</param>
+public sealed record ModelInfo(string Id, string Name, string FileName, string Url, string Sha256, long Size, string License, bool Bundled = false, string? Replaces = null);
 
 public static class ModelCatalog
 {
@@ -362,7 +363,7 @@ public static class ModelStore
     public static IReadOnlyList<string> ItemsIn(string folder)
     {
         var items = new List<string>();
-        foreach (var model in ModelCatalog.All.Where(m => !m.Bundled))
+        foreach (var model in ModelCatalog.All.Concat(TranslationCatalog.All).Where(m => !m.Bundled))
         {
             if (File.Exists(Path.Combine(folder, model.FileName)))
                 items.Add(model.FileName);
@@ -694,6 +695,11 @@ public static class ModelStore
                         throw new InvalidDataException($"The downloaded {model.Name} didn't match its checksum, so it wasn't used. Try again later.");
                 }
                 File.Move(part, target, overwrite: true);
+                // What it takes the place of is of no use to anything now.
+                if (model.Replaces is { Length: > 0 } old)
+                {
+                    try { File.Delete(Path.Combine(Folder, old)); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+                }
                 return target;
             }
             catch

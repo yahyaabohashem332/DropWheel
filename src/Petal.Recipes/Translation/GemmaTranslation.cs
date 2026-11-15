@@ -533,6 +533,9 @@ internal static class GemmaServer
     /// <summary>Whether Windows lists a graphics card of the kind worth using.</summary>
     internal static bool CardNamed()
     {
+        // For measuring, on a PC that has one, how a PC without one does.
+        if (Environment.GetEnvironmentVariable("PETAL_NO_CARD") is { Length: > 0 })
+            return false;
         try
         {
             using var adapters = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");

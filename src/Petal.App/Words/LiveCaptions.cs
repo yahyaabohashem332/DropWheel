@@ -81,15 +81,23 @@ internal static class LiveCaptions
         var stop = _stop.Token;
         var dispatcher = Application.Current.Dispatcher;
         var translator = new LiveTranslator();
-        translator.Missing += () => dispatcher.BeginInvoke(() =>
-            ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", GemmaTranslation.LiveModels));
+        translator.Missing += (from, to) => dispatcher.BeginInvoke(() => OfferTranslation(from, to));
         var interpreter = new LiveInterpreter(translator, () => Target(SettingsStore.Current.CaptionsShow));
         interpreter.Line += line => dispatcher.BeginInvoke(() => _window?.ShowLine(line));
         interpreter.Failed += ex => Log.Error(ex, "Translating live captions");
         _interpreter = interpreter;
         string spoken = settings.CaptionsLanguage;
-        bool translating = Target(settings.CaptionsShow) is { } into && into != spoken;
+        string? wanted = Target(settings.CaptionsShow);
+        bool translating = wanted is not null && wanted != spoken;
+        // Without a graphics card the small models made for the two languages translate, and share the processor
+        // with the speech model: a few threads each get more done than all of them fighting over every core.
+        bool small = translating && !GemmaTranslation.HasCard;
+        if (small)
+            SmallTranslation.Threads = Math.Clamp(Environment.ProcessorCount / 4, 2, 4);
         Offer(translating);
+        // Their models are asked for now when the language spoken is known, and not at its first sentence.
+        if (small && LiveTranslator.SmallWanted(spoken, wanted!, card: false) && !SmallTranslation.ReadyFor(spoken, wanted!) && !Petal.Recipes.Cloud.CloudAi.CanTranslate)
+            OfferTranslation(spoken, wanted!);
         _ = Task.Run(async () =>
         {
             // The translation model loads beside the speech model, so the first sentence is translated in its own time
@@ -101,7 +109,12 @@ internal static class LiveCaptions
                 {
                     try
                     {
-                        await GemmaTranslation.PrepareAsync(stop);
+                        // Without a card the large model stays out of the way: it is only what translates until a
+                        // pair's small models are here, and loads when that is asked of it.
+                        if (small)
+                            SmallTranslation.Prepare(spoken, wanted!);
+                        else
+                            await GemmaTranslation.PrepareAsync(stop);
                     }
                     catch (Exception ex) when (ex is not OutOfMemoryException)
                     {
@@ -205,7 +218,7 @@ internal static class LiveCaptions
     /// </summary>
     private static void Offer(bool translating)
     {
-        if (translating && !Petal.Recipes.Cloud.CloudAi.CanTranslate && GemmaTranslation.Ready && !ModelStore.IsAvailable(ModelCatalog.GemmaQuick))
+        if (translating && GemmaTranslation.HasCard && !Petal.Recipes.Cloud.CloudAi.CanTranslate && GemmaTranslation.Ready && !ModelStore.IsAvailable(ModelCatalog.GemmaQuick))
         {
             if (!_offeredQuick)
                 ModelDownloadWindow.Show("Translation Model", "A quicker model keeps the captions up with the speaker. Until it is here, the larger one translates them, a little behind.", GemmaTranslation.LiveModels);
@@ -220,6 +233,38 @@ internal static class LiveCaptions
             ModelDownloadWindow.Show("Speech Model", "This PC's graphics card runs the most accurate speech model without falling behind, and the captions hear every language far better with it. It is downloaded once.",
                 [ModelCatalog.WhisperAccurate], ready: UseAccurate);
         }
+    }
+
+    // The pairs of languages whose small models were offered already since DropWheel started.
+    private static readonly HashSet<string> OfferedPairs = [];
+
+    /// <summary>
+    /// Offers, once for each pair of languages, what translates them best on this PC and isn't here. Without a
+    /// graphics card that is the small models made for the pair; with one, the model for every pair.
+    /// </summary>
+    private static void OfferTranslation(string from, string to)
+    {
+        // One offer at a time: this one waits for the next sentence that needs it.
+        if (ModelDownloadWindow.IsOpen || !IsOn)
+            return;
+        if (!LiveTranslator.SmallWanted(from, to, GemmaTranslation.HasCard))
+        {
+            ModelDownloadWindow.Show("Translation Model", "The captions are translated by a model on this PC, downloaded once. Until it is here, they show what was said.", GemmaTranslation.LiveModels);
+            return;
+        }
+        if (!OfferedPairs.Add(from + ">" + to))
+            return;
+        ModelDownloadWindow.Show("Translation Model", WhySmall(from, to, GemmaTranslation.Ready),
+            SmallTranslation.ModelsFor(from, to), ready: () => Task.Run(() => SmallTranslation.Prepare(from, to)));
+    }
+
+    /// <summary>What the offer of a pair's small models says: why, and what translates until they are here.</summary>
+    internal static string WhySmall(string from, string to, bool largeHere)
+    {
+        var (spoken, wanted) = (LanguageChoice.NameOf(from), LanguageChoice.NameOf(to));
+        return largeHere
+            ? L.F("Without a graphics card, a small model made for the two languages ({0} → {1}) keeps the captions up with the speaker. It is downloaded once. Until it is here, the larger model translates them, far behind.", spoken, wanted)
+            : L.F("Without a graphics card, a small model made for the two languages ({0} → {1}) keeps the captions up with the speaker. It is downloaded once. Until it is here, the captions show what was said.", spoken, wanted);
     }
 
     /// <summary>The most accurate speech model has arrived: the captions go over to it as they run.</summary>
@@ -323,10 +368,21 @@ internal static class LiveCaptions
     }
 
     /// <summary>
-    /// The model captions are best with: one for every pair of languages, and the quickest of those.
+    /// The model captions are best with. Where a graphics card runs it: one for every pair of languages, and the
+    /// quickest of those. Without a card: the small models made for the two languages, once the language spoken is
+    /// known (left to be told, it isn't until it is heard, and nothing can be offered before).
     /// </summary>
-    internal static IReadOnlyList<ModelInfo> ModelsToOffer(string spoken, string into) =>
-        spoken == into ? [] : GemmaTranslation.LiveModels;
+    /// <param name="card">Whether this PC has a graphics card for the large model; as found when not given.</param>
+    internal static IReadOnlyList<ModelInfo> ModelsToOffer(string spoken, string into, bool? card = null)
+    {
+        if (spoken == into)
+            return [];
+        bool has = card ?? GemmaTranslation.HasCard;
+        if (has)
+            return GemmaTranslation.LiveModels;
+        return LiveTranslator.SmallWanted(spoken, into, card: false) ? SmallTranslation.ModelsFor(spoken, into)
+            : spoken is "" or "auto" ? [] : GemmaTranslation.LiveModels;
+    }
 
     /// <summary>Settings from before there was a choice of language: "In Arabic" and "In English" become the language chosen.</summary>
     internal static void Settle(AppSettings settings)
@@ -808,6 +864,9 @@ internal sealed class ModelDownloadWindow : ToolWindow
 {
     private static ModelDownloadWindow? _open;
 
+    /// <summary>Whether a download is on offer now.</summary>
+    public static bool IsOpen => _open is not null;
+
     /// <param name="over">A window that stays on top of everything (Circle Anything's still screen): this one goes over it.</param>
     /// <param name="ready">Called once the models are all here, or a key does their job.</param>
     /// <param name="ownKey">Opened at the place for a key, for someone who asked for that.</param>
@@ -833,6 +892,10 @@ internal sealed class ModelDownloadWindow : ToolWindow
     /// <summary>The window with the place for a key open or closed, for checking by eye.</summary>
     internal static Window ForSnapshot(bool ownKey) => new ModelDownloadWindow("Circle Anything", "Answering on this PC needs the AI model, downloaded once.",
         [.. Petal.Recipes.AskPetal.Models.Select(m => m with { Size = m.Size + 1 })], null, ownKey);
+
+    /// <summary>The offer of a pair's small models on a PC without a graphics card, for checking by eye.</summary>
+    internal static Window ForCaptionsSnapshot() => new ModelDownloadWindow("Translation Model", LiveCaptions.WhySmall("tr", "ar", largeHere: false),
+        [.. SmallTranslation.ModelsFor("tr", "ar").Select(m => m with { Size = m.Size + 1 })], null);
 
     private ModelDownloadWindow(string title, string why, IReadOnlyList<ModelInfo> models, Action? ready, bool ownKey = false) : base(title, 420)
     {

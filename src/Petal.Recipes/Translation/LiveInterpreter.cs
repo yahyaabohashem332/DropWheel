@@ -269,33 +269,67 @@ public sealed class LiveInterpreter
 /// <summary>
 /// Live translation by what this PC has: the chosen cloud model for finished sentences when there is a key (each
 /// request is billed, so the words so far aren't sent to it), the model on this PC otherwise and for the words so far.
+/// Which model on this PC depends on its graphics card. With one, the model that reads any language by its meaning
+/// keeps up with the speaker. Without one that model takes seconds a sentence while the speech model wants the same
+/// cores, and falls ever further behind: there the small models made for the two languages translate
+/// (<see cref="SmallTranslation"/>), which take a fraction of a second.
 /// </summary>
 public sealed class LiveTranslator : ILiveTranslator
 {
-    private int _asked;
+    private readonly HashSet<string> _asked = [];
+    private readonly SmallSoFar _soFar = new();
 
     /// <summary>Whether the model is told that the words were written down from speech, and may be misheard.</summary>
     public bool Heard { get; init; } = true;
 
-    /// <summary>Nothing here can translate yet: raised once, for offering the model.</summary>
-    public event Action? Missing;
+    /// <summary>
+    /// What would translate these two languages best on this PC isn't here: raised once for each pair, for offering it.
+    /// Until it comes, whatever else is here translates.
+    /// </summary>
+    public event Action<string, string>? Missing;
+
+    /// <summary>Whether this PC has a graphics card that runs the large model fast enough: as found, unless said.</summary>
+    public bool Card { get; init; } = GemmaTranslation.HasCard;
+
+    /// <summary>
+    /// Whether small models are what should translate captions: there is no graphics card for the large one, and they
+    /// know the two languages.
+    /// </summary>
+    public static bool SmallWanted(string from, string to, bool card) => !card && SmallTranslation.Knows(from, to);
+
+    /// <summary>
+    /// Whether small models translate this pair now: they are wanted and here, or they are here and the large one isn't.
+    /// </summary>
+    private bool Small(string from, string to) =>
+        SmallTranslation.ReadyFor(from, to) && (!Card || !GemmaTranslation.Ready);
+
+    private void Ask(string from, string to)
+    {
+        bool first;
+        lock (_asked)
+            first = _asked.Add(from + ">" + to);
+        if (first)
+            Missing?.Invoke(from, to);
+    }
 
     public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, CancellationToken cancellationToken)
     {
         if (Cloud.CloudAi.CanTranslate)
             return (await Translator.TranslateAsync([text], from.Length > 0 ? from : "auto", to, null, cancellationToken).ConfigureAwait(false))[0];
+        if (Small(from, to))
+            return await Task.Run(() => SmallTranslation.Sentence(text, from, to, cancellationToken), cancellationToken).ConfigureAwait(false);
+        if (SmallWanted(from, to, Card) || !GemmaTranslation.Ready)
+            Ask(from, to);
         if (!GemmaTranslation.Ready)
-        {
-            if (Interlocked.Exchange(ref _asked, 1) == 0)
-                Missing?.Invoke();
             return null;
-        }
         var said = await GemmaTranslation.TranslateAsync(text, from, to, before.Count > 0 ? before.TakeLast(1).ToList() : null, live: true, cancellationToken, heard: Heard).ConfigureAwait(false);
         return to == "ar" ? Translator.Tidy(said) : said;
     }
 
     public async Task<string?> SoFarAsync(string text, string from, string to, IReadOnlyList<string> before, string begun, CancellationToken cancellationToken)
     {
+        if (Small(from, to))
+            return await Task.Run(() => _soFar.Translate(text, from, to, begun, cancellationToken), cancellationToken).ConfigureAwait(false);
         if (!GemmaTranslation.Ready)
             return null;
         var said = await GemmaTranslation.SoFarAsync(text, from, to, before.Count > 0 ? before : null, begun, cancellationToken).ConfigureAwait(false);

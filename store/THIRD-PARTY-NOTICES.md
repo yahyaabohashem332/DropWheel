@@ -166,6 +166,8 @@ download:
   8-bit ONNX by audiojs: https://huggingface.co/audiojs/tiger-dnr
 - LaMa (big-lama), Copyright (c) Samsung Research (advimman/lama). Apache-2.0.
   https://huggingface.co/Carve/LaMa-ONNX (ONNX export by Carve).
+- M2M100 418M, Copyright (c) Facebook, Inc. and its affiliates (Meta). MIT.
+  https://huggingface.co/facebook/m2m100_418M; 8-bit ONNX by Xenova: https://huggingface.co/Xenova/m2m100_418M
 - Chatterbox Multilingual V3, Copyright (c) 2025 Resemble AI. MIT.
   https://github.com/resemble-ai/chatterbox. ONNX exports by Masterx
   (https://huggingface.co/Masterx/chatterbox-multilingual-v3-ONNX) and KitsuMate
@@ -175,18 +177,21 @@ download:
 
 ### Opus-MT (Creative Commons Attribution 4.0)
 
-DropWheel's Dub and Translate tools use these two translation models:
+DropWheel's Dub and Translate tools, and live captions on a PC without a graphics card, use these translation
+models, each made for one pair of languages:
 
-- "opus-mt-en-ar" (English to Arabic) and "opus-mt-ar-en" (Arabic to English), by Jörg Tiedemann and the
-  Language Technology Research Group at the University of Helsinki (Helsinki-NLP), from
-  https://huggingface.co/Helsinki-NLP/opus-mt-en-ar and https://huggingface.co/Helsinki-NLP/opus-mt-ar-en.
+- "opus-mt-en-ar", "opus-mt-ar-en", "opus-mt-en-es", "opus-mt-es-en", "opus-mt-en-fr", "opus-mt-fr-en",
+  "opus-mt-en-id", "opus-mt-id-en", "opus-mt-es-fr" and "opus-mt-fr-es", and "opus-mt-tc-big-en-tr" and
+  "opus-mt-tc-big-tr-en" (English and Turkish), by Jörg Tiedemann and the Language Technology Research Group at
+  the University of Helsinki (Helsinki-NLP), each from https://huggingface.co/Helsinki-NLP/ followed by its name
+  (https://huggingface.co/Helsinki-NLP/opus-mt-en-ar, and so on).
 - Licensed under the Creative Commons Attribution 4.0 International licence (CC BY 4.0):
   https://creativecommons.org/licenses/by/4.0/ (its text is in `licenses\CC-BY-4.0.txt`).
-- Changed from the originals: converted to ONNX and quantized to 8 bits by Xenova
-  (https://huggingface.co/Xenova/opus-mt-en-ar and https://huggingface.co/Xenova/opus-mt-ar-en).
-  DropWheel uses those files as they are.
+- Changed from the originals: converted to ONNX and quantized to 8 bits, by Xenova
+  (https://huggingface.co/Xenova/ followed by the model's name) and, for the two English and Turkish models, by
+  the ONNX Community (https://huggingface.co/onnx-community/opus-mt-tc-big-en-tr and
+  https://huggingface.co/onnx-community/opus-mt-tc-big-tr-en). DropWheel uses those files as they are.
 - The licensors offer the models as-is and make no representations or warranties of any kind about them.
-
 
 ## Licence texts
 

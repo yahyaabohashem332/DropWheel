@@ -487,6 +487,7 @@ internal static class DesignSnapshots
             ("dubbestkey", () => Dub(window => window.FinestMissingForSnapshot(true))),
             ("modelchoice", () => Words.ModelDownloadWindow.ForSnapshot(false)),
             ("modelchoicekey", () => Words.ModelDownloadWindow.ForSnapshot(true)),
+            ("captionssmall", () => Words.ModelDownloadWindow.ForCaptionsSnapshot()),
             ("dubpreparing", () => Dub(window => window.ShowPreparingForSnapshot(0.31))),
             ("dubreview", () => Dub(window => window.ShowForSnapshot(SampleDub(video[0])))),
             // 1.15

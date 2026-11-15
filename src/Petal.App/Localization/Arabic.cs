@@ -3666,5 +3666,8 @@ internal static class Arabic
         ["Downloaded models are kept in this folder. Choosing another moves the ones already downloaded there."] = "تُحفظ النماذج المنزّلة في هذا المجلد، واختيار مجلد آخر ينقل إليه ما نُزّل منها.",
         ["Speech Model"] = "نموذج الكلام",
         ["This PC's graphics card runs the most accurate speech model without falling behind, and the captions hear every language far better with it. It is downloaded once."] = "بطاقة الرسوميات في هذا الحاسوب تشغّل أدقّ نموذج للكلام دون أن يتأخر، وتلتقط به الترجمة الفورية كل اللغات بدقة أعلى بكثير. يُنزَّل مرة واحدة.",
+        ["Without a graphics card, a small model made for the two languages ({0} → {1}) keeps the captions up with the speaker. It is downloaded once. Until it is here, the captions show what was said."] = "بلا بطاقة رسوميات، يُبقي نموذج صغير مخصّص للترجمة من {0} إلى {1} الكلمات مواكبة للمتحدث. يُنزَّل مرة واحدة. وحتى يصل، تُعرض الكلمات كما قيلت.",
+        ["Without a graphics card, a small model made for the two languages ({0} → {1}) keeps the captions up with the speaker. It is downloaded once. Until it is here, the larger model translates them, far behind."] = "بلا بطاقة رسوميات، يُبقي نموذج صغير مخصّص للترجمة من {0} إلى {1} الكلمات مواكبة للمتحدث. يُنزَّل مرة واحدة. وحتى يصل، يترجمها النموذج الأكبر متأخرًا كثيرًا.",
+        ["Without a graphics card, a small model made for the two languages translates. It is offered here once the language spoken is chosen, or the first time that language is heard."] = "بلا بطاقة رسوميات، يترجم نموذج صغير مخصّص للّغتين. يُعرض هنا بعد اختيار لغة الكلام، أو عند سماع تلك اللغة أول مرة.",
     };
 }

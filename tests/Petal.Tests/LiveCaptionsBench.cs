@@ -127,19 +127,34 @@ public sealed class LiveCaptionsBench
         var marks = Marks(Path.Combine(Folder, name + ".json"));
 
         var load = Stopwatch.StartNew();
-        await GemmaTranslation.PrepareAsync();
+        // PETAL_NO_CARD=1: as on a PC without a graphics card, where Whisper runs on the processor and the small models
+        // made for the two languages translate (PETAL_SMALL_THREADS: with how many threads).
+        // PETAL_LIVE_SMALL=1: the small models translate though Whisper has the graphics card, so the second line is
+        // asked for several times a second (a hard test of its settled words staying as they are).
+        bool card = GemmaTranslation.HasCard && Environment.GetEnvironmentVariable("PETAL_LIVE_SMALL") != "1";
+        if (card)
+            await GemmaTranslation.PrepareAsync();
+        else
+        {
+            SmallTranslation.Threads = int.TryParse(Environment.GetEnvironmentVariable("PETAL_SMALL_THREADS"), out int threads) ? threads : Math.Clamp(Environment.ProcessorCount / 4, 2, 4);
+            if (from != "auto")
+                SmallTranslation.Prepare(from, into);
+        }
         double prepared = load.Elapsed.TotalSeconds;
         // As on a PC without a graphics card: Whisper reads only as much as there is to hear.
-        bool brief = Environment.GetEnvironmentVariable("PETAL_LIVE_SHORT") == "1";
+        bool brief = !GemmaTranslation.HasCard || Environment.GetEnvironmentVariable("PETAL_LIVE_SHORT") == "1";
         using var engine = new StreamingTranscriber(speech, from, alignWords: !brief, ModelStore.Find(ModelCatalog.VoiceFinder), Transcriber.Languages);
         await engine.WarmUpAsync(CancellationToken.None);
-        var interpreter = new LiveInterpreter(new LiveTranslator(), () => into);
+        var interpreter = new LiveInterpreter(new LiveTranslator { Card = card }, () => into);
         var clock = Stopwatch.StartNew();
         var log = new StringBuilder();
         var sentences = new List<(StreamSentence Sentence, double At)>();
         var lines = new List<(LiveLine Line, double At)>();
         var passes = new List<double>();
         var behind = new List<double>();
+        // How long after the words were heard their translation stood on the second line.
+        var after = new List<double>();
+        double heardAt = 0;
         void Note(string kind, string text)
         {
             lock (log)
@@ -155,6 +170,7 @@ public sealed class LiveCaptionsBench
                     behind.Add(clock.Elapsed.TotalSeconds - s.Newest);
             }
             Note("d ", $"{s.Number} {s.Current} | {s.Draft}");
+            Volatile.Write(ref heardAt, clock.Elapsed.TotalSeconds);
             interpreter.Heard(s);
         };
         engine.Sentence += s =>
@@ -169,7 +185,11 @@ public sealed class LiveCaptionsBench
         interpreter.Line += l =>
         {
             lock (lines)
+            {
                 lines.Add((l, clock.Elapsed.TotalSeconds));
+                if (!l.Final)
+                    after.Add(clock.Elapsed.TotalSeconds - Volatile.Read(ref heardAt));
+            }
             Note(l.Final ? l.Proper ? "1=" : "1~" : "2 ", l.Final ? $"{l.Number} {l.Text}" : $"{l.Number} {l.Text[..l.Steady]} | {l.Text[l.Steady..]}");
         };
         using var stop = new CancellationTokenSource();
@@ -226,8 +246,8 @@ public sealed class LiveCaptionsBench
         report.Append($"{name} ({from} as {engine.Language}) into {into}{(gaps ? ", no sound between sentences" : "")}: ");
         report.Append($"words wrong {WordErrors(string.Join(' ', marks.Select(m => m.Text)), heard):P1}; {sentences.Count} sentences for {marks.Count} said, {twice} said twice; ");
         report.Append($"a pass {passes.DefaultIfEmpty().Average():0.00} s (worst {passes.DefaultIfEmpty().Max():0.00}), newest word {behind.DefaultIfEmpty().Average():0.00} s behind the talk; ");
-        report.Append($"translation ready in {prepared:0.0} s, on a graphics card {GemmaTranslation.OnCard}; first line as it stood {moved.DefaultIfEmpty().Average():0.00} s after the sentence, properly {right.DefaultIfEmpty().Average():0.00} s (worst {right.DefaultIfEmpty().Max():0.00}); ");
-        report.Append($"second line changed {second.Count} times, settled words changed {unsettled} times");
+        report.Append($"translation ready in {prepared:0.0} s, {(card ? $"on a graphics card {GemmaTranslation.OnCard}" : $"by small models, {SmallTranslation.Threads} threads")}; first line as it stood {moved.DefaultIfEmpty().Average():0.00} s after the sentence, properly {right.DefaultIfEmpty().Average():0.00} s (worst {right.DefaultIfEmpty().Max():0.00}); ");
+        report.Append($"second line changed {second.Count} times, {after.DefaultIfEmpty().Average():0.00} s after its words were heard (worst {after.DefaultIfEmpty().Max():0.00}), settled words changed {unsettled} times");
         // The same sentences as FLEURS has them in the language wanted, when they are here.
         int cut = name.IndexOf('_');
         var reference = cut > 0 ? Path.Combine(Folder, $"{name[..cut]}_{into}.json") : "";

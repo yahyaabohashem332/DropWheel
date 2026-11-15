@@ -128,6 +128,9 @@ public sealed class StreamingTranscriber : IDisposable
     {
         if (!File.Exists(modelPath))
             throw new FileNotFoundException("The speech model isn't downloaded yet.", modelPath);
+        // For measuring, on a PC that has a graphics card, how a PC without one does: Whisper on the processor.
+        if (Environment.GetEnvironmentVariable("PETAL_NO_CARD") is { Length: > 0 })
+            Whisper.net.LibraryLoader.RuntimeOptions.RuntimeLibraryOrder = [Whisper.net.LibraryLoader.RuntimeLibrary.Cpu];
         // Word times aligned to the sound (DTW) where the model's alignment heads are known: the held sound is cut
         // after a finished sentence's last word, and the words heard again are found by when they were said.
         var heads = alignWords ? Heads(Path.GetFileName(modelPath)) : null;

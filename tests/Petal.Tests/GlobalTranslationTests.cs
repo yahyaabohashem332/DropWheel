@@ -48,7 +48,7 @@ public sealed class GlobalTranslationTests(ITestOutputHelper output)
                 else
                     Assert.NotEmpty(models);
             }
-        foreach (var model in TranslationCatalog.Pairs.SelectMany(p => p.Files).Concat(TranslationCatalog.Universal))
+        foreach (var model in TranslationCatalog.All)
         {
             Assert.Equal(64, model.Sha256.Length);
             Assert.True(model.Size > 0);
@@ -61,9 +61,10 @@ public sealed class GlobalTranslationTests(ITestOutputHelper output)
     public void A_pair_with_its_own_model_uses_it_and_others_go_through_english_or_the_universal_model()
     {
         Assert.Contains(Translator.PairModelsFor("en", "es"), m => m.Id.StartsWith("opus-mt-en-es", StringComparison.Ordinal));
-        var through = Translator.PairModelsFor("es", "fr");
+        Assert.Contains(Translator.PairModelsFor("en", "tr"), m => m.Id.StartsWith("opus-mt-tc-big-en-tr", StringComparison.Ordinal));
+        var through = Translator.PairModelsFor("es", "id");
         Assert.True(through.Any(m => m.Id.StartsWith("opus-mt-es-en", StringComparison.Ordinal)) || through.Any(m => m.Id.StartsWith("m2m100", StringComparison.Ordinal)));
-        Assert.Contains(Translator.PairModelsFor("en", "tr"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
+        Assert.Contains(Translator.PairModelsFor("en", "fa"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
         Assert.Contains(Translator.PairModelsFor("fa", "ur"), m => m.Id.StartsWith("m2m100", StringComparison.Ordinal));
     }
 
@@ -377,10 +378,11 @@ public sealed class TranslationChoiceTests : IDisposable
     [Fact]
     public void Captions_offer_the_quick_model_whatever_is_spoken()
     {
-        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("auto", "ar")));
-        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("", "tr")));
-        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "en")));
-        Assert.Empty(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "tr"));
+        // Where a graphics card runs it (without one, see SmallTranslationTests).
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("auto", "ar", card: true)));
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("", "tr", card: true)));
+        Assert.Equal(Ids(GemmaTranslation.LiveModels), Ids(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "en", card: true)));
+        Assert.Empty(Petal.App.Words.LiveCaptions.ModelsToOffer("tr", "tr", card: true));
     }
 
     [Fact]
