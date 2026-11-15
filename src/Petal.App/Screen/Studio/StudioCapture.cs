@@ -69,9 +69,9 @@ internal sealed class StudioCapture
     {
         // Windows' clock ticks every 15.6 ms unless asked for finer while this runs. Asking isn't always heeded (after a
         // studio export in the same process, sleeping 1 ms took a whole tick and the pointer came 64 times a second), so
-        // the wait is a high-resolution timer's, which keeps its own time, where Windows has one (10 1803 and later).
+        // the wait is a high-resolution timer's, which keeps its own time.
         TimeBeginPeriod(1);
-        var timer = CreateWaitableTimerExW(IntPtr.Zero, null, CreateWaitableTimerHighResolution, TimerAllAccess);
+        var wait = new PreciseWait();
         try
         {
             double next = 0;
@@ -80,11 +80,7 @@ internal sealed class StudioCapture
                 double now = _clock.Elapsed.TotalSeconds;
                 if (now < next)
                 {
-                    long due = -(long)Math.Max(1, (next - now) * 10_000_000);
-                    if (timer != IntPtr.Zero && SetWaitableTimer(timer, ref due, 0, IntPtr.Zero, IntPtr.Zero, false))
-                        WaitForSingleObject(timer, 50);
-                    else
-                        Thread.Sleep(1);
+                    wait.Until(_clock, next * 1000);
                     continue;
                 }
                 // A steady 120 a second, catching up on a late sample rather than starting the count again from it;
@@ -96,8 +92,7 @@ internal sealed class StudioCapture
         }
         finally
         {
-            if (timer != IntPtr.Zero)
-                CloseHandle(timer);
+            wait.Dispose();
             TimeEndPeriod(1);
         }
     }
@@ -217,11 +212,6 @@ internal sealed class StudioCapture
     [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr window, ref POINT point);
     [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")] private static extern uint TimeBeginPeriod(uint period);
     [DllImport("winmm.dll", EntryPoint = "timeEndPeriod")] private static extern uint TimeEndPeriod(uint period);
-    private const uint CreateWaitableTimerHighResolution = 0x2, TimerAllAccess = 0x1F0003;
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] private static extern IntPtr CreateWaitableTimerExW(IntPtr attributes, string? name, uint flags, uint access);
-    [DllImport("kernel32.dll")] private static extern bool SetWaitableTimer(IntPtr timer, ref long due, int period, IntPtr routine, IntPtr argument, bool resume);
-    [DllImport("kernel32.dll")] private static extern uint WaitForSingleObject(IntPtr handle, uint milliseconds);
-    [DllImport("kernel32.dll")] private static extern bool CloseHandle(IntPtr handle);
 }
 
 /// <summary>Windows' own pointer shapes, known by the handles Windows hands every app for them.</summary>

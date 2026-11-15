@@ -343,31 +343,22 @@ internal sealed class RecordingSession
         // Polished recordings draw a smoother pointer of their own later, so the real one stays out.
         using var grabber = new FrameGrabber(_area, drawCursor: !_polish);
         var input = _ffmpeg!.StandardInput.BaseStream;
-        double frameMs = 1000.0 / _fps;
-        long sent = 0;
+        byte[] frame = [];
         try
         {
-            while (!_stopping)
-            {
-                double due = sent * frameMs;
-                double now = _clock.Elapsed.TotalMilliseconds;
-                if (now < due)
+            FramePace.Run(_clock, _fps, () => _stopping,
+                take: _ =>
                 {
-                    Thread.Sleep(Math.Max(1, (int)(due - now)));
-                    continue;
-                }
-                var frame = grabber.Grab();
-                input.Write(frame, 0, frame.Length);
-                _cursor.Add(grabber.Cursor);
-                sent++;
-                // Behind: repeat this frame for the time that went by.
-                while (!_stopping && sent * frameMs < _clock.Elapsed.TotalMilliseconds - frameMs)
+                    frame = grabber.Grab();
+                    input.Write(frame, 0, frame.Length);
+                    _cursor.Add(grabber.Cursor);
+                    return true;
+                },
+                again: () =>
                 {
                     input.Write(frame, 0, frame.Length);
                     _cursor.Add(grabber.Cursor);
-                    sent++;
-                }
-            }
+                });
         }
         catch (IOException)
         {

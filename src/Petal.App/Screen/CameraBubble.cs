@@ -424,26 +424,18 @@ internal sealed class CameraTrack : IDisposable
     {
         var frame = new byte[CameraFeed.Side * CameraFeed.Side * 4];
         var input = _ffmpeg!.StandardInput.BaseStream;
-        double frameMs = 1000.0 / _fps;
-        long sent = 0;
         try
         {
-            while (!_stopping)
-            {
-                double now = _clock.Elapsed.TotalMilliseconds;
-                if (now < sent * frameMs || !_feed.CopyLatest(frame))
+            FramePace.Run(_clock, _fps, () => _stopping,
+                take: _ =>
                 {
-                    Thread.Sleep(Math.Max(1, (int)(sent * frameMs - now)));
-                    continue;
-                }
-                do
-                {
+                    if (!_feed.CopyLatest(frame))
+                        return false;
                     input.Write(frame, 0, frame.Length);
-                    sent++;
-                }
-                while (!_stopping && sent * frameMs < _clock.Elapsed.TotalMilliseconds - frameMs);
-                HasPictures = true;
-            }
+                    HasPictures = true;
+                    return true;
+                },
+                again: () => input.Write(frame, 0, frame.Length));
         }
         catch (IOException)
         {
