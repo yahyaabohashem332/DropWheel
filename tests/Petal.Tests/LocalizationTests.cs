@@ -25,7 +25,7 @@ public partial class LocalizationTests
         "Chapter 3 revision", "Prepare it for the exam, with more questions", "My sixth graders", "Explain it for children of eleven",
         "Explain it simply for children, with games to drag and match, in Arabic",
         "January", "February", "March", "April", "May", "June", "Sales", "Month", "Orders", "Revenue", "Istanbul", "Ankara", "Team", "Role", "Since",
-        "Layla", "Omar", "Support",
+        "Layla", "Omar", "Support", "DropWheel previews", "Apartment",
         "Gran apertura", "Café gratis para los primeros cien invitados", "Grand Opening", "Free coffee for the first hundred guests",
         "Arial", "Segoe UI Symbol", "Yahya Abo Hashem", "Kadikoy, Istanbul", "Written anywhere", "Check this",
         "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "do:screen.circle", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",

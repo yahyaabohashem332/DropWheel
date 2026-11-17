@@ -239,7 +239,7 @@ public sealed partial class SettingsWindow
         panel.Children.Add(Text("Quick Look", "Petal.Label").WithMargin(0, 18, 0, 0));
         panel.Children.Add(Switch("Space shows the selected file", "In File Explorer and on the desktop: a picture, a page of a PDF, a video or a song, a document's words, what a ZIP or a folder holds, a font. Space or Esc closes it, and the arrow keys move along.", _s.QuickLook, v => _s.QuickLook = v));
         if (!Shell.Packaged.IsPackaged)
-            panel.Children.Add(Switch("Thumbnails in File Explorer", "Photoshop, Illustrator, EPS, InDesign, Krita and OpenRaster files show their picture, for file types no other program draws.", _s.ExplorerThumbnails, v =>
+            panel.Children.Add(Switch("Thumbnails and previews in File Explorer", "Photoshop, Illustrator, EPS, InDesign, Krita and Procreate files, PDFs, 3D models, EPUBs, comic books and SVGs show what is inside, as a thumbnail and in the preview pane (Alt+P), for file types no other program shows.", _s.ExplorerThumbnails, v =>
             {
                 _s.ExplorerThumbnails = v;
                 _ = Task.Run(() => Shell.ExplorerThumbnails.Apply(v));

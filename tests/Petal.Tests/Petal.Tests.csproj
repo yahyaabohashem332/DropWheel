@@ -22,7 +22,8 @@
 
   <!-- File Explorer's thumbnail reader, built for .NET Framework 4.8 in the app, tested here as source. -->
   <ItemGroup>
-    <Compile Include="..\..\src\Petal.Shell\EmbeddedPreview.cs" Link="Shell\EmbeddedPreview.cs" />
+    <Compile Include="..\..\src\Petal.Shell\*.cs" LinkBase="Shell" />
+    <PackageReference Include="Svg" Version="3.4.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +39,8 @@
     <ProjectReference Include="..\..\src\Petal.Engines.Documents\Petal.Engines.Documents.csproj" />
     <ProjectReference Include="..\..\src\Petal.Engines.Files\Petal.Engines.Files.csproj" />
     <ProjectReference Include="..\..\src\Petal.App\Petal.App.csproj" />
+    <!-- Built for the test that runs the File Explorer extension in a .NET Framework 4.8 process, as Windows does. -->
+    <ProjectReference Include="..\Petal.ShellHost\Petal.ShellHost.csproj" ReferenceOutputAssembly="false" Private="false" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;PlatformTarget" />
     <ProjectReference Include="..\..\src\Petal.Cli\Petal.Cli.csproj" />
   </ItemGroup>
 

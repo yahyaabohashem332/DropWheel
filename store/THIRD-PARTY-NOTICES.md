@@ -90,6 +90,7 @@ MIT:
 - ClosedXML and ClosedXML.Parser: Copyright (c) ClosedXML contributors.
 - ExcelDataReader: Copyright (c) 2014 ExcelDataReader.
 - ExcelNumberFormat: Copyright (c) 2017 andersnm.
+- ExCSS (used by Svg.NET in the File Explorer extension, `shell\`): Copyright (c) Tyler Brinks.
 - HtmlAgilityPack: Copyright (c) ZZZ Projects Inc.
 - NAudio: Copyright (c) 2020 Mark Heath.
 - PDFsharp and MigraDoc: Copyright (c) 2005-2025 empira Software GmbH.
@@ -117,6 +118,9 @@ Apache-2.0:
 
 Other licences:
 - Markdig: Copyright (c) 2018-2019, Alexandre Mutel. BSD-2-Clause.
+- Svg.NET (thumbnails and previews of SVG files in File Explorer, `shell\Svg.dll`): © Copyright 2009 Microsoft,
+  © Copyright 2011 vvvv Group, © Copyright 2021 SVG.NET Contributors. Microsoft Public License (MS-PL); in
+  `licenses\MS-PL.txt`.
 - Skia: Copyright (c) 2011 Google Inc. BSD-3-Clause.
 - DirectML (Microsoft.AI.DirectML): the Microsoft DirectML License, which allows it to be redistributed
   with apps; in `licenses\DirectML.txt`.

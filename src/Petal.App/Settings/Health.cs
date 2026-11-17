@@ -221,7 +221,9 @@ public static class Health
             using var menu = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Classes\*\shell\Petal");
             parts.Add(L.T(menu is null ? "Right-click entry: off" : "Right-click entry: on"));
             var covered = Shell.ExplorerThumbnails.Covered(Microsoft.Win32.Registry.CurrentUser);
-            parts.Add(covered.Count == 0 ? L.T("Thumbnails: off") : L.F("Thumbnails for {0}", string.Join(" ", covered)));
+            parts.Add(covered.Count == 0 ? L.T("Thumbnails: off") : L.P(covered.Count, "Thumbnails for {0} kind of file", "Thumbnails for {0} kinds of file"));
+            var previewed = Shell.ExplorerThumbnails.Previewed(Microsoft.Win32.Registry.CurrentUser);
+            parts.Add(previewed.Count == 0 ? L.T("Preview pane: off") : L.P(previewed.Count, "Preview pane for {0} kind of file", "Preview pane for {0} kinds of file"));
         }
         parts.Add(L.T(s.QuickLook ? "Quick Look: on" : "Quick Look: off"));
         return new HealthCheck("File Explorer", HealthState.Good, string.Join(" · ", parts));

@@ -416,6 +416,8 @@ public static class EmbeddedPreview
     [
         "mergedimage.png", "preview.png", "Thumbnails/thumbnail.png", "previews/preview.png",
         "QuickLook/Preview.png", "QuickLook/Preview.jpg", "preview.jpg", "QuickLook/Thumbnail.png", "QuickLook/Thumbnail.jpg", "thumbnail.png", "Thumbnails/thumbnail.jpg",
+        // Office's thumbnail (when it was saved with one), and a 3MF model's.
+        "docProps/thumbnail.jpeg", "docProps/thumbnail.jpg", "docProps/thumbnail.png", "docProps/thumbnail.emf", "docProps/thumbnail.wmf", "Metadata/thumbnail.png",
     ];
 
     private static Bitmap? Zip(Stream s)
@@ -443,7 +445,7 @@ public static class EmbeddedPreview
 
     // ---------- helpers ----------
 
-    private static Bitmap? Decode(byte[] bytes)
+    internal static Bitmap? Decode(byte[] bytes)
     {
         try
         {

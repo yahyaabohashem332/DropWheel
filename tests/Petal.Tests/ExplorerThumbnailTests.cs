@@ -177,6 +177,15 @@ public sealed class ExplorerThumbnailTests
     /// the handler, runs it in its thumbnail process, and gets the Photoshop file's picture. The handler sits
     /// in a folder named as a user's own can be, with spaces, Arabic and Turkish letters, a # and a %.
     /// </summary>
+    /// <summary>The files the test asks Windows for: a Photoshop file, a PDF, an SVG and a 3D model.</summary>
+    private static byte[] WindowsSample(string kind) => kind switch
+    {
+        "psd" => File.ReadAllBytes(Data("layers.psd")),
+        "pdf" => File.ReadAllBytes(Data("album.pdf")),
+        "svg" => "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\"><rect width=\"60\" height=\"80\" fill=\"red\"/><rect x=\"60\" width=\"60\" height=\"80\" fill=\"blue\"/></svg>"u8.ToArray(),
+        _ => BinaryStl(),
+    };
+
     [Fact]
     public void Windows_gets_the_picture_from_the_handler()
     {
@@ -192,9 +201,9 @@ public sealed class ExplorerThumbnailTests
         var folder = Path.Combine(Path.GetTempPath(), "petal-thumb-" + Guid.NewGuid().ToString("N")[..8]);
         var dll = Path.Combine(folder, "يحيى Ayşe Gül #1 100%", "Petal.Shell.dll");
         Directory.CreateDirectory(Path.GetDirectoryName(dll)!);
-        File.Copy(built, dll);
-        var file = Path.Combine(folder, "layers" + ext);
-        File.Copy(Data("layers.psd"), file);
+        foreach (var library in Directory.GetFiles(Path.GetDirectoryName(built)!, "*.dll"))
+            File.Copy(library, Path.Combine(Path.GetDirectoryName(dll)!, Path.GetFileName(library)));
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "pdfium.dll"), Path.Combine(folder, "pdfium.dll"));
         try
         {
             Petal.App.Shell.ExplorerThumbnails.RegisterClass(Registry.CurrentUser, TestClassId, dll);
@@ -205,29 +214,39 @@ public sealed class ExplorerThumbnailTests
             // Started from a packaged app (the Claude app is one), what this process writes to the registry
             // goes to a copy that is the app's own, and Windows' thumbnail process never sees the class:
             // there Windows runs the handler in this process instead. All the rest is the same.
-            int flags = Afresh | (WindowsSees(clsidPath + @"\InprocServer32") ? 0 : InThisProcess);
-            using var got = OnSta(() =>
+            bool inThisProcess = !WindowsSees(clsidPath + @"\InprocServer32");
+            int flags = Afresh | (inThisProcess ? InThisProcess : 0);
+            // An SVG needs Svg.NET, which this process's own folder holds in its .NET 10 build: run here, the handler
+            // would be given that one. Windows' process has no such folder; Svg_through_a_process_like_Windows_own covers it.
+            foreach (var kind in inThisProcess ? ["psd", "pdf", "stl"] : new[] { "psd", "pdf", "svg", "stl" })
             {
-                var iid = typeof(IShellItem).GUID;
-                Marshal.ThrowExceptionForHR(SHCreateItemFromParsingName(file, IntPtr.Zero, ref iid, out var item));
-                var cache = (IThumbnailCache)new LocalThumbnailCache();
-                Marshal.ThrowExceptionForHR(cache.GetThumbnail(item, 256, flags, out var shared, IntPtr.Zero, IntPtr.Zero));
-                // The bitmap stays the cache's own: it is copied here, not deleted.
-                Marshal.ThrowExceptionForHR(shared!.GetSharedBitmap(out var hbitmap));
-                return Image.FromHbitmap(hbitmap);
-            });
-            // The file's own picture, as the reader gives it, came through Windows: not just any bitmap.
-            using var stream = File.OpenRead(Data("layers.psd"));
-            using var own = EmbeddedPreview.Read(stream, 256);
-            Assert.NotNull(own);
-            Assert.True(own.Width > 32 && own.Height > 32, $"{own.Width}×{own.Height}");
-            Assert.Equal((own.Width, own.Height), (got.Width, got.Height));
-            for (int y = 2; y < own.Height; y += 8)
-                for (int x = 2; x < own.Width; x += 8)
+                var file = Path.Combine(folder, kind + ext);
+                File.WriteAllBytes(file, WindowsSample(kind));
+                using var got = OnSta(() =>
                 {
-                    var (a, b) = (own.GetPixel(x, y), got.GetPixel(x, y));
-                    Assert.True(Math.Abs(a.R - b.R) <= 2 && Math.Abs(a.G - b.G) <= 2 && Math.Abs(a.B - b.B) <= 2, $"At {x},{y}: {a} in the file, {b} from Windows");
-                }
+                    var iid = typeof(IShellItem).GUID;
+                    Marshal.ThrowExceptionForHR(SHCreateItemFromParsingName(file, IntPtr.Zero, ref iid, out var item));
+                    var cache = (IThumbnailCache)new LocalThumbnailCache();
+                    Marshal.ThrowExceptionForHR(cache.GetThumbnail(item, 256, flags, out var shared, IntPtr.Zero, IntPtr.Zero));
+                    // The bitmap stays the cache's own: it is copied here, not deleted.
+                    Marshal.ThrowExceptionForHR(shared!.GetSharedBitmap(out var hbitmap));
+                    return Image.FromHbitmap(hbitmap);
+                });
+                // The file's own picture, as the reader gives it, came through Windows: not just any bitmap.
+                using var stream = new MemoryStream(WindowsSample(kind));
+                using var own = Previews.Read(stream, 256);
+                Assert.NotNull(own);
+                Assert.True(own.Width > 32 && own.Height > 32, $"{kind}: {own.Width}×{own.Height}");
+                Assert.Equal((own.Width, own.Height), (got.Width, got.Height));
+                for (int y = 2; y < own.Height; y += 8)
+                    for (int x = 2; x < own.Width; x += 8)
+                    {
+                        // Windows gives the colours multiplied by their opacity.
+                        var (a, b) = (own.GetPixel(x, y), got.GetPixel(x, y));
+                        int R(int c) => c * a.A / 255;
+                        Assert.True(Math.Abs(R(a.R) - b.R) <= 2 && Math.Abs(R(a.G) - b.G) <= 2 && Math.Abs(R(a.B) - b.B) <= 2, $"{kind} at {x},{y}: {a} in the file, {b} from Windows");
+                    }
+            }
         }
         finally
         {
@@ -238,6 +257,381 @@ public sealed class ExplorerThumbnailTests
                 noted?.DeleteValue($"{TestClassId} {{E357FCCD-A995-4576-B01F-234630154E96}} 0xFFFF", throwOnMissingValue: false);
             SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
             Delete(folder);
+        }
+    }
+
+    // ───────────── PDFs, models, books, comics, SVGs and Office files ─────────────
+
+    /// <summary>A cube of twelve triangles, its corners from 0 to 10 on each side.</summary>
+    private static (float X, float Y, float Z)[] CubeCorners =>
+    [
+        (0, 0, 0), (10, 0, 0), (10, 10, 0), (0, 10, 0), (0, 0, 10), (10, 0, 10), (10, 10, 10), (0, 10, 10),
+    ];
+
+    private static readonly int[] CubeFaces = [0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 2, 3, 7, 2, 7, 6, 1, 2, 6, 1, 6, 5, 0, 4, 7, 0, 7, 3];
+
+    private static byte[] BinaryStl()
+    {
+        using var stream = new MemoryStream();
+        using var w = new BinaryWriter(stream);
+        w.Write(new byte[80]);
+        w.Write((uint)(CubeFaces.Length / 3));
+        for (int t = 0; t < CubeFaces.Length; t += 3)
+        {
+            w.Write(0f); w.Write(0f); w.Write(0f);
+            for (int k = 0; k < 3; k++)
+            {
+                var c = CubeCorners[CubeFaces[t + k]];
+                w.Write(c.X); w.Write(c.Y); w.Write(c.Z);
+            }
+            w.Write((ushort)0);
+        }
+        return stream.ToArray();
+    }
+
+    private static string TextStl()
+    {
+        var sb = new StringBuilder("solid cube\n");
+        for (int t = 0; t < CubeFaces.Length; t += 3)
+        {
+            sb.Append(" facet normal 0 0 0\n  outer loop\n");
+            for (int k = 0; k < 3; k++)
+            {
+                var c = CubeCorners[CubeFaces[t + k]];
+                sb.Append(FormattableString.Invariant($"   vertex {c.X} {c.Y} {c.Z}\n"));
+            }
+            sb.Append("  endloop\n endfacet\n");
+        }
+        return sb.Append("endsolid cube\n").ToString();
+    }
+
+    private static string Obj() =>
+        "# a cube\no cube\n" + string.Concat(CubeCorners.Select(c => FormattableString.Invariant($"v {c.X} {c.Y} {c.Z}\n")))
+        + "f 1/1/1 2/2/2 3/3/3 4/4/4\nf 5 6 7 8\nf 1 2 6 5\nf 2 3 7 6\nf 3 4 8 7\nf 4 1 5 8\n";
+
+    private static byte[] BinaryPly()
+    {
+        using var stream = new MemoryStream();
+        var header = $"ply\nformat binary_little_endian 1.0\nelement vertex {CubeCorners.Length}\nproperty float x\nproperty float y\nproperty float z\nproperty uchar red\nelement face {CubeFaces.Length / 3}\nproperty list uchar int vertex_indices\nend_header\n";
+        stream.Write(Encoding.ASCII.GetBytes(header));
+        using var w = new BinaryWriter(stream);
+        foreach (var c in CubeCorners)
+        {
+            w.Write(c.X); w.Write(c.Y); w.Write(c.Z); w.Write((byte)200);
+        }
+        for (int t = 0; t < CubeFaces.Length; t += 3)
+        {
+            w.Write((byte)3); w.Write(CubeFaces[t]); w.Write(CubeFaces[t + 1]); w.Write(CubeFaces[t + 2]);
+        }
+        return stream.ToArray();
+    }
+
+    private static byte[] ThreeMf(bool thumbnail)
+    {
+        using var stream = new MemoryStream();
+        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var model = new StringBuilder("<?xml version=\"1.0\"?><model unit=\"millimeter\" xmlns=\"http://schemas.microsoft.com/3dmanufacturing/core/2015/02\"><resources><object id=\"1\" type=\"model\"><mesh><vertices>");
+            foreach (var c in CubeCorners)
+                model.Append(FormattableString.Invariant($"<vertex x=\"{c.X}\" y=\"{c.Y}\" z=\"{c.Z}\"/>"));
+            model.Append("</vertices><triangles>");
+            for (int t = 0; t < CubeFaces.Length; t += 3)
+                model.Append($"<triangle v1=\"{CubeFaces[t]}\" v2=\"{CubeFaces[t + 1]}\" v3=\"{CubeFaces[t + 2]}\"/>");
+            model.Append("</triangles></mesh></object></resources><build><item objectid=\"1\"/></build></model>");
+            using (var w = new StreamWriter(zip.CreateEntry("3D/3dmodel.model").Open()))
+                w.Write(model);
+            if (thumbnail)
+            {
+                using var sample = Sample();
+                using var e = zip.CreateEntry("Metadata/thumbnail.png").Open();
+                e.Write(Encode(sample, ImageFormat.Png));
+            }
+        }
+        return stream.ToArray();
+    }
+
+    private static byte[] Glb()
+    {
+        var positions = CubeCorners.SelectMany(c => new[] { c.X, c.Y, c.Z }).SelectMany(BitConverter.GetBytes).ToArray();
+        var indices = CubeFaces.SelectMany(i => BitConverter.GetBytes((ushort)i)).ToArray();
+        var bin = positions.Concat(indices).ToList();
+        while (bin.Count % 4 != 0)
+            bin.Add(0);
+        // A node that moves the cube, so the reader must place it by its transform.
+        var json = "{\"asset\":{\"version\":\"2.0\"},\"scene\":0,\"scenes\":[{\"nodes\":[0]}],\"nodes\":[{\"mesh\":0,\"translation\":[5,0,0],\"scale\":[2,2,2]}],"
+            + "\"meshes\":[{\"primitives\":[{\"attributes\":{\"POSITION\":0},\"indices\":1}]}],"
+            + $"\"accessors\":[{{\"bufferView\":0,\"componentType\":5126,\"count\":{CubeCorners.Length},\"type\":\"VEC3\"}},{{\"bufferView\":1,\"componentType\":5123,\"count\":{CubeFaces.Length},\"type\":\"SCALAR\"}}],"
+            + $"\"bufferViews\":[{{\"buffer\":0,\"byteOffset\":0,\"byteLength\":{positions.Length}}},{{\"buffer\":0,\"byteOffset\":{positions.Length},\"byteLength\":{indices.Length}}}],"
+            + $"\"buffers\":[{{\"byteLength\":{bin.Count}}}]}}";
+        var jsonBytes = Encoding.UTF8.GetBytes(json).ToList();
+        while (jsonBytes.Count % 4 != 0)
+            jsonBytes.Add((byte)' ');
+        using var stream = new MemoryStream();
+        using var w = new BinaryWriter(stream);
+        w.Write(0x46546C67u); w.Write(2u); w.Write((uint)(12 + 8 + jsonBytes.Count + 8 + bin.Count));
+        w.Write((uint)jsonBytes.Count); w.Write(0x4E4F534Au); w.Write(jsonBytes.ToArray());
+        w.Write((uint)bin.Count); w.Write(0x004E4942u); w.Write(bin.ToArray());
+        return stream.ToArray();
+    }
+
+    public static IEnumerable<object[]> Models() =>
+    [
+        ["binary STL", BinaryStl()],
+        ["text STL", Encoding.ASCII.GetBytes(TextStl())],
+        ["OBJ", Encoding.ASCII.GetBytes(Obj())],
+        ["binary PLY", BinaryPly()],
+        ["3MF", ThreeMf(thumbnail: false)],
+        ["GLB", Glb()],
+    ];
+
+    [Theory]
+    [MemberData(nameof(Models))]
+    public void A_3D_model_is_read_and_drawn_standing_in_the_middle_on_a_clear_background(string kind, byte[] bytes)
+    {
+        var mesh = Mesh.Read(bytes);
+        Assert.True(mesh is not null, kind);
+        Assert.Equal(12, mesh!.TriangleCount);
+        using var stream = new MemoryStream(bytes);
+        using var picture = Previews.Read(stream, 128);
+        Assert.NotNull(picture);
+        Assert.Equal(128, Math.Max(picture!.Width, picture.Height));
+        // Drawn in the middle, nothing in the corners.
+        Assert.True(picture.GetPixel(picture.Width / 2, picture.Height / 2).A > 200, kind);
+        Assert.Equal(0, picture.GetPixel(1, 1).A);
+        Assert.Equal(0, picture.GetPixel(picture.Width - 2, picture.Height - 2).A);
+        // Lit: faces seen from different sides aren't all one shade.
+        var shades = new HashSet<int>();
+        for (int y = 0; y < picture.Height; y += 4)
+            for (int x = 0; x < picture.Width; x += 4)
+                if (picture.GetPixel(x, y) is { A: > 250 } c)
+                    shades.Add(c.R / 8);
+        Assert.True(shades.Count >= 2, $"{kind}: {shades.Count} shades");
+    }
+
+    /// <summary>
+    /// Thumbnails and previews registered under a key of the test's own (standing for the user's): each type that no
+    /// other program handles gets DropWheel's, the preview runs in Windows' preview process and is in its list, and
+    /// turning it off leaves nothing behind.
+    /// </summary>
+    [Fact]
+    public void Thumbnails_and_previews_are_registered_and_removed_whole()
+    {
+        const string test = @"Software\PetalRegistrationTest";
+        Registry.CurrentUser.DeleteSubKeyTree(test, throwOnMissingSubKey: false);
+        using var root = Registry.CurrentUser.CreateSubKey(test);
+        try
+        {
+            var dll = Path.Combine(AppContext.BaseDirectory, "shell", "Petal.Shell.dll");
+            Petal.App.Shell.ExplorerThumbnails.Register(root, dll);
+            var thumbnails = Petal.App.Shell.ExplorerThumbnails.Covered(root);
+            var previews = Petal.App.Shell.ExplorerThumbnails.Previewed(root);
+            // Every kind that no other program on this PC handles (a PC with others gives some up, as it should).
+            Assert.NotEmpty(thumbnails);
+            Assert.Subset(Petal.App.Shell.ExplorerThumbnails.Extensions.ToHashSet(), thumbnails.ToHashSet());
+            Assert.Subset(Petal.App.Shell.ExplorerThumbnails.PreviewExtensions.ToHashSet(), previews.ToHashSet());
+            Assert.NotEmpty(previews);
+            using (var clsid = root.OpenSubKey(@"Software\Classes\CLSID\" + Petal.App.Shell.ExplorerThumbnails.PreviewClassId)!)
+            {
+                Assert.Equal("{6d2b5079-2f0b-48dd-ab7f-97cec514d30b}", clsid.GetValue("AppID"));
+                using var server = clsid.OpenSubKey("InprocServer32")!;
+                Assert.Equal("Petal.Shell.PreviewHandler", server.GetValue("Class"));
+                Assert.Equal("Apartment", server.GetValue("ThreadingModel"));
+            }
+            using (var list = root.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\PreviewHandlers")!)
+                Assert.Equal("DropWheel previews", list.GetValue(Petal.App.Shell.ExplorerThumbnails.PreviewClassId));
+
+            Petal.App.Shell.ExplorerThumbnails.Unregister(root);
+            Assert.Empty(Petal.App.Shell.ExplorerThumbnails.Covered(root));
+            Assert.Empty(Petal.App.Shell.ExplorerThumbnails.Previewed(root));
+            using var classes = root.OpenSubKey(@"Software\Classes");
+            Assert.True(classes is null || classes.GetSubKeyNames().All(n => n == "CLSID") && (classes.OpenSubKey("CLSID")?.SubKeyCount ?? 0) == 0, string.Join(", ", classes?.GetSubKeyNames() ?? []));
+            using var left = root.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\PreviewHandlers");
+            Assert.True(left is null || left.GetValue(Petal.App.Shell.ExplorerThumbnails.PreviewClassId) is null);
+        }
+        finally
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(test, throwOnMissingSubKey: false);
+        }
+    }
+
+    [Fact]
+    public void A_Photoshop_files_layers_are_listed_top_first()
+    {
+        using var stream = File.OpenRead(Data("layers.psd"));
+        var layers = PsdLayers.Read(stream);
+        Assert.Equal(["Red box", "L1"], layers.Select(l => l.Name));
+        Assert.All(layers, l => Assert.True(l.Visible));
+        Assert.Empty(PsdLayers.Read(new MemoryStream(Encoding.ASCII.GetBytes("not a photoshop file at all"))));
+    }
+
+    [Fact]
+    public void A_glTF_nodes_transform_places_its_mesh()
+    {
+        var mesh = Mesh.Read(Glb())!;
+        // Scaled twice and moved 5 along X: from 5 to 25.
+        var xs = Enumerable.Range(0, mesh.Points.Length / 3).Select(i => mesh.Points[i * 3]).ToList();
+        Assert.Equal(5, xs.Min(), 3);
+        Assert.Equal(25, xs.Max(), 3);
+    }
+
+    [Fact]
+    public void Other_files_are_not_taken_for_models()
+    {
+        Assert.Null(Mesh.Read(Encoding.ASCII.GetBytes("Hello, this is a letter and not a model.\nRegards\n")));
+        var coff = new byte[200];
+        coff[0] = 0x64; coff[1] = 0x86;
+        Assert.Null(Mesh.Read(coff));
+        Assert.False(Mesh.LooksLikeModel(coff, coff.Length, coff.Length));
+    }
+
+    [Fact]
+    public void A_3MF_model_shows_its_own_thumbnail_when_it_has_one()
+    {
+        using var stream = new MemoryStream(ThreeMf(thumbnail: true));
+        using var picture = Previews.Read(stream, 256);
+        LooksLikeSample(picture!);
+    }
+
+    [Fact]
+    public void A_PDF_shows_its_first_page()
+    {
+        var bytes = File.ReadAllBytes(Data("album.pdf"));
+        using var page = PdfPages.Render(bytes, 0, 300, out int pages);
+        Assert.NotNull(page);
+        Assert.Equal(3, pages);
+        Assert.Equal(300, Math.Max(page!.Width, page.Height));
+        // The first page of the album is coloured bars, not a blank sheet.
+        var colours = new HashSet<int>();
+        for (int x = 5; x < page.Width; x += 10)
+            colours.Add(page.GetPixel(x, page.Height / 2).ToArgb());
+        Assert.True(colours.Count > 3, $"{colours.Count} colours");
+        using var stream = File.OpenRead(Data("album.pdf"));
+        using var thumbnail = Previews.Read(stream, 128);
+        Assert.Equal(128, Math.Max(thumbnail!.Width, thumbnail.Height));
+        Assert.Null(PdfPages.Render(bytes, 7, 100));
+        Assert.Null(PdfPages.Render(Encoding.ASCII.GetBytes("%PDF-1.7 not really"), 0, 100));
+    }
+
+    private static byte[] Zip(params (string Name, byte[] Bytes)[] entries)
+    {
+        using var stream = new MemoryStream();
+        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+            foreach (var (name, bytes) in entries)
+            {
+                using var e = zip.CreateEntry(name).Open();
+                e.Write(bytes);
+            }
+        return stream.ToArray();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void An_EPUB_shows_the_cover_its_package_names(bool epub3)
+    {
+        using var sample = Sample();
+        using var other = new Bitmap(50, 50);
+        var opf = epub3
+            ? "<package xmlns=\"http://www.idpf.org/2007/opf\" version=\"3.0\"><manifest><item id=\"p\" href=\"images/page.png\" media-type=\"image/png\"/><item id=\"c\" href=\"images/the%20cover.png\" media-type=\"image/png\" properties=\"cover-image\"/></manifest></package>"
+            : "<package xmlns=\"http://www.idpf.org/2007/opf\" version=\"2.0\"><metadata><meta name=\"cover\" content=\"c\"/></metadata><manifest><item id=\"p\" href=\"images/page.png\" media-type=\"image/png\"/><item id=\"c\" href=\"text/../images/the cover.png\" media-type=\"image/png\"/></manifest></package>";
+        var bytes = Zip(
+            ("mimetype", Encoding.ASCII.GetBytes("application/epub+zip")),
+            ("META-INF/container.xml", Encoding.UTF8.GetBytes("<container><rootfiles><rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/></rootfiles></container>")),
+            ("OEBPS/content.opf", Encoding.UTF8.GetBytes(opf)),
+            ("OEBPS/images/page.png", Png(other)),
+            ("OEBPS/images/the cover.png", Encode(sample, ImageFormat.Png)));
+        using var stream = new MemoryStream(bytes);
+        using var picture = Previews.Read(stream, 256);
+        LooksLikeSample(picture!);
+    }
+
+    private static byte[] Png(Image image) => Encode(image, ImageFormat.Png);
+
+    [Fact]
+    public void A_comic_book_shows_its_first_page_in_numbered_order()
+    {
+        using var sample = Sample();
+        using var other = new Bitmap(40, 60);
+        var bytes = Zip(("page10.png", Png(other)), ("page2.png", Png(other)), ("page1.png", Encode(sample, ImageFormat.Png)), ("ComicInfo.xml", "<x/>"u8.ToArray()));
+        using var stream = new MemoryStream(bytes);
+        using var picture = Previews.Read(stream, 256);
+        LooksLikeSample(picture!);
+        // A ZIP of other things isn't a comic book.
+        using var mixed = new MemoryStream(Zip(("a.txt", "a"u8.ToArray()), ("b.txt", "b"u8.ToArray()), ("c.txt", "c"u8.ToArray()), ("d.txt", "d"u8.ToArray()), ("x.png", Png(other))));
+        Assert.Null(Previews.Read(mixed, 256));
+    }
+
+    [Fact]
+    public void An_Office_file_saved_with_a_thumbnail_shows_it()
+    {
+        using var sample = Sample();
+        var bytes = Zip(("[Content_Types].xml", "<Types/>"u8.ToArray()), ("word/document.xml", "<w:document/>"u8.ToArray()), ("docProps/thumbnail.jpeg", Encode(sample, ImageFormat.Jpeg)));
+        using var stream = new MemoryStream(bytes);
+        using var picture = Previews.Read(stream, 256);
+        LooksLikeSample(picture!);
+    }
+
+    [Fact]
+    public void An_SVG_is_drawn_in_its_proportions_and_reads_nothing_outside_itself()
+    {
+        var svg = "<?xml version=\"1.0\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"120\" height=\"80\" viewBox=\"0 0 120 80\">"
+            + "<rect x=\"0\" y=\"0\" width=\"60\" height=\"80\" fill=\"red\"/><rect x=\"60\" y=\"0\" width=\"60\" height=\"80\" fill=\"blue\"/>"
+            + "<image x=\"0\" y=\"0\" width=\"10\" height=\"10\" xlink:href=\"http://127.0.0.1:9/never.png\"/></svg>";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(svg));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        using var picture = Previews.Read(stream, 240);
+        Assert.NotNull(picture);
+        Assert.Equal((240, 160), (picture!.Width, picture.Height));
+        LooksLikeSample(picture);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5), clock.Elapsed.ToString());
+        Assert.Null(Previews.Read(new MemoryStream("<html><body>not a picture</body></html>"u8.ToArray()), 100));
+    }
+
+    /// <summary>
+    /// The extension as Windows' thumbnail process runs it: loaded by a .NET Framework 4.8 program from the "shell"
+    /// folder (PDFium beside it, a folder up, as in DropWheel's own folder), into a process whose folder has none of
+    /// its libraries; Svg.NET and what it needs are found beside the extension.
+    /// </summary>
+    [Fact]
+    public void Svg_and_pdf_through_a_process_like_Windows_own()
+    {
+        var built = Path.Combine(Repo(), "src", "Petal.Shell", "bin", Configuration, "net48");
+        var host = Path.Combine(Repo(), "tests", "Petal.ShellHost", "bin", Configuration, "net48", "Petal.ShellHost.exe");
+        Assert.True(File.Exists(host), host);
+        var app = Path.Combine(Path.GetTempPath(), "petal-shellhost-" + Guid.NewGuid().ToString("N")[..8]);
+        var shell = Path.Combine(app, "shell");
+        Directory.CreateDirectory(shell);
+        try
+        {
+            foreach (var library in Directory.GetFiles(built, "*.dll"))
+                File.Copy(library, Path.Combine(shell, Path.GetFileName(library)));
+            File.Copy(Path.Combine(AppContext.BaseDirectory, "pdfium.dll"), Path.Combine(app, "pdfium.dll"));
+            foreach (var kind in new[] { "svg", "pdf", "stl", "psd" })
+            {
+                var file = Path.Combine(app, "sample." + kind);
+                File.WriteAllBytes(file, WindowsSample(kind));
+                var png = Path.Combine(app, kind + ".png");
+                var run = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(host)
+                {
+                    ArgumentList = { Path.Combine(shell, "Petal.Shell.dll"), file, "256", png },
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                })!;
+                var error = run.StandardError.ReadToEnd();
+                Assert.True(run.WaitForExit(60_000), kind);
+                Assert.True(run.ExitCode == 0, $"{kind}: exit {run.ExitCode} {error}");
+                using var got = new Bitmap(png);
+                using var stream = new MemoryStream(WindowsSample(kind));
+                using var own = Previews.Read(stream, 256)!;
+                Assert.Equal((own.Width, own.Height), (got.Width, got.Height));
+                if (kind == "svg")
+                    LooksLikeSample(got);
+            }
+        }
+        finally
+        {
+            Delete(app);
         }
     }
 

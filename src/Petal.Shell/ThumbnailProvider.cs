@@ -20,6 +20,8 @@ public sealed class ThumbnailProvider : IInitializeWithStream, IThumbnailProvide
 {
     public const string ClassId = "8F4D2C1A-3B7E-4C55-9A1E-6D0B7E2F9C34";
 
+    static ThumbnailProvider() => Libraries.Guard();
+
     private IStream? _stream;
 
     public void Initialize(IStream stream, int mode)
@@ -36,8 +38,8 @@ public sealed class ThumbnailProvider : IInitializeWithStream, IThumbnailProvide
         var source = _stream ?? throw new COMException("Not initialised", unchecked((int)0x8000FFFF));
         try
         {
-            using var stream = new ComStream(source);
-            using var picture = EmbeddedPreview.Read(stream, size) ?? throw new COMException("No preview in the file", unchecked((int)0x80004005));
+            using var stream = new ComStreamReader(source);
+            using var picture = Previews.Read(stream, size) ?? throw new COMException("No preview in the file", unchecked((int)0x80004005));
             bitmap = ToHBitmap(picture);
             alpha = 2; // WTSAT_ARGB
         }
@@ -108,7 +110,7 @@ public sealed class ThumbnailProvider : IInitializeWithStream, IThumbnailProvide
     private static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFO info, uint usage, out IntPtr bits, IntPtr section, uint offset);
 
     /// <summary>A COM stream as a .NET stream, for reading and seeking.</summary>
-    private sealed class ComStream(IStream stream) : Stream
+    internal sealed class ComStreamReader(IStream stream) : Stream
     {
         private long _position;
 

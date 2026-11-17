@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    File Explorer's thumbnails for Photoshop, Illustrator, EPS, InDesign, Krita and OpenRaster files.
+    File Explorer's thumbnails for design files, PDFs, 3D models, EPUBs, comic books, SVGs and Office files.
     Built for .NET Framework 4.8, which every Windows 10 and 11 has, so Explorer's thumbnail process can
-    load it through mscoree without Petal's own runtime; it reads the preview each file carries, with
-    nothing but the framework (no native libraries).
+    load it through mscoree without Petal's own runtime. It reads the preview each file carries, draws a
+    PDF's page with the PDFium DropWheel ships beside itself, a model with its own code, and an SVG with
+    Svg.NET (MS-PL), whose libraries are copied beside it.
   -->
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -22,6 +23,9 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Windows.Forms" />
+    <PackageReference Include="Svg" Version="3.4.8" />
   </ItemGroup>
 
 </Project>

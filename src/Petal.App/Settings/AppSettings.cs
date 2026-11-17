@@ -235,7 +235,7 @@ public sealed class AppSettings
     /// <summary>Space shows the file selected in File Explorer or on the desktop.</summary>
     public bool QuickLook { get; set; } = true;
 
-    /// <summary>File Explorer shows thumbnails of Photoshop, Illustrator, EPS, InDesign and Krita files.</summary>
+    /// <summary>File Explorer shows thumbnails and previews of design files, PDFs, 3D models, EPUBs, comic books and SVGs.</summary>
     public bool ExplorerThumbnails { get; set; } = true;
 
     /// <summary>Other programs of this user (Stream Deck, AutoHotkey, scripts, the command line) can run Petal's petals.</summary>

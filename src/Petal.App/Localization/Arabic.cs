@@ -2760,7 +2760,6 @@ internal static class Arabic
         ["Right-click entry: off"] = "عنصر القائمة اليمنى: متوقف",
         ["Right-click entry: on"] = "عنصر القائمة اليمنى: يعمل",
         ["Thumbnails: off"] = "الصور المصغّرة: متوقفة",
-        ["Thumbnails for {0}"] = "صور مصغّرة لـ {0}",
         ["Quick Look: on"] = "النظرة السريعة: تعمل",
         ["Quick Look: off"] = "النظرة السريعة: متوقفة",
         ["Errors lately"] = "الأخطاء مؤخرًا",
@@ -2788,8 +2787,6 @@ internal static class Arabic
         ["Quick Look"] = "النظرة السريعة",
         ["Space shows the selected file"] = "المسافة تعرض الملف المحدد",
         ["In File Explorer and on the desktop: a picture, a page of a PDF, a video or a song, a document's words, what a ZIP or a folder holds, a font. Space or Esc closes it, and the arrow keys move along."] = "في مستكشف الملفات وعلى سطح المكتب: صورة، صفحة من PDF، فيديو أو أغنية، كلمات مستند، محتوى ملف ZIP أو مجلد، خط. المسافة أو Esc تغلقها، والأسهم تنتقل بين الملفات.",
-        ["Thumbnails in File Explorer"] = "الصور المصغّرة في مستكشف الملفات",
-        ["Photoshop, Illustrator, EPS, InDesign, Krita and OpenRaster files show their picture, for file types no other program draws."] = "تظهر صور ملفات Photoshop وIllustrator وEPS وInDesign وKrita وOpenRaster، لأنواع الملفات التي لا يرسمها برنامج آخر.",
         ["Other programs"] = "البرامج الأخرى",
         ["Let other programs run petals"] = "السماح للبرامج الأخرى بتشغيل البتلات",
         ["Stream Deck, AutoHotkey, Power Automate, scripts and the petal command can run DropWheel's own petals and open its wheels, for this Windows user only. Your own scripts on the wheels can't be run this way."] = "يمكن لـ Stream Deck وAutoHotkey وPower Automate والسكربتات وأمر petal تشغيل بتلات DropWheel نفسها وفتح عجلاته، لمستخدم Windows هذا فقط. لا يمكن تشغيل سكربتاتك الخاصة على العجلات بهذه الطريقة.",
@@ -3908,5 +3905,10 @@ internal static class Arabic
         ["only the first 100,000 rows are shown"] = "تظهر أول 100,000 صف فقط",
         ["{0} (floating)"] = "{0} (عائم)",
         ["Float a file above the other windows, shown by DropWheel at the size you choose; several files go on a floating shelf to drag into other apps."] = "يُعوِّم ملفًا فوق النوافذ الأخرى، يعرضه DropWheel بالحجم الذي تختاره؛ وتوضع الملفات الكثيرة على رف عائم لتسحبها إلى برامج أخرى.",
+        ["Thumbnails and previews in File Explorer"] = "الصور المصغّرة والمعاينة في مستكشف الملفات",
+        ["Photoshop, Illustrator, EPS, InDesign, Krita and Procreate files, PDFs, 3D models, EPUBs, comic books and SVGs show what is inside, as a thumbnail and in the preview pane (Alt+P), for file types no other program shows."] = "تُظهر ملفات Photoshop وIllustrator وEPS وInDesign وKrita وProcreate وملفات PDF والنماذج ثلاثية الأبعاد وكتب EPUB والقصص المصوّرة وSVG ما في داخلها، صورةً مصغّرة وفي جزء المعاينة (Alt+P)، لأنواع الملفات التي لا يعرضها برنامج آخر.",
+        ["Thumbnails for {0} kinds of file"] = "صور مصغّرة لنوع واحد من الملفات|صور مصغّرة لنوعين من الملفات|صور مصغّرة لـ {0} أنواع من الملفات|صور مصغّرة لـ {0} نوعًا من الملفات|صور مصغّرة لـ {0} نوع من الملفات",
+        ["Preview pane: off"] = "جزء المعاينة: متوقف",
+        ["Preview pane for {0} kinds of file"] = "جزء المعاينة لنوع واحد من الملفات|جزء المعاينة لنوعين من الملفات|جزء المعاينة لـ {0} أنواع من الملفات|جزء المعاينة لـ {0} نوعًا من الملفات|جزء المعاينة لـ {0} نوع من الملفات",
     };
 }

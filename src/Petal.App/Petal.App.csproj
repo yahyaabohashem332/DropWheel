@@ -73,11 +73,18 @@
   </ItemGroup>
 
   <!-- Petal.Shell.dll goes in a "shell" folder of its own, next to the app and its published copy. -->
+  <!-- With the libraries it uses (Svg.NET and what that needs), all of .NET Framework's kind, kept apart from the app's own. -->
   <Target Name="CopyShellHandler" AfterTargets="Build">
-    <Copy SourceFiles="..\Petal.Shell\bin\$(Configuration)\net48\Petal.Shell.dll" DestinationFolder="$(OutDir)shell" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <ShellHandlerFiles Include="..\Petal.Shell\bin\$(Configuration)\net48\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ShellHandlerFiles)" DestinationFolder="$(OutDir)shell" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="PublishShellHandler" AfterTargets="Publish">
-    <Copy SourceFiles="..\Petal.Shell\bin\$(Configuration)\net48\Petal.Shell.dll" DestinationFolder="$(PublishDir)shell" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <ShellHandlerFiles Include="..\Petal.Shell\bin\$(Configuration)\net48\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ShellHandlerFiles)" DestinationFolder="$(PublishDir)shell" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
