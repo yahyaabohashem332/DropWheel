@@ -922,7 +922,7 @@ public sealed partial class SettingsWindow : ToolWindow
             LaunchAtLogin.Apply(v);
         }, top: 0));
         if (!Shell.Packaged.IsPackaged)
-            panel.Children.Add(Switch("Right-click menu", "Add “Convert with DropWheel” to File Explorer, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
+            panel.Children.Add(Switch("Right-click menu", "Add “Convert with DropWheel” to File Explorer, and DropWheel to “Send to” for many files at once, to use the wheel without dragging.", _s.ExplorerContextMenu, v =>
             {
                 _s.ExplorerContextMenu = v;
                 Shell.ContextMenuRegistration.Apply(v);

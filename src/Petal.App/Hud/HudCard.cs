@@ -161,6 +161,21 @@ public sealed class HudCard : Window
         return card;
     }
 
+    /// <summary>For design snapshots: a card that failed, built but not shown.</summary>
+    internal static HudCard FailedForSnapshot(string title, string subtitle)
+    {
+        var card = new HudCard();
+        card._finished = true;
+        card._title.Text = title;
+        card._subtitle.Text = subtitle;
+        card._bar.Visibility = Visibility.Collapsed;
+        card._subtitle.TextWrapping = TextWrapping.Wrap;
+        card._subtitle.MaxHeight = 34;
+        card.ShowBadge(success: false);
+        card._badge.RenderTransform = Transform.Identity;
+        return card;
+    }
+
     private static ScreenPoint SavedCornerPoint()
     {
         var (_, work, scale) = MonitorAt(new POINT(0, 0));

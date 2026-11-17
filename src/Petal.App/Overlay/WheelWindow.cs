@@ -83,6 +83,9 @@ public sealed partial class WheelWindow : Window
     // Files read from a drag that had none on disk (Outlook, a browser): kept only if dropped on a petal.
     private IReadOnlyList<string>? _staged;
 
+    /// <summary>A dragged link's file coming down while the wheel is open; its path is in <see cref="_staged"/> once named.</summary>
+    private Shell.LinkDownload? _link;
+
     /// <summary>The files the wheel is open for (empty for the wheels without files).</summary>
     public IReadOnlyList<string> CurrentFiles => _files ?? [];
     private WheelContent? _content;
@@ -741,6 +744,14 @@ public sealed partial class WheelWindow : Window
         _dwellTimer.Stop();
         CancelPreview();
         _chain.Clear();
+        if (_link is { } link)
+        {
+            // The download stops, then its folder goes (the file is still open until it has).
+            _link = null;
+            _staged = null;
+            link.Cancel();
+            _ = link.Done.ContinueWith(_ => Shell.VirtualDrop.ForgetFolder(link.Folder), TaskScheduler.Default);
+        }
         if (_staged is { } staged)
         {
             _staged = null;
@@ -809,9 +820,20 @@ public sealed partial class WheelWindow : Window
             return;
         }
 
-        if (_files is null)
+        if (_files is null && _link is null)
         {
             var files = FilesOf(e);
+            // A link from a browser or a chat: its file comes down while the wheel is open.
+            if (files is null && LinkOf(e.Data) is { } address)
+            {
+                StartLink(address);
+                _dragHelper.Enter(_hwnd, e.Data, CursorPoint(e), DragDropEffects.Copy);
+                if (_files is not null)
+                    UpdatePointer(e);
+                else
+                    e.Effects = DragDropEffects.None;
+                return;
+            }
             // An attachment, a picture from a browser, a file from a chat: read now, while the drag can still give it.
             if (files is null && Shell.VirtualDrop.Offers(e.Data) && Shell.VirtualDrop.Read(e.Data) is { } read)
             {
@@ -836,6 +858,94 @@ public sealed partial class WheelWindow : Window
 
         _dragHelper.Enter(_hwnd, e.Data, CursorPoint(e), DragDropEffects.Copy);
         UpdatePointer(e);
+    }
+
+    /// <summary>
+    /// The address the drag carries, when that is all it carries: a file the drag holds (a picture from a
+    /// page) is read instead, but the shortcut a browser offers beside a link is not a file to work on.
+    /// </summary>
+    private static Uri? LinkOf(IDataObject data)
+    {
+        if (Shell.LinkDrop.LinkOf(data) is not { } address)
+            return null;
+        try
+        {
+            if (Shell.VirtualDrop.Describe(data) is { Count: > 0 } described
+                && !described.All(f => !f.IsFolder && f.Name.EndsWith(".url", StringComparison.OrdinalIgnoreCase)))
+                return null;
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or InvalidOperationException or OutOfMemoryException)
+        {
+        }
+        return address;
+    }
+
+    private void StartLink(Uri address)
+    {
+        var folder = System.IO.Path.Combine(Shell.VirtualDrop.StagingRoot, DateTime.Now.ToString("yyyyMMdd-HHmmss-fff", System.Globalization.CultureInfo.InvariantCulture));
+        var link = new Shell.LinkDownload(address, folder);
+        _link = link;
+        _probing = false;
+        _probeTimer.Stop();
+        link.Named += () =>
+        {
+            if (_link != link || !_open || link.Path is not { } path)
+                return;
+            _files = [path];
+            _staged = [path];
+            Render(animate: true);
+        };
+        link.Changed += () =>
+        {
+            if (_link == link && _open && _files is not null && _highlight is null && _orbit is null && _groups.Count == 0 && _chain.Count == 0)
+                ShowDefaultHub(animate: false);
+        };
+        Log.Info($"wheel: downloading a dragged link from {address.Host}");
+        link.Start();
+        if (link.Path is { } named)
+        {
+            _files = [named];
+            _staged = [named];
+            Render(animate: true);
+        }
+        else
+        {
+            // Only the server can say what it is: the wheel waits for its answer.
+            _content = new WheelContent([], L.T("Reading the link…"));
+            Draw(animate: true);
+        }
+    }
+
+    private static string LinkTitle(Shell.LinkDownload link)
+    {
+        if (link.Done.IsFaulted || link.Done.IsCanceled)
+            return L.T("Couldn't download");
+        if (link.Received == 0 && !link.IsDone)
+            return L.T("Reading the link…");
+        return link.Total is > 0 and var total && !link.IsDone
+            ? L.F("{0}%", (int)(100.0 * link.Received / total))
+            : Util.Sizes.Format(link.Received);
+    }
+
+    private static string LinkSubtitle(Shell.LinkDownload link)
+    {
+        var name = link.Name ?? link.Address.Host;
+        if (link.Received == 0 || link.Done.IsCompleted)
+            return name;
+        // A long name would leave no room for the rest: the petals say what kind of file it is anyway.
+        var speed = L.F("{0}/s", Util.Sizes.Format((long)link.Speed));
+        return name.Length <= 18 ? speed + " · " + name : speed;
+    }
+
+    /// <summary>How far a link's file has come, how fast and what it is, on the card that waits for it.</summary>
+    internal static string LinkStatus(Shell.LinkDownload link)
+    {
+        var parts = new List<string> { LinkTitle(link) };
+        if (link.Received > 0 && !link.Done.IsCompleted)
+            parts.Add(L.F("{0}/s", Util.Sizes.Format((long)link.Speed)));
+        if (link.Name is { } name)
+            parts.Add(name);
+        return string.Join(" · ", parts);
     }
 
     private void OnDragOver(object sender, DragEventArgs e)
@@ -895,6 +1005,8 @@ public sealed partial class WheelWindow : Window
         // Read files are the petal's now: they move to Downloads instead of being forgotten with the wheel.
         var staged = _staged;
         _staged = null;
+        var link = _link;
+        _link = null;
         var chain = _chain.ToList();
 
         // Let the petal stay lit for a couple of frames, then vanish instantly. Only then run the
@@ -905,6 +1017,11 @@ public sealed partial class WheelWindow : Window
         {
             close.Stop();
             CloseWheel();
+            if (link is not null)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, () => DropLink(link, item, chain, drop));
+                return;
+            }
             Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
             {
                 var kept = files;
@@ -930,6 +1047,79 @@ public sealed partial class WheelWindow : Window
         };
         close.Start();
     }
+
+    /// <summary>
+    /// A link dropped on a petal: once its file is whole (a card shows it coming down when it isn't yet),
+    /// it moves to Downloads and the petal works on it there.
+    /// </summary>
+    private async void DropLink(Shell.LinkDownload link, WheelItem item, List<WheelItem> chain, ScreenPoint drop)
+    {
+        try
+        {
+            if (!link.Done.IsCompleted)
+            {
+                var card = Hud.HudCard.ShowAt(drop, L.T("Downloading…"), LinkStatus(link));
+                card.CancelRequested += link.Cancel;
+                void Update()
+                {
+                    card.SetText(L.T("Downloading…"), LinkStatus(link));
+                    card.SetProgress(link.Total is > 0 and var total ? (double)link.Received / total : null);
+                }
+                link.Changed += Update;
+                try
+                {
+                    await link.Done;
+                    card.Dismiss();
+                }
+                catch (OperationCanceledException)
+                {
+                    card.Fail(L.T("Cancelled"), L.T("Nothing was saved"));
+                    return;
+                }
+                catch (Shell.LinkDownloadException ex)
+                {
+                    card.Fail(L.T("Couldn't download"), LinkProblem(ex));
+                    return;
+                }
+                finally
+                {
+                    link.Changed -= Update;
+                }
+            }
+            else if (!link.Done.IsCompletedSuccessfully)
+            {
+                var why = link.Done.Exception?.InnerException as Shell.LinkDownloadException;
+                Hud.HudCard.ShowAt(drop, L.T("Couldn't download"), "").Fail(L.T("Couldn't download"), why is null ? L.T("Nothing was saved") : LinkProblem(why));
+                return;
+            }
+            var kept = Shell.VirtualDrop.Keep([await link.Done]);
+            if (kept.Count == 0)
+                return;
+            if (chain.Count > 0)
+                ChainDropped?.Invoke(chain, item, kept, drop);
+            else
+                ItemDropped?.Invoke(item, kept, drop);
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        {
+            Log.Error(ex, "Keeping a dragged link's file");
+        }
+        finally
+        {
+            Shell.VirtualDrop.ForgetFolder(link.Folder);
+        }
+    }
+
+    /// <summary>Why a link's file couldn't be downloaded, in words.</summary>
+    internal static string LinkProblem(Shell.LinkDownloadException ex) => ex.Problem switch
+    {
+        Shell.LinkDownloadProblem.Refused when ex.Status is 404 or 410 => L.F("Nothing is at this address any more ({0}).", ex.Status),
+        Shell.LinkDownloadProblem.Refused => L.F("The site refused the download ({0}). Save it from the browser, then drag the file.", ex.Status),
+        Shell.LinkDownloadProblem.TooLarge => L.F("It is larger than {0}. Save it from the browser, then drag the file.", Util.Sizes.Format(Shell.LinkDownload.MostBytes)),
+        Shell.LinkDownloadProblem.Stalled => L.T("Nothing came for 30 seconds."),
+        Shell.LinkDownloadProblem.Cut => L.T("The download broke off before the end."),
+        _ => L.T("Couldn't reach the site. Check the connection."),
+    };
 
     private int? HitTest(DragEventArgs e)
     {
@@ -998,7 +1188,7 @@ public sealed partial class WheelWindow : Window
             var item = _content.Items[i2];
             _lastHubLabel = HubTitle(item);
             SetHub(_lastHubLabel, _chain.Count > 0 && !item.IsGroup && item.Unavailable is null ? L.F("Step {0}", _chain.Count + 1) : Subtitle(item), animate: IsVisible, about: item);
-            if (_open && _chain.Count == 0 && _pages is null && _files is not null && PreviewProvider is not null && !item.IsGroup && item.Unavailable is null && PresentationSource.FromVisual(_root) is not null)
+            if (_open && _chain.Count == 0 && _pages is null && _files is not null && (_link is null || _link.IsDone) && PreviewProvider is not null && !item.IsGroup && item.Unavailable is null && PresentationSource.FromVisual(_root) is not null)
                 _previewTimer.Start();
             Sound.Tick();
             if (data is not null)
@@ -1098,9 +1288,11 @@ public sealed partial class WheelWindow : Window
     /// Renders the wheel over a background image without a screen, for design reviews and tests.
     /// </summary>
     internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false,
-        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1, string? calc = null)
+        IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1, string? calc = null,
+        Shell.LinkDownload? link = null)
     {
         _visible = new Rect(-Centre, -Centre, Side, Side);
+        _link = link;
         _options = OptionsProvider();
         _palette = PaletteFor(_options);
         _files = files;
@@ -1306,6 +1498,12 @@ public sealed partial class WheelWindow : Window
         if (_chain.Count > 0)
         {
             SetHub(ChainTitle(), ChainHint(), animate);
+            return;
+        }
+        if (_link is { } link)
+        {
+            // As for files the centre gives the size: here how much has come, then how fast and what.
+            SetHub(LinkTitle(link), LinkSubtitle(link), animate);
             return;
         }
         SetHub(HubTextProvider?.Invoke(_files) ?? "", HubSubtitleProvider?.Invoke(_files) ?? (_files.Count == 1 ? "" : L.P(_files.Count, "{0} item", "{0} items")), animate);

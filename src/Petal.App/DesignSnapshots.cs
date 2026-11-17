@@ -1132,12 +1132,40 @@ internal static class DesignSnapshots
         var background = Load(args[2]);
         var files = args.Skip(3).ToList();
         bool everyPetal = files.Remove("--every-petal");
+        bool link = files.Remove("--link");
         Directory.CreateDirectory(output);
 
         var converters = EngineSetup.CreateConverters();
         SampleSettings(Path.GetDirectoryName(Path.GetFullPath(files.FirstOrDefault() ?? args[2]))!);
         var controller = new PetalController(converters, Application.Current.Dispatcher);
         var wheel = controller.CreateWheelForSnapshots();
+
+        // A link from a browser coming down while the wheel is open: named by its address, then by the server.
+        if (link)
+        {
+            foreach (var dark in new[] { false, true })
+            {
+                Theme.Configure(dark ? ThemePreference.Dark : ThemePreference.Light, false);
+                Application.Current.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+                var theme = dark ? "dark" : "light";
+                var folder = Path.Combine(Path.GetTempPath(), "DropWheel snapshot", "link");
+                var coming = Shell.LinkDownload.ForSnapshot(new Uri("https://example.com/files/Annual%20Report%202025.pdf"), folder, 3_400_000, 7_900_000, 1_250_000);
+                Save(wheel.Snapshot([coming.Path!], WheelMode.Conversions, null, background, link: coming), Path.Combine(output, $"{theme}-link.png"));
+                Save(wheel.Snapshot([coming.Path!], WheelMode.Tools, null, background, link: coming), Path.Combine(output, $"{theme}-link-tools.png"));
+                var unsized = Shell.LinkDownload.ForSnapshot(new Uri("https://cdn.example.com/v/clip.mp4"), folder, 18_300_000, null, 4_100_000);
+                Save(wheel.Snapshot([unsized.Path!], WheelMode.Conversions, null, background, link: unsized), Path.Combine(output, $"{theme}-link-unsized.png"));
+                var card = Hud.HudCard.ProgressForSnapshot("Downloading…", Overlay.WheelWindow.LinkStatus(coming), 3.4 / 7.9);
+                Save(RenderWindow(card), Path.Combine(output, $"{theme}-link-card.png"));
+                card.Close();
+                foreach (var (problem, status) in new[] { (Shell.LinkDownloadProblem.Refused, 403), (Shell.LinkDownloadProblem.Refused, 404), (Shell.LinkDownloadProblem.TooLarge, 0), (Shell.LinkDownloadProblem.Unreachable, 0) })
+                {
+                    var failed = Hud.HudCard.FailedForSnapshot(Localization.L.T("Couldn't download"), Overlay.WheelWindow.LinkProblem(new Shell.LinkDownloadException(problem, status)));
+                    Save(RenderWindow(failed), Path.Combine(output, $"{theme}-link-failed-{problem.ToString().ToLowerInvariant()}{(status > 0 ? status.ToString(System.Globalization.CultureInfo.InvariantCulture) : "")}.png"));
+                    failed.Close();
+                }
+            }
+            return;
+        }
 
         // The dark wheel once per petal, so every centre name and every label can be measured.
         if (everyPetal)

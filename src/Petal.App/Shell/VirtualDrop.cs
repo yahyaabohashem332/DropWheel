@@ -325,6 +325,9 @@ public static class VirtualDrop
             Forget(folder);
     }
 
+    /// <summary>A drag's folder of read files, whatever is left in it (a link's download that stopped).</summary>
+    public static void ForgetFolder(string folder) => Forget(folder);
+
     private static void Forget(string folder)
     {
         try

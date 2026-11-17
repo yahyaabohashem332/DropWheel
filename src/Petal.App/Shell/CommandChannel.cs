@@ -90,6 +90,7 @@ public static class ContextMenuRegistration
         try
         {
             var exe = Environment.ProcessPath;
+            SendTo.Apply(enabled ? exe : null, SendTo.Folder);
             if (!enabled || exe is null)
             {
                 Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(FilesKey, throwOnMissingSubKey: false);
@@ -109,5 +110,71 @@ public static class ContextMenuRegistration
         {
             Log.Error(ex, "Updating the context menu entry");
         }
+    }
+}
+
+/// <summary>
+/// DropWheel in File Explorer's Send to menu. The right-click entry is started once for each file and
+/// Windows leaves it out for more than 15; Send to hands every selected file over at once.
+/// </summary>
+public static class SendTo
+{
+    public const string ShortcutName = "DropWheel.lnk";
+
+    /// <summary>The user's Send to folder.</summary>
+    public static string Folder => Environment.GetFolderPath(Environment.SpecialFolder.SendTo);
+
+    /// <summary>
+    /// Puts a shortcut to <paramref name="exe"/> in <paramref name="folder"/>, or (null) takes away the one
+    /// DropWheel put there. A shortcut of that name pointing at another program is left alone.
+    /// </summary>
+    public static void Apply(string? exe, string folder)
+    {
+        if (string.IsNullOrEmpty(folder))
+            return;
+        var path = System.IO.Path.Combine(folder, ShortcutName);
+        try
+        {
+            var existing = System.IO.File.Exists(path) ? Target(path) : null;
+            bool ours = existing is not null && System.IO.Path.GetFileName(existing).Equals("Petal.exe", StringComparison.OrdinalIgnoreCase);
+            if (exe is null)
+            {
+                if (ours)
+                    System.IO.File.Delete(path);
+                return;
+            }
+            if (System.IO.File.Exists(path) && !ours)
+                return;
+            if (ours && string.Equals(existing, exe, StringComparison.OrdinalIgnoreCase))
+                return;
+            System.IO.Directory.CreateDirectory(folder);
+            Write(path, exe);
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException or System.Reflection.TargetInvocationException)
+        {
+            Log.Error(ex, "Updating DropWheel in Send to");
+        }
+    }
+
+    private static object Shell() =>
+        Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell") ?? throw new System.Runtime.InteropServices.COMException("No WScript.Shell"))!;
+
+    /// <summary>Where a shortcut points.</summary>
+    internal static string? Target(string link)
+    {
+        var shortcut = Shell().GetType().InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, Shell(), [link])!;
+        return shortcut.GetType().InvokeMember("TargetPath", System.Reflection.BindingFlags.GetProperty, null, shortcut, null) as string;
+    }
+
+    private static void Write(string link, string exe)
+    {
+        var shell = Shell();
+        var shortcut = shell.GetType().InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, [link])!;
+        var type = shortcut.GetType();
+        type.InvokeMember("TargetPath", System.Reflection.BindingFlags.SetProperty, null, shortcut, [exe]);
+        type.InvokeMember("WorkingDirectory", System.Reflection.BindingFlags.SetProperty, null, shortcut, [System.IO.Path.GetDirectoryName(exe)!]);
+        type.InvokeMember("IconLocation", System.Reflection.BindingFlags.SetProperty, null, shortcut, [exe + ",0"]);
+        type.InvokeMember("Description", System.Reflection.BindingFlags.SetProperty, null, shortcut, [Localization.L.T("Convert with DropWheel")]);
+        type.InvokeMember("Save", System.Reflection.BindingFlags.InvokeMethod, null, shortcut, null);
     }
 }

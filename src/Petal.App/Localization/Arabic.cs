@@ -235,7 +235,6 @@ internal static class Arabic
         ["Start with Windows"] = "التشغيل مع Windows",
         ["DropWheel waits quietly in the notification area."] = "ينتظر DropWheel بهدوء في منطقة الإشعارات.",
         ["Right-click menu"] = "قائمة النقر بزر الماوس الأيمن",
-        ["Add “Convert with DropWheel” to File Explorer, to use the wheel without dragging."] = "إضافة «التحويل باستخدام DropWheel» إلى مستكشف الملفات لاستخدام العجلة دون سحب.",
         ["Ignore key taps while dragging until you turn this off."] = "تجاهل ضغطات المفاتيح أثناء السحب حتى توقف هذا الخيار.",
         ["Open activity log"] = "فتح سجل النشاط",
 
@@ -3910,5 +3909,15 @@ internal static class Arabic
         ["Thumbnails for {0} kinds of file"] = "صور مصغّرة لنوع واحد من الملفات|صور مصغّرة لنوعين من الملفات|صور مصغّرة لـ {0} أنواع من الملفات|صور مصغّرة لـ {0} نوعًا من الملفات|صور مصغّرة لـ {0} نوع من الملفات",
         ["Preview pane: off"] = "جزء المعاينة: متوقف",
         ["Preview pane for {0} kinds of file"] = "جزء المعاينة لنوع واحد من الملفات|جزء المعاينة لنوعين من الملفات|جزء المعاينة لـ {0} أنواع من الملفات|جزء المعاينة لـ {0} نوعًا من الملفات|جزء المعاينة لـ {0} نوع من الملفات",
+        ["Reading the link…"] = "جارٍ قراءة الرابط…",
+        ["Couldn't download"] = "تعذّر التنزيل",
+        ["{0}/s"] = "{0}/ث",
+        ["Nothing is at this address any more ({0})."] = "لم يعد في هذا العنوان شيء ({0}).",
+        ["The site refused the download ({0}). Save it from the browser, then drag the file."] = "رفض الموقع التنزيل ({0}). احفظه من المتصفح، ثم اسحب الملف.",
+        ["It is larger than {0}. Save it from the browser, then drag the file."] = "حجمه أكبر من {0}. احفظه من المتصفح، ثم اسحب الملف.",
+        ["Nothing came for 30 seconds."] = "لم يصل شيء طوال 30 ثانية.",
+        ["The download broke off before the end."] = "انقطع التنزيل قبل نهايته.",
+        ["Couldn't reach the site. Check the connection."] = "تعذّر الوصول إلى الموقع. تحقّق من الاتصال.",
+        ["Add “Convert with DropWheel” to File Explorer, and DropWheel to “Send to” for many files at once, to use the wheel without dragging."] = "إضافة «التحويل باستخدام DropWheel» إلى مستكشف الملفات، وDropWheel إلى «إرسال إلى» لملفات كثيرة معًا، لاستخدام العجلة دون سحب.",
     };
 }

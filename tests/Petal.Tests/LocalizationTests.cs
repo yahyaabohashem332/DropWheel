@@ -19,6 +19,7 @@ public partial class LocalizationTests
     private static readonly HashSet<string> NotTranslated = new(StringComparer.Ordinal)
     {
         "Microsoft Word", "Google Chrome", "Visual Studio Code", "Telegram",
+        "text/x-moz-url", "image/", "video/", "audio/", "x.", "www.", "application/octet-stream", "binary/octet-stream",
         "Photosynthesis", "Making food from light.", "Where does it happen?", "Leaves", "Roots", "Soil", "Air", "The text says so.", "Page 1",
         "Cells take in food and turn it into energy they can use.", "Chapter 1: The cell", "1.1 What cells are made of", "1.2 The cell membrane",
         "1.3 Transport across the membrane", "Chapter 2: Energy in cells", "2.1 Photosynthesis", "2.2 Respiration", "Index", "Biology for Schools",

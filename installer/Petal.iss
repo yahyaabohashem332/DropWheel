@@ -91,6 +91,8 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 
 [Icons]
 Name: "{autoprograms}\DropWheel"; Filename: "{app}\Petal.exe"
+; In File Explorer's Send to, which hands over every selected file at once (the right-click entry takes up to 15).
+Name: "{usersendto}\DropWheel"; Filename: "{app}\Petal.exe"; WorkingDir: "{app}"; Tasks: contextmenu
 
 [InstallDelete]
 ; The Start menu shortcut from before the new name.
@@ -119,6 +121,8 @@ Filename: "{app}\Petal.exe"; Parameters: "--unregister-shell"; Flags: runhidden 
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{localappdata}\Petal"
+; Put there by DropWheel itself when its right-click switch was turned on later.
+Type: files; Name: "{usersendto}\DropWheel.lnk"
 
 [Code]
 function NeedsAddPath(Dir: string): Boolean;
