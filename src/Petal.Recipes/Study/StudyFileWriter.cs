@@ -26,10 +26,14 @@ public sealed class StudyFileWords(IReadOnlyDictionary<string, string> words, Fu
         "partsStudied", "questionsRight", "cardsKnown", "reset", "resetSure", "kept", "print", "withAnswers", "madeFrom", "aiNote",
         "howTo", "step1", "step2", "step3", "begin", "goals", "chapterTest", "letters", "notExplained", "findTerm", "close", "redo",
         "noQuestions", "chapter", "needsScript", "resume",
+        "seeIt", "tryIt", "activities", "kindOrder", "kindMatch", "kindSort", "kindBlanks", "kindTrueFalse", "checkIt", "showAnswer",
+        "again", "allRight", "rightOf", "dragHint", "bank", "placeHere", "picked", "placed", "true", "false", "backToStart",
+        "activitiesSolved", "practiceChapter", "activityOf", "solvedScore", "noActivities", "skipIt", "orderHint",
+        "kindMapFill", "mapHint", "stepOf", "sample",
     ];
 
-    /// <summary>The counted phrases the page uses: parts, terms, cards and questions.</summary>
-    public static readonly string[] Counted = ["parts", "terms", "cards", "questions"];
+    /// <summary>The counted phrases the page uses: parts, terms, cards, questions and activities.</summary>
+    public static readonly string[] Counted = ["parts", "terms", "cards", "questions", "activities"];
 
     public string this[string key] => words.TryGetValue(key, out var w) ? w : key;
 
@@ -49,6 +53,8 @@ public static partial class StudyFileWriter
     public static void Write(string path, StudyBook book, StudyFileWords words)
     {
         var temporary = path + ".tmp";
+        if (Path.GetDirectoryName(Path.GetFullPath(path)) is { } folder)
+            Directory.CreateDirectory(folder);
         File.WriteAllText(temporary, Html(book, words), new UTF8Encoding(false));
         File.Move(temporary, path, true);
     }
@@ -92,6 +98,8 @@ public static partial class StudyFileWriter
         string partLabel(StudyPart p) => Label(p, words);
 
         int cardCount = book.Parts.Sum(p => p.Cards.Count), questionCount = book.Parts.Sum(p => p.Quiz.Count);
+        var activityIds = ActivityIds(book);
+        int activityCount = activityIds.Count;
         var sb = new StringBuilder(256 * 1024);
         var script = Resource("StudyFile.js");
         var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(script)));
@@ -123,6 +131,8 @@ public static partial class StudyFileWriter
             sb.Append("<li class=\"needs-js\"><a href=\"#cards\">").Append(Svg("cards")).Append(E(words["cards"])).Append("<span class=\"n\">").Append(cardCount).Append("</span></a></li>");
         if (questionCount > 0)
             sb.Append("<li class=\"needs-js\"><a href=\"#test\">").Append(Svg("test")).Append(E(words["test"])).Append("</a></li>");
+        if (activityCount > 0)
+            sb.Append("<li class=\"needs-js\"><a href=\"#practice\">").Append(Svg("puzzle")).Append(E(words["activities"])).Append("<span class=\"n\">").Append(activityCount).Append("</span></a></li>");
         sb.Append("<li class=\"needs-js\"><a href=\"#progress\">").Append(Svg("chart")).Append(E(words["progress"])).Append("</a></li></ul><ol class=\"toc\">");
         foreach (var run in Groups(book))
         {
@@ -145,6 +155,8 @@ public static partial class StudyFileWriter
         sb.Append("<section class=\"view home\" id=\"home\" aria-labelledby=\"h-home\">");
         sb.Append("<p class=\"kicker\">").Append(Svg("cap")).Append("<span>").Append(E(string.Format(CultureInfo.InvariantCulture, words["madeFrom"], book.Source))).Append("</span></p>");
         sb.Append("<h1 id=\"h-home\" tabindex=\"-1\"><bdi>").Append(E(book.Title)).Append("</bdi></h1>");
+        if (book.Sample)
+            sb.Append("<p class=\"sample\" role=\"note\">").Append(E(words["sample"])).Append("</p>");
         sb.Append("<ul class=\"stats\"><li>").Append(E(words.Count("parts", book.Parts.Count))).Append("</li>");
         if (book.Terms.Count > 0)
             sb.Append("<li>").Append(E(words.Count("terms", book.Terms.Count))).Append("</li>");
@@ -152,6 +164,8 @@ public static partial class StudyFileWriter
             sb.Append("<li>").Append(E(words.Count("cards", cardCount))).Append("</li>");
         if (questionCount > 0)
             sb.Append("<li>").Append(E(words.Count("questions", questionCount))).Append("</li>");
+        if (activityCount > 0)
+            sb.Append("<li>").Append(E(words.Count("activities", activityCount))).Append("</li>");
         sb.Append("</ul>");
         if (book.Overview.Length > 0)
             sb.Append("<div class=\"lead\">").Append(Rich(book.Overview, null)).Append("</div>");
@@ -202,8 +216,16 @@ public static partial class StudyFileWriter
                 sb.Append("</li>");
             }
             sb.Append("</ol>");
-            if (parts.Sum(p => p.Quiz.Count) > 0)
-                sb.Append("<p class=\"needs-js\"><a class=\"btn\" href=\"#test-c").Append(c + 1).Append("\">").Append(Svg("test")).Append(E(words["chapterTest"])).Append("</a></p>");
+            bool tested = parts.Sum(p => p.Quiz.Count) > 0, practised = parts.Sum(p => p.Activities.Count) > 0;
+            if (tested || practised)
+            {
+                sb.Append("<p class=\"needs-js row\">");
+                if (tested)
+                    sb.Append("<a class=\"btn\" href=\"#test-c").Append(c + 1).Append("\">").Append(Svg("test")).Append(E(words["chapterTest"])).Append("</a>");
+                if (practised)
+                    sb.Append("<a class=\"btn\" href=\"#practice-c").Append(c + 1).Append("\">").Append(Svg("puzzle")).Append(E(words["practiceChapter"])).Append("</a>");
+                sb.Append("</p>");
+            }
             sb.Append("</section>\n");
         }
 
@@ -239,6 +261,13 @@ public static partial class StudyFileWriter
                 sb.Append("<p class=\"src\">").Append(Svg("pin")).Append(E(passage.Where)).Append("</p></article>");
             }
             sb.Append("</section>");
+            if (part.Visuals.Count > 0)
+            {
+                sb.Append("<section class=\"visuals\"><h2>").Append(Svg("eye")).Append(E(words["seeIt"])).Append("</h2>");
+                foreach (var visual in part.Visuals)
+                    AppendVisual(sb, visual, words);
+                sb.Append("</section>");
+            }
             var examples = part.Passages.Where(p => p.Example.Length > 0).ToList();
             if (examples.Count > 0)
             {
@@ -258,6 +287,13 @@ public static partial class StudyFileWriter
                 foreach (var term in here)
                     sb.Append("<li><a class=\"chip\" href=\"#").Append(ids[term]).Append("\" data-t=\"").Append(ids[term]).Append("\"><bdi>").Append(E(TermLinker.Shown(term.Term))).Append("</bdi></a></li>");
                 sb.Append("</ul></section>");
+            }
+            if (part.Activities.Count > 0)
+            {
+                sb.Append("<section class=\"acts\"><h2>").Append(Svg("puzzle")).Append(E(words["tryIt"])).Append("</h2>");
+                foreach (var activity in part.Activities.Where(activityIds.ContainsKey))
+                    AppendActivity(sb, activity, activityIds[activity], words);
+                sb.Append("</section>");
             }
             if (part.Quiz.Count > 0)
             {
@@ -303,14 +339,175 @@ public static partial class StudyFileWriter
             sb.Append("<section class=\"view trainer needs-js\" id=\"cards\" aria-labelledby=\"h-cards\"><h1 id=\"h-cards\" tabindex=\"-1\">").Append(E(words["cards"])).Append("</h1><div class=\"slot\"></div></section>\n");
         if (questionCount > 0)
             sb.Append("<section class=\"view exam needs-js\" id=\"test\" aria-labelledby=\"h-test\"><h1 id=\"h-test\" tabindex=\"-1\">").Append(E(words["test"])).Append("</h1><div class=\"slot\"></div></section>\n");
+        if (activityCount > 0)
+            sb.Append("<section class=\"view practice needs-js\" id=\"practice\" aria-labelledby=\"h-practice\"><h1 id=\"h-practice\" tabindex=\"-1\">").Append(E(words["activities"])).Append("</h1><div class=\"slot\"></div></section>\n");
         sb.Append("<section class=\"view stand needs-js\" id=\"progress\" aria-labelledby=\"h-progress\"><h1 id=\"h-progress\" tabindex=\"-1\">").Append(E(words["progress"])).Append("</h1><div class=\"slot\"></div></section>\n");
         sb.Append("<noscript><p class=\"note\">").Append(E(words["needsScript"])).Append("</p></noscript>\n");
         sb.Append("<footer class=\"foot\"><p>").Append(E(string.Format(CultureInfo.InvariantCulture, words["madeFrom"], book.Source))).Append(" · <time datetime=\"").Append(book.Made.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("\">").Append(book.Made.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("</time> · DropWheel</p>");
         sb.Append("<p class=\"ai\">").Append(Svg("info")).Append("<span>").Append(E(string.Format(CultureInfo.InvariantCulture, words["aiNote"], book.Writer))).Append("</span></p></footer>\n</main>\n</div>\n");
         sb.Append("<div class=\"pop\" id=\"pop\" role=\"tooltip\" hidden></div>\n<div class=\"sr\" id=\"say\" aria-live=\"polite\"></div>\n");
-        sb.Append("<script type=\"application/json\" id=\"data\">").Append(Data(book, words, ids)).Append("</script>\n");
+        sb.Append("<script type=\"application/json\" id=\"data\">").Append(Data(book, words, ids, activityIds)).Append("</script>\n");
         sb.Append("<script>").Append(script).Append("</script>\n</body>\n</html>\n");
         return sb.ToString();
+    }
+
+    /// <summary>Each activity's name, by its kind and words: progress stays with it when the file is made again. The same activity twice is shown once.</summary>
+    private static Dictionary<StudyActivity, string> ActivityIds(StudyBook book)
+    {
+        var ids = new Dictionary<StudyActivity, string>(ReferenceEqualityComparer.Instance);
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var activity in book.Parts.SelectMany(p => p.Activities))
+        {
+            var id = ItemId("a", activity.Kind + "\n" + activity.Prompt + "\n" + string.Join("\n", activity.Items.Select(i => i.Text)));
+            if (taken.Add(id))
+                ids[activity] = id;
+        }
+        return ids;
+    }
+
+    /// <summary>The blanks of an activity's sentences, in order.</summary>
+    internal static List<string> BlanksOf(StudyActivity activity) =>
+        activity.Items.SelectMany(i => StudyActivity.Pieces(i.Text).Where((_, k) => k % 2 == 1)).Select(b => b.Trim()).ToList();
+
+    /// <summary>The order an activity's pieces are first shown in (for blanks, its words to place): mixed, the same every time.</summary>
+    internal static int[] Mixed(StudyActivity activity) => activity.Kind switch
+    {
+        StudyActivityKind.Blanks => StudyActivity.Mixed(activity.Prompt + string.Concat(activity.Items.Select(i => i.Text)), BlanksOf(activity).Count),
+        StudyActivityKind.TrueFalse => Enumerable.Range(0, activity.Items.Count).ToArray(),
+        _ => StudyActivity.Mixed(activity.Prompt + string.Concat(activity.Items.Select(i => i.Text + i.Answer)), activity.Items.Count),
+    };
+
+    /// <summary>A diagram: steps with arrows between (round again for a cycle), dates down a line, an idea with its branches, or a table that compares.</summary>
+    private static void AppendVisual(StringBuilder sb, StudyVisual visual, StudyFileWords words)
+    {
+        string Text(string t) => Inline(t, null, null);
+        switch (visual.Kind)
+        {
+            case StudyVisualKind.Flow or StudyVisualKind.Cycle:
+                // Steps that say what happens in each are gone through one at a time (all of them shown without the script
+                // and in print); short steps without it go side by side on a wide screen, long ones one under another.
+                bool walk = visual.Items.Count >= 3 && visual.Items.All(i => i.Details.Count > 0);
+                bool brief = !walk && visual.Items.Count <= 5 && visual.Items.All(i => i.Text.Length <= 48);
+                sb.Append("<figure class=\"vis flow").Append(visual.Kind == StudyVisualKind.Cycle ? " cycle" : "").Append(brief ? " brief" : "").Append(walk ? " walk" : "").Append("\">");
+                if (visual.Title.Length > 0)
+                    sb.Append("<figcaption>").Append(Text(visual.Title)).Append("</figcaption>");
+                sb.Append("<ol>");
+                for (int i = 0; i < visual.Items.Count; i++)
+                {
+                    sb.Append("<li><span class=\"n\">").Append(i + 1).Append("</span><span class=\"t\">").Append(Text(visual.Items[i].Text));
+                    if (walk)
+                        sb.Append("<span class=\"d\">").Append(Text(visual.Items[i].Details[0])).Append("</span>");
+                    sb.Append("</span></li>");
+                }
+                sb.Append("</ol>");
+                if (visual.Kind == StudyVisualKind.Cycle)
+                    sb.Append("<p class=\"loop\">").Append(Svg("loop")).Append("<span>").Append(E(words["backToStart"])).Append("</span></p>");
+                sb.Append("</figure>");
+                break;
+            case StudyVisualKind.Timeline:
+                sb.Append("<figure class=\"vis timeline\">");
+                if (visual.Title.Length > 0)
+                    sb.Append("<figcaption>").Append(Text(visual.Title)).Append("</figcaption>");
+                sb.Append("<ol>");
+                foreach (var item in visual.Items)
+                    sb.Append("<li><span class=\"when\"><bdi>").Append(E(item.Answer)).Append("</bdi></span><span class=\"t\">").Append(Text(item.Text)).Append("</span></li>");
+                sb.Append("</ol></figure>");
+                break;
+            case StudyVisualKind.Map:
+                sb.Append("<figure class=\"vis map\"><figcaption class=\"hub\">").Append(Text(visual.Title)).Append("</figcaption><ul class=\"arms\">");
+                foreach (var branch in visual.Items)
+                {
+                    sb.Append("<li><strong>").Append(Text(branch.Text)).Append("</strong>");
+                    if (branch.Details.Count > 0)
+                        sb.Append("<ul>").Append(string.Concat(branch.Details.Select(d => "<li>" + Text(d) + "</li>"))).Append("</ul>");
+                    sb.Append("</li>");
+                }
+                sb.Append("</ul></figure>");
+                break;
+            default:
+                sb.Append("<figure class=\"vis compare\">");
+                if (visual.Title.Length > 0)
+                    sb.Append("<figcaption>").Append(Text(visual.Title)).Append("</figcaption>");
+                sb.Append("<div class=\"table\"><table><thead><tr><th></th>").Append(string.Concat(visual.Columns.Select(c => "<th scope=\"col\">" + Text(c) + "</th>"))).Append("</tr></thead><tbody>");
+                foreach (var row in visual.Items)
+                    sb.Append("<tr><th scope=\"row\">").Append(Text(row.Text)).Append("</th>").Append(string.Concat(row.Details.Select(d => "<td>" + Text(d) + "</td>"))).Append("</tr>");
+                sb.Append("</tbody></table></div></figure>");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// An activity as a worksheet: its pieces mixed, room to answer, and its answer in a part that opens; printed with or
+    /// without the answers. The page's script makes it pieces to drag or press into place.
+    /// </summary>
+    private static void AppendActivity(StringBuilder sb, StudyActivity activity, string id, StudyFileWords words)
+    {
+        string Text(string t) => Inline(t, null, null);
+        var (kind, label) = activity.Kind switch
+        {
+            StudyActivityKind.Order => ("order", words["kindOrder"]),
+            StudyActivityKind.Match => ("match", words["kindMatch"]),
+            StudyActivityKind.Sort => ("sort", words["kindSort"]),
+            StudyActivityKind.Blanks => ("blanks", words["kindBlanks"]),
+            StudyActivityKind.MapFill => ("mapfill", words["kindMapFill"]),
+            _ => ("tf", words["kindTrueFalse"]),
+        };
+        var order = Mixed(activity);
+        var items = activity.Items;
+        sb.Append("<div class=\"act\" id=\"").Append(id).Append("\" data-a=\"").Append(id).Append("\" data-k=\"").Append(kind).Append("\">");
+        sb.Append("<p class=\"kind\">").Append(E(label)).Append("</p>");
+        if (activity.Prompt.Length > 0)
+            sb.Append("<p class=\"ask\">").Append(Text(activity.Prompt)).Append("</p>");
+        var key = new StringBuilder();
+        switch (activity.Kind)
+        {
+            case StudyActivityKind.Order:
+                sb.Append("<ul class=\"sheet pieces\">").Append(string.Concat(order.Select(i => "<li><span class=\"box\"></span>" + Text(items[i].Text) + "</li>"))).Append("</ul>");
+                key.Append("<ol>").Append(string.Concat(items.Select(i => "<li>" + Text(i.Text) + "</li>"))).Append("</ol>");
+                break;
+            case StudyActivityKind.Match:
+                sb.Append("<div class=\"sheet two\"><ol>").Append(string.Concat(items.Select(i => "<li>" + Text(i.Text) + " <span class=\"line\"></span></li>"))).Append("</ol><ul class=\"pieces\">")
+                    .Append(string.Concat(order.Select(i => "<li>" + Text(items[i].Answer) + "</li>"))).Append("</ul></div>");
+                key.Append("<ul>").Append(string.Concat(items.Select(i => "<li>" + Text(i.Text) + " → <strong>" + Text(i.Answer) + "</strong></li>"))).Append("</ul>");
+                break;
+            case StudyActivityKind.Sort:
+                sb.Append("<div class=\"sheet\"><ul class=\"pieces inline\">").Append(string.Concat(order.Select(i => "<li>" + Text(items[i].Text) + "</li>"))).Append("</ul><div class=\"bins\">")
+                    .Append(string.Concat(activity.Groups.Select(g => "<div class=\"bin\"><strong>" + Text(g) + "</strong></div>"))).Append("</div></div>");
+                key.Append("<ul>").Append(string.Concat(activity.Groups.Select(g => "<li><strong>" + Text(g) + ":</strong> " + string.Join(" · ", items.Where(i => i.Answer == g).Select(i => Text(i.Text))) + "</li>"))).Append("</ul>");
+                break;
+            case StudyActivityKind.Blanks:
+                var blanks = BlanksOf(activity);
+                sb.Append("<div class=\"sheet\"><ol class=\"sentences\">");
+                foreach (var item in items)
+                    sb.Append("<li>").Append(string.Concat(StudyActivity.Pieces(item.Text).Select((piece, k) => k % 2 == 1 ? "<span class=\"gap\"></span>" : Text(piece)))).Append("</li>");
+                sb.Append("</ol><p class=\"bankline\"><strong>").Append(E(words["bank"])).Append(":</strong> ").Append(string.Join(" · ", order.Select(i => "<bdi>" + E(blanks[i]) + "</bdi>"))).Append("</p></div>");
+                key.Append("<ol>");
+                foreach (var item in items)
+                    key.Append("<li>").Append(string.Concat(StudyActivity.Pieces(item.Text).Select((piece, k) => k % 2 == 1 ? "<strong>" + Text(piece.Trim()) + "</strong>" : Text(piece)))).Append("</li>");
+                key.Append("</ol>");
+                break;
+            case StudyActivityKind.MapFill:
+                // The map with a line for each branch's name, under what the branch says; the names to write in below.
+                sb.Append("<div class=\"sheet mapsheet\"><p class=\"hub\">").Append(Text(activity.Prompt)).Append("</p><ol class=\"arms\">");
+                foreach (var item in items)
+                    sb.Append("<li><span class=\"line\"></span><ul>").Append(string.Concat(item.Text.Split("; ").Select(d => "<li>" + Text(d) + "</li>"))).Append("</ul></li>");
+                sb.Append("</ol><p class=\"bankline\"><strong>").Append(E(words["bank"])).Append(":</strong> ").Append(string.Join(" · ", order.Select(i => "<bdi>" + E(items[i].Answer) + "</bdi>"))).Append("</p></div>");
+                key.Append("<ul>").Append(string.Concat(items.Select(i => "<li><strong>" + Text(i.Answer) + "</strong> — " + Text(i.Text) + "</li>"))).Append("</ul>");
+                break;
+            default:
+                sb.Append("<ol class=\"sheet statements\">").Append(string.Concat(items.Select(i => "<li>" + Text(i.Text) + " <span class=\"tf\">" + E(words["true"]) + " / " + E(words["false"]) + "</span></li>"))).Append("</ol>");
+                key.Append("<ol>");
+                foreach (var item in items)
+                {
+                    key.Append("<li><strong>").Append(E(item.Answer == "true" ? words["true"] : words["false"])).Append("</strong>");
+                    if (item.Note.Length > 0)
+                        key.Append(" — ").Append(Text(item.Note));
+                    key.Append("</li>");
+                }
+                key.Append("</ol>");
+                break;
+        }
+        sb.Append("<details class=\"key\"><summary>").Append(E(words["answer"])).Append("</summary>").Append(key).Append("<p class=\"src\">").Append(Svg("pin")).Append(E(activity.Where)).Append("</p></details></div>");
     }
 
     /// <summary>A question: its four choices as buttons, and its answer (with why, where and the file's own sentence) in a part that opens.</summary>
@@ -335,8 +532,17 @@ public static partial class StudyFileWriter
     }
 
     /// <summary>What the script works from: the words of the page, and the parts, chapters, cards, questions and terms.</summary>
-    private static string Data(StudyBook book, StudyFileWords words, Dictionary<StudyTerm, string> ids)
+    private static string Data(StudyBook book, StudyFileWords words, Dictionary<StudyTerm, string> ids, Dictionary<StudyActivity, string> activityIds)
     {
+        static string Kind(StudyActivityKind kind) => kind switch
+        {
+            StudyActivityKind.Order => "order",
+            StudyActivityKind.Match => "match",
+            StudyActivityKind.Sort => "sort",
+            StudyActivityKind.Blanks => "blanks",
+            StudyActivityKind.MapFill => "mapfill",
+            _ => "tf",
+        };
         var chapterOf = new Dictionary<int, int>();
         for (int c = 0; c < book.Chapters.Count; c++)
             foreach (var n in book.Chapters[c].Parts)
@@ -350,6 +556,18 @@ public static partial class StudyFileWriter
             ["cards"] = book.Parts.SelectMany(p => p.Cards.Select(c => new Dictionary<string, object> { ["id"] = ItemId("c", c.Front), ["p"] = p.Number, ["f"] = c.Front, ["b"] = c.Back, ["w"] = c.Where })).ToList(),
             ["quiz"] = book.Parts.SelectMany(p => p.Quiz.Select(q => new Dictionary<string, object> { ["id"] = ItemId("q", q.Question), ["p"] = p.Number, ["q"] = q.Question, ["o"] = q.Options, ["a"] = q.Correct, ["y"] = q.Why, ["w"] = q.Where, ["x"] = q.Quote })).ToList(),
             ["terms"] = book.Terms.Select(t => new Dictionary<string, object> { ["id"] = ids[t], ["t"] = TermLinker.Shown(t.Term), ["m"] = t.Meaning, ["w"] = t.Where, ["p"] = t.Part }).ToList(),
+            // Each activity: its kind, what it asks, its pieces as [text, answer, note] and the order they are first shown in.
+            ["acts"] = book.Parts.SelectMany(p => p.Activities.Where(activityIds.ContainsKey).Select(a => new Dictionary<string, object>
+            {
+                ["id"] = activityIds[a],
+                ["p"] = p.Number,
+                ["k"] = Kind(a.Kind),
+                ["t"] = a.Prompt,
+                ["w"] = a.Where,
+                ["i"] = a.Items.Select(i => new[] { i.Text, i.Answer, i.Note }).ToList(),
+                ["g"] = a.Groups,
+                ["o"] = Mixed(a),
+            })).ToList(),
         };
         // Every letter as it is (an Arabic file isn't six times its size), but nothing that could close the script.
         return JsonSerializer.Serialize(data, new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
@@ -596,6 +814,9 @@ public static partial class StudyFileWriter
             "bulb" => "<path d=\"M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z\"/>",
             "pencil" => "<path d=\"M21.2 6.8a2.8 2.8 0 0 0-4-4L4 16v4h4z\"/><path d=\"m14.5 5.5 4 4\"/>",
             "check" => "<path d=\"M20 6 9 17l-5-5\"/>",
+            "eye" => "<path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+            "puzzle" => "<path d=\"M19.4 13.8a2.4 2.4 0 1 0 0-3.6V7a1 1 0 0 0-1-1h-3.2a2.4 2.4 0 1 0-3.6 0H8.4a1 1 0 0 0-1 1v3.2a2.4 2.4 0 1 1 0 3.6V17a1 1 0 0 0 1 1h3.2a2.4 2.4 0 1 1 3.6 0h3.2a1 1 0 0 0 1-1z\"/>",
+            "loop" => "<path d=\"M3 12a9 9 0 0 1 15.5-6.2L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15.5 6.2L3 16\"/><path d=\"M3 21v-5h5\"/>",
             "next" => "<path class=\"fwd\" d=\"m9 18 6-6-6-6\"/>",
             "prev" => "<path class=\"fwd\" d=\"m15 18-6-6 6-6\"/>",
             _ => "",

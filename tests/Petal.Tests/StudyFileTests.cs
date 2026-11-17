@@ -388,6 +388,69 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
     }
 
     [Fact]
+    public async Task A_sample_is_one_part_without_an_overview_and_what_it_made_is_kept_for_the_whole_file()
+    {
+        StudyFile.CacheFolder = Path.Combine(_dir, "cache-sample");
+        int asked = 0;
+        StudyFile.TestWriter = (instruction, given, _) =>
+        {
+            Interlocked.Increment(ref asked);
+            return Task.FromResult(instruction.StartsWith("You are a patient", StringComparison.Ordinal) ? Answer(given) : Answer("## outline"));
+        };
+        var sections = new List<DocumentSection>
+        {
+            new("Chapter 1", "Chapter 1", [Page(2, "Opening words of the chapter. " + new string('o', 900))]),
+            new("Chapter 1", "1.1 Membranes", [Page(3, "The membrane holds the cell together. " + new string('m', 2000)), Page(4, "It lets things in. " + new string('n', 2000))]),
+            new("Chapter 2", "2.1 Energy", [Page(6, "The membrane needs energy. " + new string('e', 900))]),
+        };
+        var plan = StudyFile.Plan(new DocumentReading(sections.SelectMany(s => s.Places).ToList(), sections, "Cells"), cloud: false);
+        // Without diagrams and activities, each passage is one call to the model: the calls can be counted.
+        var options = new StudyFile.Options("en", StudyAmount.Normal, "en", "", StudyActivities.None);
+        var chosen = plan.Parts.Select(p => p.Number).ToHashSet();
+        string Where(PlacedText a, PlacedText b) => a.Number == b.Number ? $"Page {a.Number}" : $"Pages {a.Number}–{b.Number}";
+
+        // Not a chapter's opening words: its first real part.
+        var one = StudyFile.SamplePart(plan, chosen);
+        Assert.Equal("1.1 Membranes", plan.Parts.Single(p => p.Number == one).Title);
+        Assert.Null(StudyFile.SamplePart(plan, new HashSet<int>()));
+        Assert.Equal(plan.Parts[0].Number, StudyFile.SamplePart(plan, new HashSet<int> { plan.Parts[0].Number }));
+
+        var part = new HashSet<int> { one!.Value };
+        var sample = await StudyFile.MakeAsync(plan, part, options, "Cells", "cells.pdf", Where, sample: true);
+        Assert.True(sample.Sample);
+        Assert.Equal(["1.1 Membranes"], sample.Parts.Select(p => p.Title));
+        // No overview of a whole it hasn't read: only the passages were asked.
+        Assert.Equal("", sample.Overview);
+        Assert.Empty(sample.Goals);
+        Assert.Equal(StudyFile.Passages(plan, part), asked);
+        Assert.Contains(StudyFileWindow.Words("en")["sample"], StudyFileWriter.Html(sample, StudyFileWindow.Words("en")));
+
+        // The whole file afterwards asks only for what the sample didn't make, and has its overview.
+        Assert.Equal(StudyFile.Passages(plan, part), StudyFile.Made(plan, chosen, options));
+        int before = asked;
+        var whole = await StudyFile.MakeAsync(plan, chosen, options, "Cells", "cells.pdf", Where);
+        Assert.False(whole.Sample);
+        Assert.Equal("A book about cells.", whole.Overview);
+        Assert.DoesNotContain("class=\"sample\"", StudyFileWriter.Html(whole, StudyFileWindow.Words("en")));
+        Assert.Equal(StudyFile.Passages(plan, chosen) - StudyFile.Passages(plan, part), asked - before - 1 - whole.Chapters.Count(c => c.Summary.Length > 0));
+
+        // Kept apart from the file it was made from.
+        Assert.StartsWith(StudyFile.CacheFolder, StudyFile.SamplePath(@"C:\Books\cells.pdf"));
+        Assert.EndsWith("cells.html", StudyFile.SamplePath(@"C:\Books\cells.pdf"));
+    }
+
+    [Fact]
+    public void After_a_sample_the_window_says_how_long_the_rest_takes_as_the_sample_went()
+    {
+        // In whatever language the interface speaks: the words are the window's own.
+        Assert.EndsWith(L.P(12, "The rest takes about {0} minute.", "The rest takes about {0} minutes."), StudyFileWindow.Tried(6, TimeSpan.FromMinutes(2)));
+        Assert.EndsWith(L.P(3, "The rest takes about {0} hour on this PC.", "The rest takes about {0} hours on this PC."), StudyFileWindow.Tried(90, TimeSpan.FromMinutes(2)));
+        Assert.EndsWith(L.T("The rest takes about a minute."), StudyFileWindow.Tried(2, TimeSpan.FromSeconds(20)));
+        Assert.EndsWith(L.P(4, "{0} passage left to explain.", "{0} passages left to explain."), StudyFileWindow.Tried(4, null));
+        Assert.Equal(L.T("The sample is open in your browser. Change the request and try again, or make the whole file: the part already made isn't made again."), StudyFileWindow.Tried(0, TimeSpan.FromMinutes(1)));
+    }
+
+    [Fact]
     public void An_item_points_at_the_page_that_says_it_and_quotes_the_file_when_that_is_clear()
     {
         var unit = new StudyUnit("…", [Page(10, "Plants make food. Water moves up the stem."), Page(11, "Chlorophyll absorbs energy from sunlight in the leaves. The rest is about roots.")]);
@@ -526,6 +589,376 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         Assert.Equal(rtl, range.Contains(mark + "–" + mark));
         var time = StudyFileWindow.Place(language, new PlacedText(PlaceKind.Time, 1, "") { Start = 725 }, new PlacedText(PlaceKind.Time, 2, "") { End = 840 });
         Assert.Equal("12:05–14:00", time.Replace(mark, ""));
+    }
+
+    // ───────────── what the person asks for ─────────────
+
+    [Theory]
+    [InlineData("Explain it simply, in English, for beginners", "en")]
+    [InlineData("English please", "en")]
+    [InlineData("English", "en")]
+    [InlineData("translate it into Arabic and keep the English terms", "ar")]
+    [InlineData("اشرحه بالعربي مع الأمثلة", "ar")]
+    [InlineData("اكتبه باللغة الإنجليزية", "en")]
+    [InlineData("ترجمه إلى الفرنسية", "fr")]
+    [InlineData("بالإسبانية", "es")]
+    [InlineData("Basitçe İngilizce olarak anlat", "en")]
+    [InlineData("Arapçaya çevir", "ar")]
+    [InlineData("به انگلیسی و ساده بنویس", "en")]
+    [InlineData("اسے انگریزی میں آسان کر کے لکھیں", "en")]
+    [InlineData("Jelaskan dalam bahasa Inggris", "en")]
+    [InlineData("Explique-le en anglais", "en")]
+    [InlineData("Explícalo en inglés, con ejemplos", "es" + "|en")]
+    [InlineData("Escríbelo en árabe", "ar")]
+    [InlineData("Explain the history of the Arab world simply", null)]
+    [InlineData("اشرح تاريخ العالم العربي ببساطة", null)]
+    [InlineData("Keep the English terms and make it for children", null)]
+    [InlineData("from English, for beginners", null)]
+    [InlineData("İngilizceden çevrilmiş metni basitçe anlat", null)]
+    [InlineData("in English or in French", null)]
+    [InlineData("", null)]
+    public void A_request_says_the_language_it_asks_for_only_where_it_asks_for_it(string request, string? expected)
+    {
+        var want = expected?.Split('|')[^1];
+        Assert.Equal(want, StudyRequest.Language(request));
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    [InlineData("tr")]
+    [InlineData("fa")]
+    [InlineData("ur")]
+    [InlineData("id")]
+    [InlineData("fr")]
+    [InlineData("es")]
+    public void Every_language_suggestion_is_read_back_as_its_language_in_every_interface_language(string ui)
+    {
+        foreach (var (code, (_, words)) in StudyFileWindow.InLanguage)
+            Assert.True(StudyRequest.Language(L.In(ui, words)) == code, $"{ui}: \"{L.In(ui, words)}\" isn't read as {code}");
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    [InlineData("tr")]
+    [InlineData("fa")]
+    [InlineData("ur")]
+    [InlineData("id")]
+    [InlineData("fr")]
+    [InlineData("es")]
+    public void Every_suggestion_is_read_back_as_what_it_aims_at_in_every_interface_language(string ui)
+    {
+        foreach (var (label, _, words, aim, activities, _) in StudyFileWindow.Suggestions)
+        {
+            var said = L.In(ui, words);
+            var reading = StudyRequest.Read(said);
+            Assert.True(reading.Aims.Contains(aim), $"{ui}, {label}: \"{said}\" isn't read as {aim} (read: {string.Join(", ", reading.Aims)})");
+            if (activities is StudyActivities.Many)
+                Assert.True(reading.AsksActivities, $"{ui}, {label}: \"{said}\" isn't read as asking for activities");
+        }
+    }
+
+    [Theory]
+    [InlineData("Explain it simply for beginners, in English", "en", "Beginners", false)]
+    [InlineData("for my kids, with games to drag and match", "", "Children", true)]
+    [InlineData("اشرحه ببساطة للمبتدئين مع أنشطة تفاعلية", "", "Beginners", true)]
+    [InlineData("لخّصه للامتحان", "", "Exam|Summary", false)]
+    [InlineData("Sınav için kısa bir özet", "", "Exam|Summary", false)]
+    [InlineData("برای کودکان با نمودار", "", "Children|Visual", true)]
+    [InlineData("بچوں کے لیے آسان سبق", "", "Beginners|Children|Teaching", false)]
+    [InlineData("untuk ujian, dengan banyak latihan soal", "", "Exam|Problems", false)]
+    [InlineData("une leçon pour la classe, avec des schémas", "", "Teaching|Visual", true)]
+    [InlineData("un resumen con los términos clave", "", "Summary|Terms", false)]
+    [InlineData("in English or in French", "en|fr", "", false)]
+    [InlineData("Explain the history of the Arab world", "", "", false)]
+    [InlineData("", "", "", false)]
+    public void A_request_is_read_back_as_its_languages_aims_and_activities(string request, string languages, string aims, bool activities)
+    {
+        var reading = StudyRequest.Read(request);
+        Assert.Equal(languages, string.Join("|", reading.Languages));
+        Assert.Equal(aims, string.Join("|", reading.Aims));
+        Assert.Equal(activities, reading.AsksActivities);
+    }
+
+    [Fact]
+    public void Templates_go_into_a_file_and_come_back_the_same_and_another_file_is_refused()
+    {
+        var kept = new List<StudyTemplate>
+        {
+            new("للامتحان", "حضّره للامتحان مع أسئلة أكثر", StudyActivities.Some, StudyAmount.More),
+            new("Kids", "Explain it for children", null, null),
+        };
+        var text = StudyTemplates.Write(kept);
+        // Arabic is written as it is, so the file can be read.
+        Assert.Contains("حضّره للامتحان", text);
+        Assert.Equal(kept, StudyTemplates.Read(text));
+
+        Assert.Null(StudyTemplates.Read("not json"));
+        Assert.Null(StudyTemplates.Read("""{"kind":"something-else","version":1,"templates":[]}"""));
+        Assert.Null(StudyTemplates.Read("""{"kind":"dropwheel-study-templates","version":1,"templates":[{"name":"x","request":"y","activities":"lots"}]}"""));
+
+        // Every field checked: names and requests cut to their longest, empty requests left out, a name made when there is none.
+        var odd = StudyTemplates.Read("{\"kind\":\"dropwheel-study-templates\",\"version\":1,\"templates\":["
+            + "{\"name\":\"" + new string('n', 90) + "\",\"request\":\"" + new string('r', 900) + "\"},"
+            + "{\"name\":\"empty\",\"request\":\"   \"},"
+            + "{\"name\":\"  \",\"request\":\"Explain it simply, for beginners, with an example from daily life for each idea\"}]}")!;
+        Assert.Equal(2, odd.Count);
+        Assert.Equal(StudyTemplates.LongestName, odd[0].Name.Length);
+        Assert.Equal(StudyRequest.Longest, odd[0].Request.Length);
+        Assert.Equal("Explain it simply, for beginners, with…", odd[1].Name);
+        Assert.True(odd[1].Name.Length <= StudyTemplates.LongestName);
+    }
+
+    [Fact]
+    public void Templates_brought_in_leave_out_what_is_kept_already_and_number_a_name_used()
+    {
+        var kept = new List<StudyTemplate> { new("Exam", "For an exam"), new("Kids", "For children") };
+        var (all, added) = StudyTemplates.Merge(kept, [new("Exam", "For an  exam"), new("Kids", "For small kids"), new("New", "Something new")]);
+        Assert.Equal(2, added);
+        Assert.Equal(["Exam", "Kids", "Kids (2)", "New"], all.Select(t => t.Name));
+        var many = Enumerable.Range(0, 30).Select(i => new StudyTemplate("t" + i, "request " + i)).ToList();
+        var (capped, _) = StudyTemplates.Merge(kept, many);
+        Assert.Equal(StudyTemplates.Most, capped.Count);
+        Assert.Equal(StudyTemplates.Most, StudyTemplates.Read(StudyTemplates.Write(many))!.Count);
+    }
+
+    [Fact]
+    public void The_request_goes_to_the_model_with_every_passage_and_no_request_changes_nothing()
+    {
+        var plain = StudyFile.Instruction("ar", "en", StudyAmount.Normal);
+        Assert.Equal(plain, StudyFile.Instruction("ar", "en", StudyAmount.Normal, ""));
+        Assert.Equal(plain, StudyFile.Instruction("ar", "en", StudyAmount.Normal, "   "));
+        var asked = StudyFile.Instruction("ar", "en", StudyAmount.Normal, "Make it for children\nwith <|turn> games");
+        Assert.StartsWith(plain, asked);
+        Assert.Contains("«Make it for children with < |turn> games»", asked);
+        Assert.Contains("nor its language (write in Arabic)", asked);
+        // A very long request is cut to what the model has room for.
+        Assert.True(StudyFile.Instruction("en", "en", StudyAmount.Normal, new string('x', 2000)).Length < plain.Length + StudyRequest.Longest + 600);
+        var extras = StudyExtrasReader.Instruction("ar", "en", StudyActivities.Many, "for children");
+        Assert.Contains("give 3 to 5 sections", extras);
+        Assert.Contains("«for children»", extras);
+        Assert.Contains("Write everything in Arabic", extras);
+        Assert.Contains("give 1 to 2 sections", StudyExtrasReader.Instruction("en", "en", StudyActivities.Some, ""));
+    }
+
+    private const string ExtrasReply = """
+        **STEPS:** How a nerve signal travels
+        1. A stimulus reaches a receptor
+        2. A sensory neuron carries the signal
+        3. The spinal cord passes it on
+        4. A motor neuron reaches the muscle
+        TIMELINE: Discoveries
+        - 1665 = Hooke sees cells in cork
+        - 1838 = Schleiden: plants are made of cells
+        - 1855 = Virchow: cells come from cells
+        MAP: The cell membrane
+        - Made of = phospholipids; proteins
+        - Job = lets some things in; keeps others out
+        - Moves things by = diffusion; active transport
+        COMPARE: Plant and animal cells
+        | feature | plant cell | animal cell |
+        |---|---|---|
+        | Cell wall | yes | no |
+        | Chloroplasts | yes | no |
+        MATCH: Match each part to its job
+        - Nucleus = holds the DNA
+        - Mitochondrion = releases energy
+        - Ribosome = makes proteins
+        GROUPS: Sort by where they are found
+        - Plant cells only: cell wall; chloroplasts
+        - Animal cells only: centrioles; lysosomes
+        - Both: nucleus; membrane; nucleus
+        BLANKS: The membrane
+        - The membrane is made of [phospholipids] and [proteins].
+        - Water moves by [osmosis].
+        - This line has no blank.
+        TRUE OR FALSE: Cells
+        - All living things are made of cells. = TRUE
+        - Animal cells have a cell wall. = FALSE: only plant cells do.
+        - Ribosomes make proteins = **TRUE**
+        MATCH: A second match is left out
+        - a = b
+        - c = d
+        - e = f
+        """;
+
+    [Fact]
+    public void Diagrams_and_activities_are_read_from_the_reply_and_steps_are_also_put_in_order()
+    {
+        var extras = StudyExtrasReader.Read(ExtrasReply, "Page 4");
+        Assert.Equal([StudyVisualKind.Flow, StudyVisualKind.Timeline, StudyVisualKind.Map, StudyVisualKind.Compare], extras.Visuals.Select(v => v.Kind));
+        Assert.Equal([StudyActivityKind.Order, StudyActivityKind.Order, StudyActivityKind.MapFill, StudyActivityKind.Match, StudyActivityKind.Sort, StudyActivityKind.Blanks, StudyActivityKind.TrueFalse], extras.Activities.Select(a => a.Kind));
+        Assert.All(extras.Visuals, v => Assert.Equal("Page 4", v.Where));
+        var flow = extras.Visuals[0];
+        Assert.Equal("How a nerve signal travels", flow.Title);
+        Assert.Equal("A stimulus reaches a receptor", flow.Items[0].Text);
+        Assert.Equal(("1665", "Hooke sees cells in cork"), (extras.Visuals[1].Items[0].Answer, extras.Visuals[1].Items[0].Text));
+        // The order of dates hides the dates.
+        Assert.Equal("Hooke sees cells in cork", extras.Activities[1].Items[0].Text);
+        Assert.Equal(["lets some things in", "keeps others out"], extras.Visuals[2].Items[1].Details);
+        Assert.Equal(["plant cell", "animal cell"], extras.Visuals[3].Columns);
+        Assert.Equal(["yes", "no"], extras.Visuals[3].Items[0].Details);
+        // The map to complete: each branch's name to put back where what it says is.
+        var fill = extras.Activities[2];
+        Assert.Equal("The cell membrane", fill.Prompt);
+        Assert.Equal(("phospholipids; proteins", "Made of"), (fill.Items[0].Text, fill.Items[0].Answer));
+        // Steps without what happens in them are a diagram to look at, not one to go through.
+        Assert.All(extras.Visuals[0].Items, i => Assert.Empty(i.Details));
+        Assert.Equal(("Mitochondrion", "releases energy"), (extras.Activities[3].Items[1].Text, extras.Activities[3].Items[1].Answer));
+        // An item said to be in two groups can't be sorted: the twice-named "nucleus" goes.
+        var sort = extras.Activities[4];
+        Assert.Equal(["Plant cells only", "Animal cells only", "Both"], sort.Groups);
+        Assert.DoesNotContain(sort.Items, i => i.Text == "nucleus");
+        var blanks = extras.Activities[5];
+        Assert.Equal(2, blanks.Items.Count);
+        Assert.Equal(["The membrane is made of ", "phospholipids", " and ", "proteins", "."], StudyActivity.Pieces(blanks.Items[0].Text));
+        var tf = extras.Activities[6];
+        Assert.Equal(["true", "false", "true"], tf.Items.Select(i => i.Answer));
+        Assert.Equal("only plant cells do.", tf.Items[1].Note);
+        Assert.True(StudyExtrasReader.Read("NONE", "p").IsEmpty);
+        Assert.True(StudyExtrasReader.Read("Here are some ideas for you.", "p").IsEmpty);
+    }
+
+    [Fact]
+    public void Steps_that_say_what_happens_in_each_are_gone_through_one_at_a_time_and_a_map_needs_three_branches_to_complete()
+    {
+        var walk = StudyExtrasReader.Read("""
+            CYCLE: The water cycle
+            1. Evaporation = the sun warms the sea and water rises as vapour
+            2. Condensation = the vapour cools into clouds
+            3. Precipitation = the water falls as rain = or snow
+            """, "Page 2");
+        var cycle = Assert.Single(walk.Visuals);
+        Assert.Equal(StudyVisualKind.Cycle, cycle.Kind);
+        Assert.Equal(["Evaporation", "Condensation", "Precipitation"], cycle.Items.Select(i => i.Text));
+        Assert.Equal("the water falls as rain = or snow", cycle.Items[2].Details[0]);
+        // The order to put them in has the steps alone.
+        Assert.Equal(["Evaporation", "Condensation", "Precipitation"], walk.Activities.Single().Items.Select(i => i.Text));
+        var html = StudyFileWriter.Html(SampleBook("en") with { Parts = [SampleBook("en").Parts[1] with { Visuals = walk.Visuals }] }, StudyFileWindow.Words("en"));
+        Assert.Contains("<figure class=\"vis flow cycle walk\">", html);
+        Assert.Contains("<span class=\"d\">the vapour cools into clouds</span>", html);
+
+        // One step without it: none keep it, so no step by step with a gap.
+        var some = StudyExtrasReader.Read("STEPS: Making tea\n1. Boil water = heat it until it bubbles\n2. Add the leaves\n3. Wait three minutes = let it steep", "p");
+        Assert.All(some.Visuals[0].Items, i => Assert.Empty(i.Details));
+        // A map of two branches is too small to complete; one whose branches say nothing has nothing to find them by.
+        Assert.DoesNotContain(StudyExtrasReader.Read("MAP: Cells\n- Plant = cell wall\n- Animal = no wall", "p").Activities, a => a.Kind == StudyActivityKind.MapFill);
+        Assert.DoesNotContain(StudyExtrasReader.Read("MAP: Cells\n- Plant\n- Animal\n- Fungus", "p").Activities, a => a.Kind == StudyActivityKind.MapFill);
+    }
+
+    /// <summary>
+    /// Pages with every diagram and activity, in English and Arabic, to open in a browser and try by hand: steps gone
+    /// through one at a time, a map to complete, pieces to drag. PETAL_STUDYFILE_PAGE is the folder they go to.
+    /// </summary>
+    [Fact]
+    public void Pages_with_every_diagram_and_activity_are_written_to_try_by_hand()
+    {
+        var folder = Environment.GetEnvironmentVariable("PETAL_STUDYFILE_PAGE");
+        if (string.IsNullOrEmpty(folder))
+            return;
+        Directory.CreateDirectory(folder);
+        var walk = StudyExtrasReader.Read("""
+            CYCLE: The water cycle
+            1. Evaporation = the sun warms the sea and water rises as vapour
+            2. Condensation = the vapour cools into clouds
+            3. Precipitation = the water falls as rain or snow
+            4. Collection = rivers carry the water back to the sea
+            """, "Page 4");
+        var extras = StudyExtrasReader.Read(ExtrasReply, "Page 4");
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var sample = SampleBook(language);
+            var parts = sample.Parts.ToList();
+            parts[1] = parts[1] with { Visuals = [.. walk.Visuals, .. extras.Visuals], Activities = [.. walk.Activities, .. extras.Activities] };
+            StudyFileWriter.Write(Path.Combine(folder, $"study-{language}.html"), sample with { Parts = parts, Sample = true }, StudyFileWindow.Words(language));
+        }
+    }
+
+    [Fact]
+    public void Pieces_are_mixed_the_same_way_every_time_and_never_in_their_own_order()
+    {
+        Assert.Equal(StudyActivity.Mixed("seed", 5), StudyActivity.Mixed("seed", 5));
+        for (int n = 2; n <= 7; n++)
+            for (int s = 0; s < 40; s++)
+            {
+                var order = StudyActivity.Mixed("seed " + s, n);
+                Assert.Equal(Enumerable.Range(0, n), order.Order());
+                Assert.NotEqual(Enumerable.Range(0, n), order);
+            }
+    }
+
+    [Fact]
+    public async Task Each_passage_gets_its_diagrams_and_activities_asked_apart_and_kept()
+    {
+        StudyFile.CacheFolder = Path.Combine(_dir, "cache");
+        int extrasAsked = 0;
+        StudyFile.TestWriter = (instruction, given, _) =>
+        {
+            if (instruction.StartsWith("You are an experienced teacher", StringComparison.Ordinal))
+            {
+                Interlocked.Increment(ref extrasAsked);
+                Assert.Contains("«Make it visual»", instruction);
+                return Task.FromResult(ExtrasReply);
+            }
+            return Task.FromResult(instruction.StartsWith("You are a patient", StringComparison.Ordinal) ? Answer(given) : Answer("## outline"));
+        };
+        var sections = new List<DocumentSection> { new("Chapter 1", "1.1 Membranes", [Page(3, "The membrane holds the cell together. " + new string('m', 1200))]) };
+        var plan = StudyFile.Plan(new DocumentReading(sections.SelectMany(s => s.Places).ToList(), sections, "Cells"), cloud: false);
+        var chosen = plan.Parts.Select(p => p.Number).ToHashSet();
+        var options = new StudyFile.Options("en", StudyAmount.Normal, "en", "Make it visual", StudyActivities.Many);
+        var book = await StudyFile.MakeAsync(plan, chosen, options, "Cells", "cells.pdf", (a, b) => $"Page {a.Number}");
+        var part = Assert.Single(book.Parts);
+        Assert.Equal(4, part.Visuals.Count);
+        Assert.Equal(7, part.Activities.Count);
+        Assert.Equal(1, extrasAsked);
+        Assert.Equal(1, StudyFile.Made(plan, chosen, options));
+        // Without activities they aren't asked for; another request is another file.
+        Assert.Equal(0, StudyFile.Made(plan, chosen, options with { Request = "Make it short" }));
+        var none = await StudyFile.MakeAsync(plan, chosen, options with { Activities = StudyActivities.None }, "Cells", "cells.pdf", (a, b) => $"Page {a.Number}");
+        Assert.Empty(none.Parts[0].Activities);
+        Assert.Equal(1, extrasAsked);
+    }
+
+    [Fact]
+    public void The_page_shows_diagrams_and_activities_as_worksheets_its_script_makes_pieces_of()
+    {
+        var extras = StudyExtrasReader.Read(ExtrasReply, "Page 4");
+        var sample = SampleBook("en");
+        var parts = sample.Parts.Select(p => p.Number == 2 ? p with { } : p).ToList();
+        parts[1] = parts[1] with { Visuals = extras.Visuals, Activities = extras.Activities };
+        var book = sample with { Parts = parts };
+        var html = StudyFileWriter.Html(book, StudyFileWindow.Words("en"));
+        Assert.Contains("<section class=\"visuals\">", html);
+        Assert.Contains("<figure class=\"vis flow brief\">", html);
+        Assert.Contains("<figure class=\"vis timeline\">", html);
+        Assert.Contains("<figcaption class=\"hub\">The cell membrane</figcaption>", html);
+        Assert.Contains("<th scope=\"col\">plant cell</th>", html);
+        Assert.Contains("<section class=\"acts\">", html);
+        Assert.Equal(7, Regex.Matches(html, "<div class=\"act\" id=\"a[0-9a-f]{10}\"").Count);
+        // The map to complete: without the script, a line for each name under what its branch says, the names below.
+        Assert.Contains("<p class=\"kind\">Complete the map</p>", html);
+        Assert.Contains("<div class=\"sheet mapsheet\"><p class=\"hub\">The cell membrane</p>", html);
+        Assert.Contains("<li><strong>Made of</strong> — phospholipids; proteins</li>", html);
+        // Without the script, a worksheet with its answer to open; the blanks as gaps.
+        Assert.Contains("<p class=\"kind\">Fill in the blanks</p>", html);
+        Assert.Contains("<span class=\"gap\"></span>", html);
+        Assert.Contains("<strong>phospholipids</strong>", html);
+        Assert.Contains("href=\"#practice\"", html);
+        Assert.Contains("7 activities", html);
+        // Still only its own script, and what the model wrote is data, not markup.
+        Assert.Single(Regex.Matches(html, @"<script>(.*?)</script>", RegexOptions.Singleline));
+        var data = Regex.Match(html, "<script type=\"application/json\" id=\"data\">(.*?)</script>", RegexOptions.Singleline).Groups[1].Value;
+        using var json = JsonDocument.Parse(data);
+        var acts = json.RootElement.GetProperty("acts");
+        Assert.Equal(7, acts.GetArrayLength());
+        Assert.Equal("mapfill", acts[2].GetProperty("k").GetString());
+        Assert.Equal("order", acts[0].GetProperty("k").GetString());
+        var order = acts[0].GetProperty("o").EnumerateArray().Select(e => e.GetInt32()).ToList();
+        Assert.Equal([0, 1, 2, 3], order.Order());
+        Assert.Equal(["Plant cells only", "Animal cells only", "Both"], acts[4].GetProperty("g").EnumerateArray().Select(e => e.GetString()));
+        Assert.Equal(3, acts[5].GetProperty("o").GetArrayLength());
+        Assert.Equal(StudyFileWords.Keys.Length, json.RootElement.GetProperty("w").EnumerateObject().Count());
     }
 
     /// <summary>

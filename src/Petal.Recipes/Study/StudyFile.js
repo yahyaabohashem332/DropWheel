@@ -18,9 +18,9 @@
     try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* a page that may keep nothing still works */ }
   }
   var KEY = 'dropwheel-study:' + body.getAttribute('data-id'), UI = 'dropwheel-study:ui';
-  function fresh() { return { read: {}, q: {}, c: {}, best: {}, last: 0 }; }
+  function fresh() { return { read: {}, q: {}, c: {}, a: {}, best: {}, last: 0 }; }
   var state = load(KEY) || fresh();
-  ['read', 'q', 'c', 'best'].forEach(function (k) { if (!state[k] || typeof state[k] !== 'object') state[k] = {}; });
+  ['read', 'q', 'c', 'a', 'best'].forEach(function (k) { if (!state[k] || typeof state[k] !== 'object') state[k] = {}; });
   var ui = load(UI) || {};
   if (ui.answers === undefined) ui.answers = true;
   function keep() { save(KEY, state); }
@@ -115,6 +115,8 @@
   function route() {
     var hash = decodeURIComponent(location.hash.slice(1)) || 'home', name = hash, anchor = null, scope = null;
     if (/^test-/.test(hash)) { name = 'test'; scope = hash.slice(5); }
+    else if (/^practice-/.test(hash)) { name = 'practice'; scope = hash.slice(9); }
+    else if (/^a[0-9a-f]{10}$/.test(hash)) { var act = actsById[hash]; if (act) { name = 'p' + act.p; anchor = hash; } }
     else if (/^t\d+$/.test(hash)) { name = 'terms'; anchor = hash; }
     else if (/^p\d+-\d+$/.test(hash)) { name = hash.split('-')[0]; anchor = hash; }
     if (!views[name]) name = 'home';
@@ -130,6 +132,7 @@
     if (link) link.setAttribute('aria-current', 'page');
     if (name === 'cards') Trainer.render();
     if (name === 'test') Exam.render(scope);
+    if (name === 'practice') Practice.render(scope);
     if (name === 'progress') Stand.render();
     if (name === 'home') resume();
     if (/^p\d+$/.test(name)) { state.last = +name.slice(1); keep(); }
@@ -172,6 +175,7 @@
       $('.bar span', t).style.width = (100 * d / ch.p.length) + '%';
     });
     $$('.tile[data-p]').forEach(function (t) { $('.bar span', t).style.width = state.read[t.getAttribute('data-p')] ? '100%' : '0'; });
+    $$('.part .act').forEach(function (el) { var act = actsById[el.getAttribute('data-a')]; el.classList.toggle('done', !!act && solved(act)); });
     var meter = $('.meter');
     if (meter) {
       var pct = total ? Math.round(100 * done / total) : 0;
@@ -507,6 +511,361 @@
     },
   };
 
+  // ───── activities: pieces to drag, or to press and then press where they go ─────
+  function same(a, b) { return fold(a).replace(/[^\p{L}\p{N}]+/gu, '') === fold(b).replace(/[^\p{L}\p{N}]+/gu, ''); }
+  function solved(act) { var s = state.a[act.id]; return !!(s && s.d); }
+  function record(act, right, total, shown) {
+    var s = state.a[act.id] || {};
+    s.r = right; s.n = total;
+    if (right === total && total > 0 && !shown) s.d = 1;
+    if (shown) s.s = 1;
+    state.a[act.id] = s;
+    keep(); refreshMarks();
+  }
+
+  // One activity, ready to do. onResult(right, total) when it is checked.
+  function Board(act, onResult) {
+    if (act.k === 'tf') return TrueFalse(act, onResult);
+    var root = h('div', { class: 'board', 'data-k': act.k });
+    var places = [], held = null, bank = null, drag = null, swallow = false;
+    var items = act.i, order = act.o || [];
+    function textOf(p) { return $('.t', p).textContent; }
+    function piece(text, value) {
+      return h('button', { type: 'button', class: 'piece', 'data-v': value, 'aria-pressed': 'false' }, [h('span', { class: 'grip', 'aria-hidden': 'true' }), h('span', { class: 't', text: text })]);
+    }
+    function place(cls, label, many) {
+      var well = h('div', { class: 'well' });
+      var el = h('div', { class: 'place ' + cls, role: 'button', tabindex: '0', 'aria-label': label ? fmt(W.placeHere + ': {0}', label) : W.placeHere }, [well]);
+      el._well = well; el._many = !!many; el._i = places.length;
+      places.push(el);
+      return el;
+    }
+    function homeOf(p) { return p.parentNode && p.parentNode.parentNode && p.parentNode.parentNode._well ? p.parentNode.parentNode : null; }
+    function hold(p) {
+      if (held) { held.classList.remove('held'); held.setAttribute('aria-pressed', 'false'); }
+      held = p;
+      root.classList.toggle('holding', !!p);
+      if (p) { p.classList.add('held'); p.setAttribute('aria-pressed', 'true'); announce(fmt(W.picked, textOf(p))); }
+    }
+    function clearMarks() {
+      $$('.piece', root).forEach(function (p) { p.classList.remove('ok', 'no'); });
+      root.classList.remove('checked', 'shown');
+      verdict.textContent = ''; verdict.className = 'verdict';
+    }
+    // A piece to a place: one that holds a single piece gives the one there back to where the new one came from.
+    function put(p, target) {
+      var from = homeOf(p);
+      if (!target || target === from) { hold(null); return; }
+      if (!target._many) {
+        var there = $('.piece', target._well);
+        if (there && there !== p) (from && !from._many ? from : bank)._well.appendChild(there);
+      }
+      target._well.appendChild(p);
+      hold(null); clearMarks();
+      announce(fmt(W.placed, textOf(p)));
+    }
+    root.addEventListener('click', function (e) {
+      if (swallow) { swallow = false; return; }
+      var p = e.target.closest('.piece'), target = e.target.closest('.place');
+      if (p && held && p !== held) { put(held, homeOf(p)); return; }
+      if (p) { hold(held === p ? null : p); return; }
+      if (target && held) put(held, target);
+    });
+    root.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('place')) { e.preventDefault(); if (held) put(held, e.target); }
+      if (e.key === 'Escape' && held) { e.stopPropagation(); hold(null); }
+    });
+    // Dragging: with a mouse or a pen from anywhere on the piece; with a finger from its grip, so the page still scrolls.
+    root.addEventListener('pointerdown', function (e) {
+      var p = e.target.closest('.piece');
+      if (!p || e.button !== 0 || (e.pointerType === 'touch' && !e.target.closest('.grip'))) return;
+      drag = { p: p, x: e.clientX, y: e.clientY, id: e.pointerId, on: false, ghost: null, over: null };
+      if (e.pointerType === 'touch') e.preventDefault();
+    });
+    root.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (!drag.on) {
+        if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 6) return;
+        drag.on = true;
+        try { drag.p.setPointerCapture(e.pointerId); } catch (x) { /* a page that can't still drags */ }
+        var r = drag.p.getBoundingClientRect();
+        drag.dx = e.clientX - r.left; drag.dy = e.clientY - r.top;
+        drag.ghost = drag.p.cloneNode(true);
+        drag.ghost.classList.add('ghost');
+        drag.ghost.style.width = r.width + 'px';
+        body.appendChild(drag.ghost);
+        drag.p.classList.add('lifted');
+        hold(null);
+      }
+      drag.ghost.style.left = (e.clientX - drag.dx) + 'px';
+      drag.ghost.style.top = (e.clientY - drag.dy) + 'px';
+      var under = doc.elementFromPoint(e.clientX, e.clientY);
+      var target = under && under.closest('.place');
+      if (target && !root.contains(target)) target = null;
+      if (drag.over !== target) { if (drag.over) drag.over.classList.remove('over'); drag.over = target; if (target) target.classList.add('over'); }
+      e.preventDefault();
+    });
+    function drop(e, cancel) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var d = drag; drag = null;
+      if (!d.on) return;
+      swallow = true;
+      setTimeout(function () { swallow = false; }, 0);
+      if (d.ghost) d.ghost.remove();
+      d.p.classList.remove('lifted');
+      if (d.over) d.over.classList.remove('over');
+      if (!cancel && d.over) put(d.p, d.over);
+    }
+    root.addEventListener('pointerup', function (e) { drop(e, false); });
+    root.addEventListener('pointercancel', function (e) { drop(e, true); });
+
+    // The pieces where they first are.
+    var slots = [];
+    if (act.k === 'order') {
+      var list = h('ol', { class: 'slots' });
+      items.forEach(function (_, k) { var s = place('slot', String(k + 1)); slots.push(s); list.appendChild(h('li', null, [h('span', { class: 'n', text: String(k + 1) }), s])); });
+      order.forEach(function (v, k) { slots[k]._well.appendChild(piece(items[v][0], v)); });
+      root.appendChild(list);
+    } else if (act.k === 'match') {
+      var rows = h('div', { class: 'rows2' });
+      items.forEach(function (it) { var s = place('slot', it[0]); slots.push(s); rows.appendChild(h('div', { class: 'pair' }, [h('div', { class: 'left' }, [h('bdi', { text: it[0] })]), s])); });
+      root.appendChild(rows);
+    } else if (act.k === 'mapfill') {
+      // The map: its idea in the middle, each branch a place for its name above what the branch says.
+      var map = h('div', { class: 'map fill' }, [h('p', { class: 'hub' }, [h('bdi', { text: act.t })])]);
+      var arms = h('ul', { class: 'arms' });
+      items.forEach(function (it) {
+        var s = place('slot', it[0]); slots.push(s);
+        arms.appendChild(h('li', null, [s, h('ul', null, it[0].split('; ').map(function (d) { return h('li', null, [h('bdi', { text: d })]); }))]));
+      });
+      map.appendChild(arms);
+      root.appendChild(map);
+    } else if (act.k === 'sort') {
+      var bins = h('div', { class: 'bins' });
+      act.g.forEach(function (g) { var b = place('bin', g, true); slots.push(b); bins.appendChild(h('div', { class: 'group' }, [h('strong', null, [h('bdi', { text: g })]), b])); });
+      root.appendChild(bins);
+    } else if (act.k === 'blanks') {
+      var words = [], answers = [];
+      var sentences = h('ol', { class: 'sentences' });
+      items.forEach(function (it) {
+        var li = h('li');
+        it[0].split(/\[([^\[\]]+)\]/).forEach(function (piece, k) {
+          if (k % 2 === 0) { if (piece) li.appendChild(doc.createTextNode(piece)); return; }
+          answers.push(piece.trim());
+          var s = place('slot gap', String(answers.length)); slots.push(s); li.appendChild(s);
+        });
+        sentences.appendChild(li);
+      });
+      words = answers;
+      root.appendChild(sentences);
+    }
+    if (act.k !== 'order') {
+      bank = place('bank', W.bank, true);
+      root.appendChild(h('p', { class: 'banklabel', text: W.bank }));
+      root.appendChild(bank);
+      order.forEach(function (v) {
+        var text = act.k === 'match' || act.k === 'mapfill' ? items[v][1] : act.k === 'sort' ? items[v][0] : words[v];
+        bank._well.appendChild(piece(text, v));
+      });
+    } else bank = slots[0];
+    root.appendChild(h('p', { class: 'hint', text: act.k === 'order' ? W.orderHint : act.k === 'mapfill' ? W.mapHint : W.dragHint }));
+
+    // Whether each piece is where it belongs.
+    function rightAt(p, at) {
+      var v = +p.getAttribute('data-v');
+      if (!at || at === bank && act.k !== 'order') return false;
+      if (act.k === 'order' || act.k === 'match' || act.k === 'mapfill') return at._i === v;
+      if (act.k === 'sort') return act.g[at._i] === items[v][1];
+      return same(words[v], words[at._i]);
+    }
+    function score() {
+      var right = 0, total = act.k === 'sort' ? items.length : slots.length;
+      $$('.piece', root).forEach(function (p) {
+        var ok = rightAt(p, homeOf(p));
+        p.classList.add(ok ? 'ok' : 'no');
+        if (ok) right++;
+      });
+      return [right, total];
+    }
+    var verdict = h('p', { class: 'verdict', role: 'status' });
+    var check = h('button', { type: 'button', class: 'btn primary', text: W.checkIt, onclick: function () {
+      clearMarks();
+      var s = score();
+      root.classList.add('checked');
+      verdict.textContent = s[0] === s[1] ? W.allRight : fmt(W.rightOf, s[0], s[1]);
+      verdict.className = 'verdict ' + (s[0] === s[1] ? 'good' : 'bad');
+      announce(verdict.textContent);
+      record(act, s[0], s[1], false);
+      if (onResult) onResult(s[0], s[1]);
+    } });
+    var show = h('button', { type: 'button', class: 'link', text: W.showAnswer, onclick: function () {
+      hold(null); clearMarks();
+      var all = $$('.piece', root);
+      if (act.k === 'sort') all.forEach(function (p) { slots[act.g.indexOf(items[+p.getAttribute('data-v')][1])]._well.appendChild(p); });
+      else {
+        var free = all.slice();
+        slots.forEach(function (s, k) {
+          var p = free.filter(function (x) { return rightAt(x, s); })[0];
+          if (p) { s._well.appendChild(p); free.splice(free.indexOf(p), 1); }
+        });
+        free.forEach(function (p) { bank._well.appendChild(p); });
+      }
+      score();
+      root.classList.add('checked', 'shown');
+      record(act, 0, slots.length, true);
+      if (onResult) onResult(-1, 0);
+    } });
+    var again = h('button', { type: 'button', class: 'link', text: W.again, onclick: function () {
+      var fresh = Board(act, onResult);
+      root.replaceWith(fresh);
+      var first = $('.piece', fresh) || $('.place', fresh);
+      if (first) first.focus();
+    } });
+    root.appendChild(h('div', { class: 'row tools' }, [check, show, again]));
+    root.appendChild(verdict);
+    return root;
+  }
+
+  // True or false: each statement answered at once, put right when it is false.
+  function TrueFalse(act, onResult) {
+    var root = h('div', { class: 'board', 'data-k': 'tf' }), answered = 0, right = 0;
+    var verdict = h('p', { class: 'verdict', role: 'status' });
+    var list = h('ol', { class: 'statements' });
+    act.i.forEach(function (it) {
+      var truth = it[1] === 'true';
+      var note = h('p', { class: 'note', hidden: true });
+      var buttons = [true, false].map(function (said) {
+        return h('button', { type: 'button', class: 'opt tfb', text: said ? W.true : W.false, onclick: function () {
+          buttons.forEach(function (b) { b.disabled = true; });
+          var good = said === truth;
+          this.classList.add(good ? 'right' : 'wrong');
+          if (!good) buttons[said ? 1 : 0].classList.add('right');
+          note.hidden = false;
+          note.textContent = (good ? W.right : W.wrong) + (it[2] ? ' ' + it[2] : '');
+          note.className = 'note ' + (good ? 'good' : 'bad');
+          answered++; if (good) right++;
+          announce(note.textContent);
+          if (answered === act.i.length) {
+            verdict.textContent = right === answered ? W.allRight : fmt(W.rightOf, right, answered);
+            verdict.className = 'verdict ' + (right === answered ? 'good' : 'bad');
+            record(act, right, answered, false);
+            if (onResult) onResult(right, answered);
+          }
+        } });
+      });
+      list.appendChild(h('li', null, [h('p', null, [h('bdi', { text: it[0] })]), h('div', { class: 'row' }, buttons), note]));
+    });
+    root.appendChild(list);
+    root.appendChild(verdict);
+    root.appendChild(h('div', { class: 'row tools' }, [h('button', { type: 'button', class: 'link', text: W.again, onclick: function () { root.replaceWith(TrueFalse(act, onResult)); } })]));
+    return root;
+  }
+
+  var actsById = {};
+  (data.acts || []).forEach(function (a) { actsById[a.id] = a; });
+  function kindName(k) { return { order: W.kindOrder, match: W.kindMatch, sort: W.kindSort, blanks: W.kindBlanks, tf: W.kindTrueFalse, mapfill: W.kindMapFill }[k] || ''; }
+
+  // ───── steps gone through one at a time: the steps above as a bar to jump with, the one shown below ─────
+  $$('.vis.walk').forEach(function (fig) {
+    var steps = $$('ol > li', fig), at = 0;
+    if (steps.length < 2) return;
+    fig.classList.add('live');
+    var count = h('p', { class: 'count', role: 'status' });
+    var prev = h('button', { type: 'button', class: 'btn quiet', text: W.previous });
+    var next = h('button', { type: 'button', class: 'btn primary', text: W.next });
+    var bar = h('div', { class: 'stepbar', role: 'group' });
+    var dots = steps.map(function (li, k) {
+      var b = h('button', { type: 'button', class: 'dot', 'aria-label': $('.t', li).firstChild.textContent, text: String(k + 1) });
+      b.onclick = function () { go(k); };
+      bar.appendChild(b);
+      return b;
+    });
+    function go(k) {
+      at = Math.max(0, Math.min(steps.length - 1, k));
+      steps.forEach(function (li, i) { li.classList.toggle('on', i === at); });
+      dots.forEach(function (d, i) { d.classList.toggle('done', i < at); d.classList.toggle('on', i === at); d.setAttribute('aria-current', i === at ? 'step' : 'false'); });
+      prev.disabled = at === 0;
+      next.disabled = at === steps.length - 1;
+      count.textContent = fmt(W.stepOf, at + 1, steps.length);
+    }
+    prev.onclick = function () { go(at - 1); };
+    next.onclick = function () { go(at + 1); announce($('.t', steps[at]).textContent); };
+    fig.addEventListener('keydown', function (e) {
+      var back = getComputedStyle(fig).direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft', on = back === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
+      if (e.key === on) { e.preventDefault(); go(at + 1); }
+      if (e.key === back) { e.preventDefault(); go(at - 1); }
+    });
+    fig.insertBefore(bar, $('ol', fig));
+    fig.appendChild(h('div', { class: 'row ctl' }, [prev, count, next]));
+    go(0);
+  });
+  $$('.part .act').forEach(function (el) {
+    var act = actsById[el.getAttribute('data-a')];
+    if (act) el.insertBefore(Board(act), $('.key', el));
+  });
+
+  // ───── the activities one after another ─────
+  var Practice = {
+    scope: 'all', list: null, at: 0, done: 0,
+    render: function (scope) {
+      if (scope) { this.scope = scope; this.list = null; }
+      if (this.list) return this.one();
+      this.setup();
+    },
+    pool: function () { var self = this; return (data.acts || []).filter(function (a) { return inScope(a.p, self.scope); }); },
+    setup: function () {
+      var self = this, slot = $('#practice .slot');
+      slot.textContent = '';
+      slot.appendChild(h('div', { class: 'tools' }, [scopeChoice(this.scope, function (v) { self.scope = v; self.setup(); })]));
+      var pool = this.pool();
+      if (!pool.length) { slot.appendChild(h('p', { class: 'empty', text: W.noActivities })); return; }
+      var done = pool.filter(solved).length;
+      slot.appendChild(h('div', { class: 'label', text: W.activitiesSolved + ': ' + done + '/' + pool.length }));
+      var bar = h('div', { class: 'meterbar' }, [h('span')]);
+      bar.firstChild.style.width = (100 * done / pool.length) + '%';
+      slot.appendChild(bar);
+      slot.appendChild(h('p', null, [h('button', { type: 'button', class: 'btn primary', text: W.start, onclick: function () { self.begin(); } })]));
+    },
+    begin: function () { this.list = this.pool(); this.at = 0; this.done = 0; this.one(); },
+    one: function () {
+      var self = this, slot = $('#practice .slot'), act = this.list[this.at];
+      slot.textContent = '';
+      if (!act) return this.result();
+      slot.appendChild(h('p', { class: 'label', text: fmt(W.activityOf, this.at + 1, this.list.length) }));
+      var bar = h('div', { class: 'meterbar' }, [h('span')]);
+      bar.firstChild.style.width = (100 * this.at / this.list.length) + '%';
+      slot.appendChild(bar);
+      var last = this.at + 1 >= this.list.length;
+      var next = h('button', { type: 'button', class: 'btn', text: last ? W.finish : W.skipIt, onclick: function () { self.at++; self.one(); } });
+      var counted = false;
+      var board = Board(act, function (right, total) {
+        if (right >= 0 && right === total && !counted) { counted = true; self.done++; }
+        next.textContent = last ? W.finish : W.next;
+        next.className = 'btn primary';
+      });
+      var part = partsByN[act.p];
+      slot.appendChild(h('div', { class: 'act solo' }, [
+        h('p', { class: 'kind', text: kindName(act.k) }),
+        act.t ? h('p', { class: 'ask', text: act.t }) : null,
+        board,
+        h('p', null, [h('a', { class: 'src', href: '#p' + act.p, text: act.w + (part ? ' · ' + part.t : '') })]),
+      ]));
+      slot.appendChild(h('p', { class: 'row' }, [next]));
+      var first = $('.piece, .opt', board);
+      if (first) first.focus();
+    },
+    result: function () {
+      var self = this, slot = $('#practice .slot');
+      slot.appendChild(h('div', { class: 'stat score' }, [h('div', { class: 'big', text: this.done + '/' + this.list.length }), h('div', { text: fmt(W.solvedScore, this.done, this.list.length) })]));
+      slot.appendChild(h('p', { class: 'row' }, [
+        h('button', { type: 'button', class: 'btn primary', text: W.tryAgain, onclick: function () { self.begin(); } }),
+        h('button', { type: 'button', class: 'btn quiet', text: W.startOver, onclick: function () { self.list = null; self.setup(); } }),
+      ]));
+      announce(fmt(W.solvedScore, this.done, this.list.length));
+      this.list = null;
+    },
+  };
+
   // ───── how far you are ─────
   var Stand = {
     render: function () {
@@ -520,17 +879,21 @@
         bar.firstChild.style.width = (b ? 100 * a / b : 0) + '%';
         return h('div', { class: 'stat' }, [h('div', { class: 'label', text: label }), h('div', { class: 'val', text: a + '/' + b }), bar]);
       }
+      var acts = data.acts || [], solvedCount = acts.filter(solved).length;
       var grid = h('div', { class: 'statgrid' }, [stat(W.partsStudied, read, parts)]);
       if (asked) grid.appendChild(stat(W.questionsRight, right, asked));
       if (cards) grid.appendChild(stat(W.cardsKnown, known, cards));
+      if (acts.length) grid.appendChild(stat(W.activitiesSolved, solvedCount, acts.length));
       slot.appendChild(grid);
       if (data.chapters.length) {
-        var table = h('table', { class: 'chaps' }, [h('tr', null, [h('th', { text: W.chapter }), h('th', { text: W.partsStudied }), asked ? h('th', { text: W.questionsRight }) : null])]);
+        var table = h('table', { class: 'chaps' }, [h('tr', null, [h('th', { text: W.chapter }), h('th', { text: W.partsStudied }), asked ? h('th', { text: W.questionsRight }) : null, acts.length ? h('th', { text: W.activitiesSolved }) : null])]);
         data.chapters.forEach(function (c) {
           var d = c.p.filter(function (n) { return state.read[n]; }).length;
           var qs = data.quiz.filter(function (x) { return c.p.indexOf(x.p) >= 0; });
           var r = qs.filter(function (x) { return state.q[x.id] && state.q[x.id].r; }).length;
-          table.appendChild(h('tr', null, [h('td', null, [h('a', { href: '#c' + c.n, text: c.t })]), h('td', { text: d + '/' + c.p.length }), asked ? h('td', { text: qs.length ? r + '/' + qs.length : '–' }) : null]));
+          var as = acts.filter(function (a) { return c.p.indexOf(a.p) >= 0; });
+          table.appendChild(h('tr', null, [h('td', null, [h('a', { href: '#c' + c.n, text: c.t })]), h('td', { text: d + '/' + c.p.length }), asked ? h('td', { text: qs.length ? r + '/' + qs.length : '–' }) : null,
+            acts.length ? h('td', { text: as.length ? as.filter(solved).length + '/' + as.length : '–' }) : null]));
         });
         slot.appendChild(table);
       }

@@ -410,6 +410,19 @@ internal static class DesignSnapshots
             ("studyfile", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), null)),
             ("studyfilemaking", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), new Petal.Recipes.Study.StudyProgress(12, 40, "1.2 The cell membrane", TimeSpan.FromMinutes(17)))),
             ("studyfilerecording", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("weekend.mp4"), jobs, at)),
+            // The request said back, a disagreement with the settings to put right, and two templates kept.
+            ("studyfilerequest", () =>
+            {
+                bool ar = Localization.L.IsArabic;
+                Settings.SettingsStore.Current.StudyTemplates =
+                [
+                    new(ar ? "مراجعة الفصل الثالث" : "Chapter 3 revision", ar ? "حضّره للامتحان مع أسئلة أكثر" : "Prepare it for the exam, with more questions", Petal.Recipes.Study.StudyActivities.Some, Petal.Recipes.Study.StudyAmount.More),
+                    new(ar ? "صفي السادس" : "My sixth graders", ar ? "اشرحه لأطفال في الحادية عشرة" : "Explain it for children of eleven", Petal.Recipes.Study.StudyActivities.Many, null),
+                ];
+                var window = new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), null);
+                window.Ask(ar ? "اشرحه للأطفال ببساطة مع ألعاب للسحب والتوصيل، بالإنجليزية" : "Explain it simply for children, with games to drag and match, in Arabic", Petal.Recipes.Study.StudyActivities.None);
+                return window;
+            }),
             ("timetracker", () => new Work.TimeTrackerWindow(SampleTimeLog())),
             ("checksum", () => new Actions.ChecksumWindow(file("landscape.jpg"), "0000000000000000000000000000000000000000000000000000000000000000")),
             ("tracesvg", () => new Tools.Windows.TraceToSvgWindow(T(Petal.Core.Tools.ToolId.TraceToSvg), [file("figures.png")], jobs, at)),

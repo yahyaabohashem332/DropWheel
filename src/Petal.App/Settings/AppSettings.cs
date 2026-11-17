@@ -37,6 +37,12 @@ public sealed class AppSettings
     /// <summary>The colours used lately in the colour panel, newest first.</summary>
     public List<string> RecentColours { get; set; } = [];
 
+    /// <summary>What study files were last asked to be, in the person's own words, newest first.</summary>
+    public List<string> StudyRequests { get; set; } = [];
+
+    /// <summary>Requests kept by name to use again (the star beside the request), at most <see cref="Petal.Recipes.Study.StudyTemplates.Most"/>.</summary>
+    public List<Petal.Recipes.Study.StudyTemplate> StudyTemplates { get; set; } = [];
+
     // ---------- the wheel ----------
 
     public Overlay.WheelStyle WheelStyle { get; set; } = Overlay.WheelStyle.Glass;

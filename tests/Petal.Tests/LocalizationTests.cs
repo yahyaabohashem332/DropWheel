@@ -22,6 +22,8 @@ public partial class LocalizationTests
         "Photosynthesis", "Making food from light.", "Where does it happen?", "Leaves", "Roots", "Soil", "Air", "The text says so.", "Page 1",
         "Cells take in food and turn it into energy they can use.", "Chapter 1: The cell", "1.1 What cells are made of", "1.2 The cell membrane",
         "1.3 Transport across the membrane", "Chapter 2: Energy in cells", "2.1 Photosynthesis", "2.2 Respiration", "Index", "Biology for Schools",
+        "Chapter 3 revision", "Prepare it for the exam, with more questions", "My sixth graders", "Explain it for children of eleven",
+        "Explain it simply for children, with games to drag and match, in Arabic",
         "Gran apertura", "Café gratis para los primeros cien invitados", "Grand Opening", "Free coffee for the first hundred guests",
         "Arial", "Segoe UI Symbol", "Yahya Abo Hashem", "Kadikoy, Istanbul", "Written anywhere", "Check this",
         "Petal", "DropWheel", "Petal input hooks", "Preferred DropEffect", "do:draw.timer", "do:screen.circle", "Shell.Application", "System.Photo.Orientation", "PART_Track", "PART_ContentHost",

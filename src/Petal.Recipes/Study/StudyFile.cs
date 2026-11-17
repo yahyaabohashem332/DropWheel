@@ -44,7 +44,14 @@ public sealed record StudyExplained(string Title, string Where, IReadOnlyList<st
 public sealed record StudyTerm(string Term, string Meaning, string Where, int Part);
 
 /// <summary>A part of the study file as it is written.</summary>
-public sealed record StudyPart(int Number, string Chapter, string Title, string Where, IReadOnlyList<StudyExplained> Passages, IReadOnlyList<StudyCard> Cards, IReadOnlyList<StudyQuestion> Quiz);
+public sealed record StudyPart(int Number, string Chapter, string Title, string Where, IReadOnlyList<StudyExplained> Passages, IReadOnlyList<StudyCard> Cards, IReadOnlyList<StudyQuestion> Quiz)
+{
+    /// <summary>Its diagrams: steps, a cycle, dates, an idea and its branches, a table that compares.</summary>
+    public IReadOnlyList<StudyVisual> Visuals { get; init; } = [];
+
+    /// <summary>Its activities: to put in order, match, sort into groups, fill in, or say true or false.</summary>
+    public IReadOnlyList<StudyActivity> Activities { get; init; } = [];
+}
 
 /// <summary>A chapter: its title, what it comes to ("" when it is too short to need it), and its parts' numbers.</summary>
 public sealed record StudyChapter(string Title, string Summary, IReadOnlyList<int> Parts);
@@ -53,7 +60,11 @@ public sealed record StudyChapter(string Title, string Summary, IReadOnlyList<in
 public sealed record StudyBook(
     string Title, string Source, string Language, string SourceLanguage, string Overview, IReadOnlyList<string> Goals,
     IReadOnlyList<StudyChapter> Chapters, IReadOnlyList<StudyPart> Parts, IReadOnlyList<StudyTerm> Terms,
-    string Writer, DateTime Made, bool Recording);
+    string Writer, DateTime Made, bool Recording)
+{
+    /// <summary>A sample: one part made to see how the study file will look, before the whole of it.</summary>
+    public bool Sample { get; init; }
+}
 
 /// <summary>How far the making is: passages done of all, the part being explained, and about how long the rest will take (once that can be told).</summary>
 public sealed record StudyProgress(int Done, int Total, string Part, TimeSpan? Left);
@@ -252,6 +263,29 @@ public static partial class StudyFile
         StudyAmount.More => (6, 3),
         _ => (4, 2),
     };
+
+    /// <summary>
+    /// What the person asked for, as the model is told it with every passage: it shapes the level, the tone, what is
+    /// stressed and how much, never the form of the reply, its language or where the facts come from. "" for no request.
+    /// </summary>
+    internal static string Requested(string request, string into)
+    {
+        var asked = Regex.Replace(request ?? "", @"\s+", " ").Trim();
+        if (asked.Length == 0)
+            return "";
+        if (asked.Length > StudyRequest.Longest)
+            asked = asked[..StudyRequest.Longest];
+        asked = asked.Replace("<|", "< |").Replace("|>", "| >");
+        return $"The person who will use this study file asked for this, in their own words: «{asked}»\n"
+            + $"Follow the request wherever it fits the passage and these rules: it may set the reader's level, the tone, what to stress, how long each section is and how many items to give. It doesn't change the form of the reply, nor its language (write in {Translator.EnglishName(into)}), and the facts still come only from the passage.\n";
+    }
+
+    internal static string Instruction(string into, string from, StudyAmount amount, string request = "")
+    {
+        var asked = Requested(request, into);
+        var instruction = Instruction(into, from, amount);
+        return asked.Length == 0 ? instruction : instruction + "\n\n" + asked.TrimEnd();
+    }
 
     internal static string Instruction(string into, string from, StudyAmount amount)
     {
@@ -507,29 +541,51 @@ public static partial class StudyFile
     // ───────────── making ─────────────
 
     /// <summary>The settings a study file is made with: the language it is written in, how many cards and questions, and the file's own language.</summary>
-    public sealed record Options(string Into, StudyAmount Amount, string From);
+    /// <param name="Request">What the person asked the study file to be, in their own words ("" for nothing particular).</param>
+    /// <param name="Activities">How many diagrams and activities each passage gives besides its explanation.</param>
+    public sealed record Options(string Into, StudyAmount Amount, string From, string Request = "", StudyActivities Activities = StudyActivities.Some);
+
+    private static string ExtrasInstruction(Options options) => StudyExtrasReader.Instruction(options.Into, options.From, options.Activities, options.Request);
 
     /// <summary>How many of the chosen parts' passages were explained before with these settings and this writer: those take no time.</summary>
     public static int Made(StudyPlan plan, IReadOnlySet<int> chosen, Options options)
     {
-        var instruction = Instruction(options.Into, options.From, options.Amount);
+        var instruction = Instruction(options.Into, options.From, options.Amount, options.Request);
+        var extras = options.Activities == StudyActivities.None ? null : ExtrasInstruction(options);
         var writer = WriterId;
-        return plan.Parts.Where(p => chosen.Contains(p.Number)).Sum(p => Enumerable.Range(0, p.Units.Count).Count(i => File.Exists(CachePath(instruction, Given(p, i), writer))));
+        return plan.Parts.Where(p => chosen.Contains(p.Number)).Sum(p => Enumerable.Range(0, p.Units.Count).Count(i =>
+            File.Exists(CachePath(instruction, Given(p, i), writer)) && (extras is null || File.Exists(CachePath(extras, Given(p, i), writer)))));
     }
 
     public static int Passages(StudyPlan plan, IReadOnlySet<int> chosen) => plan.Parts.Where(p => chosen.Contains(p.Number)).Sum(p => p.Units.Count);
 
     /// <summary>
+    /// The part a sample is made of: the first chosen part that isn't only a chapter's opening words, unless there is no
+    /// other; null when nothing is chosen.
+    /// </summary>
+    public static int? SamplePart(StudyPlan plan, IReadOnlySet<int> chosen)
+    {
+        var parts = plan.Parts.Where(p => chosen.Contains(p.Number)).ToList();
+        return (parts.FirstOrDefault(p => !(p.Chapter.Length > 0 && p.Title == p.Chapter)) ?? parts.FirstOrDefault())?.Number;
+    }
+
+    /// <summary>Where a sample is kept: apart from the file, so trying doesn't leave pages beside it.</summary>
+    public static string SamplePath(string source) =>
+        Path.Combine(CacheFolder, "samples", Path.GetFileNameWithoutExtension(source) + ".html");
+
+    /// <summary>
     /// Makes the study file's content from the chosen parts. <paramref name="placeName"/> says a place in the study
-    /// file's language ("Page 3", "Pages 4–6").
+    /// file's language ("Page 3", "Pages 4–6"). A <paramref name="sample"/> is one part, to see how it will look: it has
+    /// no overview of the whole, and what it made is kept for the whole file, so nothing is made twice.
     /// </summary>
     public static async Task<StudyBook> MakeAsync(StudyPlan plan, IReadOnlySet<int> chosen, Options options, string title, string source,
-        Func<PlacedText, PlacedText, string> placeName, IProgress<StudyProgress>? progress = null, CancellationToken cancellationToken = default)
+        Func<PlacedText, PlacedText, string> placeName, IProgress<StudyProgress>? progress = null, CancellationToken cancellationToken = default, bool sample = false)
     {
         var parts = plan.Parts.Where(p => chosen.Contains(p.Number)).ToList();
         if (parts.Count == 0)
             throw new InvalidOperationException("Choose at least one part of the file.");
-        var instruction = Instruction(options.Into, options.From, options.Amount);
+        var instruction = Instruction(options.Into, options.From, options.Amount, options.Request);
+        var extrasInstruction = options.Activities == StudyActivities.None ? null : ExtrasInstruction(options);
         bool sameLanguage = options.Into == options.From;
         int total = parts.Sum(p => p.Units.Count), done = 0, timed = 0;
         var clock = new Stopwatch();
@@ -546,6 +602,8 @@ public static partial class StudyFile
                 var passages = new List<StudyExplained>();
                 var cards = new List<StudyCard>();
                 var quiz = new List<StudyQuestion>();
+                var visuals = new List<StudyVisual>();
+                var activities = new List<StudyActivity>();
                 for (int i = 0; i < part.Units.Count; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -554,9 +612,17 @@ public static partial class StudyFile
                     progress?.Report(new StudyProgress(done, total, part.Title, timed > 0 ? TimeSpan.FromSeconds(spent / timed * (total - done)) : null));
                     var given = Given(part, i);
                     var cached = CachePath(instruction, given);
-                    bool fresh = !File.Exists(cached);
+                    var extrasCached = extrasInstruction is null ? null : CachePath(extrasInstruction, given);
+                    bool fresh = !File.Exists(cached) || extrasCached is not null && !File.Exists(extrasCached);
                     clock.Restart();
                     var reply = await PassageAsync(instruction, given, unit, options.Into, cached, cancellationToken).ConfigureAwait(false);
+                    // The diagrams and activities, asked apart: with the explanation they wouldn't fit what the model holds.
+                    var extras = reply is { Nothing: false } && extrasInstruction is not null
+                        ? await ExtrasAsync(extrasInstruction, given, options.Into, where, extrasCached!, cancellationToken).ConfigureAwait(false)
+                        : StudyExtras.Empty;
+                    // A passage with nothing to learn has no activities either: kept as made.
+                    if (reply is { Nothing: true } && extrasCached is not null && !File.Exists(extrasCached))
+                        Keep(extrasCached, "NONE");
                     if (fresh)
                     {
                         spent += clock.Elapsed.TotalSeconds;
@@ -572,6 +638,8 @@ public static partial class StudyFile
                     if (reply.Nothing)
                         continue;
                     passages.Add(new StudyExplained(reply.Title, where, reply.Ideas, reply.Explanation, reply.Example));
+                    visuals.AddRange(extras.Visuals);
+                    activities.AddRange(extras.Activities);
                     var known = Fold(unit.Text + "\n" + reply.Explanation + "\n" + reply.Example);
                     foreach (var (term, meaning) in reply.Terms)
                     {
@@ -607,7 +675,7 @@ public static partial class StudyFile
                 if (passages.Count == 0)
                     continue;
                 var heading = part.Title.Length > 0 ? part.Title : passages.FirstOrDefault(p => p.Title.Length > 0)?.Title ?? "";
-                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz));
+                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz) { Visuals = visuals, Activities = activities });
             }
             if (made.Count == 0)
                 throw new InvalidOperationException("The model didn't find anything to make notes from in this file.");
@@ -629,9 +697,10 @@ public static partial class StudyFile
                 chapters.Add(new StudyChapter(run[0].Chapter, summary, run.Select(p => p.Number).ToList()));
             }
             // The whole: what it is about and what a student will learn, from as much of it as the model can read at once.
-            var overview = await SummaryAsync(OverviewInstruction(options.Into, plan.Recording), Clip(Outline(made, chapters)), cancellationToken).ConfigureAwait(false);
-            var (about, goals) = Overview(overview);
-            return new StudyBook(title, source, options.Into, options.From, about, goals, chapters, made, terms, WriterName, DateTime.Now, plan.Recording);
+            // A sample is one part: no overview of a whole it hasn't read.
+            var overview = sample ? "" : await SummaryAsync(OverviewInstruction(options.Into, plan.Recording), Clip(Outline(made, chapters)), cancellationToken).ConfigureAwait(false);
+            var (about, goals) = sample ? ("", (IReadOnlyList<string>)[]) : Overview(overview);
+            return new StudyBook(title, source, options.Into, options.From, about, goals, chapters, made, terms, WriterName, DateTime.Now, plan.Recording) { Sample = sample };
         }
         finally
         {
@@ -734,6 +803,35 @@ public static partial class StudyFile
         }
         return best;
     }
+
+    /// <summary>
+    /// A passage's diagrams and activities, from what was kept or asked anew: once more when the reply has none in the form
+    /// asked for (and doesn't say there are none) or isn't in the language asked for. What came the second time is kept
+    /// whatever it is, so making the file again doesn't ask a third time.
+    /// </summary>
+    private static async Task<StudyExtras> ExtrasAsync(string instruction, string given, string into, string where, string cached, CancellationToken cancellationToken)
+    {
+        if (File.Exists(cached))
+            return StudyExtrasReader.Read(await File.ReadAllTextAsync(cached, cancellationToken).ConfigureAwait(false), where);
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            var reply = await WriteAsync(instruction, given, CloudAi.CanWrite ? 3000 : 1300, attempt == 0 ? 0.2 : 0.5, cancellationToken).ConfigureAwait(false);
+            var read = StudyExtrasReader.Read(reply, where);
+            bool none = read.IsEmpty && Regex.IsMatch(reply.Trim(), @"^\W*NONE\W*$", RegexOptions.IgnoreCase);
+            bool inLanguage = read.IsEmpty || InLanguage(Said(read), into);
+            if (none || !read.IsEmpty && inLanguage || attempt == 1)
+            {
+                Keep(cached, inLanguage ? reply : "NONE");
+                return inLanguage ? read : StudyExtras.Empty;
+            }
+        }
+        return StudyExtras.Empty;
+    }
+
+    /// <summary>The words of a passage's diagrams and activities, to tell their language by.</summary>
+    internal static string Said(StudyExtras extras) => string.Join(" ",
+        extras.Visuals.SelectMany(v => v.Items.SelectMany(i => new[] { i.Text, i.Answer }.Concat(i.Details)).Prepend(v.Title))
+            .Concat(extras.Activities.SelectMany(a => a.Items.SelectMany(i => new[] { i.Text, i.Note, a.Kind == StudyActivityKind.Match ? i.Answer : "" }).Prepend(a.Prompt))));
 
     private static async Task<string> SummaryAsync(string instruction, string text, CancellationToken cancellationToken)
     {
