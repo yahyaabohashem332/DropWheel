@@ -1905,27 +1905,30 @@
  },
  "action:Float": {
   "category": "files",
-  "summary": "Menyimpan file di rak kecil yang mengapung di atas setiap jendela, siap diseret ke aplikasi lain.",
-  "details": "Apungkan membuka rak yang tetap berada di atas jendela lain dan menampilkan file sebagai ubin. Seret ubin keluar ke aplikasi atau folder mana pun, dan lepaskan file lain ke rak untuk menambahkannya; melepas di APUNG lagi akan menambah ke rak yang sama. Tombol pin menyelipkan rak ke tepi layar, tombol tempat sampah mengosongkannya, dan X menutupnya. File yang dipindahkan ke tempat lain akan keluar dari rak.",
-  "how": "Seret file, ketuk Alt, lalu lepaskan di APUNG; nanti seret file dari rak ke aplikasi yang Anda perlukan.",
-  "worksOn": "File dan folder; satu atau banyak.",
+  "summary": "Mengapungkan berkas di atas semua jendela, ditampilkan DropWheel dalam ukuran pilihan Anda: gambar, halaman PDF atau dokumen Word, lembar kerja, video yang berputar, teks. Beberapa berkas masuk ke rak mengapung.",
+  "details": "Satu berkas terbuka di jendelanya sendiri yang tetap di atas jendela lain, tanpa membuka programnya: gambar untuk diperbesar dengan roda tetikus (hingga 800 %, diputar, dibalik, kode warnanya diambil), halaman PDF untuk digulir, diperbesar, dicari, dan dibaca dalam mode malam, berkas Word, PowerPoint, atau OpenDocument yang ditata menjadi halaman oleh Office atau LibreOffice tanpa terlihat (kata-katanya bila keduanya tidak ada), lembar Excel, ODS, atau CSV dengan sel-selnya dan lembarnya sebagai tab, video atau lagu dengan kecepatan, putar ulang, dan subtitel di sebelahnya, berkas Markdown sebagaimana dibaca, teks atau kode dengan nomor baris. Seret tepi atau sudut mana pun, atau pilih ukuran siap (seperempat, setengah, atau tiga perempat layar, layar penuh, ukuran asli gambar); Alt dan roda membuatnya tembus pandang, dan ia bisa membiarkan klik menembus ke jendela di bawahnya (tombol kecil mengembalikannya), terlipat ke judulnya, atau terselip di tepi layar. Ia tidak pernah mengunci berkas dan menampilkannya lagi saat disimpan. Seret ikon di judulnya ke program lain. Beberapa berkas atau sebuah folder masuk ke rak mengapung; klik ganda di sana mengapungkan salah satunya. Tombol pin di Lihat Cepat mengapungkan yang sedang ditampilkan.",
+  "how": "Seret berkas, ketuk Alt, dan lepaskan di APUNG; ubah ukuran jendela atau pilih ukuran dari menunya, dan tutup dengan Esc.",
+  "worksOn": "Satu berkas (gambar, PDF, Word, PowerPoint, Excel, OpenDocument, CSV, video, suara, Markdown, teks, dan kode); beberapa berkas atau folder masuk ke rak.",
   "examples": [
-   "Lima foto diparkir di rak selagi Anda membuka formulir web tempat foto-foto itu akan diunggah.",
-   "File yang dipilih dari tiga folder berbeda, lalu dilepas bersama ke satu email.",
-   "Logo yang disimpan di tepi layar untuk diseret ke beberapa slide."
+   "PDF resep mengapung di atas peramban tablet dapur, sepertiga layar, dalam mode baca malam.",
+   "Lembar harga tetap di samping formulir pesanan saat Anda mengetik, selnya dicari dengan Ctrl+F.",
+   "Video tutorial kecil dan tembus pandang di atas program yang diajarkannya, klik menembus ke program itu."
   ],
   "keywords": [
+   "apungkan berkas",
+   "selalu di atas",
+   "gambar dalam gambar",
+   "jendela tetap di atas",
+   "penampil pdf di atas",
+   "jendela tembus pandang",
+   "klik menembus",
+   "perbesar pratinjau",
    "rak",
-   "rak file",
    "mengapung",
-   "zona lepas",
-   "tahan file",
-   "seret nanti",
+   "area lepas",
    "yoink",
    "dropover",
-   "tempat sementara",
-   "parkir file",
-   "bantuan seret dan lepas"
+   "seret nanti"
   ]
  },
  "action:Copy": {

@@ -55,7 +55,7 @@ public static class FileActionRegistry
         new(FileActionId.Phone, "TO PHONE", "Send to Phone", "smartphone", "Show a QR code to scan with a phone on the same Wi-Fi, then save the files on it. Nothing goes through the internet."),
         new(FileActionId.SendToPc, "TO PC", "Send to PC", "monitor", "Send files and folders to another PC with DropWheel on the same network. It asks before saving them; nothing goes through the internet."),
         new(FileActionId.Clean, "CLEAN", "Clean for Sharing", "shieldCheck", "Make copies without the location, device and author details hidden in photos, videos, PDFs and Office files."),
-        new(FileActionId.Float, "FLOAT", "Float", "pin", "Keep files on a floating shelf. Pin it to a screen edge and drag files into another app."),
+        new(FileActionId.Float, "FLOAT", "Float", "pin", "Float a file above the other windows, shown by DropWheel at the size you choose; several files go on a floating shelf to drag into other apps."),
         new(FileActionId.Copy, "COPY", "Copy", "clipboard", "Copy files to the clipboard, ready to paste in File Explorer."),
         new(FileActionId.Move, "MOVE", "Move", "folderInput", "Choose a destination folder and move the originals there."),
         new(FileActionId.Rename, "RENAME", "Rename", "rename", "Rename a selection with a pattern, numbers and dates, previewed before anything changes."),

@@ -1882,26 +1882,30 @@
  },
  "action:Float": {
   "category": "files",
-  "summary": "Dosyaları her pencerenin üstünde duran küçük, yüzen bir rafta tutar; başka bir uygulamaya sürüklemeye hazır.",
-  "details": "Yüzen Raf, diğer pencerelerin üstünde kalan ve dosyaları kutucuklar olarak gösteren bir raf açar. Bir kutucuğu herhangi bir uygulamaya ya da klasöre sürükle; eklemek için rafa başka dosyalar bırak; RAF yaprağına yeniden bırakmak aynı rafa ekler. Raptiye düğmesi rafı ekran kenarına saklar, çöp kutusu düğmesi rafı temizler, X onu kapatır. Başka yere taşınan bir dosya raftan çıkar.",
-  "how": "Dosyaları sürükle, Alt'a dokun ve RAF yaprağına bırak; sonra onları raftan ihtiyacın olan uygulamaya sürükle.",
-  "worksOn": "Dosyalar ve klasörler; bir tane ya da birçok tane.",
+  "summary": "Bir dosyayı tüm pencerelerin üstünde, seçtiğiniz boyutta DropWheel ile gösterir: bir resim, bir PDF'nin ya da Word belgesinin sayfaları, bir tablo, oynayan bir video, bir metin. Birden fazla dosya yüzen rafa konur.",
+  "details": "Tek dosya, programını açmadan, diğerlerinin üstünde kalan kendi penceresinde açılır: tekerlekle yakınlaştırılan bir resim (%800'e kadar, döndürülür, çevrilir, bir rengin kodu alınır), kaydırılan, yakınlaştırılan, içinde arama yapılan ve gece okunan PDF sayfaları, Office ya da LibreOffice'in görünmeden sayfalarına dizdiği bir Word, PowerPoint ya da OpenDocument dosyası (ikisi de yoksa metni), hücreleriyle ve sekmelerdeki sayfalarıyla bir Excel, ODS ya da CSV tablosu, hız, tekrar ve yanındaki altyazılarla bir video ya da şarkı, okunduğu gibi bir Markdown dosyası, satırları numaralı bir metin ya da kod. Herhangi bir kenarı ya da köşeyi sürükleyin veya hazır bir boyut seçin (ekranın dörtte biri, yarısı ya da dörtte üçü, tüm ekran, resmin gerçek boyutu); Alt ve tekerlek onu saydam yapar; tıklamaları alttaki pencereye geçirebilir (küçük bir düğme geri getirir), başlığına katlanabilir ya da ekran kenarına gizlenebilir. Dosyayı asla kilitlemez ve kaydedildiğinde yeniden gösterir. Başlıktaki simgeyi başka bir programa sürükleyin. Birden fazla dosya ya da bir klasör bunun yerine yüzen rafa gider; orada çift tıklama birini yüzdürür. Hızlı Bakış'taki iğne düğmesi gösterdiğini yüzdürür.",
+  "how": "Bir dosyayı sürükleyin, Alt'a dokunun ve YÜZDÜR üzerine bırakın; pencereyi boyutlandırın ya da menüsünden bir boyut seçin, Esc ile kapatın.",
+  "worksOn": "Tek dosya (resimler, PDF, Word, PowerPoint, Excel, OpenDocument, CSV, video, ses, Markdown, metin ve kod); birden fazla dosya ya da bir klasör rafa gider.",
   "examples": [
-   "Yükleyeceğin web formunu açarken rafa bırakılmış beş fotoğraf.",
-   "Üç farklı klasörden seçilen dosyalar, sonra hep birlikte tek bir e-postaya bırakıldı.",
-   "Birkaç slayta sürüklemek için ekran kenarında tutulan bir logo."
+   "Bir tarifin PDF'i mutfaktaki tabletin tarayıcısının üstünde, ekranın üçte biri boyutunda, gece okumasıyla yüzüyor.",
+   "Siz yazarken sipariş formunun yanında duran bir fiyat tablosu, hücreleri Ctrl+F ile bulunuyor.",
+   "Anlattığı programın üstünde küçük ve saydam oynayan bir eğitim videosu, tıklamalar ona geçiyor."
   ],
   "keywords": [
+   "dosya yüzdür",
+   "her zaman üstte",
+   "resim içinde resim",
+   "üstte kalan pencere",
+   "üstte pdf görüntüleyici",
+   "saydam pencere",
+   "tıklama geçirme",
+   "önizlemeyi büyüt",
    "raf",
-   "yüzen raf",
+   "yüzen",
    "bırakma alanı",
-   "dosyaları tut",
-   "sonra sürükle",
    "yoink",
    "dropover",
-   "geçici alan",
-   "dosyaları park et",
-   "sürükle bırak yardımcısı"
+   "sonra sürükle"
   ]
  },
  "action:Copy": {

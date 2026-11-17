@@ -37,6 +37,9 @@ public sealed class AppSettings
     /// <summary>The colours used lately in the colour panel, newest first.</summary>
     public List<string> RecentColours { get; set; } = [];
 
+    /// <summary>The size a floating window was last given, by the kind of file it shows: [width, height].</summary>
+    public Dictionary<string, double[]> FloatSizes { get; set; } = [];
+
     /// <summary>What study files were last asked to be, in the person's own words, newest first.</summary>
     public List<string> StudyRequests { get; set; } = [];
 

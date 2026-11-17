@@ -227,15 +227,21 @@ internal sealed class QuickLookWindow : Window
         open.Click += (_, _) => OpenWithApp();
         var wheel = new Button { Content = L.T("DropWheel"), Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
         wheel.Click += (_, _) => OpenWheel();
+        var pin = Icons.Create("pin", 14, Brushes.Gray, 2);
+        pin.SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, "Petal.Text");
+        var floating = new Button { Content = pin, Padding = new Thickness(6), Margin = new Thickness(8, 0, 0, 0), ToolTip = L.T("Float it: keep it open above the other windows") };
+        floating.Click += (_, _) => FloatIt();
         var cross = Icons.Create("x", 14, Brushes.Gray, 2);
         cross.SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, "Petal.Text");
         var close = new Button { Content = cross, Padding = new Thickness(6), Margin = new Thickness(8, 0, 0, 0), ToolTip = L.T("Close") };
         close.Click += (_, _) => Close();
         var header = new DockPanel { Margin = new Thickness(16, 10, 10, 10), LastChildFill = true };
         DockPanel.SetDock(close, Dock.Right);
+        DockPanel.SetDock(floating, Dock.Right);
         DockPanel.SetDock(wheel, Dock.Right);
         DockPanel.SetDock(open, Dock.Right);
         header.Children.Add(close);
+        header.Children.Add(floating);
         header.Children.Add(wheel);
         header.Children.Add(open);
         header.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { _name, _facts } });
@@ -405,7 +411,7 @@ internal sealed class QuickLookWindow : Window
         }
     }
 
-    private static string Facts(string path, string? more)
+    internal static string Facts(string path, string? more)
     {
         var parts = new List<string>();
         try
@@ -425,7 +431,7 @@ internal sealed class QuickLookWindow : Window
         return string.Join(" · ", parts);
     }
 
-    private static UIElement Waiting()
+    internal static UIElement Waiting()
     {
         var text = new TextBlock { Text = L.T("Opening…"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         text.SetResourceReference(TextBlock.ForegroundProperty, "Petal.TextSecondary");
@@ -464,7 +470,7 @@ internal sealed class QuickLookWindow : Window
     }
 
     /// <summary>A soft checkerboard behind pictures, so transparency shows.</summary>
-    private static Brush Checkers()
+    internal static Brush Checkers()
     {
         var group = new DrawingGroup();
         group.Children.Add(new GeometryDrawing(Theme.Current.IsDark ? new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2E)) : Brushes.White, null, new RectangleGeometry(new Rect(0, 0, 16, 16))));
@@ -576,7 +582,7 @@ internal sealed class QuickLookWindow : Window
         return grid;
     }
 
-    private static UIElement WaveformPicture(float[] peaks)
+    internal static UIElement WaveformPicture(float[] peaks)
     {
         var canvas = new Canvas { Height = 160, Margin = new Thickness(24), VerticalAlignment = VerticalAlignment.Center };
         canvas.SizeChanged += (_, _) =>
@@ -612,7 +618,7 @@ internal sealed class QuickLookWindow : Window
         }
     }
 
-    private static UIElement TextView(string text, bool code)
+    internal static UIElement TextView(string text, bool code)
     {
         var box = new TextBox
         {
@@ -704,7 +710,7 @@ internal sealed class QuickLookWindow : Window
         return TextView(string.Join(Environment.NewLine, names), code: true);
     }
 
-    private static UIElement Fallback(string path)
+    internal static UIElement Fallback(string path)
     {
         var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         if (ShellIcons.Thumbnail(path, 256) is { } picture)
@@ -715,7 +721,7 @@ internal sealed class QuickLookWindow : Window
         return panel;
     }
 
-    private static BitmapSource Decode(byte[] encoded)
+    internal static BitmapSource Decode(byte[] encoded)
     {
         var image = new BitmapImage();
         image.BeginInit();
@@ -737,6 +743,18 @@ internal sealed class QuickLookWindow : Window
         {
             Log.Error(ex, "Opening a file from Quick Look");
         }
+    }
+
+    /// <summary>The file shown floats in its own window, where this one was and at its size, and stays when File Explorer is left.</summary>
+    private void FloatIt()
+    {
+        if (_path.Length == 0 || !File.Exists(_path))
+            return;
+        GetCursorPos(out var at);
+        var where = new Rect(Left, Top, Width, Height);
+        var path = _path;
+        Close();
+        _ = Actions.Float.FloatWindow.ShowAsync(path, new ScreenPoint(at.X, at.Y), where);
     }
 
     private void OpenWheel()

@@ -22,6 +22,7 @@ internal static class DesignSnapshots
         var data = args[2];
         Directory.CreateDirectory(output);
         _snapshotFolder = output;
+        SnapshotData = data;
         var converters = EngineSetup.CreateConverters();
         var jobs = new Jobs.JobRunner(converters);
         var at = new Input.ScreenPoint(-4000, -4000);
@@ -571,6 +572,12 @@ internal static class DesignSnapshots
                 new Screen.GuideStep { Kind = Screen.StepKind.Type, Text = Screen.StepWords.For(Screen.StepKind.Type, null, null, null, "notes.txt"), Picture = file("landscape.jpg") },
             ])),
             ("quicklook", () => QuickLook(file("landscape.jpg"))),
+            ("floatimage", () => Actions.Float.FloatWindow.ForSnapshot(Sample("landscape.jpg"), 900, 640)),
+            ("floatpdf", () => Actions.Float.FloatWindow.ForSnapshot(Sample("album.pdf"), 640, 820)),
+            ("floatsheet", () => Actions.Float.FloatWindow.ForSnapshot(SampleSheet(), 860, 520)),
+            ("floatmarkdown", () => Actions.Float.FloatWindow.ForSnapshot(SampleMarkdown(), 760, 700)),
+            ("floatcode", () => Actions.Float.FloatWindow.ForSnapshot(SampleCode(), 760, 520)),
+            ("floatvideo", () => Actions.Float.FloatWindow.ForSnapshot(Sample("weekend.mp4"), 760, 520)),
             ("quicklookpdf", () => QuickLook(file("album.pdf"))),
             ("quicklooktext", () => QuickLook(file("weekend.srt"))),
             ("guide", () => Guide.GuideWindow.ForSnapshot("do:draw.timer", null)),
@@ -800,6 +807,101 @@ internal static class DesignSnapshots
     }
 
     /// <summary>The floating windows of the screen tools, each rendered over a plain backdrop.</summary>
+    /// <summary>A file of the test data the floating snapshots show, found beside the app or in the repository.</summary>
+    private static string Sample(string name) => Path.Combine(SnapshotData ?? "testdata", name);
+
+    /// <summary>The test data folder the snapshots were given.</summary>
+    internal static string? SnapshotData { get; set; }
+
+    /// <summary>A workbook to float: two sheets of sales and people, made in the temporary folder.</summary>
+    private static string SampleSheet()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "DropWheel snapshot", Localization.L.IsArabic ? "المبيعات.xlsx" : "Sales.xlsx");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.Delete(path);
+        bool ar = Localization.L.IsArabic;
+        string[] months = ar ? ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو"] : ["January", "February", "March", "April", "May", "June"];
+        var sales = new Petal.Engines.Documents.Sheets.SheetTable(ar ? "المبيعات" : "Sales", ar ? ["الشهر", "المتجر", "الطلبات", "الإيراد"] : ["Month", "Shop", "Orders", "Revenue"],
+            months.SelectMany((m, i) => new[] { (IReadOnlyList<object?>)[m, ar ? "إسطنبول" : "Istanbul", 120 + i * 17, 4810.5 + i * 612.25], [m, ar ? "أنقرة" : "Ankara", 84 + i * 9, 3120.75 + i * 401.5] }).ToList());
+        var people = new Petal.Engines.Documents.Sheets.SheetTable(ar ? "الفريق" : "Team", ar ? ["الاسم", "الدور", "منذ"] : ["Name", "Role", "Since"],
+            [[ar ? "ليلى" : "Layla", ar ? "مبيعات" : "Sales", new DateTime(2023, 4, 1)], [ar ? "عمر" : "Omar", ar ? "دعم" : "Support", new DateTime(2024, 9, 15)]]);
+        Petal.Engines.Documents.Sheets.Spreadsheets.WriteXlsx(path, [sales, people], rightToLeft: ar);
+        return path;
+    }
+
+    private static string SampleMarkdown()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "DropWheel snapshot", "Notes.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, Localization.L.IsArabic ? """
+            # خطة الإطلاق
+
+            نطلق **الإصدار الجديد** يوم الخميس، بعد *مراجعة أخيرة*.
+
+            ## المهام
+
+            - [x] كتابة الملاحظات
+            - [ ] تجهيز الصور
+            - [ ] إرسال الرسالة
+
+            > لا ننشر قبل أن تنجح كل الاختبارات.
+
+            | اليوم | المهمة |
+            |---|---|
+            | الثلاثاء | المراجعة |
+            | الخميس | الإطلاق |
+
+            ```
+            petal float notes.md
+            ```
+            """ : """
+            # Launch plan
+
+            We ship the **new version** on Thursday, after a *last review*.
+
+            ## Tasks
+
+            - [x] Write the notes
+            - [ ] Make the pictures
+            - [ ] Send the mail
+
+            > Nothing goes out before every test passes.
+
+            | Day | Task |
+            |---|---|
+            | Tuesday | Review |
+            | Thursday | Launch |
+
+            ```
+            petal float notes.md
+            ```
+            """);
+        return path;
+    }
+
+    private static string SampleCode()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "DropWheel snapshot", "resize.py");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, """
+            from PIL import Image
+
+
+            def resize(path, longest=1600):
+                # Makes a picture no longer than `longest` on its long side.
+                with Image.open(path) as picture:
+                    picture.thumbnail((longest, longest))
+                    picture.save(path)
+
+
+            if __name__ == "__main__":
+                import sys
+                for name in sys.argv[1:]:
+                    resize(name)
+            """);
+        return path;
+    }
+
     private static IEnumerable<(string Name, Func<Window> Create)> FloatingCases() =>
     [
         ("drawbar", () => new Screen.DrawToolbar(Screen.DrawOverlay.ForSnapshot())),
@@ -813,6 +915,7 @@ internal static class DesignSnapshots
         ("recordbar", () => new Screen.RecordBar((Screen.RecordingSession)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Screen.RecordingSession)))),
         ("dictation", () => new Words.DictationPill(IntPtr.Zero)),
         ("palette", () => Commands.CommandPalette.ForSnapshot("", [])),
+        ("floatshelf", () => Actions.FloatShelf.ForSnapshot([Sample("landscape.jpg"), Sample("album.pdf"), Sample("weekend.mp4"), Sample("mixtape.mp3")])),
         ("palettequery", () => Commands.CommandPalette.ForSnapshot(Localization.L.IsArabic ? "تسجيل" : "rec", [])),
         ("captions", () =>
         {

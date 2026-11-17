@@ -1886,26 +1886,30 @@
  },
  "action:Float": {
   "category": "files",
-  "summary": "Mantiene archivos en una pequeña bandeja flotante por encima de todas las ventanas, listos para arrastrarlos a otra aplicación.",
-  "details": "Flotar abre una bandeja que se queda por encima de las demás ventanas y muestra los archivos como miniaturas. Arrastra una miniatura a cualquier aplicación o carpeta, y suelta más archivos en la bandeja para añadirlos; soltar otra vez sobre FLOTAR los añade a la misma bandeja. El botón de chincheta esconde la bandeja en el borde de la pantalla, el botón de papelera la vacía y la X la cierra. Un archivo que se mueve a otro sitio sale de la bandeja.",
-  "how": "Arrastra los archivos, pulsa Alt y suéltalos sobre FLOTAR; más tarde arrástralos desde la bandeja a la aplicación que necesites.",
-  "worksOn": "Archivos y carpetas; uno o muchos.",
+  "summary": "Hace flotar un archivo sobre todas las ventanas, mostrado por DropWheel al tamaño que elijas: una imagen, las páginas de un PDF o de un documento de Word, una hoja, un vídeo en reproducción, un texto. Varios archivos van a una bandeja flotante.",
+  "details": "Un archivo se abre en su propia ventana, que se queda sobre las demás, sin abrir su programa: una imagen que se amplía con la rueda (hasta el 800 %, girada, volteada, con el código de un color tomado), las páginas de un PDF para desplazarse, ampliar, buscar y leer de noche, un archivo de Word, PowerPoint u OpenDocument maquetado en páginas por Office o LibreOffice sin mostrarse (su texto si no hay ninguno), una hoja de Excel, ODS o CSV con sus celdas y sus hojas en pestañas, un vídeo o una canción con velocidad, repetición y los subtítulos que tenga al lado, un archivo Markdown tal como se lee, un texto o código con las líneas numeradas. Arrastra cualquier borde o esquina, o elige un tamaño listo (un cuarto, la mitad o tres cuartos de la pantalla, la pantalla entera, el tamaño real de una imagen); Alt y la rueda la vuelven transparente, y puede dejar pasar los clics a la ventana de debajo (un botón pequeño la devuelve), plegarse a su título u ocultarse en el borde de la pantalla. Nunca bloquea el archivo y lo vuelve a mostrar cuando se guarda. Arrastra el icono de su título a otro programa. Varios archivos, o una carpeta, van en cambio a la bandeja flotante; allí un doble clic hace flotar uno. El botón de chincheta de la Vista rápida hace flotar lo que muestra.",
+  "how": "Arrastra un archivo, pulsa Alt y suéltalo en FLOTAR; cambia el tamaño de la ventana o elige uno en su menú, y ciérrala con Esc.",
+  "worksOn": "Un archivo (imágenes, PDF, Word, PowerPoint, Excel, OpenDocument, CSV, vídeo, sonido, Markdown, texto y código); varios archivos o una carpeta van a la bandeja.",
   "examples": [
-   "Cinco fotos aparcadas en la bandeja mientras abres el formulario web al que las vas a subir.",
-   "Archivos elegidos de tres carpetas distintas y luego soltados juntos en un correo.",
-   "Un logotipo guardado en el borde de la pantalla para arrastrarlo a varias diapositivas."
+   "El PDF de una receta flotando sobre el navegador de la tableta de la cocina, a un tercio de la pantalla, en lectura nocturna.",
+   "Una hoja de precios junto al formulario de pedido mientras escribes, con sus celdas buscadas con Ctrl+F.",
+   "Un vídeo tutorial pequeño y transparente sobre el programa que enseña, con los clics pasando hasta él."
   ],
   "keywords": [
+   "hacer flotar un archivo",
+   "siempre visible",
+   "imagen en imagen",
+   "ventana encima",
+   "visor pdf encima",
+   "ventana transparente",
+   "dejar pasar los clics",
+   "ampliar la vista previa",
    "bandeja",
    "flotante",
-   "zona para soltar",
-   "guardar archivos un momento",
-   "arrastrar después",
+   "zona de soltar",
    "yoink",
    "dropover",
-   "soporte temporal",
-   "aparcar archivos",
-   "ayuda para arrastrar y soltar"
+   "arrastrar después"
   ]
  },
  "action:Copy": {

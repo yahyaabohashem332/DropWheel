@@ -85,6 +85,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
                 "open-wheel" => await AskPetalAsync(new() { ["cmd"] = "wheel", ["name"] = One(rest, "petal open-wheel <name>") }, ct),
                 "commands" => await AskPetalAsync(new() { ["cmd"] = "commands", ["text"] = string.Join(' ', rest) }, ct),
                 "with" => await WithAsync(rest, ct),
+                "float" => await WithAsync(["action:Float", .. rest], ct),
                 "actions" => await ActionsAsync(ct),
                 "status" => await StatusAsync(ct),
                 "version" or "--version" or "-v" => Print($"DropWheel {Version}"),
@@ -162,6 +163,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
           petal commands [<text>]   Opens the command palette, with the text typed in it
           petal with <petal> <files>  A petal of the file wheels on files: a format (webp),
                                     tool:Compress, action:Zip, or a favourite's or recipe's name
+          petal float <file>        Floats a file above the other windows, shown by DropWheel
           petal status              Whether DropWheel is running, and its version
 
         Notes:

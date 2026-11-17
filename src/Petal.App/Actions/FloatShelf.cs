@@ -30,6 +30,22 @@ public sealed class FloatShelf : Window
     private Point _dragStart;
     private string? _dragCandidate;
 
+    private static FloatShelf? _shared;
+
+    /// <summary>The one shelf, made when it is first wanted and forgotten when it is closed.</summary>
+    public static FloatShelf Shared
+    {
+        get
+        {
+            if (_shared is null)
+            {
+                _shared = new FloatShelf();
+                _shared.Closed += (_, _) => _shared = null;
+            }
+            return _shared;
+        }
+    }
+
     public FloatShelf()
     {
         WindowStyle = WindowStyle.None;
@@ -56,7 +72,10 @@ public sealed class FloatShelf : Window
             e.Handled = true;
         };
         _items.CollectionChanged += (_, _) => Refresh();
-        Theme.Changed += () => Dispatcher.BeginInvoke(() => Content = Build());
+        // A shelf that is closed has nothing to draw again: it stops listening.
+        Action rebuild = () => Dispatcher.BeginInvoke(() => Content = Build());
+        Theme.Changed += rebuild;
+        Closed += (_, _) => Theme.Changed -= rebuild;
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -85,6 +104,14 @@ public sealed class FloatShelf : Window
         }
         if (_tucked)
             Untuck();
+    }
+
+    /// <summary>For design snapshots: a shelf holding these files.</summary>
+    internal static FloatShelf ForSnapshot(IEnumerable<string> paths)
+    {
+        var shelf = new FloatShelf();
+        shelf.Add(paths);
+        return shelf;
     }
 
     private void Add(IEnumerable<string> paths)
@@ -207,7 +234,14 @@ public sealed class FloatShelf : Window
             _dragStart = e.GetPosition(this);
             _dragCandidate = path;
             if (e.ClickCount == 2)
-                ExplorerSelection.Reveal([path]);
+            {
+                // A file floats in its own window, at a size to see it; a folder opens in File Explorer.
+                if (File.Exists(path))
+                    _ = Float.FloatWindow.ShowAsync(path, Pointer());
+                else
+                    ExplorerSelection.Reveal([path]);
+                _dragCandidate = null;
+            }
         };
         tile.PreviewMouseMove += (_, e) =>
         {
@@ -222,8 +256,30 @@ public sealed class FloatShelf : Window
             if (result == DragDropEffects.Move || !File.Exists(path) && !Directory.Exists(path))
                 _items.Remove(path);
         };
-        tile.MouseRightButtonUp += (_, _) => _items.Remove(path);
+        tile.MouseRightButtonUp += (_, e) =>
+        {
+            e.Handled = true;
+            var menu = new ContextMenu { PlacementTarget = tile, Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint };
+            if (File.Exists(path))
+                menu.Items.Add(MenuLine("Float It", () => _ = Float.FloatWindow.ShowAsync(path, Pointer())));
+            menu.Items.Add(MenuLine("Show in File Explorer", () => ExplorerSelection.Reveal([path])));
+            menu.Items.Add(MenuLine("Remove from the Shelf", () => _items.Remove(path)));
+            menu.IsOpen = true;
+        };
         return tile;
+    }
+
+    private static MenuItem MenuLine(string text, Action click)
+    {
+        var item = new MenuItem { Header = L.T(text) };
+        item.Click += (_, _) => click();
+        return item;
+    }
+
+    private static ScreenPoint Pointer()
+    {
+        GetCursorPos(out var point);
+        return new ScreenPoint(point.X, point.Y);
     }
 
     private void Tuck()

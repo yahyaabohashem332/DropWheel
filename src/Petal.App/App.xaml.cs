@@ -443,6 +443,12 @@ public partial class App : Application
         menu.Items.Add(paletteItem);
         menu.Items.Add(screenMenu);
         menu.Items.Add(workMenu);
+        if (Actions.Float.FloatWindow.Count > 0)
+        {
+            var floatingItem = new MenuItem { Header = L.T("Close All Floating Windows") };
+            floatingItem.Click += (_, _) => Actions.Float.FloatWindow.CloseAll();
+            menu.Items.Add(floatingItem);
+        }
         menu.Items.Add(statsItem);
         var healthItem = new MenuItem { Header = L.T("DropWheel Health…") };
         healthItem.Click += (_, _) => Settings.HealthWindow.ShowSingle();

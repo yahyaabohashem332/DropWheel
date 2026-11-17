@@ -16,7 +16,6 @@ namespace Petal.App.Actions;
 /// <summary>The actions wheel: Share, Send to Phone, Clean for Sharing, Float, Copy, Move, Rename, ZIP, Copy Path and Terminal.</summary>
 public sealed class FileActionRunner(Jobs.JobRunner jobs)
 {
-    private FloatShelf? _shelf;
 
     public Task RunAsync(FileActionInfo action, IReadOnlyList<string> paths, ScreenPoint at)
     {
@@ -73,10 +72,10 @@ public sealed class FileActionRunner(Jobs.JobRunner jobs)
             case FileActionId.Duplicates:
                 Tools.Windows.DuplicatesWindow.Show(paths, at);
                 break;
+            case FileActionId.Float when paths.Count == 1 && File.Exists(paths[0]):
+                return Float.FloatWindow.ShowAsync(paths[0], at);
             case FileActionId.Float:
-                _shelf ??= new FloatShelf();
-                _shelf.Closed += (_, _) => _shelf = null;
-                _shelf.AddAndShow(paths, at);
+                FloatShelf.Shared.AddAndShow(paths, at);
                 break;
         }
         return Task.CompletedTask;

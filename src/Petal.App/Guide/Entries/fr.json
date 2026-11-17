@@ -1858,26 +1858,30 @@
  },
  "action:Float": {
   "category": "files",
-  "summary": "Garde des fichiers sur une petite étagère flottante au-dessus de toutes les fenêtres, prêts à être glissés dans une autre application.",
-  "details": "Étagère ouvre une étagère qui reste au-dessus des autres fenêtres et affiche les fichiers sous forme de vignettes. Faites glisser une vignette vers n'importe quelle application ou dossier, et déposez d'autres fichiers sur l'étagère pour les ajouter ; déposer à nouveau sur ÉTAGÈRE ajoute à la même étagère. Le bouton d'épingle range l'étagère contre le bord de l'écran, le bouton corbeille la vide, et le X la ferme. Un fichier déplacé ailleurs quitte l'étagère.",
-  "how": "Faites glisser les fichiers, appuyez sur Alt et déposez-les sur ÉTAGÈRE ; plus tard, faites-les glisser de l'étagère vers l'application voulue.",
-  "worksOn": "Fichiers et dossiers ; un ou plusieurs.",
+  "summary": "Fait flotter un fichier au-dessus de toutes les fenêtres, affiché par DropWheel à la taille choisie : une image, les pages d'un PDF ou d'un document Word, un tableau, une vidéo en lecture, un texte. Plusieurs fichiers vont sur une étagère flottante.",
+  "details": "Un fichier s'ouvre dans sa propre fenêtre qui reste au-dessus des autres, sans ouvrir son programme : une image à agrandir avec la molette (jusqu'à 800 %, tournée, retournée, le code d'une couleur relevé), les pages d'un PDF à faire défiler, agrandir, fouiller et lire de nuit, un fichier Word, PowerPoint ou OpenDocument mis en pages par Office ou LibreOffice sans s'afficher (son texte s'il n'y a ni l'un ni l'autre), un tableau Excel, ODS ou CSV avec ses cellules et ses feuilles en onglets, une vidéo ou une chanson avec la vitesse, la lecture en boucle et les sous-titres posés à côté, un fichier Markdown tel qu'il se lit, un texte ou du code aux lignes numérotées. Tirez n'importe quel bord ou coin, ou choisissez une taille toute faite (un quart, la moitié ou les trois quarts de l'écran, l'écran entier, la taille réelle d'une image) ; Alt et la molette la rendent transparente, et elle peut laisser passer les clics vers la fenêtre en dessous (un petit bouton la ramène), se replier sur son titre ou se ranger contre le bord de l'écran. Elle ne verrouille jamais le fichier et le montre de nouveau quand il est enregistré. Faites glisser l'icône de son titre vers un autre programme. Plusieurs fichiers, ou un dossier, vont plutôt sur l'étagère flottante ; un double-clic y fait flotter l'un d'eux. Le bouton épingle de l'Aperçu rapide fait flotter ce qu'il montre.",
+  "how": "Faites glisser un fichier, appuyez sur Alt et déposez-le sur FLOTTER ; redimensionnez la fenêtre ou choisissez une taille dans son menu, et fermez-la avec Échap.",
+  "worksOn": "Un fichier (images, PDF, Word, PowerPoint, Excel, OpenDocument, CSV, vidéo, son, Markdown, texte et code) ; plusieurs fichiers ou un dossier vont sur l'étagère.",
   "examples": [
-   "Cinq photos posées sur l'étagère le temps d'ouvrir le formulaire web où vous allez les envoyer.",
-   "Des fichiers pris dans trois dossiers différents, puis déposés ensemble dans un seul e-mail.",
-   "Un logo gardé au bord de l'écran pour le glisser dans plusieurs diapositives."
+   "Le PDF d'une recette qui flotte au-dessus du navigateur de la tablette de cuisine, au tiers de l'écran, en lecture de nuit.",
+   "Un tableau de prix gardé à côté du bon de commande pendant la saisie, ses cellules trouvées avec Ctrl+F.",
+   "Une vidéo de formation petite et transparente au-dessus du programme qu'elle explique, les clics passant jusqu'à lui."
   ],
   "keywords": [
+   "faire flotter un fichier",
+   "toujours au premier plan",
+   "image dans l'image",
+   "fenêtre au-dessus",
+   "lecteur pdf au premier plan",
+   "fenêtre transparente",
+   "laisser passer les clics",
+   "agrandir l'aperçu",
    "étagère",
    "flottant",
    "zone de dépôt",
-   "garder des fichiers",
-   "glisser plus tard",
    "yoink",
    "dropover",
-   "dépôt temporaire",
-   "mettre des fichiers de côté",
-   "aide au glisser-déposer"
+   "glisser plus tard"
   ]
  },
  "action:Copy": {

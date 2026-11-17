@@ -1844,26 +1844,30 @@
  },
  "action:Float": {
   "category": "files",
-  "summary": "Keeps files on a small floating shelf above every window, ready to drag into another app.",
-  "details": "Float opens a shelf that stays above other windows and shows the files as tiles. Drag a tile out into any app or folder, and drop more files onto the shelf to add them; dropping on FLOAT again adds to the same shelf. The pin button tucks the shelf into the screen edge, the bin button clears it, and the X closes it. A file that is moved away leaves the shelf.",
-  "how": "Drag the files, tap Alt and drop on FLOAT; later drag them from the shelf into the app you need.",
+  "summary": "Floats a file above every window, shown by DropWheel at the size you choose: a picture, a PDF's or a Word document's pages, a sheet, a video playing, a text. Several files go on a floating shelf.",
+  "details": "One file opens in its own window that stays above the others, without opening its program: a picture to zoom into with the wheel (to 800 %, turned, flipped, a colour's code picked), a PDF's pages to scroll, zoom, search and read at night, a Word, PowerPoint or OpenDocument file laid out as its pages by Office or LibreOffice unseen (its words when neither is here), an Excel, ODS or CSV sheet as its cells with its sheets as tabs, a video or a song with speed, playing round again and the subtitles beside it, a Markdown file as it reads, a text or code with its lines numbered. Drag any edge or corner, or choose a ready size (a quarter, half or three quarters of the screen, the whole screen, a picture's own size); Alt and the wheel make it see-through, and it can let clicks pass to the window under it (a small button brings it back), fold to its title or tuck into the screen's edge. It never locks the file and shows it again when it is saved. Drag the icon in its title into another program. Several files, or a folder, go on the floating shelf instead; a double-click there floats one. Quick Look's pin button floats what it shows.",
+  "how": "Drag a file, tap Alt and drop on FLOAT; resize the window or pick a size from its menu, and close it with Esc.",
   "examples": [
-   "Five photos parked on the shelf while you open the web form you will upload them to.",
-   "Files picked from three different folders, then dropped into one e-mail together.",
-   "A logo kept at the screen edge to drag into several slides."
+   "A recipe's PDF floating over the kitchen tablet's browser, at a third of the screen, read at night.",
+   "A sheet of prices kept beside the order form while you type, its cells found with Ctrl+F.",
+   "A tutorial video playing small and see-through above the program it teaches, clicks passing through to it."
   ],
-  "worksOn": "Files and folders; one or many.",
+  "worksOn": "One file (pictures, PDF, Word, PowerPoint, Excel, OpenDocument, CSV, video, sound, Markdown, text and code); several files or a folder go on the shelf.",
   "keywords": [
+   "float a file",
+   "always on top",
+   "picture in picture",
+   "keep a window above",
+   "pdf viewer on top",
+   "see through window",
+   "click through",
+   "resize preview",
    "shelf",
    "floating",
    "drop zone",
-   "hold files",
-   "drag later",
    "yoink",
    "dropover",
-   "temporary holder",
-   "park files",
-   "drag and drop helper"
+   "drag later"
   ]
  },
  "action:Copy": {
