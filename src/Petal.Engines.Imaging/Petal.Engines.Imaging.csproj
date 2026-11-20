@@ -5,8 +5,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- AnyCPU: the native library for the build's processor (x64 or ARM64) is picked at publish. -->
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
+    <!-- DropWheel custom Magick.Native-Q8-x64: built without libheif/libde265/openh264 (patented codecs).
+         HEIC read via Windows WIC (WindowsHeif.cs), HEIC write via FFmpeg hevc_mf (HeifWriter.cs).
+         Fetched by tools/scripts/fetch-tools.ps1 from GitHub release v1.0.0-dropwheel-magick. -->
+    <None Include="..\..\tools\bin\magick\Magick.Native-Q8-x64.dll">
+      <Link>Magick.Native-Q8-x64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+    <None Include="..\..\tools\bin\magick\Magick.Native-Q8-x64.pdb">
+      <Link>Magick.Native-Q8-x64.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
     <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" />
     <PackageReference Include="Microsoft.AI.DirectML" Version="1.15.4" GeneratePathProperty="true" />
     <PackageReference Include="ZXing.Net" Version="0.16.10" />

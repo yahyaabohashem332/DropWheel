@@ -92,6 +92,23 @@ $sources = Join-Path $licences 'sources'
 New-Item -ItemType Directory -Force $sources | Out-Null
 Copy-Item (Join-Path $root 'tools\bin\ffmpeg-source\*.tar.gz') $sources
 if (-not (Get-ChildItem $sources -Filter '*-source.tar.gz')) { throw "FFmpeg's source is missing: run fetch-tools.ps1" }
+
+# Magick.Native: DropWheel's custom Q8-x64 build without libheif/libde265/openh264 (patented codecs).
+# Its licences (Apache-2.0 for ImageMagick, LGPL for fribidi/libiconv/zlib/etc.) and exact source.
+$magickLicences = Join-Path $root 'tools\bin\magick'
+if (-not (Test-Path (Join-Path $magickLicences 'Magick.Native-Q8-x64.dll'))) { throw "Magick.Native is missing: run fetch-tools.ps1 (after the dropwheel-magick release is published)" }
+Copy-Item (Join-Path $magickLicences 'Magick.Native-Q8-x64.dll') (Join-Path $publish 'Magick.Native-Q8-x64.dll') -Force
+Copy-Item (Join-Path $magickLicences 'Magick.Native-Q8-x64.pdb') (Join-Path $publish 'Magick.Native-Q8-x64.pdb') -Force
+$magickLicencesDir = Join-Path $licences 'magick'
+New-Item -ItemType Directory -Force $magickLicencesDir | Out-Null
+# The licence files are in the magick folder (fetched from the release)
+if (Test-Path (Join-Path $magickLicences 'LICENSE.txt')) {
+    Copy-Item (Join-Path $magickLicences 'LICENSE.txt') (Join-Path $magickLicencesDir 'ImageMagick.txt')
+}
+if (Test-Path (Join-Path $magickLicences 'licenses')) {
+    Copy-Item (Join-Path $magickLicences 'licenses') $magickLicencesDir -Recurse -Force
+}
+Copy-Item (Join-Path $root 'tools\bin\magick-source\*.tar.gz') $sources -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $root 'tools\bin\exiftool\README.txt') (Join-Path $licences 'ExifTool.txt') -ErrorAction SilentlyContinue
 # Where NuGet keeps packages on this PC.
 $nuget = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
@@ -105,6 +122,21 @@ $ffmpegVersion = & (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -
 # Only DropWheel's own LGPL build may ship: any other (a GPL build, one with patented codecs) stops the release.
 if (($ffmpegVersion | Select-Object -First 1) -notmatch 'dropwheel') { throw "The FFmpeg in the build isn't DropWheel's own LGPL build: $ffmpegVersion" }
 $ffmpegVersion | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
+
+# Verify Magick.Native is DropWheel's custom build (no libheif/libde265/openh264).
+$magickDllPath = Join-Path $publish 'Magick.Native-Q8-x64.dll'
+if (-not (Test-Path $magickDllPath)) { throw "Magick.Native-Q8-x64.dll not found in build output" }
+$magickBytes = [System.IO.File]::ReadAllBytes($magickDllPath)
+$magickContent = [System.Text.Encoding]::Latin1.GetString($magickBytes)
+$found = @()
+foreach ($lib in "libheif", "libde265", "openh264") {
+    if ($magickContent -match $lib) { $found += $lib }
+}
+if ($found.Count -gt 0) {
+    throw "FAIL: Magick.Native contains excluded patented libraries: $($found -join ', '). This build cannot ship to the Microsoft Store."
+}
+Write-Host "PASS: Magick.Native verified - no libheif/libde265/openh264 found"
+
 Remove-Item (Join-Path $licences 'THIRD-PARTY-NOTICES.md') -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.txt')
 Copy-Item (Join-Path $root 'store\licenses\*.txt') $licences

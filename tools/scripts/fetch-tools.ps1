@@ -96,6 +96,46 @@ if ($current -notmatch 'dropwheel' -or -not (Test-Path (Join-Path $ffSource "$Ff
 $version = & $ffExe -hide_banner -version | Select-Object -First 1
 if ($version -notmatch 'dropwheel') { throw "tools\bin\ffmpeg isn't DropWheel's FFmpeg build: $version" }
 Write-Host "FFmpeg: $version"
+
+# Magick.Native: DropWheel's custom Q8-x64 build without libheif/libde265/openh264 (patented codecs).
+# HEIC is handled through Windows WIC (read) and FFmpeg's hevc_mf (write).
+$magickDir = Join-Path $Destination 'magick'
+$magickDll = Join-Path $magickDir 'Magick.Native-Q8-x64.dll'
+$magickPdb = Join-Path $magickDir 'Magick.Native-Q8-x64.pdb'
+$magickRelease = 'v1.0.0-dropwheel-magick'
+$magickRepo = 'yahyaabohashem332/dropwheel-magick'
+# SHA-256 will be set after the release is published on the other machine
+$magickDllSha256 = 'PLACEHOLDER_DLL_SHA256'
+$magickPdbSha256 = 'PLACEHOLDER_PDB_SHA256'
+$currentDll = if (Test-Path $magickDll) { (Get-FileHash $magickDll -Algorithm SHA256).Hash } else { '' }
+$currentPdb = if (Test-Path $magickPdb) { (Get-FileHash $magickPdb -Algorithm SHA256).Hash } else { '' }
+if ($currentDll -ne $magickDllSha256.ToUpper() -or $currentPdb -ne $magickPdbSha256.ToUpper()) {
+    if ($magickDllSha256 -eq 'PLACEHOLDER_DLL_SHA256' -or $magickPdbSha256 -eq 'PLACEHOLDER_PDB_SHA256') {
+        Write-Warning "Magick.Native SHA-256 placeholders not yet updated. Skipping download."
+    } else {
+        Write-Host "Downloading Magick.Native from $magickRepo release $magickRelease"
+        New-Item -ItemType Directory -Force $magickDir | Out-Null
+        if (Get-Command gh -ErrorAction SilentlyContinue) {
+            & gh release download $magickRelease -R $magickRepo -p 'Magick.Native-Q8-x64.dll' -D $magickDir --clobber
+            & gh release download $magickRelease -R $magickRepo -p 'Magick.Native-Q8-x64.pdb' -D $magickDir --clobber
+        }
+        if (-not (Test-Path $magickDll)) {
+            & curl.exe -sSL --ssl-no-revoke -o $magickDll "https://github.com/$magickRepo/releases/download/$magickRelease/Magick.Native-Q8-x64.dll"
+            & curl.exe -sSL --ssl-no-revoke -o $magickPdb "https://github.com/$magickRepo/releases/download/$magickRelease/Magick.Native-Q8-x64.pdb"
+        }
+        $actualDll = (Get-FileHash $magickDll -Algorithm SHA256).Hash
+        $actualPdb = (Get-FileHash $magickPdb -Algorithm SHA256).Hash
+        if ($actualDll -ne $magickDllSha256.ToUpper()) { throw "Checksum mismatch for Magick.Native-Q8-x64.dll (got $actualDll)" }
+        if ($actualPdb -ne $magickPdbSha256.ToUpper()) { throw "Checksum mismatch for Magick.Native-Q8-x64.pdb (got $actualPdb)" }
+        Get-ChildItem $magickDir -Recurse -File | ForEach-Object { $_.LastWriteTime = Get-Date }
+    }
+}
+if (Test-Path $magickDll) {
+    Write-Host "Magick.Native: $(Get-Item $magickDll).Length bytes, SHA256=$(Get-FileHash $magickDll -Algorithm SHA256).Hash.Substring(0,16)..."
+} else {
+    Write-Warning "Magick.Native not found - build will use NuGet fallback (not allowed for Store release)"
+}
+
 # Real-ESRGAN general x4v3 (BSD-3-Clause), Qualcomm AI Hub's ONNX export: the AI enlargement model.
 $esrganDir = Join-Path $Destination 'models\realesrgan-x4v3'
 if (-not (Test-Path (Join-Path $esrganDir 'real_esrgan_general_x4v3.onnx'))) {

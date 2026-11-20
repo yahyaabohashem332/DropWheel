@@ -4,8 +4,9 @@ DropWheel is built on open-source programs, libraries and AI models. Each one be
 authors under its own licence; nothing in DropWheel's terms limits the rights those licences give you.
 The full texts of the licences are at the end of this file and in the `licenses` folder in DropWheel's
 install folder: `Apache-2.0.txt`, `GPL-3.0.txt`, `CC-BY-4.0.txt`, `FFmpeg.txt` (the GNU LGPL version 2.1),
-`ExifTool.txt`, `DirectML.txt`; in `ffmpeg\licenses`, the licence files of every library inside FFmpeg; and in
-`packages`, each library's own licence and notice files as its authors wrote them.
+`ExifTool.txt`, `DirectML.txt`; in `ffmpeg\licenses`, the licence files of every library inside FFmpeg;
+in `magick\licenses`, the licence files of every library inside Magick.Native; and in `packages`, each
+library's own licence and notice files as its authors wrote them.
 
 All AI models run on this PC. DropWheel uses each one as it is published at the address given for it.
 
@@ -69,15 +70,17 @@ Store edition; other copies download them from the addresses above the first tim
 FFmpeg and four of the libraries inside it (LAME, soxr, FriBidi and libiconv) are under the GNU Lesser General
 Public License, version 2.1 or later; DropWheel runs FFmpeg as a separate program, and its DLLs are files you
 may replace with your own build. Their exact source code, with the scripts that built them, comes with
-DropWheel: `licenses\sources\ffmpeg-n9.0.2-dropwheel-win64-source.tar.gz`. Some libraries inside
-Magick.NET's native library (see below) are under the GNU Lesser General Public License; espeak-ng, which Piper
-uses, is under the GNU General Public License version 3, and DropWheel runs Piper as a separate program.
-Their complete source code is available from the addresses in this file, at the versions DropWheel uses:
-espeak-ng as included in Piper release 2023.11.14-2; Magick.NET's native library at
-https://github.com/dlemstra/Magick.Native, at the Magick.NET version below. For three years from the date you
-received DropWheel, the developer will also send you, on request to the support address in the Microsoft
-Store listing, a copy of any of that complete source code on a medium customarily used for software
-interchange, for no more than the cost of making and sending it.
+DropWheel: `licenses\sources\ffmpeg-n9.0.2-dropwheel-win64-source.tar.gz`. DropWheel's **custom
+Magick.Native-Q8-x64 build** contains libraries under the GNU Lesser General Public License (fribidi, libiconv,
+libxml2, zlib, liblzma, bzip2, freetype, harfbuzz, fribidi, and others from ImageMagick's dependency tree);
+their complete source code and build scripts come with DropWheel:
+`licenses\sources\magick-native-q8-x64-dropwheel-source.tar.gz` (from the dropwheel-magick release). espeak-ng,
+which Piper uses, is under the GNU General Public License version 3, and DropWheel runs Piper as a separate
+program. Its complete source code is available from https://github.com/espeak-ng/espeak-ng at the version
+included in Piper 2023.11.14-2. For three years from the date you received DropWheel, the developer will also
+send you, on request to the support address in the Microsoft Store listing, a copy of any of that complete
+source code on a medium customarily used for software interchange, for no more than the cost of making and
+sending it.
 
 
 ## Libraries inside DropWheel
@@ -103,12 +106,14 @@ MIT:
   authors.
 
 Apache-2.0:
-- Magick.NET: Copyright Dirk Lemstra. Its native library holds ImageMagick (ImageMagick License,
-  Copyright ImageMagick Studio LLC) and the libraries ImageMagick uses, each under its own licence: among
-  them libheif, libde265, libraw, glib, pango, cairo, gdk-pixbuf, librsvg, libcroco and fribidi under the
-  LGPL. Their notices and licence texts are in `packages\Magick.NET-Q8-AnyCPU - Notice.txt`. The
-  native library is the file Magick.Native-Q8-x64.dll, which you may replace with one you build from its
-  source.
+- Magick.NET: Copyright Dirk Lemstra. DropWheel uses a **custom Magick.Native-Q8-x64 build** (Apache-2.0:
+  ImageMagick License, Copyright ImageMagick Studio LLC) **without libheif, libde265, or openh264** — the
+  patented HEIF/HEVC/H.264 libraries. HEIC is read by Windows WIC (WindowsHeif.cs) and written through
+  FFmpeg's hevc_mf (HeifWriter.cs), under Microsoft's Windows licence. The native library is the file
+  Magick.Native-Q8-x64.dll, fetched from https://github.com/yahyaabohashem332/dropwheel-magick at release
+  v1.0.0-dropwheel-magick, built from dlemstra/Magick.Native sources with those libraries excluded. Its
+  complete source, with build scripts, is available from that repository. The libraries inside it, each with
+  its licence, are listed in `licenses\magick\licenses` in DropWheel's install folder.
 - SQLitePCLRaw: Copyright (c) SourceGear, LLC. SQLite itself is in the public domain.
 - PdfPig: Copyright (c) UglyToad and contributors.
 - SixLabors.Fonts 1.0.1: Copyright (c) Six Labors.
