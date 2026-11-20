@@ -50,7 +50,7 @@ public static class ConversionMatrix
             map[video] = [.. VideoFormats.Where(f => f != video && f.CanWrite), Gif, Mp3];
         map[Gif] = [.. VideoFormats.Where(f => f.CanWrite)];
 
-        map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, Epub, Txt, Md, Html];
+        map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, PdfLongJpg, PdfFirstJpg, PdfLongPng, PdfFirstPng, Epub, Txt, Md, Html];
 
         map[Pptx] = [Pdf, Jpg, Png];
         map[Ppt] = [Pdf, Jpg, Png];

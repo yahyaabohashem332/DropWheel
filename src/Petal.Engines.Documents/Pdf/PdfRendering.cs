@@ -157,7 +157,7 @@ internal static class PdfRaster
             return Conversion.ToImage(pdf, pageIndex, null, options);
     }
 
-    private static RenderOptions Options(PdfPageSize size, int dpi, bool annotations = true, SKColor? background = null)
+    internal static RenderOptions Options(PdfPageSize size, int dpi, bool annotations = true, SKColor? background = null)
     {
         var safe = SafeDpi(size, dpi);
         return new RenderOptions
@@ -171,7 +171,7 @@ internal static class PdfRaster
         };
     }
 
-    private static double Pixels(PdfPageSize size, int dpi) => size.Width / 72 * dpi * size.Height / 72 * dpi;
+    internal static double Pixels(PdfPageSize size, int dpi) => size.Width / 72 * dpi * size.Height / 72 * dpi;
 
     /// <summary>
     /// Every page, drawn one after another from a single load of the file (rendering page by page

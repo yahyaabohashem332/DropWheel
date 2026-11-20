@@ -67,6 +67,15 @@ public static class Formats
 
     // Documents
     public static readonly FileFormat Pdf = new("pdf", "PDF", FormatFamily.Pdf, ["pdf"]);
+
+    // Special PDF image outputs: single long image (all pages vertically concatenated) or first page only.
+    // They use the PNG/JPG extension on disk but are distinct conversion targets on the wheel.
+    // Empty extensions: they are output-only targets, never opened from disk.
+    public static readonly FileFormat PdfLongPng = new("pdflongpng", "PNG (long)", FormatFamily.Image, []);
+    public static readonly FileFormat PdfFirstPng = new("pdffirstpng", "PNG (first page)", FormatFamily.Image, []);
+    public static readonly FileFormat PdfLongJpg = new("pdflongjpg", "JPG (long)", FormatFamily.Image, []);
+    public static readonly FileFormat PdfFirstJpg = new("pdffirstjpg", "JPG (first page)", FormatFamily.Image, []);
+
     public static readonly FileFormat Docx = new("docx", "DOCX", FormatFamily.Document, ["docx"]);
     public static readonly FileFormat Odt = new("odt", "ODT", FormatFamily.Document, ["odt"]);
     public static readonly FileFormat Rtf = new("rtf", "RTF", FormatFamily.Document, ["rtf"]);
@@ -107,7 +116,8 @@ public static class Formats
         Ttf, Otf, Woff, Woff2,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif,
-        Pdf, Docx, Odt, Rtf, Md, Html, Txt, Epub,
+        Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,
+        Docx, Odt, Rtf, Md, Html, Txt, Epub,
         Pptx, Ppt,
         Xlsx, Xls, Ods, Csv, Tsv,
         Srt, Vtt,

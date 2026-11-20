@@ -1,0 +1,9 @@
+System.NotSupportedException: No imaging component suitable to complete this operation was found.
+ ---> System.Runtime.InteropServices.COMException (0x88982F50): The component cannot be found. (0x88982F50)
+   --- End of inner exception stack trace ---
+   at System.Windows.Media.Imaging.BitmapDecoder.SetupDecoderFromUriOrStream(Uri uri, Stream stream, BitmapCacheOption cacheOption, Guid& clsId, Boolean& isOriginalWritable, Stream& uriStream, UnmanagedMemoryStream& unmanagedMemoryStream, SafeFileHandle& safeFilehandle)
+   at System.Windows.Media.Imaging.BitmapDecoder.CreateFromUriOrStream(Uri baseUri, Uri uri, Stream stream, BitmapCreateOptions createOptions, BitmapCacheOption cacheOption, RequestCachePolicy uriCachePolicy, Boolean insertInDecoderCache)
+   at System.Windows.Media.Imaging.BitmapImage.FinalizeCreation()
+   at Petal.App.DesignSnapshots.Load(String path) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 1370
+   at Petal.App.DesignSnapshots.Run(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 1132
+   at Petal.App.App.OnStartup(StartupEventArgs e) in D:\plugins\Tangerine\src\Petal.App\App.xaml.cs:line 115

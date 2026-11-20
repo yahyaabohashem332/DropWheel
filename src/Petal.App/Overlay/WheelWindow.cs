@@ -46,6 +46,13 @@ public sealed partial class WheelWindow : Window
     private readonly Path _hubShape = new();
     private readonly RectangleGeometry _hubOutline = new();
     private readonly Canvas _hubText = new();
+    // Batch progress ring around the hub (for large file drops up to 100 files)
+    private readonly Path _batchProgressRing = new();
+    private readonly Ellipse _batchProgressBackground = new();
+    private double _batchProgress = 0;
+    private int _batchTotalFiles = 0;
+    private int _batchCompletedFiles = 0;
+    private bool _showingBatchProgress = false;
     // The mark under a petal's name in the centre: its explanation, beside the wheel (also F1).
     private readonly Canvas _infoMark = new();
     private readonly ScaleTransform _infoScale = new();
@@ -787,6 +794,88 @@ public sealed partial class WheelWindow : Window
         Park();
         Sound.Cool();
         Closed?.Invoke();
+    }
+
+    // ---------- batch progress on the wheel ----------
+
+    /// <summary>
+    /// Starts showing the batch progress ring around the hub for large file drops.
+    /// Call this when a batch conversion starts with many files (up to 100).
+    /// </summary>
+    public void ShowBatchProgress(int totalFiles)
+    {
+        if (!_open || _showingBatchProgress)
+            return;
+        _batchTotalFiles = totalFiles;
+        _batchCompletedFiles = 0;
+        _batchProgress = 0;
+        _showingBatchProgress = true;
+        _batchProgressBackground.Visibility = Visibility.Visible;
+        _batchProgressRing.Visibility = Visibility.Visible;
+        UpdateBatchProgressRing();
+    }
+
+    /// <summary>
+    /// Updates the batch progress ring with the current progress.
+    /// </summary>
+    public void UpdateBatchProgress(int completedFiles, int totalFiles)
+    {
+        if (!_showingBatchProgress)
+            return;
+        _batchCompletedFiles = completedFiles;
+        _batchTotalFiles = totalFiles;
+        _batchProgress = totalFiles > 0 ? (double)completedFiles / totalFiles : 0;
+        UpdateBatchProgressRing();
+    }
+
+    /// <summary>
+    /// Updates the visual appearance of the batch progress ring.
+    /// </summary>
+    private void UpdateBatchProgressRing()
+    {
+        if (!_showingBatchProgress)
+            return;
+        // Update the arc segment to show progress
+        double sweep = 360 * _batchProgress;
+        var geometry = new StreamGeometry();
+        using (var ctx = geometry.Open())
+        {
+            const double BatchProgressRadius = 54;
+            double inner = BatchProgressRadius - 2;
+            double outer = BatchProgressRadius + 2;
+            // Start from top (90 degrees in maths convention = -90 in screen)
+            double startAngle = -90;
+            double endAngle = startAngle + sweep;
+            double innerStartX = Math.Cos(startAngle * Math.PI / 180) * inner;
+            double innerStartY = -Math.Sin(startAngle * Math.PI / 180) * inner;
+            double outerStartX = Math.Cos(startAngle * Math.PI / 180) * outer;
+            double outerStartY = -Math.Sin(startAngle * Math.PI / 180) * outer;
+            double innerEndX = Math.Cos(endAngle * Math.PI / 180) * inner;
+            double innerEndY = -Math.Sin(endAngle * Math.PI / 180) * inner;
+            double outerEndX = Math.Cos(endAngle * Math.PI / 180) * outer;
+            double outerEndY = -Math.Sin(endAngle * Math.PI / 180) * outer;
+
+            ctx.BeginFigure(new Point(innerStartX, innerStartY), isFilled: true, isClosed: true);
+            ctx.LineTo(new Point(outerStartX, outerStartY), true, true);
+            bool isLargeArc = sweep > 180;
+            ctx.ArcTo(new Point(outerEndX, outerEndY), new Size(outer, outer), 0, isLargeArc, SweepDirection.Clockwise, true, true);
+            ctx.LineTo(new Point(innerEndX, innerEndY), true, true);
+            ctx.ArcTo(new Point(innerStartX, innerStartY), new Size(inner, inner), 0, isLargeArc, SweepDirection.Counterclockwise, true, true);
+        }
+        geometry.Freeze();
+        _batchProgressRing.Data = geometry;
+    }
+
+    /// <summary>
+    /// Hides the batch progress ring when the batch is complete.
+    /// </summary>
+    public void HideBatchProgress()
+    {
+        if (!_showingBatchProgress)
+            return;
+        _showingBatchProgress = false;
+        _batchProgressBackground.Visibility = Visibility.Collapsed;
+        _batchProgressRing.Visibility = Visibility.Collapsed;
     }
 
     // ---------- drag and drop ----------
@@ -1946,6 +2035,28 @@ public sealed partial class WheelWindow : Window
         _hubText.IsHitTestVisible = false;
         _ring.Children.Add(_hubShape);
         _ring.Children.Add(_hubText);
+
+        // Batch progress ring around the hub (shows overall progress for large file drops up to 100 files)
+        const double BatchProgressRadius = 54; // Just outside the hub groove
+        _batchProgressBackground.Width = _batchProgressBackground.Height = BatchProgressRadius * 2;
+        Canvas.SetLeft(_batchProgressBackground, -BatchProgressRadius);
+        Canvas.SetTop(_batchProgressBackground, -BatchProgressRadius);
+        _batchProgressBackground.Fill = new SolidColorBrush(Color.FromArgb(0x30, 0, 0, 0));
+        _batchProgressBackground.Stroke = new SolidColorBrush(Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
+        _batchProgressBackground.StrokeThickness = 1;
+        _batchProgressBackground.IsHitTestVisible = false;
+        _batchProgressBackground.Visibility = Visibility.Collapsed;
+        _ring.Children.Add(_batchProgressBackground);
+
+        _batchProgressRing.Data = WheelGeometry.Ring(BatchProgressRadius - 2, BatchProgressRadius + 2);
+        _batchProgressRing.StrokeThickness = 4;
+        _batchProgressRing.Stroke = new SolidColorBrush(Color.FromArgb(0xE0, 0x00, 0x7A, 0xCC)); // Accent color
+        _batchProgressRing.StrokeStartLineCap = PenLineCap.Round;
+        _batchProgressRing.StrokeEndLineCap = PenLineCap.Round;
+        _batchProgressRing.IsHitTestVisible = false;
+        _batchProgressRing.Visibility = Visibility.Collapsed;
+        _ring.Children.Add(_batchProgressRing);
+
         BuildInfoMark();
         _ring.Children.Add(_infoMark);
 

@@ -23,7 +23,8 @@ public sealed class PdfConverter(DocumentEngineOptions? options = null) : IConve
     public bool CanConvert(FileFormat from, FileFormat to) =>
         from == F.Pdf && ConversionMatrix.CanConvert(from, to) &&
         (to == F.Docx || to == F.Odt || to == F.Pptx || to == F.Xlsx || to == F.Jpg || to == F.Png ||
-         to == F.Epub || to == F.Txt || to == F.Md || to == F.Html || to == F.Rtf);
+         to == F.Epub || to == F.Txt || to == F.Md || to == F.Html || to == F.Rtf ||
+         to == F.PdfLongPng || to == F.PdfFirstPng || to == F.PdfLongJpg || to == F.PdfFirstJpg);
 
     public Task<JobResult> ConvertAsync(ConversionJob job, IProgress<double>? progress, CancellationToken cancellationToken) =>
         Task.Run(async () =>
@@ -37,6 +38,18 @@ public sealed class PdfConverter(DocumentEngineOptions? options = null) : IConve
                 {
                     var bytes = await File.ReadAllBytesAsync(job.InputPath, ct).ConfigureAwait(false);
                     return new JobResult(PageImages.Write(bytes, job.InputPath, job.OutputPath, job.To == F.Jpg, job.Settings, progress, 0.02, ct));
+                }
+                case "pdflongpng" or "pdflongjpg":
+                {
+                    var bytes = await File.ReadAllBytesAsync(job.InputPath, ct).ConfigureAwait(false);
+                    var isJpg = job.To.Id.EndsWith("jpg", StringComparison.OrdinalIgnoreCase);
+                    return new JobResult(PageImages.WriteLong(bytes, job.InputPath, job.OutputPath, isJpg, job.Settings, progress, 0.02, ct));
+                }
+                case "pdffirstpng" or "pdffirstjpg":
+                {
+                    var bytes = await File.ReadAllBytesAsync(job.InputPath, ct).ConfigureAwait(false);
+                    var isJpg = job.To.Id.EndsWith("jpg", StringComparison.OrdinalIgnoreCase);
+                    return new JobResult(PageImages.WriteFirst(bytes, job.InputPath, job.OutputPath, isJpg, job.Settings, progress, 0.02, ct));
                 }
                 case "pptx":
                 {

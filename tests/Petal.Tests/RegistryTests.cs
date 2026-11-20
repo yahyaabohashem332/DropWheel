@@ -8,10 +8,11 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_350_paths()
+    public void Conversion_matrix_has_354_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
-        Assert.Equal(350, ConversionMatrix.TotalPaths);
+        // +4 in 1.22 for PDF long/first page image outputs.
+        Assert.Equal(354, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

@@ -1,0 +1,26 @@
+8.50 1 r=98.0 clear=-0.8 للبريد
+10.00 1 r=97.5 clear=-3.8 DOCX
+10.00 1 r=98.0 clear=-0.8 ODT
+10.00 1 r=98.0 clear=-1.7 PPTX
+10.00 1 r=98.0 clear=-0.1 XLSX
+11.25 1 r=97.5 clear=2.0 JPG
+11.50 1 r=88.0 clear=2.0 PNG
+10.00 1 r=88.5 clear=-1.3 JPG (طويلة)
+10.00 2 r=83.0 clear=-9.6 JPG (الصفحة / الأولى)
+10.00 2 r=96.5 clear=-8.0 PNG / (طويلة)
+10.00 3 r=96.0 clear=-10.7 PNG / (الصفحة / الأولى)
+10.00 1 r=98.0 clear=-2.0 EPUB
+10.25 1 r=98.0 clear=0.3 TXT
+10.00 1 r=97.0 clear=1.9 MD
+10.00 1 r=97.5 clear=-3.6 HTML
+8.50 3 r=97.5 clear=-12.0 AVIF (via / JPG → / AVIF)
+8.50 3 r=97.5 clear=-12.1 BMP (via / JPG → / BMP)
+8.50 3 r=95.5 clear=-10.4 CSV (via / XLSX → / CSV)
+8.50 2 r=96.0 clear=-8.4 HEIC (via / JPG → HEIC)
+8.50 2 r=92.0 clear=-3.9 ICO (via / JPG → ICO)
+8.50 2 r=88.0 clear=-4.4 ODS (via / XLSX → ODS)
+8.50 2 r=83.0 clear=-7.7 PDF (via / DOCX → PDF)
+8.50 3 r=97.0 clear=-11.2 RTF (via / DOCX → / RTF)
+8.50 3 r=96.0 clear=-11.9 TIFF (via / JPG → / TIFF)
+8.50 3 r=95.5 clear=-9.9 TSV (via / XLSX → / TSV)
+8.50 3 r=90.0 clear=-12.1 WEBP (via / JPG → / WEBP)

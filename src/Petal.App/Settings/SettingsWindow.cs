@@ -324,6 +324,8 @@ public sealed partial class SettingsWindow : ToolWindow
         panel.Children.Add(Row("GIF width", gifWidth, 150, 10));
 
         panel.Children.Add(Switch("Hardware video encoding", "Use the graphics card when it can encode H.264 faster.", c.HardwareVideoEncoding, v => c.HardwareVideoEncoding = v));
+        panel.Children.Add(Switch("Preserve original dates", "Keep the creation and modification dates of the original file on the converted result.", c.PreserveOriginalDates, v => c.PreserveOriginalDates = v));
+        panel.Children.Add(Switch("Move originals to Recycle Bin", "Move the original file to the Recycle Bin after a successful, verified conversion.", c.MoveOriginalToRecycleBin, v => c.MoveOriginalToRecycleBin = v));
         return panel;
     }
 

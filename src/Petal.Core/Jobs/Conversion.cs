@@ -26,6 +26,12 @@ public sealed class ConversionSettings
     /// <summary>Use hardware video encoders when the GPU has them.</summary>
     public bool HardwareVideoEncoding { get; set; } = true;
 
+    /// <summary>Keep the original file's creation and modification dates on the converted result.</summary>
+    public bool PreserveOriginalDates { get; set; } = false;
+
+    /// <summary>Move the original file to the Recycle Bin after a successful, verified conversion.</summary>
+    public bool MoveOriginalToRecycleBin { get; set; } = false;
+
     /// <summary>
     /// Longest side of picture and video results in pixels; 0 keeps the source size. Only
     /// favourites set it, so it is not saved with the user's defaults.

@@ -1,0 +1,3 @@
+modelchoice: trimmed by its box (242 > 231): C:\Users\YAHYA\AppData\Local\Petal\models
+modelchoicekey: trimmed by its box (242 > 231): C:\Users\YAHYA\AppData\Local\Petal\models
+captionssmall: trimmed by its box (242 > 231): C:\Users\YAHYA\AppData\Local\Petal\models

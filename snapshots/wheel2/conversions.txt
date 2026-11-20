@@ -1,0 +1,26 @@
+للبريد
+DOCX
+ODT
+PPTX
+XLSX
+JPG
+PNG
+JPG (طويلة)
+JPG (الصفحة الأولى)
+PNG (طويلة)
+PNG (الصفحة الأولى)
+EPUB
+TXT
+MD
+HTML
+AVIF (via JPG → AVIF)
+BMP (via JPG → BMP)
+CSV (via XLSX → CSV)
+HEIC (via JPG → HEIC)
+ICO (via JPG → ICO)
+ODS (via XLSX → ODS)
+PDF (via DOCX → PDF)
+RTF (via DOCX → RTF)
+TIFF (via JPG → TIFF)
+TSV (via XLSX → TSV)
+WEBP (via JPG → WEBP)

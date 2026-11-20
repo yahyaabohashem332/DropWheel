@@ -42,6 +42,13 @@ public partial class LocalizationTests
         "HH:mm", "yyyy-MM-dd", "ddd d MMM", "ddd d MMM yyyy", "d MMM, HH:mm", "DropWheel-Setup-1.1.0.exe", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH.mm.ss",
         // A font, a Recycle Bin record pattern, a MIME type, a thread name and a voice maker's prefix.
         "Consolas", "$I*", "image/jpeg", "Petal search index", "Petal warm-up", "Microsoft",
+        // Code strings that appear inside interpolated strings (join separators, etc.)
+        " → ",
+        "),",
+        "})",
+        "))",
+        // The regex incorrectly matches the tail of the interpolated string on line 352
+        ", c.Chain.Select(s => Formats.FromId(s.Format)?.Label ?? s.Format))})",
         // The culture the wheel measures its text in, as WPF text blocks do by default.
         "en-US",
         // The development switch that runs a wheel choice on a folder ("folder:OrganizeFolder").

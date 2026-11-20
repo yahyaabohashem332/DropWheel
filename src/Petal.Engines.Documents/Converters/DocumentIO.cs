@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using PDFtoImage;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Engines.Documents.IO;
@@ -6,6 +7,7 @@ using Petal.Engines.Documents.Model;
 using Petal.Engines.Documents.Office;
 using Petal.Engines.Documents.Pdf;
 using Petal.Engines.Documents.Util;
+using SkiaSharp;
 using F = Petal.Core.Formats.Formats;
 
 namespace Petal.Engines.Documents.Converters;
@@ -144,6 +146,118 @@ internal static class PageImages
                 // The first failure as itself ("The disk is full"), not wrapped.
                 System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerExceptions[0]).Throw();
             }
+        });
+    }
+
+    /// <summary>Writes all PDF pages as a single vertically concatenated image (long image).</summary>
+    public static IReadOnlyList<string> WriteLong(byte[] pdf, string inputPath, string outputPath, bool jpeg, ConversionSettings settings,
+        IProgress<double>? progress, double progressStart, CancellationToken ct)
+    {
+        var sizes = PdfRaster.PageSizes(pdf);
+        var pageCount = sizes.Count;
+        if (pageCount == 0)
+            return [];
+
+        // Render all pages first to calculate total size
+        var bitmaps = new List<SKBitmap>();
+        try
+        {
+            double maxWidth = 0;
+            double totalHeight = 0;
+            foreach (var (pageIndex, bitmap) in RenderAllForLong(pdf, settings.RenderDpi))
+            {
+                ct.ThrowIfCancellationRequested();
+                bitmaps.Add(bitmap);
+                maxWidth = Math.Max(maxWidth, bitmap.Width);
+                totalHeight += bitmap.Height;
+                progress?.Report(progressStart + (1 - progressStart) * 0.5 * bitmaps.Count / pageCount);
+            }
+
+            // Create concatenated bitmap
+            using var concatenated = new SKBitmap((int)maxWidth, (int)totalHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var canvas = new SKCanvas(concatenated);
+            canvas.Clear(SKColors.White);
+
+            double y = 0;
+            foreach (var bitmap in bitmaps)
+            {
+                ct.ThrowIfCancellationRequested();
+                // Center each page horizontally
+                double x = (maxWidth - bitmap.Width) / 2.0;
+                canvas.DrawBitmap(bitmap, (float)x, (float)y);
+                y += bitmap.Height;
+                progress?.Report(progressStart + (1 - progressStart) * (0.5 + 0.5 * bitmaps.IndexOf(bitmap) / pageCount));
+            }
+
+            // Save the concatenated image
+            return SafeOutput.WritePages(inputPath, outputPath, 1, paths =>
+            {
+                ImageTools.Save(concatenated, paths[0], jpeg, settings.ImageQuality);
+                progress?.Report(1);
+            });
+        }
+        finally
+        {
+            foreach (var b in bitmaps)
+                b.Dispose();
+        }
+    }
+
+    /// <summary>Renders all pages for long image concatenation, yielding each bitmap.</summary>
+    private static IEnumerable<(int PageIndex, SKBitmap Bitmap)> RenderAllForLong(byte[] pdf, int dpi)
+    {
+        var sizes = PdfRaster.PageSizes(pdf);
+        for (int start = 0; start < sizes.Count;)
+        {
+            int end = start + 1;
+            while (end < sizes.Count && PdfRaster.SafeDpi(sizes[end], dpi) == PdfRaster.SafeDpi(sizes[start], dpi) &&
+                   PdfRaster.Pixels(sizes[end], dpi) > 40_000_000 == PdfRaster.Pixels(sizes[start], dpi) > 40_000_000)
+                end++;
+            var pages = Enumerable.Range(start, end - start).ToList();
+            int i = 0;
+            foreach (var bitmap in DrawnForLong(pdf, pages, PdfRaster.Options(sizes[start], dpi)))
+                yield return (pages[i++], bitmap);
+            start = end;
+        }
+    }
+
+    private static IEnumerable<SKBitmap> DrawnForLong(byte[] pdf, IReadOnlyList<int> pages, RenderOptions options)
+    {
+        IEnumerator<SKBitmap> drawn;
+        lock (PdfRaster.Gate)
+            drawn = Conversion.ToImages(pdf, pages, null, options).GetEnumerator();
+        try
+        {
+            while (true)
+            {
+                SKBitmap? bitmap;
+                lock (PdfRaster.Gate)
+                    bitmap = drawn.MoveNext() ? drawn.Current : null;
+                if (bitmap is null)
+                    yield break;
+                yield return bitmap;
+            }
+        }
+        finally
+        {
+            lock (PdfRaster.Gate)
+                drawn.Dispose();
+        }
+    }
+
+    /// <summary>Writes only the first page of the PDF as an image.</summary>
+    public static IReadOnlyList<string> WriteFirst(byte[] pdf, string inputPath, string outputPath, bool jpeg, ConversionSettings settings,
+        IProgress<double>? progress, double progressStart, CancellationToken ct)
+    {
+        var count = PdfRaster.PageSizes(pdf).Count;
+        if (count == 0)
+            return [];
+
+        using var bitmap = PdfRaster.Render(pdf, 0, settings.RenderDpi);
+        return SafeOutput.WritePages(inputPath, outputPath, 1, paths =>
+        {
+            ImageTools.Save(bitmap, paths[0], jpeg, settings.ImageQuality);
+            progress?.Report(1);
         });
     }
 }

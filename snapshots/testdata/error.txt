@@ -1,0 +1,236 @@
+trimvideo: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.TrimVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 124
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__12() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 367
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+speed: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.ChangeSpeedWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 281
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__14() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 369
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+split: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.SplitVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 438
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__16() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 371
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+redactvideo: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.RedactVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 556
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__17() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 372
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shorts: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__107() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 502
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shortslistening: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Shorts|1(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 332
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__108() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 503
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shortsreview: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Shorts|1(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 332
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__109() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 504
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dub: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__110() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 506
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbest: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__125() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 521
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbestmissing: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__126() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 522
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbestkey: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__127() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 523
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubpreparing: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__131() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 527
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubreview: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__132() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 528
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytext: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__140() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 551
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytextlistening: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__EditByText|3(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 344
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__141() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 552
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytextwords: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__EditByText|3(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 344
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__142() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 553
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+stepguide: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Screen.StepGuideWindow.Load(String path) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 141
+   at Petal.App.Screen.StepGuideWindow.StepRow(Int32 index) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 97
+   at Petal.App.Screen.StepGuideWindow.Fill() in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 74
+   at Petal.App.Screen.StepGuideWindow..ctor(IReadOnlyList`1 steps, String folder) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 67
+   at Petal.App.Screen.StepGuideWindow.ForSnapshot(IReadOnlyList`1 steps) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 37
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__144() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 568
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+trimvideo: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.TrimVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 124
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__12() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 367
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+speed: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.ChangeSpeedWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 281
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__14() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 369
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+split: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.SplitVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 438
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__16() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 371
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+redactvideo: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.VideoToolWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at, Double previewHeight, Boolean showPlay) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 37
+   at Petal.App.Tools.Windows.RedactVideoWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\VideoWindows.cs:line 556
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__17() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 372
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shorts: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__107() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 502
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shortslistening: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Shorts|1(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 332
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__108() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 503
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+shortsreview: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.MakeShortsWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MakeShortsWindow.cs:line 200
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Shorts|1(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 332
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__109() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 504
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dub: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__110() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 506
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbest: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__125() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 521
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbestmissing: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__126() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 522
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubbestkey: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__127() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 523
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubpreparing: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__131() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 527
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+dubreview: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.DubWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\DubWindow.cs:line 119
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__Dub|2(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 338
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__132() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 528
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytext: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__140() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 551
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytextlistening: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__EditByText|3(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 344
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__141() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 552
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+editbytextwords: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Tools.Windows.MediaToolWindow.AttachPlayer(Grid host) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\MediaToolWindow.cs:line 104
+   at Petal.App.Tools.Windows.EditByTextWindow..ctor(ToolInfo tool, IReadOnlyList`1 files, JobRunner jobs, ScreenPoint at) in D:\plugins\Tangerine\src\Petal.App\Tools\Windows\EditByTextWindow.cs:line 142
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>g__EditByText|3(Action`1 then) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 344
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__142() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 553
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49
+stepguide: System.UriFormatException: Invalid URI: The format of the URI could not be determined.
+   at System.Uri..ctor(String uriString)
+   at Petal.App.Screen.StepGuideWindow.Load(String path) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 141
+   at Petal.App.Screen.StepGuideWindow.StepRow(Int32 index) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 97
+   at Petal.App.Screen.StepGuideWindow.Fill() in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 74
+   at Petal.App.Screen.StepGuideWindow..ctor(IReadOnlyList`1 steps, String folder) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 67
+   at Petal.App.Screen.StepGuideWindow.ForSnapshot(IReadOnlyList`1 steps) in D:\plugins\Tangerine\src\Petal.App\Screen\StepGuideWindow.cs:line 37
+   at Petal.App.DesignSnapshots.<>c__DisplayClass10_0.<ExtraToolCases>b__144() in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 568
+   at Petal.App.DesignSnapshots.RunToolsAsync(String[] args) in D:\plugins\Tangerine\src\Petal.App\DesignSnapshots.cs:line 49

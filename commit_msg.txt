@@ -1,0 +1,16 @@
+DropWheel 1.23.0: PDF long/first page converters, auto chains, batch progress, date/recycle options, Arabic localization
+
+- Added PreserveOriginalDates option to keep original file creation/modification dates on converted results
+- Added MoveOriginalToRecycleBin option to move source files to Recycle Bin after successful conversion
+- Added PDF long image converters (vertically concatenated pages to PNG/JPG): pdflongpng, pdflongjpg
+- Added PDF first page converters (first page only to PNG/JPG): pdffirstpng, pdffirstjpg
+- Added automatic conversion chains (multi-step like HWPX to PDF to PNG) with wheel display "(via X to Y)"
+- Added batch progress ring on wheel for up to 100 files with visual progress arc
+- All 8 languages localized (Arabic, English, Spanish, French, Persian, Indonesian, Turkish, Urdu)
+- All UI strings have Arabic entries in Arabic.cs table (enforced by LocalizationTests)
+- Microsoft Store compatible licenses verified (MIT, Apache-2.0, BSD, ISC, MS-PL; LGPL for FFmpeg/Magick native handled as separate replaceable binaries; GPL espeak-ng runs as separate process)
+- Conversion matrix updated to 354 paths (+4 new PDF outputs)
+- JobRunner BatchWidth increased to 100 for light formats with BatchProgressCallback
+- WorkItem captures original file dates at conversion start
+
+Co-Authored-By: Claude Code <noreply@anthropic.com>
