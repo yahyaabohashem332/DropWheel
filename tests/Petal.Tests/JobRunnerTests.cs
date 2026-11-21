@@ -146,33 +146,40 @@ public class JobRunnerTests : IDisposable
         var originalCreation = File.GetCreationTime(source);
         var originalWrite = File.GetLastWriteTime(source);
 
+        var originalSetting = SettingsStore.Current.Conversion.PreserveOriginalDates;
         SettingsStore.Current.Conversion.PreserveOriginalDates = true;
         Console.WriteLine($"PreserveOriginalDates: {SettingsStore.Current.Conversion.PreserveOriginalDates}");
-
-        await RunOnStaThreadAsync(async () =>
+        try
         {
-            Console.WriteLine("Starting conversion...");
-            var runner = new JobRunner(Petal.App.EngineSetup.CreateConverters());
-            try
+            await RunOnStaThreadAsync(async () =>
             {
-                await runner.ConvertAsync([source], F.Webp, new ScreenPoint(100, 100));
-                Console.WriteLine("Conversion completed");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Conversion failed: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                throw;
-            }
-        });
+                Console.WriteLine("Starting conversion...");
+                var runner = new JobRunner(Petal.App.EngineSetup.CreateConverters());
+                try
+                {
+                    await runner.ConvertAsync([source], F.Webp, new ScreenPoint(100, 100));
+                    Console.WriteLine("Conversion completed");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Conversion failed: {ex.Message}");
+                    Console.WriteLine(ex.StackTrace);
+                    throw;
+                }
+            });
 
-        var outputs = Directory.GetFiles(_dir, "*.webp");
-        Console.WriteLine($"Outputs found: {outputs.Length}");
-        foreach (var o in outputs) Console.WriteLine($"  {o}");
-        Assert.Single(outputs);
-        var output = outputs[0];
-        Assert.Equal(originalCreation, File.GetCreationTime(output));
-        Assert.Equal(originalWrite, File.GetLastWriteTime(output));
+            var outputs = Directory.GetFiles(_dir, "*.webp");
+            Console.WriteLine($"Outputs found: {outputs.Length}");
+            foreach (var o in outputs) Console.WriteLine($"  {o}");
+            Assert.Single(outputs);
+            var output = outputs[0];
+            Assert.Equal(originalCreation, File.GetCreationTime(output));
+            Assert.Equal(originalWrite, File.GetLastWriteTime(output));
+        }
+        finally
+        {
+            SettingsStore.Current.Conversion.PreserveOriginalDates = originalSetting;
+        }
     }
 
     [Fact]
@@ -181,18 +188,25 @@ public class JobRunnerTests : IDisposable
         var source = Picture("source.jpg", 43);
         Assert.True(File.Exists(source));
 
+        var originalSetting = SettingsStore.Current.Conversion.MoveOriginalToRecycleBin;
         SettingsStore.Current.Conversion.MoveOriginalToRecycleBin = true;
-
-        await RunOnStaThreadAsync(async () =>
+        try
         {
-            await new JobRunner(Petal.App.EngineSetup.CreateConverters())
-                .ConvertAsync([source], F.Webp, new ScreenPoint(100, 100));
-        });
+            await RunOnStaThreadAsync(async () =>
+            {
+                await new JobRunner(Petal.App.EngineSetup.CreateConverters())
+                    .ConvertAsync([source], F.Webp, new ScreenPoint(100, 100));
+            });
 
-        Assert.False(File.Exists(source), "Source file should be moved to Recycle Bin");
-        // Verify it's in the recycle bin by trying to restore it
-        var restored = RecycleBin.Restore([source]);
-        Assert.NotEmpty(restored);
+            Assert.False(File.Exists(source), "Source file should be moved to Recycle Bin");
+            // Verify it's in the recycle bin by trying to restore it
+            var restored = RecycleBin.Restore([source]);
+            Assert.NotEmpty(restored);
+        }
+        finally
+        {
+            SettingsStore.Current.Conversion.MoveOriginalToRecycleBin = originalSetting;
+        }
     }
 
     [Fact]

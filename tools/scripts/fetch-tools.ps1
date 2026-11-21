@@ -105,8 +105,8 @@ $magickPdb = Join-Path $magickDir 'Magick.Native-Q8-x64.pdb'
 $magickRelease = 'v1.0.0-dropwheel-magick'
 $magickRepo = 'yahyaabohashem332/dropwheel-magick'
 # SHA-256 will be set after the release is published on the other machine
-$magickDllSha256 = 'PLACEHOLDER_DLL_SHA256'
-$magickPdbSha256 = 'PLACEHOLDER_PDB_SHA256'
+$magickDllSha256 = '1DA3C46DADBE5B56C4B20F77A454CB969288D4640D933C9CC6D1443AB0E48CB2'
+$magickPdbSha256 = '45EE465B8614D5077BEAFD15764A63D1CF8E95C2226C4BDE038466C64D051472'
 $currentDll = if (Test-Path $magickDll) { (Get-FileHash $magickDll -Algorithm SHA256).Hash } else { '' }
 $currentPdb = if (Test-Path $magickPdb) { (Get-FileHash $magickPdb -Algorithm SHA256).Hash } else { '' }
 if ($currentDll -ne $magickDllSha256.ToUpper() -or $currentPdb -ne $magickPdbSha256.ToUpper()) {
