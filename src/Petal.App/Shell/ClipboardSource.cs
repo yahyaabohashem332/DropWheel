@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using Petal.Core.Util;
 
 namespace Petal.App.Shell;
 
@@ -11,7 +12,9 @@ public abstract record ClipboardContent
     public sealed record Files(IReadOnlyList<string> Paths) : ClipboardContent;
 
     /// <summary>A single web address: it becomes a QR code.</summary>
-    public sealed record Link(string Url) : ClipboardContent;
+    /// <param name="Url">The web address.</param>
+    /// <param name="LinkAnalysis">Fake link analysis result; null if not analyzed.</param>
+    public sealed record Link(string Url, FakeLinkDetector.AnalysisResult? LinkAnalysis = null) : ClipboardContent;
 }
 
 /// <summary>
@@ -38,7 +41,10 @@ public static class ClipboardSource
                 if (text.Length == 0)
                     return null;
                 if (IsLink(text))
-                    return new ClipboardContent.Link(text);
+                {
+                    var analysis = FakeLinkDetector.Analyze(text);
+                    return new ClipboardContent.Link(text, analysis);
+                }
                 return new ClipboardContent.Files([SaveText(text)]);
             }
         }

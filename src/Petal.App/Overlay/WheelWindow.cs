@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using Petal.App.Input;
 using Petal.App.Interop;
 using Petal.App.Visuals;
+using Petal.Core.Util;
 using static Petal.App.Interop.NativeMethods;
 using Petal.App.Localization;
 
@@ -991,6 +992,13 @@ public sealed partial class WheelWindow : Window
         };
         Log.Info($"wheel: downloading a dragged link from {address.Host}");
         link.Start();
+
+        // Check for fake link warning immediately
+        if (link.LinkAnalysis.IsSuspicious)
+        {
+            ShowLinkWarning(link.LinkAnalysis);
+        }
+
         if (link.Path is { } named)
         {
             _files = [named];
@@ -1004,6 +1012,44 @@ public sealed partial class WheelWindow : Window
             Draw(animate: true);
         }
     }
+
+    private void ShowLinkWarning(FakeLinkDetector.AnalysisResult analysis)
+    {
+        if (!analysis.IsSuspicious) return;
+
+        var topWarning = analysis.Warnings.OrderByDescending(w => GetWarningSeverity(w.Type)).First();
+        var title = L.T("⚠ Suspicious link detected");
+        var subtitle = L.F("{0} (Risk: {1}%)", topWarning.Message, analysis.RiskScore);
+
+        _content = new WheelContent([], title);
+        Draw(animate: true);
+
+        // Show detailed warning in the hub after a moment
+        _ = Task.Delay(2000).ContinueWith(_ =>
+        {
+            if (!_open || _link is null) return;
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_link != _link || !_open) return;
+                SetHub(title, subtitle + "\n\n" + string.Join("\n", analysis.Warnings.Select(w => w.Detail)), animate: true);
+            });
+        });
+    }
+
+    private static int GetWarningSeverity(FakeLinkDetector.WarningType type) => type switch
+    {
+        FakeLinkDetector.WarningType.MismatchedDomain => 10,
+        FakeLinkDetector.WarningType.BrandImpersonation => 9,
+        FakeLinkDetector.WarningType.HomographAttack => 8,
+        FakeLinkDetector.WarningType.UrlShortener => 7,
+        FakeLinkDetector.WarningType.PunycodeDomain => 7,
+        FakeLinkDetector.WarningType.IpAddress => 6,
+        FakeLinkDetector.WarningType.SuspiciousTld => 5,
+        FakeLinkDetector.WarningType.ExcessiveSubdomains => 4,
+        FakeLinkDetector.WarningType.SuspiciousPath => 3,
+        FakeLinkDetector.WarningType.MissingHttps => 2,
+        _ => 1
+    };
 
     private static string LinkTitle(Shell.LinkDownload link)
     {

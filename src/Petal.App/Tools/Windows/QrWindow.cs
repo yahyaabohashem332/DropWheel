@@ -11,6 +11,7 @@ using Petal.App.Localization;
 using Petal.App.Settings;
 using Petal.App.Shell;
 using Petal.App.Tools.Parts;
+using Petal.Core.Util;
 using Petal.Engines.Imaging;
 
 namespace Petal.App.Tools.Windows;
@@ -135,6 +136,20 @@ public sealed class QrWindow : ToolWindow
             try
             {
                 _modules = QrGenerator.Encode(payload, _strength.Value);
+
+                // Check for fake link if payload is a URL
+                if (IsLikelyUrl(payload))
+                {
+                    var analysis = FakeLinkDetector.Analyze(payload);
+                    if (analysis.IsSuspicious)
+                    {
+                        var topWarning = analysis.Warnings
+                            .OrderByDescending(w => GetWarningSeverity(w.Type))
+                            .First();
+                        _problem.Text = L.F("⚠ {0} (Risk: {1}%)", topWarning.Message, analysis.RiskScore);
+                        _problem.ToolTip = string.Join("\n", analysis.Warnings.Select(w => $"{w.Message}: {w.Detail}"));
+                    }
+                }
             }
             catch (ArgumentException)
             {
@@ -146,6 +161,28 @@ public sealed class QrWindow : ToolWindow
         _hint.Visibility = _modules is null ? Visibility.Visible : Visibility.Collapsed;
         PrimaryButton.IsEnabled = ResetButton.IsEnabled = _modules is not null;
     }
+
+    private static bool IsLikelyUrl(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || text.Contains(' ')) return false;
+        return Uri.TryCreate(text, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+    }
+
+    private static int GetWarningSeverity(FakeLinkDetector.WarningType type) => type switch
+    {
+        FakeLinkDetector.WarningType.MismatchedDomain => 10,
+        FakeLinkDetector.WarningType.BrandImpersonation => 9,
+        FakeLinkDetector.WarningType.HomographAttack => 8,
+        FakeLinkDetector.WarningType.UrlShortener => 7,
+        FakeLinkDetector.WarningType.PunycodeDomain => 7,
+        FakeLinkDetector.WarningType.IpAddress => 6,
+        FakeLinkDetector.WarningType.SuspiciousTld => 5,
+        FakeLinkDetector.WarningType.ExcessiveSubdomains => 4,
+        FakeLinkDetector.WarningType.SuspiciousPath => 3,
+        FakeLinkDetector.WarningType.MissingHttps => 2,
+        _ => 1
+    };
 
     /// <summary>The code with a quiet zone, <paramref name="scale"/> pixels per module.</summary>
     private BitmapSource Render(bool[,] modules, int scale)

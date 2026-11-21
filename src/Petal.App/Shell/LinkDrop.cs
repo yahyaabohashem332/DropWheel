@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using Microsoft.Win32;
 using Petal.Core.Formats;
+using Petal.Core.Util;
 using DataObject = System.Windows.IDataObject;
 
 namespace Petal.App.Shell;
@@ -170,9 +171,13 @@ public sealed class LinkDownload
         _folder = folder;
         _context = SynchronizationContext.Current;
         Name = LinkDrop.NameFromAddress(address);
+        LinkAnalysis = FakeLinkDetector.Analyze(address.ToString());
     }
 
     public Uri Address { get; }
+
+    /// <summary>Fake link analysis for the address.</summary>
+    public FakeLinkDetector.AnalysisResult LinkAnalysis { get; }
 
     /// <summary>The drag's own folder under <see cref="VirtualDrop.StagingRoot"/>.</summary>
     public string Folder => _folder;

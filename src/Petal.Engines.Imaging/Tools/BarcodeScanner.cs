@@ -1,4 +1,5 @@
 using ImageMagick;
+using Petal.Core.Util;
 using ZXing;
 using ZXing.Common;
 
@@ -8,9 +9,11 @@ namespace Petal.Engines.Imaging;
 public readonly record struct PixelPoint(float X, float Y);
 
 /// <summary>A decoded QR code or barcode.</summary>
+/// <param name="Text">The decoded text content.</param>
 /// <param name="Format">Symbology, e.g. "QR_CODE", "EAN_13", "CODE_128".</param>
 /// <param name="Points">Finder/end points in upright image pixels.</param>
-public sealed record BarcodeResult(string Text, string Format, IReadOnlyList<PixelPoint> Points);
+/// <param name="LinkAnalysis">Fake link analysis if the text is a URL; null otherwise.</param>
+public sealed record BarcodeResult(string Text, string Format, IReadOnlyList<PixelPoint> Points, FakeLinkDetector.AnalysisResult? LinkAnalysis = null);
 
 /// <summary>Reads QR codes and 1D/2D barcodes from images (ZXing.Net).</summary>
 public static class BarcodeScanner
@@ -61,12 +64,29 @@ public static class BarcodeScanner
             .Where(r => !string.IsNullOrEmpty(r.Text))
             .GroupBy(r => (r.Text, r.BarcodeFormat))
             .Select(g => g.First())
-            .Select(r => new BarcodeResult(
-                r.Text,
-                r.BarcodeFormat.ToString(),
-                (r.ResultPoints ?? []).Where(p => p is not null).Select(p => new PixelPoint(p.X, p.Y)).ToList()))
+            .Select(r =>
+            {
+                var text = r.Text;
+                FakeLinkDetector.AnalysisResult? analysis = null;
+                if (r.BarcodeFormat == BarcodeFormat.QR_CODE && IsLikelyUrl(text))
+                {
+                    analysis = FakeLinkDetector.Analyze(text);
+                }
+                return new BarcodeResult(
+                    text,
+                    r.BarcodeFormat.ToString(),
+                    (r.ResultPoints ?? []).Where(p => p is not null).Select(p => new PixelPoint(p.X, p.Y)).ToList(),
+                    analysis);
+            })
             .OrderBy(r => r.Points.Count > 0 ? r.Points.Min(p => p.Y) : 0)
             .ThenBy(r => r.Points.Count > 0 ? r.Points.Min(p => p.X) : 0)
             .ToList();
+    }
+
+    private static bool IsLikelyUrl(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || text.Contains(' ')) return false;
+        return Uri.TryCreate(text, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }

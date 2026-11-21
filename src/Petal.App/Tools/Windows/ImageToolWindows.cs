@@ -10,6 +10,7 @@ using Petal.App.Tools.Parts;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
+using Petal.Core.Util;
 using Petal.Engines.Imaging;
 using Petal.App.Localization;
 
@@ -425,10 +426,48 @@ public static class ImageToolSetup
         Clipboard.SetText(text);
         var first = results[0].Text;
         bool link = Uri.TryCreate(first, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
+        // Check for fake link warnings
+        var fakeWarnings = new List<string>();
+        foreach (var result in results)
+        {
+            if (result.LinkAnalysis?.IsSuspicious == true)
+            {
+                var topWarning = result.LinkAnalysis.Warnings
+                    .OrderByDescending(w => GetWarningSeverity(w.Type))
+                    .FirstOrDefault();
+                if (topWarning != null)
+                {
+                    fakeWarnings.Add($"⚠ {topWarning.Message}: {topWarning.Detail}");
+                }
+            }
+        }
+
+        var subtitle = link ? first + " · " + L.T("click to open") : first;
+        if (fakeWarnings.Count > 0)
+        {
+            subtitle += "\n\n" + string.Join("\n", fakeWarnings);
+        }
+
         card.Succeed(results.Count == 1 ? L.T("Code copied") : L.P(results.Count, "{0} code copied", "{0} codes copied"),
-            link ? first + " · " + L.T("click to open") : first,
+            subtitle,
             link ? () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(first) { UseShellExecute = true }) : null);
     }
+
+    private static int GetWarningSeverity(FakeLinkDetector.WarningType type) => type switch
+    {
+        FakeLinkDetector.WarningType.MismatchedDomain => 10,
+        FakeLinkDetector.WarningType.BrandImpersonation => 9,
+        FakeLinkDetector.WarningType.HomographAttack => 8,
+        FakeLinkDetector.WarningType.UrlShortener => 7,
+        FakeLinkDetector.WarningType.PunycodeDomain => 7,
+        FakeLinkDetector.WarningType.IpAddress => 6,
+        FakeLinkDetector.WarningType.SuspiciousTld => 5,
+        FakeLinkDetector.WarningType.ExcessiveSubdomains => 4,
+        FakeLinkDetector.WarningType.SuspiciousPath => 3,
+        FakeLinkDetector.WarningType.MissingHttps => 2,
+        _ => 1
+    };
 
     private static async Task<string> CompressImage(string input, CompressRequest request, IProgress<double> progress, CancellationToken ct)
     {

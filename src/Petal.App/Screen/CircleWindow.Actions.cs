@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -7,6 +8,7 @@ using System.Windows.Media.Imaging;
 using Petal.App.Localization;
 using Petal.Core.Models;
 using Petal.Core.Text;
+using Petal.Core.Util;
 using Petal.Engines.Documents.Ocr;
 using Petal.Engines.Imaging;
 using Petal.Recipes;
@@ -413,12 +415,54 @@ internal sealed partial class CircleWindow
         var text = c.Codes[0].Text;
         if (Uri.TryCreate(text, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
         {
+            // Check for fake link warnings
+            var fakeWarnings = new List<string>();
+            foreach (var result in c.Codes)
+            {
+                if (result.LinkAnalysis?.IsSuspicious == true)
+                {
+                    var topWarning = result.LinkAnalysis.Warnings
+                        .OrderByDescending(w => GetWarningSeverity(w.Type))
+                        .FirstOrDefault();
+                    if (topWarning != null)
+                    {
+                        fakeWarnings.Add($"⚠ {topWarning.Message}: {topWarning.Detail}");
+                    }
+                }
+            }
+
+            if (fakeWarnings.Count > 0)
+            {
+                // Show warning and ask for confirmation
+                var card = ShowCard("alert", L.T("⚠ Suspicious link detected"));
+                var warningText = string.Join("\n\n", fakeWarnings);
+                card.Text = L.F("{0}\n\n{1}", text, warningText);
+                card.Chip("open", L.T("Open anyway"), () => { Open(text); Leave("Link opened", text); });
+                card.Chip("copy", L.T("Copy instead"), () => Copy(text, "Code copied"));
+                return;
+            }
+
             Open(text);
             Leave("Link opened", text);
         }
         else
             Copy(text, "Code copied");
     }
+
+    private static int GetWarningSeverity(FakeLinkDetector.WarningType type) => type switch
+    {
+        FakeLinkDetector.WarningType.MismatchedDomain => 10,
+        FakeLinkDetector.WarningType.BrandImpersonation => 9,
+        FakeLinkDetector.WarningType.HomographAttack => 8,
+        FakeLinkDetector.WarningType.UrlShortener => 7,
+        FakeLinkDetector.WarningType.PunycodeDomain => 7,
+        FakeLinkDetector.WarningType.IpAddress => 6,
+        FakeLinkDetector.WarningType.SuspiciousTld => 5,
+        FakeLinkDetector.WarningType.ExcessiveSubdomains => 4,
+        FakeLinkDetector.WarningType.SuspiciousPath => 3,
+        FakeLinkDetector.WarningType.MissingHttps => 2,
+        _ => 1
+    };
 
     // ---------- the picture ----------
 

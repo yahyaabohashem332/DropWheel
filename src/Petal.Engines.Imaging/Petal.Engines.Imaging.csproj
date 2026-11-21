@@ -13,11 +13,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </None>
-    <None Include="..\..\tools\bin\magick\Magick.Native-Q8-x64.pdb">
-      <Link>Magick.Native-Q8-x64.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </None>
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" />
     <PackageReference Include="Microsoft.AI.DirectML" Version="1.15.4" GeneratePathProperty="true" />
