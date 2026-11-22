@@ -18,6 +18,8 @@
 .EXAMPLE
   pwsh tools\scripts\build.ps1
 #>
+# PowerShell 7: Windows PowerShell 5.1 lacks ECDsa.ImportFromPem (the update signature) and utf8NoBOM.
+#Requires -Version 7.0
 param(
     [string]$Version = '1.0.0',
     [string]$Notes = '',
@@ -123,19 +125,27 @@ $ffmpegVersion = & (Join-Path $publish 'tools\ffmpeg\ffmpeg.exe') -hide_banner -
 if (($ffmpegVersion | Select-Object -First 1) -notmatch 'dropwheel') { throw "The FFmpeg in the build isn't DropWheel's own LGPL build: $ffmpegVersion" }
 $ffmpegVersion | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
 
-# Verify Magick.Native is DropWheel's custom build (no libheif/libde265/openh264).
+# Verify Magick.Native is DropWheel's custom build: no HEVC or H.264 codec inside (libde265, openh264, x265,
+# kvazaar). libheif itself stays: it only reads and writes the HEIF/AVIF container, and decodes AVIF with
+# aom/dav1d. The libraries are linked into the DLL, so their names and API symbols are looked for in its bytes.
 $magickDllPath = Join-Path $publish 'Magick.Native-Q8-x64.dll'
 if (-not (Test-Path $magickDllPath)) { throw "Magick.Native-Q8-x64.dll not found in build output" }
-$magickBytes = [System.IO.File]::ReadAllBytes($magickDllPath)
-$magickContent = [System.Text.Encoding]::Latin1.GetString($magickBytes)
-$found = @()
-foreach ($lib in "libheif", "libde265", "openh264") {
-    if ($magickContent -match $lib) { $found += $lib }
+$magickContent = [System.Text.Encoding]::Latin1.GetString([System.IO.File]::ReadAllBytes($magickDllPath))
+$codecMarks = [ordered]@{
+    'libde265' = @('libde265', 'de265_')
+    'openh264' = @('openh264', 'WelsCreate')
+    'x265' = @('x265_')
+    'kvazaar' = @('kvazaar', 'kvz_')
 }
+$found = @($codecMarks.Keys | Where-Object {
+    foreach ($mark in $codecMarks[$_]) {
+        if ($magickContent.IndexOf($mark, [StringComparison]::OrdinalIgnoreCase) -ge 0) { return $true }
+    }
+})
 if ($found.Count -gt 0) {
-    throw "FAIL: Magick.Native contains excluded patented libraries: $($found -join ', '). This build cannot ship to the Microsoft Store."
+    throw "FAIL: Magick.Native contains patented codecs: $($found -join ', '). This build cannot ship to the Microsoft Store."
 }
-Write-Host "PASS: Magick.Native verified - no libheif/libde265/openh264 found"
+Write-Host "PASS: Magick.Native holds no libde265, openh264, x265 or kvazaar"
 
 Remove-Item (Join-Path $licences 'THIRD-PARTY-NOTICES.md') -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $root 'store\THIRD-PARTY-NOTICES.md') (Join-Path $licences 'THIRD-PARTY-NOTICES.txt')
