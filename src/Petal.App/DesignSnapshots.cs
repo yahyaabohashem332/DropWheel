@@ -1257,6 +1257,22 @@ internal static class DesignSnapshots
         Shot("ring-work", () => wheel.Snapshot([], WheelMode.Conversions, 0, background, pages: work, page: 0, keyboard: true));
         Shot("ring-work-spaces", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: work, page: 0,
             openGroup: s.Wheels.First(w => w.Template == "work").Items.FindIndex(e => e.Kind == Wheels.EntryKind.Workspaces)));
+        // A file with more conversions than one ring holds (a PDF has 14): a second ring, with the keys, the names below,
+        // and with nine favourites more (24 petals).
+        Shot("two-rings-keys", () => wheel.Snapshot(files, WheelMode.Conversions, 6, background, keyboard: true));
+        Shot("two-rings-below", () => wheel.Snapshot(files, WheelMode.Conversions, 1, background, hintBelow: true));
+        var favourites = s.Favourites.ToList();
+        try
+        {
+            foreach (var side in new[] { 640, 800, 1024, 1280, 1600, 1920, 2048, 2560, 3840 })
+                s.Favourites.Add(new Favourite { Name = $"{side} px", Format = Petal.Core.Formats.Formats.Jpg.Id, LongestSide = side });
+            Shot("two-rings-many", () => wheel.Snapshot(files, WheelMode.Conversions, 18, background));
+        }
+        finally
+        {
+            s.Favourites.Clear();
+            s.Favourites.AddRange(favourites);
+        }
         Shot("hub-calc", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "12% of 340"));
         Shot("hub-units", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: pages, page: 1, keyboard: true, calc: "5 km in mi"));
         var saved = (s.WheelStyle, s.ShowPetalNames, s.CancelZone, s.WheelMotion);

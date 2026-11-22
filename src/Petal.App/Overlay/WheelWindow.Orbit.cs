@@ -34,7 +34,9 @@ public sealed partial class WheelWindow
     private bool _orbitClock;
     private TimeSpan _lastFrame;
 
-    private static bool CanOrbit(WheelItem item) => item.IsGroup && item.Children is { Count: > 0 } c && c.Count <= OrbitCapacity;
+    // A wheel with a second ring has no groups (WheelGeometry.TwoRings), so an orbit always opens around a single wheel.
+    private bool CanOrbit(WheelItem item) =>
+        item.IsGroup && item.Children is { Count: > 0 } c && c.Count <= OrbitCapacity && _rimRadius <= WheelGeometry.OuterRadius;
 
     private bool Animated => _options.Motion != WheelMotion.None && SystemParameters.ClientAreaAnimation;
 
@@ -51,7 +53,7 @@ public sealed partial class WheelWindow
             SetHighlight(group, null);
 
         var item = _content.Items[group];
-        double anchor = WheelGeometry.Angle(group, _content.Items.Count);
+        double anchor = _slots[group].Angle;
         // Reopened before its bubbles got home: they turn round.
         var o = _leaving.FirstOrDefault(l => l.Group == group && ReferenceEquals(l.Item, item));
         if (o is not null)

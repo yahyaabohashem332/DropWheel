@@ -73,6 +73,10 @@ public static class Chains
     }
 
     /// <summary>A short name for a petal in the chain's title: a format's label, otherwise its name.</summary>
-    public static string Name(WheelItem item) =>
-        item.Payload is FileFormat or Favourite or Recipe ? item.Label : L.T(item.Name);
+    public static string Name(WheelItem item) => item.Payload switch
+    {
+        FileFormat => L.T(item.Label),
+        Favourite or Recipe => item.Label,
+        _ => L.T(item.Name),
+    };
 }

@@ -24,9 +24,24 @@ namespace Petal.App.Overlay;
 /// </summary>
 public sealed partial class WheelWindow : Window
 {
-    public const double Side = 420;
+    // Room for a wheel with its second ring, the key numbers outside it and the strip of wheel names above or below.
+    public const double Side = 520;
     private const double Centre = Side / 2;
-    private const double CatchRadius = WheelGeometry.OuterRadius + 36;
+
+    /// <summary>
+    /// How far a wheel that grows a second ring moves out from a screen edge at most: near an edge the glass is captured
+    /// this much further, so it is already there.
+    /// </summary>
+    private const double GlassSpare = WheelGeometry.TwoRingRim - WheelGeometry.OuterRadius;
+
+    /// <summary>
+    /// The glass is seen only on the disc of the wheel: it is captured around the widest one (two rings), with room for the
+    /// blur to reach its edge, rather than across the whole window.
+    /// </summary>
+    private const double GlassReach = WheelGeometry.TwoRingRim + 16;
+
+    /// <summary>The near-miss catcher reaches this far past the rim.</summary>
+    private double CatchRadius => _rimRadius + 36;
 
     private static readonly Brush HitBrush = Freeze(new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)));
 
@@ -43,6 +58,8 @@ public sealed partial class WheelWindow : Window
     private readonly Ellipse _tintHub = new();
     private readonly Ellipse _rim = new();
     private readonly Ellipse _groove = new();
+    // Between the wheel and its second ring.
+    private readonly Ellipse _ringGroove = new();
     private readonly Ellipse _shadow = new();
     private readonly Path _hubShape = new();
     private readonly RectangleGeometry _hubOutline = new();
@@ -73,6 +90,21 @@ public sealed partial class WheelWindow : Window
     private InkFont? _labelFont;
     private InkFont? _hubTitleFont;
     private InkFont? _hubSubtitleFont;
+
+    // Where each petal drawn sits, the glass rim around them, and the rim the wheel's place on screen leaves room for.
+    private PetalSlot[] _slots = [];
+    private double _rimRadius = WheelGeometry.OuterRadius;
+    private double _roomRadius = WheelGeometry.OuterRadius;
+    private bool _hintBelow;
+    // The glass behind the wheel, in screen pixels, and the window's place: the wheel can move on it without a new capture.
+    private BitmapSource? _glassCapture;
+    private Int32Rect _glassScreen;
+    private int _windowLeft, _windowTop;
+    private double _screenScale = 1;
+    // Placed where a wheel with a second ring would have to move out from a screen edge.
+    private bool _nearEdge;
+    // Drawn for a design snapshot: the window is never moved.
+    private bool _offScreen;
 
     private IntPtr _hwnd;
     private bool _open;
@@ -316,27 +348,72 @@ public sealed partial class WheelWindow : Window
     /// <summary>Centres the wheel on the cursor, kept on screen, and captures the glass behind it.</summary>
     private (int Left, int Top, int Size) Place(ScreenPoint cursor)
     {
+        _roomRadius = WheelGeometry.OuterRadius;
+        var (left, top, px) = Position(cursor);
+        // A solid wheel has nothing behind it to see through, so nothing is captured.
+        if (_options.Style == WheelStyle.Solid)
+        {
+            _glassCapture = null;
+            ApplyGlass(null);
+        }
+        else
+        {
+            int half = (int)Math.Ceiling((GlassReach + (_nearEdge ? GlassSpare : 0)) * _screenScale);
+            _glassScreen = new Int32Rect(_anchor.X - half, _anchor.Y - half, 2 * half, 2 * half);
+            _glassCapture = GlassCapture.CaptureBlurred(_glassScreen.X, _glassScreen.Y, _glassScreen.Width, _glassScreen.Height, _screenScale);
+            ApplyGlass(_glassCapture);
+        }
+        return (left, top, px);
+    }
+
+    /// <summary>
+    /// Where the window goes for a wheel centred on the cursor with room for a rim of <see cref="_roomRadius"/> on screen,
+    /// and what of it is on screen; the strip of wheel names goes above, or below when there is no room above.
+    /// </summary>
+    private (int Left, int Top, int Size) Position(ScreenPoint cursor)
+    {
         var (_, work, scale) = MonitorAt(new POINT(cursor.X, cursor.Y));
-        double margin = (WheelGeometry.OuterRadius + 18) * scale;
+        _screenScale = scale;
+        double margin = (_roomRadius + 18) * scale;
         int cx = (int)Math.Clamp(cursor.X, work.Left + margin, Math.Max(work.Left + margin, work.Right - margin));
         int cy = (int)Math.Clamp(cursor.Y, work.Top + margin, Math.Max(work.Top + margin, work.Bottom - margin));
+        double room = (WheelGeometry.TwoRingRim + 18) * scale;
+        _nearEdge = cx - work.Left < room || work.Right - cx < room || cy - work.Top < room || work.Bottom - cy < room;
         _anchor = new ScreenPoint(cx, cy);
         int px = (int)Math.Round(Side * scale);
         int left = cx - px / 2, top = cy - px / 2;
+        (_windowLeft, _windowTop) = (left, top);
         var onScreen = new Rect((work.Left - left) / scale - Centre, (work.Top - top) / scale - Centre,
             (work.Right - work.Left) / scale, (work.Bottom - work.Top) / scale);
         onScreen.Intersect(new Rect(-Centre, -Centre, Side, Side));
         _visible = onScreen.IsEmpty ? new Rect(-Centre, -Centre, Side, Side) : onScreen;
 
         // Hint goes below the ring when there is no room above it.
-        bool hintBelow = cy - work.Top < (WheelGeometry.OuterRadius + 64) * scale;
-        // The keys 1 to 9 sit just outside the ring when the keyboard can use them; the hint keeps clear of them.
-        double gap = 12 + (_interactive && _options.ShowNumbers ? 10 : 0);
-        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + gap : Centre - WheelGeometry.OuterRadius - gap - 30);
-
-        // A solid wheel has nothing behind it to see through, so nothing is captured.
-        ApplyGlass(_options.Style == WheelStyle.Solid ? null : GlassCapture.CaptureBlurred(left, top, px, px, scale));
+        _hintBelow = cy - work.Top < (_roomRadius + 64) * scale;
+        PlaceHint();
         return (left, top, px);
+    }
+
+    /// <summary>The strip of wheel names just outside the rim, clear of the keys 1 to 9 when the keyboard can use them.</summary>
+    private void PlaceHint()
+    {
+        double gap = 12 + (_interactive && _options.ShowNumbers ? 10 : 0);
+        Canvas.SetTop(_hint, _hintBelow ? Centre + _rimRadius + gap : Centre - _rimRadius - gap - 30);
+    }
+
+    /// <summary>
+    /// A wheel that grew a second ring near a screen edge moves out just enough for it to be whole on screen. The glass
+    /// was captured past the window (<see cref="GlassSpare"/>), so it stays the glass behind the wheel.
+    /// </summary>
+    private void MakeRoom()
+    {
+        if (_rimRadius <= _roomRadius || !_open || _hwnd == IntPtr.Zero || _offScreen)
+            return;
+        _roomRadius = _rimRadius;
+        var (left, top, px) = Position(_anchor);
+        SetWindowPos(_hwnd, HWND_TOPMOST, left, top, px, px, SWP_NOACTIVATE | SWP_NOSIZE);
+        if (_glassCapture is not null)
+            ApplyGlass(_glassCapture);
     }
 
     // ---------- click & keyboard mode (Explorer's context menu) ----------
@@ -351,7 +428,7 @@ public sealed partial class WheelWindow : Window
     private double CancelRadius => WheelGeometry.CancelRadius(_options.CancelZone);
 
     private int? HitTestAt(Point p) =>
-        _content is null ? null : WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _content.Items.Count, CancelRadius);
+        _content is null ? null : WheelGeometry.HitTest(new Vector(p.X - Centre, p.Y - Centre), _slots, CancelRadius);
 
     /// <summary>Maps a modifier key to the wheel it opens (follows the user's key settings).</summary>
     public Func<Key, WheelMode?>? ModeForKey { get; set; }
@@ -1292,9 +1369,16 @@ public sealed partial class WheelWindow : Window
         }
     }
 
-    /// <summary>The centre's name for a petal: a format's or favourite's own label, otherwise its name.</summary>
-    private static string HubTitle(WheelItem item) =>
-        item.Payload is Petal.Core.Formats.FileFormat or Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe ? item.Label : L.T(item.Name);
+    /// <summary>
+    /// The centre's name for a petal: a format's label as its petal shows it ("PNG", or "PNG (long)" in the user's
+    /// language), a favourite's or recipe's own name, otherwise its name.
+    /// </summary>
+    private static string HubTitle(WheelItem item) => item.Payload switch
+    {
+        Petal.Core.Formats.FileFormat => L.T(item.Label),
+        Petal.Core.Jobs.Favourite or Petal.Recipes.Recipe => item.Label,
+        _ => L.T(item.Name),
+    };
 
     /// <summary>The centre's second line for a petal: why it can't run, its state, what it does, or what kind it is.</summary>
     private string Subtitle(WheelItem item)
@@ -1338,6 +1422,7 @@ public sealed partial class WheelWindow : Window
         Shell.LinkDownload? link = null)
     {
         _visible = new Rect(-Centre, -Centre, Side, Side);
+        _offScreen = true;
         _link = link;
         _options = OptionsProvider();
         _palette = PaletteFor(_options);
@@ -1353,9 +1438,9 @@ public sealed partial class WheelWindow : Window
             Math.Max(0, (background.PixelHeight - (int)Side) / 2),
             Math.Min((int)Side, background.PixelWidth),
             Math.Min((int)Side, background.PixelHeight)));
-        ApplyGlass(_options.Style == WheelStyle.Solid ? null : GlassCapture.Blur(crop));
-        double gap = 12 + (keyboard && _options.ShowNumbers ? 10 : 0);
-        Canvas.SetTop(_hint, hintBelow ? Centre + WheelGeometry.OuterRadius + gap : Centre - WheelGeometry.OuterRadius - gap - 30);
+        ApplyGlass(_options.Style == WheelStyle.Solid ? null : GlassCapture.Blur(crop), new Rect(-Centre, -Centre, Side, Side));
+        _hintBelow = hintBelow;
+        PlaceHint();
         _root.Visibility = Visibility.Visible;
         Render(animate: false);
         if (openGroup is { } g && _content is not null && g < _content.Items.Count && CanOrbit(_content.Items[g]))
@@ -1391,6 +1476,7 @@ public sealed partial class WheelWindow : Window
         frame.Children.Remove(_root);
         Content = _root;
         _open = false;
+        _offScreen = false;
         _pages = null;
         _calc = null;
         _groups.Clear();
@@ -1438,6 +1524,8 @@ public sealed partial class WheelWindow : Window
         if (_content.IsEmpty)
         {
             _ring.Visibility = Visibility.Collapsed;
+            _slots = [];
+            SetRim(WheelGeometry.OuterRadius);
             _emptyCard.Visibility = Visibility.Visible;
             _emptyText.Text = _content.EmptyMessage;
             _emptyText.FlowDirection = L.Direction;
@@ -1454,8 +1542,13 @@ public sealed partial class WheelWindow : Window
             _emptyCard.Visibility = Visibility.Collapsed;
             int n = _content.Items.Count;
             bool tools = _mode != WheelMode.Conversions || _pages is not null || _groups.Count > 0;
+            // More petals than one ring holds well, and no groups to open on an orbit: a second ring around the wheel.
+            _slots = WheelGeometry.Slots(n, WheelGeometry.TwoRings(n, _content.Items.Any(i => i.IsGroup)));
+            SetRim(WheelGeometry.Rim(_slots));
+            // One size of name on both rings, the size the busier ring's petals take, so they read as one set.
+            int sizing = _slots.GroupBy(slot => slot.Ring).Max(ring => ring.Count());
             for (int i = 0; i < n; i++)
-                AddPetal(_content.Items[i], i, n, tools || _content.Items[i].Payload is not Petal.Core.Formats.FileFormat, p);
+                AddPetal(_content.Items[i], i, _slots[i], sizing, tools || _content.Items[i].Payload is not Petal.Core.Formats.FileFormat, p);
         }
 
         ShowDefaultHub(animate: false);
@@ -1465,6 +1558,42 @@ public sealed partial class WheelWindow : Window
             Animate(_options.Motion);
         else
             Settle();
+    }
+
+    /// <summary>
+    /// The glass, its rim, the shadow, the near-miss catcher and the strip of wheel names around a wheel of this rim:
+    /// the single wheel's, or with its second ring. A wheel that grows near a screen edge moves out to fit.
+    /// </summary>
+    private void SetRim(double rim)
+    {
+        if (rim != _rimRadius || _glassRing.Data is null)
+            Resize(rim);
+        PlaceHint();
+        // Also when the rim is the last wheel's: this wheel's place may not have room for it yet.
+        MakeRoom();
+    }
+
+    private void Resize(double rim)
+    {
+        _rimRadius = rim;
+        _glassRing.Data = WheelGeometry.Ring(WheelGeometry.HubRadius, rim);
+        _tintRing.Data = _glassRing.Data;
+        double shadowR = rim + 14;
+        _shadow.Width = _shadow.Height = shadowR * 2;
+        Canvas.SetLeft(_shadow, -shadowR);
+        Canvas.SetTop(_shadow, -shadowR + 7);
+        double rimR = rim - 0.5;
+        _rim.Width = _rim.Height = rimR * 2;
+        Canvas.SetLeft(_rim, -rimR);
+        Canvas.SetTop(_rim, -rimR);
+        double grooveR = (WheelGeometry.PetalOuter + WheelGeometry.OuterRingInner) / 2;
+        _ringGroove.Width = _ringGroove.Height = grooveR * 2;
+        Canvas.SetLeft(_ringGroove, -grooveR);
+        Canvas.SetTop(_ringGroove, -grooveR);
+        _ringGroove.Visibility = rim > WheelGeometry.OuterRadius ? Visibility.Visible : Visibility.Collapsed;
+        _catcher.Width = _catcher.Height = CatchRadius * 2;
+        Canvas.SetLeft(_catcher, Centre - CatchRadius);
+        Canvas.SetTop(_catcher, Centre - CatchRadius);
     }
 
     /// <summary>The wheel without animation: everything where it ends up.</summary>
@@ -1575,12 +1704,13 @@ public sealed partial class WheelWindow : Window
     /// so what the eye sees is centred rather than text boxes and trailing spaces. The petal and its label
     /// share a transform, so the petal under the pointer can grow towards it with its label.
     /// </summary>
-    private void AddPetal(WheelItem item, int index, int count, bool withIcon, Palette p)
+    /// <param name="count">How many petals the sizes go by: the wheel's, or with two rings, the busier ring's.</param>
+    private void AddPetal(WheelItem item, int index, PetalSlot slot, int count, bool withIcon, Palette p)
     {
-        var visual = new PetalVisual(item, index, count);
+        var visual = new PetalVisual(item, index, slot, NumberRadius(slot));
         var path = new Path
         {
-            Data = WheelGeometry.Petal(index, count),
+            Data = WheelGeometry.Petal(slot),
             StrokeThickness = 0.75,
             IsHitTestVisible = false,
         };
@@ -1613,7 +1743,7 @@ public sealed partial class WheelWindow : Window
         }
 
         var font = _labelFont!;
-        var label = PetalLayout.Fit(iconOnly ? "" : L.T(item.Label), font, size, size - 1.5, step, iconInk, iconSize, index, count);
+        var label = PetalLayout.Fit(iconOnly ? "" : L.T(item.Label), font, size, size - 1.5, step, iconInk, iconSize, slot);
         visual.Lines = label.Lines.Where(t => t.Length > 0).Select(t => font.Create(t, label.Size, brush)).ToList();
         if (visual.Icon is not null && iconInk is not null)
         {
@@ -1631,6 +1761,15 @@ public sealed partial class WheelWindow : Window
         _visuals.Add(visual);
         _petalLayouts.Add(label);
     }
+
+    /// <summary>
+    /// Where a petal's key (1 to 9) sits: just outside the rim, or for the wheel's petals inside a second ring, in the
+    /// groove between the two rings.
+    /// </summary>
+    private double NumberRadius(PetalSlot slot) =>
+        slot.Ring > 0 ? WheelGeometry.TwoRingRim + 9
+        : _rimRadius > WheelGeometry.OuterRadius ? (WheelGeometry.PetalOuter + WheelGeometry.OuterRingInner) / 2 + 2.5
+        : WheelGeometry.OuterRadius + 9;
 
     /// <summary>
     /// Sets the centre's name and what it is. The lines and their outline come from <see cref="HubLayout"/>;
@@ -1838,7 +1977,11 @@ public sealed partial class WheelWindow : Window
         Canvas.SetLeft(_hint, Centre - _hint.DesiredSize.Width / 2);
     }
 
-    private void ApplyGlass(BitmapSource? capture)
+    /// <param name="viewport">
+    /// Where the capture lies around the centre; by default worked out from where it was captured on screen and where the
+    /// window is now.
+    /// </param>
+    private void ApplyGlass(BitmapSource? capture, Rect? viewport = null)
     {
         if (capture is null)
         {
@@ -1847,12 +1990,14 @@ public sealed partial class WheelWindow : Window
             _glassHub.Fill = Palette.Brush(_palette.WindowBackground);
             return;
         }
-        // The capture covers the whole window; map it in window coordinates around the centre.
+        // The capture covers the window and a margin past it; mapped in window coordinates around the centre.
         _glass = new ImageBrush(capture)
         {
             Stretch = Stretch.Fill,
             ViewportUnits = BrushMappingMode.Absolute,
-            Viewport = new Rect(-Centre, -Centre, Side, Side),
+            Viewport = viewport ?? new Rect(
+                (_glassScreen.X - _windowLeft) / _screenScale - Centre, (_glassScreen.Y - _windowTop) / _screenScale - Centre,
+                _glassScreen.Width / _screenScale, _glassScreen.Height / _screenScale),
         };
         _glass.Freeze();
         _glassRing.Fill = _glass;
@@ -1865,6 +2010,7 @@ public sealed partial class WheelWindow : Window
         _tintHub.Fill = Palette.Brush(p.HubFill);
         _rim.Stroke = Palette.Brush(p.GlassEdge);
         _groove.Stroke = Palette.Brush(p.IsDark ? Color.FromArgb(0x2A, 255, 255, 255) : Color.FromArgb(0x90, 255, 255, 255));
+        _ringGroove.Stroke = _groove.Stroke;
         _shadow.Fill = new RadialGradientBrush(
         [
             new GradientStop(p.Shadow, 0.78),
@@ -1877,15 +2023,16 @@ public sealed partial class WheelWindow : Window
         _emptyCard.BorderBrush = Palette.Brush(p.GlassEdge);
     }
 
-    private static Brush PetalFill(Palette p)
+    /// <param name="radius">The outer edge of the petal's ring, where the shading ends.</param>
+    private static Brush PetalFill(Palette p, double radius = WheelGeometry.PetalOuter)
     {
         var b = new RadialGradientBrush
         {
             MappingMode = BrushMappingMode.Absolute,
             Center = new Point(0, 0),
-            GradientOrigin = new Point(0, -WheelGeometry.PetalOuter * 0.6),
-            RadiusX = WheelGeometry.PetalOuter,
-            RadiusY = WheelGeometry.PetalOuter,
+            GradientOrigin = new Point(0, -radius * 0.6),
+            RadiusX = radius,
+            RadiusY = radius,
             GradientStops = [new GradientStop(p.PetalTop, 0.35), new GradientStop(p.PetalBottom, 1)],
         };
         b.Freeze();
@@ -1894,15 +2041,15 @@ public sealed partial class WheelWindow : Window
 
     private static Brush AccentFill(Palette p) => AccentFill(p, p.Accent);
 
-    private static Brush AccentFill(Palette p, Color accent)
+    private static Brush AccentFill(Palette p, Color accent, double radius = WheelGeometry.PetalOuter)
     {
         var b = new RadialGradientBrush
         {
             MappingMode = BrushMappingMode.Absolute,
             Center = new Point(0, 0),
             GradientOrigin = new Point(0, 0),
-            RadiusX = WheelGeometry.PetalOuter,
-            RadiusY = WheelGeometry.PetalOuter,
+            RadiusX = radius,
+            RadiusY = radius,
             GradientStops = [new GradientStop(Mix(accent, Colors.White, 0.14), 0.4), new GradientStop(Mix(accent, Colors.Black, 0.1), 1)],
         };
         b.Freeze();
@@ -1917,10 +2064,7 @@ public sealed partial class WheelWindow : Window
         _root.Children.Add(_stage);
         _stage.RenderTransform = _stageScale;
 
-        // Near-miss catcher, a little larger than the ring.
-        _catcher.Width = _catcher.Height = CatchRadius * 2;
-        Canvas.SetLeft(_catcher, Centre - CatchRadius);
-        Canvas.SetTop(_catcher, Centre - CatchRadius);
+        // Near-miss catcher, a little larger than the ring (sized with the rim, in SetRim).
         _stage.Children.Add(_catcher);
 
         // Everything round is drawn around (0, 0) inside a canvas placed at the centre.
@@ -1928,17 +2072,12 @@ public sealed partial class WheelWindow : Window
         Canvas.SetTop(_ring, Centre);
         _stage.Children.Add(_ring);
 
-        double shadowR = WheelGeometry.OuterRadius + 14;
-        _shadow.Width = _shadow.Height = shadowR * 2;
-        Canvas.SetLeft(_shadow, -shadowR);
-        Canvas.SetTop(_shadow, -shadowR + 7);
+        // The shadow, the glass and the rim are sized with the rim, in SetRim.
         _shadow.IsHitTestVisible = false;
         _ring.Children.Add(_shadow);
 
-        _glassRing.Data = WheelGeometry.Ring(WheelGeometry.HubRadius, WheelGeometry.OuterRadius);
         _glassRing.IsHitTestVisible = false;
         _ring.Children.Add(_glassRing);
-        _tintRing.Data = _glassRing.Data;
         _tintRing.IsHitTestVisible = false;
         _ring.Children.Add(_tintRing);
 
@@ -1964,13 +2103,12 @@ public sealed partial class WheelWindow : Window
         _hubPicture.Visibility = Visibility.Collapsed;
         _ring.Children.Add(_hubPicture);
 
-        double rimR = WheelGeometry.OuterRadius - 0.5;
-        _rim.Width = _rim.Height = rimR * 2;
-        Canvas.SetLeft(_rim, -rimR);
-        Canvas.SetTop(_rim, -rimR);
         _rim.StrokeThickness = 1;
         _rim.IsHitTestVisible = false;
         _ring.Children.Add(_rim);
+        _ringGroove.StrokeThickness = 1;
+        _ringGroove.IsHitTestVisible = false;
+        _ring.Children.Add(_ringGroove);
 
         double grooveR = WheelGeometry.HubRadius + 0.5;
         _groove.Width = _groove.Height = grooveR * 2;
@@ -2025,18 +2163,20 @@ public sealed partial class WheelWindow : Window
         private readonly TranslateTransform _shift = new();
         private readonly Vector _axis;
         private readonly int _index;
-        private readonly int _count;
+        private readonly PetalSlot _slot;
+        private readonly double _numberRadius;
         private Path? _edge;
 
-        public PetalVisual(WheelItem item, int index, int count)
+        /// <param name="numberRadius">How far out its key (1 to 9) sits, when it shows one.</param>
+        public PetalVisual(WheelItem item, int index, PetalSlot slot, double numberRadius)
         {
             Item = item;
             _index = index;
-            _count = count;
-            var angle = WheelGeometry.Angle(index, count);
-            var mid = WheelGeometry.At((WheelGeometry.PetalInner + WheelGeometry.PetalOuter) / 2, angle);
-            _axis = count == 1 ? new Vector(0, 0) : new Vector(mid.X, mid.Y) / ((WheelGeometry.PetalInner + WheelGeometry.PetalOuter) / 2);
-            _scale = new ScaleTransform(1, 1, count == 1 ? 0 : mid.X, count == 1 ? 0 : mid.Y);
+            _slot = slot;
+            _numberRadius = numberRadius;
+            var mid = slot.Middle;
+            _axis = slot.Whole ? new Vector(0, 0) : new Vector(mid.X, mid.Y) / ((slot.Inner + slot.Outer) / 2);
+            _scale = new ScaleTransform(1, 1, slot.Whole ? 0 : mid.X, slot.Whole ? 0 : mid.Y);
             var transform = new TransformGroup { Children = { _scale, _shift } };
             PetalLayer.RenderTransform = transform;
             LabelLayer.RenderTransform = transform;
@@ -2057,11 +2197,11 @@ public sealed partial class WheelWindow : Window
         /// </summary>
         public void AddMarks(bool number, InkFont? font = null)
         {
-            if (Item.State is not null && _count > 1)
+            if (Item.State is not null && !_slot.Whole)
             {
-                double half = Math.PI / _count;
-                double angle = WheelGeometry.Angle(_index, _count);
-                double r = WheelGeometry.PetalInner + 3.5;
+                double half = _slot.Half;
+                double angle = _slot.Angle;
+                double r = _slot.Inner + 3.5;
                 double inset = Math.Min(half * 0.55, half - 0.12);
                 var g = new StreamGeometry();
                 using (var ctx = g.Open())
@@ -2073,11 +2213,11 @@ public sealed partial class WheelWindow : Window
                 _edge = new Path { Data = g, StrokeThickness = 2.5, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, IsHitTestVisible = false };
                 PetalLayer.Children.Add(_edge);
             }
-            if (Item.Suggested && _count > 1)
+            if (Item.Suggested && !_slot.Whole)
             {
                 // Your usual for this kind of file: a small four-point star at the petal's outer corner.
-                double angle = WheelGeometry.Angle(_index, _count) + Math.PI / _count * 0.62;
-                var c = WheelGeometry.At(WheelGeometry.PetalOuter - 10, angle);
+                double angle = _slot.Angle + _slot.Half * 0.62;
+                var c = WheelGeometry.At(_slot.Outer - 10, angle);
                 const double r = 4.6, k = 1.1;
                 var g = Geometry.Parse(string.Create(System.Globalization.CultureInfo.InvariantCulture,
                     $"M {c.X},{c.Y - r} Q {c.X + k},{c.Y - k} {c.X + r},{c.Y} Q {c.X + k},{c.Y + k} {c.X},{c.Y + r} Q {c.X - k},{c.Y + k} {c.X - r},{c.Y} Q {c.X - k},{c.Y - k} {c.X},{c.Y - r} Z"));
@@ -2087,7 +2227,7 @@ public sealed partial class WheelWindow : Window
             }
             if (number && font is not null)
             {
-                var at = WheelGeometry.At(WheelGeometry.OuterRadius + 9, WheelGeometry.Angle(_index, _count));
+                var at = WheelGeometry.At(_numberRadius, _slot.Angle);
                 _number = font.Create(((char)('1' + _index)).ToString(), 8.5, Brushes.Gray);
                 _number.Place(at.X, at.Y + 3);
                 LabelLayer.Children.Add(_number);
@@ -2098,7 +2238,7 @@ public sealed partial class WheelWindow : Window
         {
             var accent = Item.Tint ?? p.Accent;
             bool dim = Item.Unavailable is not null;
-            Path.Fill = on ? AccentFill(p, accent) : Item.Tint is { } tint ? TintFill(p, tint) : PetalFill(p);
+            Path.Fill = on ? AccentFill(p, accent, _slot.Outer) : Item.Tint is { } tint ? TintFill(p, tint, _slot.Outer) : PetalFill(p, _slot.Outer);
             Path.Stroke = on ? Palette.Brush(Color.FromArgb(0x50, accent.R, accent.G, accent.B)) : Palette.Brush(p.PetalStroke);
             Path.StrokeDashArray = dim && !on ? DashedStroke : null;
             Path.StrokeThickness = dim && !on ? 1 : 0.75;
@@ -2124,7 +2264,7 @@ public sealed partial class WheelWindow : Window
         /// <summary>The petal under the pointer swells a little and moves out from the centre; the others settle back.</summary>
         public void Grow(bool on, WheelOptions options)
         {
-            if (!options.Grow || _count == 1)
+            if (!options.Grow || _slot.Whole)
                 return;
             double scale = on ? 1.045 : 1, push = on ? 4 : 0;
             if (!SystemParameters.ClientAreaAnimation)
@@ -2194,15 +2334,15 @@ public sealed partial class WheelWindow : Window
     /// <summary>A petal's colour on its icon: as it is, a little deeper in the light theme and lighter in the dark one.</summary>
     private static Color Legible(Color tint, Palette p) => p.IsDark ? Mix(tint, Colors.White, 0.25) : Mix(tint, Colors.Black, 0.15);
 
-    private static Brush TintFill(Palette p, Color tint)
+    private static Brush TintFill(Palette p, Color tint, double radius = WheelGeometry.PetalOuter)
     {
         var b = new RadialGradientBrush
         {
             MappingMode = BrushMappingMode.Absolute,
             Center = new Point(0, 0),
-            GradientOrigin = new Point(0, -WheelGeometry.PetalOuter * 0.6),
-            RadiusX = WheelGeometry.PetalOuter,
-            RadiusY = WheelGeometry.PetalOuter,
+            GradientOrigin = new Point(0, -radius * 0.6),
+            RadiusX = radius,
+            RadiusY = radius,
             GradientStops =
             [
                 new GradientStop(Color.FromArgb((byte)Math.Max(p.PetalTop.A, (byte)0x60), tint.R, tint.G, tint.B), 0.35),

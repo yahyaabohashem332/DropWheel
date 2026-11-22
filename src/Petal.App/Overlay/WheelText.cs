@@ -259,12 +259,16 @@ internal static class PetalLayout
     private const double LineCost = 0.5;   // per extra line
     private const double MoveCost = 0.05;  // per DIP along the petal
 
-    private static readonly double[] Radii = [.. Enumerable.Range(0, 43).Select(i => WheelGeometry.LabelRadius - 6 + i * 0.5)];
+    /// <summary>Where along its petal a label may sit: from 6 DIPs nearer the centre than usual to 15 further out.</summary>
+    private static double[] Radii(PetalSlot slot) => [.. Enumerable.Range(0, 43).Select(i => slot.LabelRadius - 6 + i * 0.5)];
 
-    public static PetalLabel Fit(string text, InkFont font, double size, double smallest, double step, IconInk? icon, double iconSize, int index, int count)
+    public static PetalLabel Fit(string text, InkFont font, double size, double smallest, double step, IconInk? icon, double iconSize, int index, int count) =>
+        Fit(text, font, size, smallest, step, icon, iconSize, WheelGeometry.Slot(index, count));
+
+    public static PetalLabel Fit(string text, InkFont font, double size, double smallest, double step, IconInk? icon, double iconSize, PetalSlot slot)
     {
         var words = WheelText.Words(text);
-        double angle = WheelGeometry.Angle(index, count);
+        double angle = slot.Angle;
         (string[] Lines, double Size, double Radius, double Clearance)? best = null, closest = null;
         double bestScore = double.MinValue, closestScore = double.MinValue;
         for (double s = size; s >= smallest; s -= 0.25)
@@ -277,14 +281,14 @@ internal static class PetalLayout
                 string[] split = words.Length == 0 ? [] : Balanced(words, lines, font, s);
                 var (shapes, _, _) = Block(split, s, step * s / size, line => font.Strips(line, s), icon, iconSize);
                 if (shapes.Count == 0)
-                    return new PetalLabel([], size, WheelGeometry.LabelPosition(index, count), 0, [], 0);
-                foreach (double r in Radii)
+                    return new PetalLabel([], size, WheelGeometry.LabelPosition(slot), 0, [], 0);
+                foreach (double r in Radii(slot))
                 {
                     var centre = WheelGeometry.At(r, angle);
                     double clearance = double.MaxValue;
                     foreach (var shape in shapes)
-                        clearance = Math.Min(clearance, Clearance(new Rect(shape.X + centre.X, shape.Y + centre.Y, shape.Width, shape.Height), index, count));
-                    double score = -ShrinkCost * (size - s) - LineCost * (lines - 1) - MoveCost * Math.Abs(r - WheelGeometry.LabelRadius);
+                        clearance = Math.Min(clearance, Clearance(new Rect(shape.X + centre.X, shape.Y + centre.Y, shape.Width, shape.Height), slot));
+                    double score = -ShrinkCost * (size - s) - LineCost * (lines - 1) - MoveCost * Math.Abs(r - slot.LabelRadius);
                     if (clearance >= Margin && score > bestScore)
                     {
                         best = (split, s, r, clearance);
@@ -352,13 +356,13 @@ internal static class PetalLayout
     }
 
     /// <summary>How far a rectangle (wheel coordinates, y down) keeps inside its petal; negative once it crosses the edge.</summary>
-    private static double Clearance(Rect rect, int index, int count)
+    private static double Clearance(Rect rect, PetalSlot slot)
     {
-        double inner = WheelGeometry.PetalInner, outer = WheelGeometry.PetalOuter, gap = WheelGeometry.Gap / 2;
+        double inner = slot.Inner, outer = slot.Outer, gap = WheelGeometry.Gap / 2;
         // The rectangle's nearest point to the centre decides the inner edge; its corners decide the rest.
         double nx = Math.Clamp(0, rect.Left, rect.Right), ny = Math.Clamp(0, rect.Top, rect.Bottom);
         double clearance = Math.Sqrt(nx * nx + ny * ny) - inner;
-        double theta = WheelGeometry.Angle(index, count), half = Math.PI / count;
+        double theta = slot.Angle, half = slot.Half;
         double a = theta - half, b = theta + half;
         double turn = Math.Asin((Corner + gap) / (outer - Corner));
         var cornerA = WheelGeometry.At(outer - Corner, a + turn);
@@ -368,7 +372,7 @@ internal static class PetalLayout
             double x = p.X, y = -p.Y;
             double toOuter = outer - Math.Sqrt(x * x + y * y);
             clearance = Math.Min(clearance, toOuter);
-            if (count == 1)
+            if (slot.Whole)
                 continue;
             double sideA = -x * Math.Sin(a) + y * Math.Cos(a) - gap;
             double sideB = x * Math.Sin(b) - y * Math.Cos(b) - gap;
