@@ -136,7 +136,7 @@ public sealed class Recipe
     /// <summary>The format a file has after a step.</summary>
     public static FileFormat After(RecipeStep step, FileFormat format) => step.Kind switch
     {
-        RecipeStepKind.Convert when step.Format is { } id && Formats.FromId(id) is { } target => target,
+        RecipeStepKind.Convert when step.Format is { } id && Formats.FromId(id) is { } target => Formats.Written(target),
         RecipeStepKind.Searchable => Formats.Pdf,
         RecipeStepKind.RemoveBackground when step.Background is null && format != Formats.Png && format != Formats.Webp => Formats.Png,
         _ => format,

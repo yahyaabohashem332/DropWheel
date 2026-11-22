@@ -149,76 +149,77 @@ internal static class PageImages
         });
     }
 
-    /// <summary>Writes all PDF pages as a single vertically concatenated image (long image).</summary>
+    /// <summary>The tallest long picture: JPEG can't be taller than 65,535 pixels.</summary>
+    internal const int LongMaxSide = 65_000;
+
+    /// <summary>The widest, as for one page.</summary>
+    internal const int LongMaxWidth = 16_000;
+
+    /// <summary>The most pixels a long picture has (400 MB while it is drawn), as for one page.</summary>
+    internal const double LongMaxPixels = 100_000_000;
+
+    /// <summary>
+    /// The DPI every page of a long picture is drawn at: the settings' own, or less so the picture stays within
+    /// <see cref="LongMaxSide"/>, <see cref="LongMaxWidth"/> and <see cref="LongMaxPixels"/>. One DPI for all, so pages keep
+    /// their sizes to each other.
+    /// </summary>
+    internal static int LongDpi(IReadOnlyList<PdfPageSize> sizes, int dpi)
+    {
+        double widest = sizes.Max(s => s.Width) / 72, tall = sizes.Sum(s => s.Height) / 72;
+        double most = Math.Min(Math.Min(LongMaxSide / tall, LongMaxWidth / widest), Math.Sqrt(LongMaxPixels / Math.Max(1e-6, widest * tall)));
+        // Below this a page's words can't be read (a Letter page 425 pixels wide): a picture of each page instead.
+        if (most < LongMinDpi)
+            throw new PdfTooLongException();
+        return Math.Min(dpi, (int)Math.Floor(most));
+    }
+
+    /// <summary>The least DPI a long picture is drawn at; about 110 Letter or A4 pages fit.</summary>
+    internal const int LongMinDpi = 50;
+
+    /// <summary>
+    /// Every page of the PDF one under another in one picture, each centred. Pages are drawn one at a time into it
+    /// and let go, so a long book takes the picture's memory and one page's, not every page's.
+    /// </summary>
     public static IReadOnlyList<string> WriteLong(byte[] pdf, string inputPath, string outputPath, bool jpeg, ConversionSettings settings,
         IProgress<double>? progress, double progressStart, CancellationToken ct)
     {
         var sizes = PdfRaster.PageSizes(pdf);
-        var pageCount = sizes.Count;
-        if (pageCount == 0)
+        if (sizes.Count == 0)
             return [];
-
-        // Render all pages first to calculate total size
-        var bitmaps = new List<SKBitmap>();
-        try
+        var dpi = LongDpi(sizes, settings.RenderDpi);
+        // Room for every page as the DPI gives it; a page drawn a pixel smaller leaves the picture cut to what was drawn.
+        int width = (int)Math.Ceiling(sizes.Max(s => s.Width) / 72 * dpi);
+        int height = sizes.Sum(s => (int)Math.Ceiling(s.Height / 72 * dpi));
+        using var whole = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        int y = 0, drawn = 0;
+        using (var canvas = new SKCanvas(whole))
         {
-            double maxWidth = 0;
-            double totalHeight = 0;
-            foreach (var (pageIndex, bitmap) in RenderAllForLong(pdf, settings.RenderDpi))
-            {
-                ct.ThrowIfCancellationRequested();
-                bitmaps.Add(bitmap);
-                maxWidth = Math.Max(maxWidth, bitmap.Width);
-                totalHeight += bitmap.Height;
-                progress?.Report(progressStart + (1 - progressStart) * 0.5 * bitmaps.Count / pageCount);
-            }
-
-            // Create concatenated bitmap
-            using var concatenated = new SKBitmap((int)maxWidth, (int)totalHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-            using var canvas = new SKCanvas(concatenated);
             canvas.Clear(SKColors.White);
-
-            double y = 0;
-            foreach (var bitmap in bitmaps)
+            foreach (var page in DrawnForLong(pdf, Enumerable.Range(0, sizes.Count).ToList(), PdfRaster.Options(sizes[0], dpi)))
             {
-                ct.ThrowIfCancellationRequested();
-                // Center each page horizontally
-                double x = (maxWidth - bitmap.Width) / 2.0;
-                canvas.DrawBitmap(bitmap, (float)x, (float)y);
-                y += bitmap.Height;
-                progress?.Report(progressStart + (1 - progressStart) * (0.5 + 0.5 * bitmaps.IndexOf(bitmap) / pageCount));
+                using (page)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    canvas.DrawBitmap(page, (width - page.Width) / 2f, y);
+                    y += page.Height;
+                }
+                progress?.Report(progressStart + (1 - progressStart) * 0.9 * ++drawn / sizes.Count);
             }
-
-            // Save the concatenated image
-            return SafeOutput.WritePages(inputPath, outputPath, 1, paths =>
-            {
-                ImageTools.Save(concatenated, paths[0], jpeg, settings.ImageQuality);
-                progress?.Report(1);
-            });
         }
-        finally
+        using var picture = y < height ? Cut(whole, width, y) : null;
+        return SafeOutput.WritePages(inputPath, outputPath, 1, paths =>
         {
-            foreach (var b in bitmaps)
-                b.Dispose();
-        }
+            ImageTools.Save(picture ?? whole, paths[0], jpeg, settings.ImageQuality);
+            progress?.Report(1);
+        });
     }
 
-    /// <summary>Renders all pages for long image concatenation, yielding each bitmap.</summary>
-    private static IEnumerable<(int PageIndex, SKBitmap Bitmap)> RenderAllForLong(byte[] pdf, int dpi)
+    private static SKBitmap Cut(SKBitmap bitmap, int width, int height)
     {
-        var sizes = PdfRaster.PageSizes(pdf);
-        for (int start = 0; start < sizes.Count;)
-        {
-            int end = start + 1;
-            while (end < sizes.Count && PdfRaster.SafeDpi(sizes[end], dpi) == PdfRaster.SafeDpi(sizes[start], dpi) &&
-                   PdfRaster.Pixels(sizes[end], dpi) > 40_000_000 == PdfRaster.Pixels(sizes[start], dpi) > 40_000_000)
-                end++;
-            var pages = Enumerable.Range(start, end - start).ToList();
-            int i = 0;
-            foreach (var bitmap in DrawnForLong(pdf, pages, PdfRaster.Options(sizes[start], dpi)))
-                yield return (pages[i++], bitmap);
-            start = end;
-        }
+        var cut = new SKBitmap(width, Math.Max(1, height), bitmap.ColorType, bitmap.AlphaType);
+        using var canvas = new SKCanvas(cut);
+        canvas.DrawBitmap(bitmap, 0, 0);
+        return cut;
     }
 
     private static IEnumerable<SKBitmap> DrawnForLong(byte[] pdf, IReadOnlyList<int> pages, RenderOptions options)

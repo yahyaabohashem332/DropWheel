@@ -260,7 +260,9 @@ public sealed class PdfEditTests
     /// <summary>Everything in a file a program could read: the raw bytes, each stream decompressed, each string in every encoding it might be in.</summary>
     private static string Everything(string path)
     {
-        var all = new StringBuilder(Encoding.Latin1.GetString(File.ReadAllBytes(path)));
+        // Every byte, but for the trailer's /ID: random hex each save, so a short secret like "532" turns up in it by chance.
+        var all = new StringBuilder(System.Text.RegularExpressions.Regex.Replace(Encoding.Latin1.GetString(File.ReadAllBytes(path)),
+            @"/ID\s*\[\s*<[0-9A-Fa-f]*>\s*<[0-9A-Fa-f]*>\s*\]", "/ID[]"));
         using var document = PdfReader.Open(path, PdfDocumentOpenMode.Import);
         var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
         void Walk(PdfItem? item)

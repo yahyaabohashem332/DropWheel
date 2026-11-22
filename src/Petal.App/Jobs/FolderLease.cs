@@ -58,6 +58,9 @@ public sealed class FolderLease
         return lease;
     }
 
+    /// <summary>Whether a file came from a dropped folder (its results go to the folder's copy). Makes nothing.</summary>
+    public static bool IsPlaced(string input) => Placed.ContainsKey(Path.GetFullPath(input));
+
     /// <summary>Where a placed file's results go (the folder is made when first asked for), or null.</summary>
     public static string? DirectoryFor(string input)
     {

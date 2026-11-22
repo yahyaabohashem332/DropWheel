@@ -14,7 +14,6 @@ using Petal.Core.Actions;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
 using Petal.Core.Tools;
-using Petal.Recipes;
 using Petal.App.Localization;
 
 namespace Petal.App;
@@ -63,18 +62,6 @@ public sealed class PetalController : IDisposable, IWheelHost
         _wheel.ShowHints = SettingsStore.Current.ShowKeyHints;
         SettingsStore.Saved += s => _wheel.ShowHints = s.ShowKeyHints;
         _jobs = new JobRunner(converters);
-        _jobs.BatchProgressCallback = (completed, total) =>
-        {
-            _wheel.Dispatcher.BeginInvoke(() =>
-            {
-                if (completed == 0)
-                    _wheel.ShowBatchProgress(total);
-                else if (completed >= total)
-                    _wheel.HideBatchProgress();
-                else
-                    _wheel.UpdateBatchProgress(completed, total);
-            });
-        };
         _previews = new PetalPreviews(_jobs);
         _wheel.PreviewProvider = (item, files, ct) => _previews.MakeAsync(item, files, ct);
         _wheel.ChainCheck = (chain, next, files) => Chains.Check(chain, next, files, _jobs.Converters);
@@ -343,28 +330,10 @@ public sealed class PetalController : IDisposable, IWheelHost
                     return new WheelContent([], L.F("Folders can't be converted. Tap {0} for file actions.", actionsKey));
                 var targets = _jobs.Converters.AvailableTargets(formats);
                 var favourites = formats.Count == 0 ? [] : SettingsStore.Current.Favourites.Where(f => f.AppliesTo(formats, _jobs.Converters));
-
-                // Find automatic conversion chains (e.g., HWPX → PDF → PNG)
-                var chainTargets = FindChainTargets(formats);
-                var chainItems = chainTargets
-                    .Where(c => !targets.Contains(c.FinalTarget)) // Only show chains for targets not directly available
-                    .Select(c => new WheelItem(
-                        $"{c.FinalTarget.Label} (via {string.Join(" → ", c.Chain.Select(s => Formats.FromId(s.Format)?.Label ?? s.Format))})",
-                        L.F("Convert to {0} through intermediate steps", c.FinalTarget.Label),
-                        null,
-                        new AutoChainRecipe
-                        {
-                            FinalTarget = c.FinalTarget,
-                            Chain = c.Chain
-                        }))
-                    .ToList();
-
-                return new WheelContent(
-                    favourites.Select(WheelItem.From)
-                        .Concat(targets.Select(WheelItem.From))
-                        .Concat(chainItems)
-                        .Concat(Availability.MissingConversions(formats, _jobs.Converters))
-                        .ToList(),
+                // Only the conversion table's own paths: each was chosen for what the file holds (a picture has no
+                // text or table to give a document or a spreadsheet). Steps one after another are the user's to
+                // chain on the wheel, where each step's result is shown.
+                return new WheelContent(favourites.Select(WheelItem.From).Concat(targets.Select(WheelItem.From)).Concat(Availability.MissingConversions(formats, _jobs.Converters)).ToList(),
                     files.Count > 1
                         ? L.F("These files have no format in common. Tap {0} for file actions.", actionsKey)
                         : L.F("No conversions for this format. Tap {0} for file actions.", actionsKey));
@@ -444,189 +413,6 @@ public sealed class PetalController : IDisposable, IWheelHost
         }
     }
 
-    /// <summary>
-    /// Finds targets reachable via automatic conversion chains (e.g., HWPX → PDF → PNG).
-    /// Returns the final target format and the intermediate chain as recipe steps.
-    /// </summary>
-    private List<(FileFormat FinalTarget, List<RecipeStep> Chain)> FindChainTargets(IReadOnlyCollection<FileFormat> sources)
-    {
-        if (sources.Count == 0)
-            return [];
-
-        var directTargets = _jobs.Converters.AvailableTargets(sources).ToHashSet();
-        var chainTargets = new Dictionary<FileFormat, List<RecipeStep>>(FileFormatEqualityComparer.Instance);
-        const int maxChainLength = 2; // Maximum intermediate steps
-
-        // For each source format, find chains through intermediate formats
-        foreach (var source in sources)
-        {
-            // Start with formats directly convertible from source
-            var firstStepTargets = ConversionMatrix.TargetsFor(source)
-                .Where(t => t != source && _jobs.Converters.CanConvert(source, t))
-                .ToList();
-
-            foreach (var intermediate in firstStepTargets)
-            {
-                // Check what the intermediate can convert to (that source can't directly)
-                var secondStepTargets = ConversionMatrix.TargetsFor(intermediate)
-                    .Where(t => t != intermediate && _jobs.Converters.CanConvert(intermediate, t))
-                    .Where(t => !directTargets.Contains(t)) // Only chains that add new targets
-                    .ToList();
-
-                foreach (var final in secondStepTargets)
-                {
-                    // Verify the chain works: source → intermediate → final
-                    var chain = new List<RecipeStep>
-                    {
-                        new() { Kind = RecipeStepKind.Convert, Format = intermediate.Id },
-                        new() { Kind = RecipeStepKind.Convert, Format = final.Id }
-                    };
-
-                    // Check if the recipe applies to the source
-                    var recipe = new Recipe { Steps = chain };
-                    if (recipe.AppliesTo([source], _jobs.Converters))
-                    {
-                        // Keep the shortest chain for each final target
-                        if (!chainTargets.ContainsKey(final) || chainTargets[final].Count > chain.Count)
-                        {
-                            chainTargets[final] = chain;
-                        }
-                    }
-                }
-
-                // Try 3-step chains (source → A → B → final)
-                if (maxChainLength >= 2)
-                {
-                    var secondStepIntermediates = ConversionMatrix.TargetsFor(intermediate)
-                        .Where(t => t != intermediate && _jobs.Converters.CanConvert(intermediate, t))
-                        .ToList();
-
-                    foreach (var secondIntermediate in secondStepIntermediates)
-                    {
-                        var thirdStepTargets = ConversionMatrix.TargetsFor(secondIntermediate)
-                            .Where(t => t != secondIntermediate && _jobs.Converters.CanConvert(secondIntermediate, t))
-                            .Where(t => !directTargets.Contains(t))
-                            .ToList();
-
-                        foreach (var final in thirdStepTargets)
-                        {
-                            var chain = new List<RecipeStep>
-                            {
-                                new() { Kind = RecipeStepKind.Convert, Format = intermediate.Id },
-                                new() { Kind = RecipeStepKind.Convert, Format = secondIntermediate.Id },
-                                new() { Kind = RecipeStepKind.Convert, Format = final.Id }
-                            };
-
-                            var recipe = new Recipe { Steps = chain };
-                            if (recipe.AppliesTo([source], _jobs.Converters))
-                            {
-                                if (!chainTargets.ContainsKey(final) || chainTargets[final].Count > chain.Count)
-                                {
-                                    chainTargets[final] = chain;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return chainTargets
-            .Select(kvp => (FinalTarget: kvp.Key, Chain: kvp.Value))
-            .OrderBy(t => t.FinalTarget.Label)
-            .ToList();
-    }
-
-    /// <summary>Test helper to access FindChainTargets logic without a full controller.</summary>
-    internal static List<(FileFormat FinalTarget, List<RecipeStep> Chain)> FindChainTargetsForTest(IReadOnlyCollection<FileFormat> sources, ConverterRegistry converters)
-    {
-        if (sources.Count == 0)
-            return [];
-
-        var directTargets = converters.AvailableTargets(sources).ToHashSet();
-        var chainTargets = new Dictionary<FileFormat, List<RecipeStep>>(FileFormatEqualityComparer.Instance);
-        const int maxChainLength = 2;
-
-        foreach (var source in sources)
-        {
-            var firstStepTargets = ConversionMatrix.TargetsFor(source)
-                .Where(t => t != source && converters.CanConvert(source, t))
-                .ToList();
-
-            foreach (var intermediate in firstStepTargets)
-            {
-                var secondStepTargets = ConversionMatrix.TargetsFor(intermediate)
-                    .Where(t => t != intermediate && converters.CanConvert(intermediate, t))
-                    .Where(t => !directTargets.Contains(t))
-                    .ToList();
-
-                foreach (var final in secondStepTargets)
-                {
-                    var chain = new List<RecipeStep>
-                    {
-                        new() { Kind = RecipeStepKind.Convert, Format = intermediate.Id },
-                        new() { Kind = RecipeStepKind.Convert, Format = final.Id }
-                    };
-
-                    var recipe = new Recipe { Steps = chain };
-                    if (recipe.AppliesTo([source], converters))
-                    {
-                        if (!chainTargets.ContainsKey(final) || chainTargets[final].Count > chain.Count)
-                        {
-                            chainTargets[final] = chain;
-                        }
-                    }
-                }
-
-                if (maxChainLength >= 2)
-                {
-                    var secondStepIntermediates = ConversionMatrix.TargetsFor(intermediate)
-                        .Where(t => t != intermediate && converters.CanConvert(intermediate, t))
-                        .ToList();
-
-                    foreach (var secondIntermediate in secondStepIntermediates)
-                    {
-                        var thirdStepTargets = ConversionMatrix.TargetsFor(secondIntermediate)
-                            .Where(t => t != secondIntermediate && converters.CanConvert(secondIntermediate, t))
-                            .Where(t => !directTargets.Contains(t))
-                            .ToList();
-
-                        foreach (var final in thirdStepTargets)
-                        {
-                            var chain = new List<RecipeStep>
-                            {
-                                new() { Kind = RecipeStepKind.Convert, Format = intermediate.Id },
-                                new() { Kind = RecipeStepKind.Convert, Format = secondIntermediate.Id },
-                                new() { Kind = RecipeStepKind.Convert, Format = final.Id }
-                            };
-
-                            var recipe = new Recipe { Steps = chain };
-                            if (recipe.AppliesTo([source], converters))
-                            {
-                                if (!chainTargets.ContainsKey(final) || chainTargets[final].Count > chain.Count)
-                                {
-                                    chainTargets[final] = chain;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return chainTargets
-            .Select(kvp => (FinalTarget: kvp.Key, Chain: kvp.Value))
-            .OrderBy(t => t.FinalTarget.Label)
-            .ToList();
-    }
-
-    private sealed class FileFormatEqualityComparer : IEqualityComparer<FileFormat>
-    {
-        public static readonly FileFormatEqualityComparer Instance = new();
-        public bool Equals(FileFormat? x, FileFormat? y) => x?.Id == y?.Id;
-        public int GetHashCode(FileFormat obj) => obj.Id.GetHashCode();
-    }
-
     private static List<FileFormat>? FormatsOf(IReadOnlyList<string> files)
     {
         var formats = new List<FileFormat>(files.Count);
@@ -682,17 +468,6 @@ public sealed class PetalController : IDisposable, IWheelHost
                 case Petal.Recipes.Recipe recipe:
                     await _jobs.RunRecipeAsync(files, recipe, at);
                     break;
-                case AutoChainRecipe autoChain:
-                {
-                    var recipe = new Recipe
-                    {
-                        Name = L.F("Convert to {0}", autoChain.FinalTarget.Label),
-                        Steps = autoChain.Chain,
-                        OnWheel = false
-                    };
-                    await _jobs.RunRecipeAsync(files, recipe, at);
-                    break;
-                }
                 case Petal.Recipes.CustomPetal petal:
                     Actions.CustomPetalRunner.Run(petal, files, _jobs, at);
                     break;
@@ -824,13 +599,4 @@ public sealed class PetalController : IDisposable, IWheelHost
         SystemToggles.SetKeepAwake(false);
         Statistics.Save();
     }
-}
-
-/// <summary>
-/// Payload for an automatic conversion chain petal. When dropped, runs the chain as a recipe.
-/// </summary>
-public sealed class AutoChainRecipe
-{
-    public FileFormat FinalTarget { get; init; } = null!;
-    public List<RecipeStep> Chain { get; init; } = [];
 }

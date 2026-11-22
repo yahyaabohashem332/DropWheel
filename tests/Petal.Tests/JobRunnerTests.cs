@@ -53,9 +53,12 @@ public class JobRunnerTests : IDisposable
         var pictures = new[] { "a.jpg", "b.png", "c.heic" }.Select(n => Path.Combine(_dir, n)).ToList();
         foreach (var p in pictures)
             File.WriteAllBytes(p, [1, 2, 3]);
-        // For light formats, all files in the batch go in parallel (up to 100)
-        Assert.Equal(3, JobRunner.BatchWidth(pictures, F.Webp));
-        Assert.Equal(3, JobRunner.BatchWidth(pictures, F.Pdf));
+        // One per core, up to four: a hundred pictures still go four at a time.
+        Assert.Equal(JobRunner.PerCore, JobRunner.BatchWidth(pictures, F.Webp));
+        Assert.Equal(JobRunner.PerCore, JobRunner.BatchWidth(pictures, F.Pdf));
+        var many = Enumerable.Range(0, 100).Select(i => pictures[i % pictures.Count]).ToList();
+        Assert.Equal(JobRunner.PerCore, JobRunner.BatchWidth(many, F.Webp));
+        Assert.InRange(JobRunner.PerCore, 1, 4);
         Assert.Equal(1, JobRunner.BatchWidth(pictures[..1], F.Webp));
 
         var clips = new[] { "a.mp4", "b.mov" }.Select(n => Path.Combine(_dir, n)).ToList();
@@ -210,47 +213,64 @@ public class JobRunnerTests : IDisposable
     }
 
     [Fact]
-    public void PdfLongAndFirstPage_converters_exist_in_matrix()
+    public void Only_a_conversion_of_a_file_dropped_on_its_own_may_send_it_to_the_Recycle_Bin()
     {
-        // PDF → long PNG/JPG and first PNG/JPG should be available
-        var pdfTargets = ConversionMatrix.TargetsFor(F.Pdf).Select(t => t.Id).ToHashSet();
-        Assert.Contains("pdflongpng", pdfTargets);
-        Assert.Contains("pdflongjpg", pdfTargets);
-        Assert.Contains("pdffirstpng", pdfTargets);
-        Assert.Contains("pdffirstjpg", pdfTargets);
+        var settings = new ConversionSettings { MoveOriginalToRecycleBin = true };
+        string Make(string name, int bytes)
+        {
+            var path = Path.Combine(_dir, name);
+            File.WriteAllBytes(path, new byte[bytes]);
+            return path;
+        }
+
+        // The result is the original itself (a tool that saves over it): the original stays.
+        var same = Make("same.jpg", 10);
+        JobRunner.AfterConversion(same, ConvertedOriginal.Of(same, true), [same], settings);
+        Assert.True(File.Exists(same));
+
+        // A result is missing or empty: the original stays.
+        var input = Make("input.jpg", 10);
+        JobRunner.AfterConversion(input, ConvertedOriginal.Of(input, true), [Path.Combine(_dir, "never.webp")], settings);
+        Assert.True(File.Exists(input));
+        JobRunner.AfterConversion(input, ConvertedOriginal.Of(input, true), [Make("empty.webp", 0)], settings);
+        Assert.True(File.Exists(input));
+        JobRunner.AfterConversion(input, ConvertedOriginal.Of(input, true), [], settings);
+        Assert.True(File.Exists(input));
+
+        // From a watched folder or a dropped folder: the original stays.
+        JobRunner.AfterConversion(input, ConvertedOriginal.Of(input, false), [Make("kept.webp", 10)], settings);
+        Assert.True(File.Exists(input));
+
+        // Every result there and holding something: the original goes, and can be put back.
+        JobRunner.AfterConversion(input, ConvertedOriginal.Of(input, true), [Make("done 1.png", 10), Make("done 2.png", 10)], settings);
+        Assert.False(File.Exists(input));
+        Assert.NotEmpty(RecycleBin.Restore([input]));
     }
 
     [Fact]
-    public async Task BatchProgressCallback_reports_progress()
+    public void A_conversions_results_take_the_dates_the_original_had_before_it_ran()
     {
-        var progressReports = new List<(int Done, int Total)>();
-        var files = Enumerable.Range(0, 5).Select(i => Picture($"p{i}.jpg", i)).ToList();
+        var input = Path.Combine(_dir, "old.jpg");
+        File.WriteAllBytes(input, [1, 2, 3]);
+        var created = new DateTime(2020, 5, 6, 7, 8, 9);
+        var written = new DateTime(2021, 1, 2, 3, 4, 5);
+        File.SetCreationTime(input, created);
+        File.SetLastWriteTime(input, written);
+        var original = ConvertedOriginal.Of(input, true);
+        // The original is touched while it converts: its dates from before still go on the results.
+        File.SetLastWriteTime(input, DateTime.Now);
 
-        await RunOnStaThreadAsync(async () =>
+        var results = new[] { "old 1.png", "old 2.png" }.Select(n => Path.Combine(_dir, n)).ToList();
+        foreach (var r in results)
+            File.WriteAllBytes(r, [1]);
+        JobRunner.AfterConversion(input, original, results, new ConversionSettings { PreserveOriginalDates = true });
+        foreach (var r in results)
         {
-            var runner = new JobRunner(Petal.App.EngineSetup.CreateConverters());
-            runner.BatchProgressCallback = (done, total) => progressReports.Add((done, total));
-            await runner.ConvertAsync(files, F.Png, new ScreenPoint(100, 100));
-        });
-
-        // Should report initial (0), each completion, and final (5/5)
-        Assert.Contains(progressReports, r => r.Done == 0 && r.Total == 5);
-        Assert.Contains(progressReports, r => r.Done == 5 && r.Total == 5);
-        Assert.Equal(5, progressReports.Max(r => r.Done));
+            Assert.Equal(created, File.GetCreationTime(r));
+            Assert.Equal(written, File.GetLastWriteTime(r));
+        }
+        Assert.True(File.Exists(input));
     }
-
-    // [Fact] - Temporarily disabled due to build issue with method resolution
-// public async Task AutoChainRecipe_runs_multi_step_conversion()
-// {
-//     // Test the chain discovery logic: Docx -> Pdf -> Png
-//     var converters = Petal.App.EngineSetup.CreateConverters();
-//     IReadOnlyCollection<FileFormat> sources = new[] { F.Docx };
-//     var chainTargets = Petal.App.PetalController.FindChainTargetsForTest(sources, converters);
-//     Assert.NotEmpty(chainTargets);
-//     var pngChain = chainTargets.FirstOrDefault(c => c.FinalTarget == F.Png);
-//     Assert.NotNull(pngChain);
-//     Assert.Contains(F.Pdf, pngChain.Chain.Select(s => s.Format));
-// }
 
     private static async Task RunOnStaThreadAsync(Func<Task> action)
     {

@@ -33,7 +33,7 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
             .Select(p => $"{p.From} → {p.To}")
             .ToList();
         Assert.Empty(missing);
-        Assert.Equal(97, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
+        Assert.Equal(101, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
     }
 
     [Fact]
@@ -74,14 +74,16 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
         Assert.True(File.Exists(input), "The input must stay in place.");
         var files = result.OutputPaths.Where(File.Exists).ToList();
         Assert.NotEmpty(files);
+        // "PNG (long)" and "JPG (first page)" write PNG and JPG files: pictures, read as such.
+        var written = F.Written(to);
         var text = string.Join("\n", files.Where(f => Path.GetExtension(f).TrimStart('.').Equals(to.WriteExtension, StringComparison.OrdinalIgnoreCase))
-            .Select(f => OutputVerifier.TextOf(f, to)));
-        if (to != F.Png && to != F.Jpg)
+            .Select(f => OutputVerifier.TextOf(f, written)));
+        if (written != F.Png && written != F.Jpg)
             OutputVerifier.ContainsText(text, Fixtures.Token);
 
         // Strict checks, beyond what lenient readers accept: Office schemas, PDF structure.
         foreach (var file in files)
-            AssertStrictlyValid(file, to);
+            AssertStrictlyValid(file, written);
 
         // No temporary files left behind.
         Assert.Empty(Directory.EnumerateFileSystemEntries(dir, "*.petal-tmp", SearchOption.AllDirectories));

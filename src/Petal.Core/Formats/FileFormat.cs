@@ -27,9 +27,13 @@ public enum FormatFamily
 /// <param name="Id">Stable lower-case identifier, also the default extension.</param>
 /// <param name="Label">Short upper-case label shown on the wheel.</param>
 /// <param name="Extensions">Recognised extensions without the dot, the first one is used when writing.</param>
-public sealed record FileFormat(string Id, string Label, FormatFamily Family, string[] Extensions, bool CanRead = true, bool CanWrite = true)
+/// <param name="Writes">
+/// For a target that is a way of writing another format (a PDF as one long PNG), the extension it writes;
+/// such a format has no extensions of its own, so a file on disk is never taken for it.
+/// </param>
+public sealed record FileFormat(string Id, string Label, FormatFamily Family, string[] Extensions, bool CanRead = true, bool CanWrite = true, string? Writes = null)
 {
-    public string WriteExtension => Extensions[0];
+    public string WriteExtension => Writes ?? Extensions[0];
 
     public override string ToString() => Label;
 }

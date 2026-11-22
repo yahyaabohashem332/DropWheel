@@ -84,13 +84,20 @@ internal static class OcrService
             var total = Math.Max(1, words.Sum(w => w.Text.Count(c => !char.IsWhiteSpace(c))));
             var quality = (double)letters / total;
             var score = letters * quality * quality;
+            // A reader of its own script reads it best: the Arabic reader gets English nearly right but turns some letters
+            // into dots ("the lazy .og"), on every PC whose Windows is in Arabic, where it comes first.
+            var text = string.Concat(words.Select(w => w.Text));
+            bool arabicReader = engine.RecognizerLanguage.LanguageTag.Split('-')[0] is "ar" or "fa" or "ur" or "ps";
+            bool ownScript = arabicReader == ReadingOrder.Arabic(text) > ReadingOrder.Latin(text);
+            if (ownScript)
+                score *= 1.15;
             if (score > bestScore)
             {
                 best = words;
                 bestScore = score;
             }
-            // Clean and substantial: no need to try the other languages.
-            if (letters > 40 && quality > 0.9)
+            // Clean, substantial and in the reader's own script: no need to try the other languages.
+            if (letters > 40 && quality > 0.9 && ownScript)
                 break;
         }
         return best;

@@ -68,13 +68,13 @@ public static class Formats
     // Documents
     public static readonly FileFormat Pdf = new("pdf", "PDF", FormatFamily.Pdf, ["pdf"]);
 
-    // Special PDF image outputs: single long image (all pages vertically concatenated) or first page only.
-    // They use the PNG/JPG extension on disk but are distinct conversion targets on the wheel.
-    // Empty extensions: they are output-only targets, never opened from disk.
-    public static readonly FileFormat PdfLongPng = new("pdflongpng", "PNG (long)", FormatFamily.Image, []);
-    public static readonly FileFormat PdfFirstPng = new("pdffirstpng", "PNG (first page)", FormatFamily.Image, []);
-    public static readonly FileFormat PdfLongJpg = new("pdflongjpg", "JPG (long)", FormatFamily.Image, []);
-    public static readonly FileFormat PdfFirstJpg = new("pdffirstjpg", "JPG (first page)", FormatFamily.Image, []);
+    // A PDF as pictures in two more ways: every page one under another in one long picture, or the first page
+    // alone. They write PNG or JPG files but are targets of their own on the wheel; with no extensions of their
+    // own a file on disk is always PNG or JPG, never one of these.
+    public static readonly FileFormat PdfLongPng = new("pdflongpng", "PNG (long)", FormatFamily.Image, [], CanRead: false, Writes: "png");
+    public static readonly FileFormat PdfFirstPng = new("pdffirstpng", "PNG (first page)", FormatFamily.Image, [], CanRead: false, Writes: "png");
+    public static readonly FileFormat PdfLongJpg = new("pdflongjpg", "JPG (long)", FormatFamily.Image, [], CanRead: false, Writes: "jpg");
+    public static readonly FileFormat PdfFirstJpg = new("pdffirstjpg", "JPG (first page)", FormatFamily.Image, [], CanRead: false, Writes: "jpg");
 
     public static readonly FileFormat Docx = new("docx", "DOCX", FormatFamily.Document, ["docx"]);
     public static readonly FileFormat Odt = new("odt", "ODT", FormatFamily.Document, ["odt"]);
@@ -135,6 +135,10 @@ public static class Formats
         .ToFrozenDictionary(p => p.e, p => p.f, StringComparer.OrdinalIgnoreCase);
 
     public static FileFormat? FromId(string id) => ById.GetValueOrDefault(id);
+
+    /// <summary>The format of the file a target writes: PNG for "PNG (long)", the target itself otherwise.</summary>
+    public static FileFormat Written(FileFormat target) =>
+        target.Writes is { } extension ? ByExtension.GetValueOrDefault(extension) ?? target : target;
 
     /// <summary>Detects the format from a path, understanding double extensions like ".tar.gz".</summary>
     public static FileFormat? FromPath(string path)

@@ -12,7 +12,22 @@ using Petal.App.Localization;
 namespace Petal.App.Jobs;
 
 /// <summary>A unit of work shown on one progress card.</summary>
-public sealed record WorkItem(string InputPath, string Label, Func<IProgress<double>, CancellationToken, Task<IReadOnlyList<string>>> Run, DateTime OriginalCreationTime = default, DateTime OriginalLastWriteTime = default);
+/// <param name="Original">
+/// For a conversion of one file, that file as it was before it started: the settings "Preserve original dates" and
+/// "Move originals to Recycle Bin" apply to it and to nothing else (not to tools, recipes or a dropped folder).
+/// </param>
+public sealed record WorkItem(string InputPath, string Label, Func<IProgress<double>, CancellationToken, Task<IReadOnlyList<string>>> Run, ConvertedOriginal? Original = null);
+
+/// <summary>The file a conversion started from, with its dates as they were before it ran.</summary>
+/// <param name="MayRecycle">False where the original must stay whatever the setting: a watched folder, a dropped folder's files.</param>
+public sealed record ConvertedOriginal(DateTime Created, DateTime Written, bool MayRecycle)
+{
+    public static ConvertedOriginal Of(string path, bool mayRecycle)
+    {
+        var info = new FileInfo(path);
+        return new(info.CreationTime, info.LastWriteTime, mayRecycle);
+    }
+}
 
 /// <summary>Runs conversions and tools in the background and reports them on a HUD card.</summary>
 public sealed class JobRunner(ConverterRegistry converters)
@@ -22,9 +37,6 @@ public sealed class JobRunner(ConverterRegistry converters)
 
     public ConverterRegistry Converters { get; } = converters;
 
-    /// <summary>Callback for batch progress reporting (completed, total). Used to show progress on the wheel itself.</summary>
-    public Action<int, int>? BatchProgressCallback { get; set; }
-
     /// <summary>One file per core, up to four: more would mostly add memory, not speed.</summary>
     public static int PerCore => Math.Clamp(Environment.ProcessorCount, 1, 4);
 
@@ -33,7 +45,6 @@ public sealed class JobRunner(ConverterRegistry converters)
     /// each (this ImageMagick build is single-threaded), so they go side by side, one per core; video
     /// (FFmpeg already uses every core), documents (one Office at a time; PDF pages are already saved
     /// together), Photoshop files and anything over 150 MB go one after another.
-    /// For light formats (images/audio) with many files, allows up to 100 in parallel for batch progress.
     /// </summary>
     internal static int BatchWidth(IReadOnlyList<string> files, FileFormat target) =>
         Light(target) || target == Formats.Pdf ? BatchWidth(files) : 1;
@@ -45,11 +56,7 @@ public sealed class JobRunner(ConverterRegistry converters)
             return 1;
         try
         {
-            if (files.Any(f => new FileInfo(f).Length > 150L * 1024 * 1024))
-                return 1;
-            // For large batches (up to 100 files), allow full parallelism for light formats
-            // This enables batch progress display on the wheel itself
-            return Math.Min(files.Count, 100);
+            return files.Any(f => new FileInfo(f).Length > 150L * 1024 * 1024) ? 1 : PerCore;
         }
         catch (IOException)
         {
@@ -77,9 +84,6 @@ public sealed class JobRunner(ConverterRegistry converters)
             var converter = Converters.Find(from, target);
             if (converter is null)
                 continue;
-            var inputInfo = new FileInfo(file);
-            var originalCreation = inputInfo.CreationTime;
-            var originalLastWrite = inputInfo.LastWriteTime;
             var index = names.Count;
             names.Add(new(() => OutputNaming.ForConversion(file, target, outputDirectory ?? settings.OutputDirectoryFor(file))));
             work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
@@ -88,7 +92,7 @@ public sealed class JobRunner(ConverterRegistry converters)
                 var job = new ConversionJob(file, from, target, output, settings.Conversion);
                 var result = await converter.ConvertAsync(job, progress, ct);
                 return result.OutputPaths;
-            }));
+            }, ConvertedOriginal.Of(file, MayRecycle(file, outputDirectory))));
         }
         return RunAsync(L.F("Converting to {0}", target.Label), L.F("Converted to {0}", target.Label), work, at, describe, BatchWidth(files, target));
     }
@@ -108,9 +112,6 @@ public sealed class JobRunner(ConverterRegistry converters)
             var from = Formats.FromPath(file);
             if (from is null || favourite.ConverterFor(from, Converters) is not { } converter)
                 continue;
-            var inputInfo = new FileInfo(file);
-            var originalCreation = inputInfo.CreationTime;
-            var originalLastWrite = inputInfo.LastWriteTime;
             var index = names.Count;
             names.Add(new(() =>
             {
@@ -126,7 +127,7 @@ public sealed class JobRunner(ConverterRegistry converters)
                 var job = new ConversionJob(file, from, target, output, conversion);
                 var result = await converter.ConvertAsync(job, progress, ct);
                 return result.OutputPaths;
-            }));
+            }, ConvertedOriginal.Of(file, MayRecycle(file, outputDirectory))));
         }
         var label = FavouriteText.Label(favourite);
         return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at, describe, BatchWidth(files, target));
@@ -150,12 +151,9 @@ public sealed class JobRunner(ConverterRegistry converters)
         var settings = SettingsStore.Current;
         var runner = new Petal.Recipes.RecipeRunner(Converters, settings.Conversion);
         var label = files.Count == 1 ? Path.GetFileName(files[0]) : L.P(files.Count, "{0} file", "{0} files");
-        var inputInfo = new FileInfo(files[0]);
-        var originalCreation = inputInfo.CreationTime;
-        var originalLastWrite = inputInfo.LastWriteTime;
         IReadOnlyList<string> made = [];
         var work = new WorkItem(files[0], label, async (progress, ct) =>
-            made = await runner.RunAsync(recipe, files, outputDirectory ?? (files.Count > 0 ? settings.OutputDirectoryFor(files[0]) : null), progress, ct), originalCreation, originalLastWrite);
+            made = await runner.RunAsync(recipe, files, outputDirectory ?? (files.Count > 0 ? settings.OutputDirectoryFor(files[0]) : null), progress, ct));
         await RunAsync(L.F("Running {0}", recipe.Name), L.F("{0}: done", recipe.Name), [work], at);
         return made;
     }
@@ -183,14 +181,7 @@ public sealed class JobRunner(ConverterRegistry converters)
         var errors = new ConcurrentQueue<(int Index, string Name, string Message)>();
         var fractions = new double[work.Count];
         int started = 0;
-        int completed = 0;
         bool together = width > 1 && work.Count > 1;
-
-        // Show batch progress on the wheel for large batches (up to 100 files)
-        if (together && BatchProgressCallback is not null)
-        {
-            BatchProgressCallback(0, work.Count);
-        }
 
         // Made here, on the interface thread, so every report comes back to it.
         var reports = work.Select((item, index) => new Progress<double>(f =>
@@ -232,15 +223,6 @@ public sealed class JobRunner(ConverterRegistry converters)
                 {
                     errors.Enqueue((index, item.Label, Friendly(ex)));
                 }
-                finally
-                {
-                    // Report batch progress when a file completes (success or failure)
-                    if (together && BatchProgressCallback is not null)
-                    {
-                        int done = Interlocked.Increment(ref completed);
-                        BatchProgressCallback(done, work.Count);
-                    }
-                }
             });
         }
         catch (OperationCanceledException)
@@ -277,68 +259,64 @@ public sealed class JobRunner(ConverterRegistry converters)
             if (SettingsStore.Current.SelectResultInExplorer)
                 ExplorerSelection.SelectIfVisible(results);
 
-            // Post-conversion actions: preserve dates and/or move originals to Recycle Bin
-            var conversionSettings = SettingsStore.Current.Conversion;
-            if (conversionSettings.PreserveOriginalDates || conversionSettings.MoveOriginalToRecycleBin)
-            {
-                for (int i = 0; i < work.Count; i++)
-                {
-                    if (produced[i] is null)
-                        continue; // This file failed
-                    var item = work[i];
-                    var inputPath = item.InputPath;
-                    var outputPaths = produced[i]!;
-                    try
-                    {
-                        if (!File.Exists(inputPath))
-                            continue; // Original already gone
-                        // Use captured original dates if available, otherwise read from file
-                        var creationTime = item.OriginalCreationTime != default ? item.OriginalCreationTime : File.GetCreationTime(inputPath);
-                        var lastWriteTime = item.OriginalLastWriteTime != default ? item.OriginalLastWriteTime : File.GetLastWriteTime(inputPath);
-                        foreach (var outputPath in outputPaths)
-                        {
-                            if (!File.Exists(outputPath))
-                                continue;
-                            if (conversionSettings.PreserveOriginalDates)
-                            {
-                                try
-                                {
-                                    File.SetCreationTime(outputPath, creationTime);
-                                    File.SetLastWriteTime(outputPath, lastWriteTime);
-                                }
-                                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                                {
-                                    Log.Error(ex, $"Preserving dates for {outputPath}");
-                                }
-                            }
-                        }
-                        if (conversionSettings.MoveOriginalToRecycleBin)
-                        {
-                            try
-                            {
-                                RecycleBin.Send(inputPath);
-                            }
-                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                            {
-                                Log.Error(ex, $"Moving {inputPath} to Recycle Bin");
-                            }
-                        }
-                    }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                    {
-                        Log.Error(ex, $"Post-conversion action for {inputPath}");
-                    }
-                }
-            }
+            for (int i = 0; i < work.Count; i++)
+                if (work[i].Original is { } original && produced[i] is { } made)
+                    AfterConversion(work[i].InputPath, original, made, SettingsStore.Current.Conversion);
 
             var done = work.Where((_, i) => produced[i] is not null).Select(w => w.InputPath).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             Stats.Statistics.RecordWork(done.Count, SizeOf(done), SizeOf(results), (Environment.TickCount64 - startedAt) / 1000.0);
         }
+    }
 
-        // Hide batch progress on the wheel when done
-        if (BatchProgressCallback is not null)
+    /// <summary>
+    /// An original may go to the Recycle Bin only when it was dropped as a file of its own: a watched folder's
+    /// files (<paramref name="outputDirectory"/>) and a dropped folder's (converted into a copy of the folder,
+    /// which is left alone) stay.
+    /// </summary>
+    private static bool MayRecycle(string file, string? outputDirectory) =>
+        outputDirectory is null && !FolderLease.IsPlaced(file);
+
+    /// <summary>
+    /// What the settings ask once a file is converted: its results take the original's dates; and the original goes
+    /// to the Recycle Bin, only when every result is there, holds something and isn't the original itself.
+    /// </summary>
+    internal static void AfterConversion(string input, ConvertedOriginal original, IReadOnlyList<string> made, ConversionSettings settings)
+    {
+        if (!settings.PreserveOriginalDates && !settings.MoveOriginalToRecycleBin)
+            return;
+        var results = made.Where(File.Exists).ToList();
+        if (settings.PreserveOriginalDates)
         {
-            BatchProgressCallback(work.Count, work.Count); // Final update to 100%
+            foreach (var result in results)
+            {
+                try
+                {
+                    File.SetCreationTime(result, original.Created);
+                    File.SetLastWriteTime(result, original.Written);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    Log.Error(ex, $"Keeping the dates of {input} on {result}");
+                }
+            }
+        }
+        if (!settings.MoveOriginalToRecycleBin || !original.MayRecycle || !File.Exists(input))
+            return;
+        var whole = made.Count > 0 && results.Count == made.Count
+            && results.All(r => new FileInfo(r).Length > 0
+                && !string.Equals(Path.GetFullPath(r), Path.GetFullPath(input), StringComparison.OrdinalIgnoreCase));
+        if (!whole)
+        {
+            Log.Info($"conversion: {input} kept, its results aren't all there");
+            return;
+        }
+        try
+        {
+            RecycleBin.Send(input);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Log.Error(ex, $"Moving {input} to the Recycle Bin");
         }
     }
 
@@ -366,6 +344,7 @@ public sealed class JobRunner(ConverterRegistry converters)
     {
         Petal.Engines.Documents.Pdf.PdfOpenException { LockedForChanges: true } => L.T("Its author has locked this PDF against changes."),
         Petal.Engines.Documents.Pdf.PdfOpenException { NeedsPassword: true } => L.T("This PDF is protected by a password."),
+        Petal.Engines.Documents.Pdf.PdfTooLongException => L.T("This PDF is too long for one picture. Make a picture of each page instead."),
         Petal.Engines.Media.SizeTooSmallException small => L.F("This size is too small for this video. The smallest it can be is about {0}.", Petal.App.Util.Sizes.Format(small.SmallestBytes)),
         UnauthorizedAccessException => L.T("DropWheel is not allowed to save in that folder."),
         IOException io when io.HResult == unchecked((int)0x80070070) => L.T("The disk is full."),

@@ -15,6 +15,9 @@ public sealed class PdfOpenException(string message, Exception? inner = null) : 
     public bool LockedForChanges { get; init; }
 }
 
+/// <summary>A PDF with too many pages for one long picture that can still be read (see DocumentIO.LongDpi).</summary>
+public sealed class PdfTooLongException() : InvalidOperationException("This PDF is too long for one picture. Make a picture of each page instead.");
+
 /// <summary>Opening and saving with PDFsharp, plus a precise rewrite of the document information dictionary.</summary>
 internal static partial class PdfSharpIO
 {

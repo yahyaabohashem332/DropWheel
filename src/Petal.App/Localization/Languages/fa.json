@@ -3170,6 +3170,7 @@
  "This PDF has no pictures to extract.": "این PDF تصویری برای استخراج ندارد.",
  "This PDF is protected by a password.": "این PDF با رمز عبور محافظت شده است.",
  "This PDF is signed: an edited copy no longer carries a valid signature.": "این PDF امضا شده است: نسخه ویرایش‌شده دیگر امضای معتبر ندارد.",
+ "This PDF is too long for one picture. Make a picture of each page instead.": "این PDF برای یک تصویر بیش از حد بلند است. به‌جای آن از هر صفحه یک تصویر بسازید.",
  "This Photoshop file version isn't supported.": "این نسخه از فایل Photoshop پشتیبانی نمی‌شود.",
  "This action isn't in this version of DropWheel": "این کنش در این نسخه از DropWheel نیست",
  "This can only be the last petal: drop on it": "این فقط می‌تواند آخرین گلبرگ باشد: روی آن رها کنید",
