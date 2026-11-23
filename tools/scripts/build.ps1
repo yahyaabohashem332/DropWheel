@@ -7,6 +7,13 @@
 .PARAMETER Notes
   What's new, shown in Petal's update window.
 
+.PARAMETER Urgency
+  How much the update matters, signed into update.json: required (offered every time, can't be
+  skipped), recommended (the default: a card, can be skipped) or optional (only the tray's dot).
+
+.PARAMETER Changes
+  What changed, one line each, shown as a list in the update window and signed with the feed.
+
 .PARAMETER Arch
   x64 (the default) or arm64: Petal for ARM64 PCs, its own ZIP, Setup and update feed
   (update-arm64.json). FFmpeg and ExifTool stay x64 programs, which Windows 11 runs on ARM64.
@@ -23,12 +30,19 @@
 param(
     [string]$Version = '1.0.0',
     [string]$Notes = '',
+    [ValidateSet('required', 'recommended', 'optional')]
+    [string]$Urgency = 'recommended',
+    [string[]]$Changes = @(),
     [ValidateSet('x64', 'arm64')]
     [string]$Arch = 'x64',
     [switch]$SkipTests,
     [switch]$NoFeed
 )
 $ErrorActionPreference = 'Stop'
+# The signed feed reads one change a line: none may be empty or hold a line break.
+$Changes = @($Changes | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
+if ($Changes | Where-Object { $_ -match "[`r`n]" -or $_.Length -gt 400 }) { throw 'Each change is one line of at most 400 characters.' }
+if ($Changes.Count -gt 50) { throw 'At most 50 changes.' }
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $dist = Join-Path $root 'dist'
 $publish = Join-Path $dist ($(if ($Arch -eq 'arm64') { 'Petal-arm64' } else { 'Petal' }))
@@ -205,6 +219,8 @@ if ($iscc) {
         sha256 = (Get-FileHash $setup -Algorithm SHA256).Hash
         size = (Get-Item $setup).Length
         notes = $Notes
+        urgency = $Urgency
+        changes = @($Changes)
     }
     # Signed with the maker's key, kept outside the repository: installed copies only offer signed updates.
     $keyFile = Join-Path $env:USERPROFILE '.petal\update-signing-key.pem'
@@ -217,8 +233,15 @@ if ($iscc) {
     $signature = $ecdsa.SignData([System.Text.Encoding]::UTF8.GetBytes($signed), [System.Security.Cryptography.HashAlgorithmName]::SHA256,
         [System.Security.Cryptography.DSASignatureFormat]::IeeeP1363FixedFieldConcatenation)
     $manifest.signature = [Convert]::ToBase64String($signature)
+    # The second signature (DropWheel 1.24 and later) covers the urgency, the changes and the notes as well;
+    # older copies check only the first, so they keep updating.
+    $details = (@('petal-update-2', $manifest.version, $manifest.url, $manifest.sha256.ToUpperInvariant(), "$($manifest.size)",
+        $manifest.urgency, "$($Changes.Count)") + $Changes + @($manifest.notes)) -join "`n"
+    $signature2 = $ecdsa.SignData([System.Text.Encoding]::UTF8.GetBytes($details), [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+        [System.Security.Cryptography.DSASignatureFormat]::IeeeP1363FixedFieldConcatenation)
+    $manifest.signature2 = [Convert]::ToBase64String($signature2)
     $feed = Join-Path $dist ($(if ($Arch -eq 'arm64') { 'update-arm64.json' } else { 'update.json' }))
-    $manifest | ConvertTo-Json | Set-Content $feed -Encoding utf8
+    $manifest | ConvertTo-Json -Depth 3 | Set-Content $feed -Encoding utf8
     Write-Host "Update feed: $feed"
 } else {
     Write-Host 'Inno Setup not found; skipped Setup.exe (winget install JRSoftware.InnoSetup).'

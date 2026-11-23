@@ -6,12 +6,26 @@ using System.Text.Json.Serialization;
 
 namespace Petal.Core.Util;
 
+/// <summary>How much an update matters, as its maker says in the signed feed.</summary>
+public enum UpdateUrgency
+{
+    /// <summary>Offered quietly (the tray's dot); installed when the user likes.</summary>
+    Optional,
+    /// <summary>Offered with a card, and can be skipped. What feeds without an urgency (before 1.24) are.</summary>
+    Recommended,
+    /// <summary>Fixes something important: offered every time, and can't be skipped.</summary>
+    Required,
+}
+
 /// <summary>
 /// What an update feed (update.json, written by build.ps1) says about the newest release.
 /// <see cref="Url"/> may be relative to the feed's own address.
 /// </summary>
 public sealed record UpdateManifest
 {
+    /// <summary>The urgency names a feed uses.</summary>
+    public static readonly IReadOnlyList<string> UrgencyNames = ["optional", "recommended", "required"];
+
     [JsonPropertyName("version")]
     public string Version { get; init; } = "";
 
@@ -27,9 +41,41 @@ public sealed record UpdateManifest
     [JsonPropertyName("notes")]
     public string? Notes { get; init; }
 
-    /// <summary>ECDSA P-256 over <see cref="Updates.SignedText"/>, made with the maker's private key.</summary>
+    /// <summary>"required", "recommended" or "optional"; signed (format 2). Absent in older feeds.</summary>
+    [JsonPropertyName("urgency")]
+    public string? Urgency { get; init; }
+
+    /// <summary>What changed, one line each; signed (format 2). Absent in older feeds.</summary>
+    [JsonPropertyName("changes")]
+    public IReadOnlyList<string>? Changes { get; init; }
+
+    /// <summary>The urgency; a feed that names none is recommended, as every update was before.</summary>
+    [JsonIgnore]
+    public UpdateUrgency Level => Urgency switch
+    {
+        "required" => UpdateUrgency.Required,
+        "optional" => UpdateUrgency.Optional,
+        _ => UpdateUrgency.Recommended,
+    };
+
+    /// <summary>
+    /// A feed with an urgency or a list of changes carries a second signature, over them and the notes too: they
+    /// can't be changed or added to an older feed. Taking them all out leaves a feed as before 1.24 (recommended,
+    /// without the list), never one that claims more than its maker said.
+    /// </summary>
+    [JsonIgnore]
+    public bool SignedWithDetails => Urgency is not null || Changes is not null;
+
+    /// <summary>
+    /// ECDSA P-256 over <see cref="Updates.SignedText"/>, made with the maker's private key. Every DropWheel
+    /// checks this one; copies older than 1.24 check nothing else, so feeds keep it.
+    /// </summary>
     [JsonPropertyName("signature")]
     public string? Signature { get; init; }
+
+    /// <summary>The same key over <see cref="Updates.SignedDetails"/>: what a feed with an urgency or changes must carry.</summary>
+    [JsonPropertyName("signature2")]
+    public string? Signature2 { get; init; }
 
     /// <summary>Where the installer is, resolved against the feed.</summary>
     [JsonIgnore]
@@ -56,24 +102,61 @@ public static class Updates
     /// <summary>The key a feed must be signed with: Petal's, or a test's own.</summary>
     public static string TrustedKey { get; set; } = PetalKey;
 
+    /// <summary>Most changes a feed may list, and the longest one.</summary>
+    public const int MostChanges = 50, LongestChange = 400;
+
     /// <summary>What a feed's signature covers: the version, where the installer is, its checksum and size.</summary>
     public static string SignedText(UpdateManifest manifest) =>
-        $"petal-update\n{manifest.Version}\n{manifest.Url}\n{manifest.Sha256.ToUpperInvariant()}\n{manifest.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+        $"petal-update\n{manifest.Version}\n{manifest.Url}\n{manifest.Sha256.ToUpperInvariant()}\n{Size(manifest)}";
 
-    /// <summary>Signs a feed, as build.ps1 does (for tests and tools).</summary>
-    public static string Sign(UpdateManifest manifest, ECDsa key) =>
-        Convert.ToBase64String(key.SignData(Encoding.UTF8.GetBytes(SignedText(manifest)), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation));
-
-    /// <summary>True when the feed carries a good signature from <see cref="TrustedKey"/>.</summary>
-    public static bool IsSigned(UpdateManifest manifest)
+    /// <summary>
+    /// What the second signature covers: the same, then the urgency, the number of changes and each change on its
+    /// own line, and last the notes.
+    /// </summary>
+    public static string SignedDetails(UpdateManifest manifest)
     {
-        if (string.IsNullOrWhiteSpace(manifest.Signature))
+        var changes = manifest.Changes ?? [];
+        string[] lines =
+        [
+            "petal-update-2", manifest.Version, manifest.Url, manifest.Sha256.ToUpperInvariant(), Size(manifest),
+            manifest.Urgency ?? "", changes.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            .. changes, manifest.Notes ?? "",
+        ];
+        return string.Join("\n", lines);
+    }
+
+    private static string Size(UpdateManifest manifest) => manifest.Size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>Signs a feed, as build.ps1 does (for tests and tools): both signatures when it has an urgency or changes.</summary>
+    public static UpdateManifest Signed(UpdateManifest manifest, ECDsa key) => manifest with
+    {
+        Signature = SignText(SignedText(manifest), key),
+        Signature2 = manifest.SignedWithDetails ? SignText(SignedDetails(manifest), key) : null,
+    };
+
+    /// <summary>The first signature alone (for tests and tools).</summary>
+    public static string Sign(UpdateManifest manifest, ECDsa key) => SignText(SignedText(manifest), key);
+
+    private static string SignText(string text, ECDsa key) =>
+        Convert.ToBase64String(key.SignData(Encoding.UTF8.GetBytes(text), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation));
+
+    /// <summary>
+    /// True when the feed carries good signatures from <see cref="TrustedKey"/>: the first always, and the second
+    /// too when it has an urgency or changes.
+    /// </summary>
+    public static bool IsSigned(UpdateManifest manifest) =>
+        Verifies(SignedText(manifest), manifest.Signature)
+        && (!manifest.SignedWithDetails || Verifies(SignedDetails(manifest), manifest.Signature2));
+
+    private static bool Verifies(string text, string? signature)
+    {
+        if (string.IsNullOrWhiteSpace(signature))
             return false;
         try
         {
             using var key = ECDsa.Create();
             key.ImportSubjectPublicKeyInfo(Convert.FromBase64String(TrustedKey), out _);
-            return key.VerifyData(Encoding.UTF8.GetBytes(SignedText(manifest)), Convert.FromBase64String(manifest.Signature), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+            return key.VerifyData(Encoding.UTF8.GetBytes(text), Convert.FromBase64String(signature), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
         }
         catch (FormatException)
         {
@@ -136,7 +219,7 @@ public static class Updates
             throw new UpdateException("The update feed isn't valid.", ex);
         }
         if (!System.Version.TryParse(manifest.Version, out var offered) || manifest.Url.Length == 0
-            || manifest.Sha256.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit))
+            || manifest.Sha256.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit) || !DetailsAreValid(manifest))
             throw new UpdateException("The update feed isn't valid.");
 
         if (Normalize(offered) <= Normalize(current))
@@ -148,6 +231,16 @@ public static class Updates
             throw new UpdateException("The update feed points to an address that isn't secure.");
         return manifest with { InstallerUri = installer };
     }
+
+    /// <summary>
+    /// A feed with details names one of the three urgencies, lists at most <see cref="MostChanges"/> changes of one
+    /// line each, none empty: so the signed text can only be read one way.
+    /// </summary>
+    public static bool DetailsAreValid(UpdateManifest manifest) =>
+        !manifest.SignedWithDetails
+        || manifest.Urgency is { } u && UpdateManifest.UrgencyNames.Contains(u)
+           && (manifest.Changes ?? []).Count <= MostChanges
+           && (manifest.Changes ?? []).All(c => !string.IsNullOrWhiteSpace(c) && c.Length <= LongestChange && c.IndexOfAny(['\r', '\n']) < 0);
 
     /// <summary>
     /// Downloads the installer into <paramref name="folder"/> and checks it. Returns its path; a

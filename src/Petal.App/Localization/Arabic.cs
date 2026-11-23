@@ -4004,5 +4004,15 @@ internal static class Arabic
         ["My favourites"] = "مفضّلاتي",
         ["Share this favourite"] = "مشاركة هذه المفضّلة",
         ["Favourite copied"] = "نُسخت المفضّلة",
+        ["An important update: DropWheel {0}"] = "تحديث مهم: DropWheel {0}",
+        ["Click to install it"] = "انقر لتثبيته",
+        ["What changed"] = "ما الذي تغيّر",
+        ["Later"] = "لاحقًا",
+        ["Required update"] = "تحديث إلزامي",
+        ["It fixes something important, so it can't be skipped."] = "يصلح أمرًا مهمًا، فلا يمكن تخطّيه.",
+        ["Optional update"] = "تحديث اختياري",
+        ["Install it whenever it suits you."] = "ثبّته متى ناسبك.",
+        ["Recommended update"] = "تحديث مستحسن",
+        ["Recommended for everyone."] = "يُنصح به للجميع.",
     };
 }

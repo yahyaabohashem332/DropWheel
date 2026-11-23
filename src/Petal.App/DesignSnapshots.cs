@@ -454,6 +454,9 @@ internal static class DesignSnapshots
             ("phone", () => Actions.PhoneWindow.ForSnapshot([file("landscape.jpg"), file("weekend.mov"), file("album.pdf")])),
             ("update", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
                 .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "DropWheel-Setup-1.1.0.exe", Size = 148_000_000, Notes = Localization.L.T("Remove Background") + " · " + Localization.L.T("Transcribe") + " · " + Localization.L.T("Send to Phone") }])),
+            ("updaterequired", () => (Window)typeof(Shell.UpdateWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(Petal.Core.Util.UpdateManifest)])!
+                .Invoke([new Petal.Core.Util.UpdateManifest { Version = "1.1.0", Url = "DropWheel-Setup-1.1.0.exe", Size = 151_000_000, Urgency = "required",
+                    Changes = [Localization.L.T("Remove Background"), Localization.L.T("Transcribe"), Localization.L.T("Send to Phone")] }])),
             ("practice", Private<Onboarding.PracticeWindow>),
             ("stats", () => { SampleStats(); return Private<Stats.StatsWindow>(); }),
             ("wheeleditor", () => new Settings.WheelEditorWindow(Settings.SettingsWindow.Clone(Wheels.WheelTemplates.Apps()[0]))),

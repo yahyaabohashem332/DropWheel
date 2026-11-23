@@ -69,7 +69,103 @@ public class UpdateTests : IDisposable
         Assert.Contains("\"petal-update`n$($manifest.version)`n$($manifest.url)`n$($manifest.sha256.ToUpperInvariant())`n$($manifest.size)\"", script);
         var text = Updates.SignedText(new UpdateManifest { Version = "1.5.0", Url = "Petal-Setup-1.5.0.exe", Sha256 = "ab", Size = 12 });
         Assert.Equal("petal-update\n1.5.0\nPetal-Setup-1.5.0.exe\nAB\n12", text);
+        // The second signature: the same, then the urgency, how many changes, each change, and the notes.
+        Assert.Contains("@('petal-update-2', $manifest.version, $manifest.url, $manifest.sha256.ToUpperInvariant(), \"$($manifest.size)\",", script);
+        Assert.Contains("$manifest.urgency, \"$($Changes.Count)\") + $Changes + @($manifest.notes)) -join \"`n\"", script);
+        Assert.Contains("$manifest.signature2 =", script);
+        var details = Updates.SignedDetails(new UpdateManifest
+        {
+            Version = "1.5.0", Url = "Petal-Setup-1.5.0.exe", Sha256 = "ab", Size = 12, Urgency = "required", Changes = ["One", "Two"], Notes = "Notes\nmore",
+        });
+        Assert.Equal("petal-update-2\n1.5.0\nPetal-Setup-1.5.0.exe\nAB\n12\nrequired\n2\nOne\nTwo\nNotes\nmore", details);
         Assert.False(string.IsNullOrWhiteSpace(Updates.PetalKey));
+    }
+
+    /// <summary>A feed with an urgency and changes, signed as build.ps1 signs it; <paramref name="edit"/> changes it after.</summary>
+    private string DetailedFeed(string urgency = "required", string[]? changes = null, Func<string, string>? edit = null, ECDsa? signer = null)
+    {
+        File.WriteAllBytes(Path.Combine(_dir, "Petal-Setup.exe"), _installer);
+        var feed = Path.Combine(_dir, "update.json");
+        var manifest = Updates.Signed(new UpdateManifest
+        {
+            Version = "1.3.0",
+            Url = "Petal-Setup.exe",
+            Sha256 = Convert.ToHexString(SHA256.HashData(_installer)),
+            Size = _installer.Length,
+            Notes = "Safer updates.",
+            Urgency = urgency,
+            Changes = changes ?? ["The update window says how much an update matters.", "Favourites can be shared."],
+        }, signer ?? _key);
+        var json = JsonSerializer.Serialize(manifest);
+        File.WriteAllText(feed, edit is null ? json : edit(json));
+        return feed;
+    }
+
+    [Fact]
+    public async Task An_update_says_how_much_it_matters_and_what_changed_under_its_signature()
+    {
+        var update = await Updates.CheckAsync(DetailedFeed(), new Version(1, 0, 0), _http);
+        Assert.NotNull(update);
+        Assert.Equal(UpdateUrgency.Required, update.Level);
+        Assert.Equal(["The update window says how much an update matters.", "Favourites can be shared."], update.Changes);
+        Assert.Equal(UpdateUrgency.Optional, (await Updates.CheckAsync(DetailedFeed("optional"), new Version(1, 0, 0), _http))!.Level);
+        Assert.Equal(UpdateUrgency.Recommended, (await Updates.CheckAsync(DetailedFeed("recommended", changes: []), new Version(1, 0, 0), _http))!.Level);
+        // A feed from before 1.24 has neither, and is what it always was.
+        var old = await Updates.CheckAsync(Feed("1.2.0"), new Version(1, 0, 0), _http);
+        Assert.Equal(UpdateUrgency.Recommended, old!.Level);
+        Assert.Null(old.Changes);
+    }
+
+    [Theory]
+    [InlineData("\"optional\"", "\"required\"")]
+    [InlineData("\"required\"", "\"optional\"")]
+    [InlineData("Favourites can be shared.", "Install the attached tool.")]
+    [InlineData("Safer updates.", "Run the attached tool first.")]
+    [InlineData(",\"signature2\":\"", ",\"signature3\":\"")]
+    public async Task Changing_the_urgency_the_changes_or_the_notes_breaks_the_signature(string from, string to)
+    {
+        var feed = DetailedFeed(from == "\"optional\"" ? "optional" : "required", edit: json =>
+        {
+            Assert.Contains(from, json);
+            return json.Replace(from, to);
+        });
+        var error = await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(feed, new Version(1, 0, 0), _http));
+        Assert.Contains("signed", error.Message);
+    }
+
+    [Fact]
+    public async Task An_urgency_can_t_be_added_to_an_older_feed_and_taking_it_out_claims_nothing_more()
+    {
+        // Added to a feed signed before 1.24: no second signature, refused.
+        var older = Feed("1.2.0");
+        var olderJson = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(older))!.AsObject();
+        olderJson["urgency"] = "required";
+        File.WriteAllText(older, olderJson.ToJsonString());
+        await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(older, new Version(1, 0, 0), _http));
+
+        // All the details taken out: the feed is as an older DropWheel reads it, recommended, without the list.
+        var stripped = DetailedFeed(edit: json =>
+        {
+            var node = System.Text.Json.Nodes.JsonNode.Parse(json)!.AsObject();
+            node.Remove("urgency");
+            node.Remove("changes");
+            node.Remove("signature2");
+            return node.ToJsonString();
+        });
+        var update = await Updates.CheckAsync(stripped, new Version(1, 0, 0), _http);
+        Assert.Equal(UpdateUrgency.Recommended, update!.Level);
+        Assert.Null(update.Changes);
+    }
+
+    [Theory]
+    [InlineData("urgent", null)]
+    [InlineData("required", "Two\nlines")]
+    [InlineData("required", " ")]
+    public async Task Details_that_can_t_be_read_one_way_make_the_feed_invalid(string urgency, string? change)
+    {
+        var feed = DetailedFeed(urgency, changes: change is null ? ["Fine."] : [change]);
+        var error = await Assert.ThrowsAsync<UpdateException>(() => Updates.CheckAsync(feed, new Version(1, 0, 0), _http));
+        Assert.Contains("isn't valid", error.Message);
     }
 
     [Fact]

@@ -37,10 +37,14 @@ public static class UpdateService
 
     public static event Action<UpdateManifest>? Found;
 
+    /// <summary>True when the user skipped this version and it may be skipped: a required update never is.</summary>
+    public static bool Skipped(UpdateManifest update) =>
+        update.Level != UpdateUrgency.Required && update.Version == SettingsStore.Current.SkippedVersion;
+
     /// <summary>Notes a newer version (unless the user skipped it), for the tray's dot and menu.</summary>
     public static void Offer(UpdateManifest update)
     {
-        if (update.Version == SettingsStore.Current.SkippedVersion)
+        if (Skipped(update))
             return;
         Waiting = update;
         Found?.Invoke(update);
@@ -92,11 +96,17 @@ public static class UpdateService
             var update = await CheckAsync();
             s.LastUpdateCheck = DateTime.UtcNow;
             SettingsStore.Save();
-            if (update is null || update.Version == s.SkippedVersion)
+            if (update is null || Skipped(update))
                 return;
             Offer(update);
+            // An optional update waits quietly behind the tray's dot.
+            if (update.Level == UpdateUrgency.Optional)
+                return;
             var card = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
-            card.Succeed(L.F("DropWheel {0} is available", update.Version), L.T("Click to see what's new"), () => UpdateWindow.ShowFor(update));
+            if (update.Level == UpdateUrgency.Required)
+                card.Succeed(L.F("An important update: DropWheel {0}", update.Version), L.T("Click to install it"), () => UpdateWindow.ShowFor(update));
+            else
+                card.Succeed(L.F("DropWheel {0} is available", update.Version), L.T("Click to see what's new"), () => UpdateWindow.ShowFor(update));
         }
         catch (UpdateException ex)
         {
@@ -119,7 +129,7 @@ public static class UpdateService
     }
 }
 
-/// <summary>"Petal 1.2.0 is available": what's new, and Install or Skip.</summary>
+/// <summary>"Petal 1.2.0 is available": how much it matters, what's new, and Install or Skip (or Later, for a required one).</summary>
 public sealed class UpdateWindow : ToolWindow
 {
     private static UpdateWindow? _open;
@@ -147,12 +157,34 @@ public sealed class UpdateWindow : ToolWindow
         Body.Children.Add(title);
         var size = update.Size > 0 ? " · " + Util.Sizes.Format(update.Size) : "";
         Body.Children.Add(Text(L.F("You have {0}", UpdateService.CurrentText) + size, "Petal.Caption").WithMargin(0, 2, 0, 10));
+        Body.Children.Add(Urgency(update.Level));
+        var details = new StackPanel();
         if (!string.IsNullOrWhiteSpace(update.Notes))
         {
             var notes = Text(update.Notes.Trim(), "Petal.Body");
             notes.TextWrapping = TextWrapping.Wrap;
-            Body.Children.Add(new ScrollViewer { Content = notes, MaxHeight = 220, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+            details.Children.Add(notes);
         }
+        if (update.Changes is { Count: > 0 } changes)
+        {
+            details.Children.Add(Text("What changed", "Petal.Label").WithMargin(0, details.Children.Count > 0 ? 10 : 0, 0, 4));
+            foreach (var change in changes)
+            {
+                var row = new DockPanel { Margin = new Thickness(0, 2, 0, 0) };
+                var dot = Text("•", "Petal.Body");
+                dot.Margin = new Thickness(0, 0, 8, 0);
+                DockPanel.SetDock(dot, Dock.Left);
+                row.Children.Add(dot);
+                // The maker's own words, as they are: not looked up in the tables.
+                var line = Text("", "Petal.Body");
+                line.Text = change;
+                line.TextWrapping = TextWrapping.Wrap;
+                row.Children.Add(line);
+                details.Children.Add(row);
+            }
+        }
+        if (details.Children.Count > 0)
+            Body.Children.Add(new ScrollViewer { Content = details, MaxHeight = 240, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         _track.SetResourceReference(Border.BackgroundProperty, "Petal.Control");
         _fill.SetResourceReference(Border.BackgroundProperty, "Petal.Accent");
         _track.Child = _fill;
@@ -164,16 +196,46 @@ public sealed class UpdateWindow : ToolWindow
 
         PrimaryButton.Content = L.T("Install");
         PrimaryButton.Click += async (_, _) => await InstallAsync();
-        ResetButton.Content = L.T("Skip This Version");
         ResetButton.Visibility = Visibility.Visible;
-        ResetButton.Click += (_, _) =>
+        if (update.Level == UpdateUrgency.Required)
         {
-            SettingsStore.Current.SkippedVersion = update.Version;
-            SettingsStore.Save();
-            Close();
-        };
+            // A required update comes back until it is installed.
+            ResetButton.Content = L.T("Later");
+            ResetButton.Click += (_, _) => Close();
+        }
+        else
+        {
+            ResetButton.Content = L.T("Skip This Version");
+            ResetButton.Click += (_, _) =>
+            {
+                SettingsStore.Current.SkippedVersion = update.Version;
+                SettingsStore.Save();
+                Close();
+            };
+        }
         Closed += (_, _) => _cts?.Cancel();
     }
+
+    /// <summary>A line that says how much the update matters, with a coloured mark.</summary>
+    private static FrameworkElement Urgency(UpdateUrgency level)
+    {
+        var (title, words, brush) = level switch
+        {
+            UpdateUrgency.Required => ("Required update", "It fixes something important, so it can't be skipped.", "Petal.Danger"),
+            UpdateUrgency.Optional => ("Optional update", "Install it whenever it suits you.", "Petal.TextSecondary"),
+            _ => ("Recommended update", "Recommended for everyone.", "Petal.Accent"),
+        };
+        var mark = new Border { Width = 8, Height = 8, CornerRadius = new CornerRadius(4), Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+        mark.SetResourceReference(Border.BackgroundProperty, brush);
+        var name = Text(title, "Petal.Body");
+        name.FontWeight = FontWeights.SemiBold;
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Children = { mark, name } };
+        var said = Text(words, "Petal.Caption");
+        said.TextWrapping = TextWrapping.Wrap;
+        return new StackPanel { Margin = new Thickness(0, 0, 0, 10), Children = { line, said } };
+    }
+
+    internal string SkipLabelForTest => ResetButton.Content as string ?? "";
 
     private async Task InstallAsync()
     {
