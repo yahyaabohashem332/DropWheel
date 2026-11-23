@@ -161,6 +161,7 @@ public sealed partial class WheelWindow : Window
         _probeTimer.Tick += OnProbeTick;
         _releaseTimer.Tick += (_, _) => CloseWheel();
         _dwellTimer.Tick += OnDwell;
+        _orbitLeave.Tick += OnOrbitLeave;
         _previewTimer.Tick += OnPreviewTick;
         Theme.Changed += () => Dispatcher.BeginInvoke(() => _palette = PaletteFor(_options));
     }
@@ -498,21 +499,9 @@ public sealed partial class WheelWindow : Window
         var p = e.GetPosition(_stage);
         var v = new Vector(p.X - Centre, p.Y - Centre);
         HoverInfoMark(OverInfoMark(v));
-        if (_orbit is { } o)
-        {
-            // Among the bubbles, or on the way to them from their petal: the orbit stays.
-            if (OrbitBubbleAt(v) is { } k)
-            {
-                SetOrbitHighlight(k, null);
-                return;
-            }
-            if (HitTestAt(p) == o.Group || InOrbitZone(o, v))
-            {
-                SetOrbitHighlight(null, null);
-                return;
-            }
-            CloseOrbit();
-        }
+        // Among the bubbles, on the way to them, or only passing over another petal: the orbit stays.
+        if (OrbitPointer(p, null, null))
+            return;
         var index = HitTestAt(p);
         if (index is not null && index != _highlight)
         {
@@ -552,7 +541,7 @@ public sealed partial class WheelWindow : Window
                 CloseOrbit();
                 return;
             }
-            if (InOrbitZone(o, v))
+            if (OnTheWay(o.Anchor, o.Centre, o.Bubbles.Count, v))
                 return;
         }
         if (HitTestAt(p) is { } index)
@@ -1253,25 +1242,8 @@ public sealed partial class WheelWindow : Window
 
     private void UpdatePointer(DragEventArgs e)
     {
-        if (_orbit is { } o)
-        {
-            var at = e.GetPosition(_stage);
-            var v = new Vector(at.X - Centre, at.Y - Centre);
-            if (OrbitBubbleAt(v) is { } k)
-            {
-                var item = o.Bubbles[k].Item;
-                e.Effects = item.IsGroup || item.Unavailable is not null && item.Blocked ? DragDropEffects.None : DragDropEffects.Copy;
-                SetOrbitHighlight(k, e.Data);
-                return;
-            }
-            if (HitTest(e) == o.Group || InOrbitZone(o, v))
-            {
-                e.Effects = DragDropEffects.None;
-                SetOrbitHighlight(null, e.Data);
-                return;
-            }
-            CloseOrbit();
-        }
+        if (_orbit is not null && OrbitPointer(e.GetPosition(_stage), e.Data, e))
+            return;
         var index = HitTest(e);
         bool group = index is { } g && _content is not null && g < _content.Items.Count && _content.Items[g].IsGroup;
         e.Effects = index is null || group ? DragDropEffects.None : DragDropEffects.Copy;
@@ -1419,9 +1391,10 @@ public sealed partial class WheelWindow : Window
     /// </summary>
     internal BitmapSource Snapshot(IReadOnlyList<string> files, WheelMode mode, int? highlight, BitmapSource background, bool hintBelow = false,
         IReadOnlyList<RingPage>? pages = null, int page = 0, bool keyboard = false, int? openGroup = null, double orbit = 1, string? calc = null,
-        Shell.LinkDownload? link = null)
+        Shell.LinkDownload? link = null, Rect? onScreen = null)
     {
-        _visible = new Rect(-Centre, -Centre, Side, Side);
+        // The part of the stage on screen (around the centre): all of it, or less for a wheel against a screen edge.
+        _visible = onScreen ?? new Rect(-Centre, -Centre, Side, Side);
         _offScreen = true;
         _link = link;
         _options = OptionsProvider();

@@ -17,10 +17,10 @@ namespace Petal.App.Overlay;
 /// </summary>
 public sealed partial class WheelWindow
 {
-    private const double BubbleRadius = 23;
-    private const double OrbitRadius = WheelGeometry.OuterRadius + 14 + BubbleRadius;
+    internal const double BubbleRadius = 23;
+    internal const double OrbitRadius = WheelGeometry.OuterRadius + 14 + BubbleRadius;
     // Centre to centre along the orbit: two bubbles and a little air.
-    private static readonly double OrbitStep = 2 * Math.Asin((2 * BubbleRadius + 8) / 2 / OrbitRadius);
+    internal static readonly double OrbitStep = 2 * Math.Asin((2 * BubbleRadius + 8) / 2 / OrbitRadius);
 
     /// <summary>How many petals fit on one orbit; a bigger group opens in place instead.</summary>
     private static readonly int OrbitCapacity = (int)Math.Floor(2 * Math.PI / OrbitStep);
@@ -91,6 +91,7 @@ public sealed partial class WheelWindow
     /// <summary>Pulls the bubbles back into their petal and brings the ring forward again.</summary>
     private void CloseOrbit(bool animate = true)
     {
+        StopOrbitLeave();
         if (_orbit is not { } o)
             return;
         _orbit = null;
@@ -176,21 +177,38 @@ public sealed partial class WheelWindow
     {
         var safe = _visible;
         safe.Inflate(-(BubbleRadius + 12), -(BubbleRadius + 12));
-        var hint = HintArea();
+        return ArcCentreFor(anchor, n, safe, HintArea());
+    }
+
+    /// <summary>
+    /// Where an arc of <paramref name="n"/> bubbles goes: all of them within <paramref name="safe"/> (on screen), and
+    /// above all against the group petal they come from, so the pointer goes straight from it onto them. In order: turned
+    /// only as far as keeps the petal within the arc and off the strip of wheel names; the same over the strip (it
+    /// fades while the bubbles are out: it once turned the arc a quarter away from More); and only when the screen's
+    /// edge leaves no such place, further (up to a quarter turn), off the strip if it can be.
+    /// </summary>
+    internal static double ArcCentreFor(double anchor, int n, Rect safe, Rect hint)
+    {
         double half = (n - 1) / 2.0 * OrbitStep;
-        for (int i = 0; i <= 14; i++)
+        double touch = half + OrbitStep * 0.5 + 1e-6;
+        foreach (var (touching, offHint) in new[] { (true, true), (true, false), (false, true), (false, false) })
         {
-            double turn = (i + 1) / 2 * (OrbitStep / 2) * (i % 2 == 1 ? 1 : -1);
-            if (Math.Abs(turn) > Math.PI / 2)
-                break;
-            bool fits = true;
-            for (int k = 0; k < n && fits; k++)
+            for (int i = 0; i <= 14; i++)
             {
-                var c = WheelGeometry.At(OrbitRadius, anchor + turn + half - k * OrbitStep);
-                fits = safe.Contains(c) && !hint.IntersectsWith(new Rect(c.X - BubbleRadius - 3, c.Y - BubbleRadius - 3, 2 * BubbleRadius + 6, 2 * BubbleRadius + 6));
+                double turn = (i + 1) / 2 * (OrbitStep / 2) * (i % 2 == 1 ? 1 : -1);
+                if (Math.Abs(turn) > Math.PI / 2)
+                    break;
+                if (touching && Math.Abs(turn) > touch)
+                    continue;
+                bool fits = true;
+                for (int k = 0; k < n && fits; k++)
+                {
+                    var c = WheelGeometry.At(OrbitRadius, anchor + turn + half - k * OrbitStep);
+                    fits = safe.Contains(c) && (!offHint || !hint.IntersectsWith(new Rect(c.X - BubbleRadius - 3, c.Y - BubbleRadius - 3, 2 * BubbleRadius + 6, 2 * BubbleRadius + 6)));
+                }
+                if (fits)
+                    return anchor + turn;
             }
-            if (fits)
-                return anchor + turn;
         }
         return anchor;
     }
@@ -342,15 +360,119 @@ public sealed partial class WheelWindow
         return best;
     }
 
-    /// <summary>Between the ring and the bubbles, or among them: the orbit stays open.</summary>
-    private static bool InOrbitZone(OrbitState o, Vector v)
+    /// <summary>
+    /// Between the ring and the bubbles, among them, or anywhere on the way from the group petal to them (the
+    /// arc's span widened to take in the petal's own angle, down into the ring's rim): the orbit stays open.
+    /// </summary>
+    internal static bool OnTheWay(double anchor, double centre, int count, Vector v)
     {
         double r = v.Length;
-        if (r < WheelGeometry.OuterRadius - 6 || r > OrbitRadius + BubbleRadius + 14)
+        if (r < WheelGeometry.OuterRadius - 34 || r > OrbitRadius + BubbleRadius + 14)
             return false;
-        double phi = Math.Atan2(-v.Y, v.X);
-        double off = Math.Abs(Math.Atan2(Math.Sin(phi - o.Centre), Math.Cos(phi - o.Centre)));
-        return off <= (o.Bubbles.Count - 1) / 2.0 * OrbitStep + OrbitStep * 0.6;
+        double half = (count - 1) / 2.0 * OrbitStep + OrbitStep * 0.6;
+        double toPetal = Turn(anchor - centre);
+        double lo = Math.Min(-half, toPetal - OrbitStep * 0.6), hi = Math.Max(half, toPetal + OrbitStep * 0.6);
+        double off = Turn(Math.Atan2(-v.Y, v.X) - centre);
+        return off >= lo && off <= hi;
+    }
+
+    private static double Turn(double angle) => Math.Atan2(Math.Sin(angle), Math.Cos(angle));
+
+    /// <summary>Beyond the bubbles by this much, the pointer has plainly left them.</summary>
+    internal const double FarMargin = 60;
+
+    /// <summary>How long the pointer rests on another petal before the bubbles give way to it.</summary>
+    internal static readonly TimeSpan RestToLeave = TimeSpan.FromMilliseconds(300);
+
+    internal enum OrbitFate { Stay, Rest, Close }
+
+    /// <summary>
+    /// What a pointer that isn't on a bubble means for the open orbit. It stays on its petal, on the way to the
+    /// bubbles, and in the empty space around them; a pointer on another petal of the ring has to rest there a moment
+    /// (passing over one on the way to the bubbles doesn't close them); it closes in the middle and well beyond them.
+    /// </summary>
+    internal static OrbitFate Fate(double anchor, double centre, int count, Vector v, bool onGroup, bool onOther, double cancelRadius)
+    {
+        if (onGroup || OnTheWay(anchor, centre, count, v))
+            return OrbitFate.Stay;
+        if (v.Length < cancelRadius)
+            return OrbitFate.Close;
+        if (onOther)
+            return OrbitFate.Rest;
+        return v.Length > OrbitRadius + BubbleRadius + FarMargin ? OrbitFate.Close : OrbitFate.Stay;
+    }
+
+    private readonly System.Windows.Threading.DispatcherTimer _orbitLeave = new() { Interval = RestToLeave };
+    private int? _leavingFor;
+    private Point _lastPointer;
+    private IDataObject? _lastData;
+
+    /// <summary>
+    /// The pointer (or a drag) moved while bubbles are out: lights the bubble under it, keeps them out on the way,
+    /// waits on another petal, or takes them in. True when the orbit dealt with it.
+    /// </summary>
+    private bool OrbitPointer(Point p, IDataObject? data, DragEventArgs? drag)
+    {
+        _lastPointer = p;
+        _lastData = data;
+        if (_orbit is not { } o)
+            return false;
+        var v = new Vector(p.X - Centre, p.Y - Centre);
+        if (OrbitBubbleAt(v) is { } k)
+        {
+            StopOrbitLeave();
+            if (drag is not null)
+            {
+                var item = o.Bubbles[k].Item;
+                drag.Effects = item.IsGroup || item.Unavailable is not null && item.Blocked ? DragDropEffects.None : DragDropEffects.Copy;
+            }
+            SetOrbitHighlight(k, data);
+            return true;
+        }
+        var over = HitTestAt(p);
+        switch (Fate(o.Anchor, o.Centre, o.Bubbles.Count, v, over == o.Group, over is not null && over != o.Group, CancelRadius))
+        {
+            case OrbitFate.Stay:
+                StopOrbitLeave();
+                break;
+            case OrbitFate.Rest:
+                if (_leavingFor != over)
+                {
+                    _leavingFor = over;
+                    _orbitLeave.Stop();
+                    _orbitLeave.Start();
+                }
+                break;
+            default:
+                StopOrbitLeave();
+                CloseOrbit();
+                return false;
+        }
+        drag?.Effects = DragDropEffects.None;
+        SetOrbitHighlight(null, data);
+        return true;
+    }
+
+    private void StopOrbitLeave()
+    {
+        _orbitLeave.Stop();
+        _leavingFor = null;
+    }
+
+    /// <summary>The pointer rested on another petal: the bubbles go home and that petal is lit (a group opens in turn).</summary>
+    private void OnOrbitLeave(object? sender, EventArgs e)
+    {
+        var target = _leavingFor;
+        StopOrbitLeave();
+        if (_orbit is null || target is not { } i || HitTestAt(_lastPointer) != i || _content is null || i >= _content.Items.Count)
+            return;
+        CloseOrbit();
+        SetHighlight(i, _lastData);
+        if (_content.Items[i].IsGroup)
+        {
+            _dwellTimer.Interval = TimeSpan.FromMilliseconds(240);
+            _dwellTimer.Start();
+        }
     }
 
     /// <summary>The keys while bubbles are out: arrows move round them, Enter or a number chooses, Esc goes back.</summary>

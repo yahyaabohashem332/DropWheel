@@ -393,7 +393,7 @@ internal static class DesignSnapshots
             ("editpdfredact", () => Tools.Windows.PdfEditorWindow.ForSnapshot(T(Petal.Core.Tools.ToolId.EditPdf), SamplePdfForm(), jobs, at, SceneRedact)),
             ("zip", () => new Tools.Windows.ZipWindow([file("landscape.jpg"), file("album.pdf")], jobs, at)),
             ("rename", () => new Tools.Windows.RenameWindow([file("landscape.jpg"), file("figures.png"), file("weekend.mov")], at)),
-            ("qr", () => (Window)typeof(Tools.Windows.QrWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null)),
+            ("qr", Private<Tools.Windows.QrWindow>),
             ("removebg", () => new Tools.Windows.RemoveBackgroundWindow(T(Petal.Core.Tools.ToolId.RemoveBackground), [file("figures.png")], jobs, at)),
             ("transcribe", () => new Tools.Windows.TranscribeWindow(T(Petal.Core.Tools.ToolId.Transcribe), video, jobs, at)),
             ("history", () => { SampleHistory(file); return Private<Tools.Windows.HistoryWindow>(); }),
@@ -1041,8 +1041,13 @@ internal static class DesignSnapshots
         Stats.Statistics.Reload();
     }
 
-    private static T Private<T>() where T : Window =>
-        (T)typeof(T).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
+    /// <summary>A window made through its private constructor, every optional parameter at its default (a tool that can also be a page has one).</summary>
+    private static T Private<T>() where T : Window
+    {
+        var ctor = typeof(T).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            .Where(c => c.GetParameters().All(p => p.IsOptional)).OrderBy(c => c.GetParameters().Length).First();
+        return (T)ctor.Invoke([.. ctor.GetParameters().Select(p => p.DefaultValue)]);
+    }
 
     /// <summary>A few made-up history entries in a scratch file, so snapshots never show the user's own.</summary>
     private static void SampleHistory(Func<string, string> file)
@@ -1266,6 +1271,11 @@ internal static class DesignSnapshots
         Shot("ring-browser", () => wheel.Snapshot([], WheelMode.Conversions, 4, background, pages: pages, page: 0, keyboard: true));
         Shot("ring-explorer", () => wheel.Snapshot([], WheelMode.Conversions, null, background, pages: [explorer, quick, media], page: 0));
         Shot("actions-more", () => wheel.Snapshot(files, WheelMode.Actions, 2, background, openGroup: Petal.Core.Actions.ActionWheel.Default.Count + s.Destinations.Count));
+        // More opened on a wheel against the screen's top and left edges: its arc turns, but stays against More.
+        Shot("actions-more-edge", () => wheel.Snapshot(files, WheelMode.Actions, 2, background, openGroup: Petal.Core.Actions.ActionWheel.Default.Count + s.Destinations.Count,
+            onScreen: new Rect(-215, -190, 600, 600)));
+        Shot("actions-more-corner", () => wheel.Snapshot(files, WheelMode.Actions, 2, background, openGroup: Petal.Core.Actions.ActionWheel.Default.Count + s.Destinations.Count,
+            onScreen: new Rect(-300, -300, 300 + 175, 300 + 200)));
         // The wheels of 1.6: the screen, drawing and presenting, text (with Case out), windows and clips; and the centre as a calculator.
         RingPage Of(string template) => Wheels.Rings.Page(s.Wheels.First(w => w.Template == template));
         RingPage[] newer = [Of("screen"), Of("present"), Of("text"), Of("windows"), Of("clipboard")];
@@ -1365,8 +1375,7 @@ internal static class DesignSnapshots
     private static Window CreateSettings() =>
         (Window)typeof(Settings.SettingsWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
 
-    private static Window CreateWelcome() =>
-        (Window)typeof(Onboarding.WelcomeWindow).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, Type.EmptyTypes)!.Invoke(null);
+    private static Window CreateWelcome() => Private<Onboarding.WelcomeWindow>();
 
     /// <summary>Lays out a window's content at its width and renders it over the window background.</summary>
     public static BitmapSource RenderWindow(Window window, double height = double.NaN, Action<FrameworkElement>? inspect = null)
