@@ -19,8 +19,12 @@ public sealed class LiveInterpreterTests
         /// <summary>Held shut to make translating a sentence take as long as a test wants.</summary>
         public SemaphoreSlim Gate { get; } = new(free);
 
+        /// <summary>Sentences asked for so far, counted as the asking begins (before the gate).</summary>
+        public int Asking;
+
         public async Task<string?> SentenceAsync(string text, string from, string to, IReadOnlyList<string> before, string shown, CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref Asking);
             await Gate.WaitAsync(cancellationToken);
             lock (SentencesAsked)
             {
@@ -125,7 +129,9 @@ public sealed class LiveInterpreterTests
         var translator = new Capitals(free: 0);
         var (interpreter, lines, stop, run) = await StartAsync(translator);
         interpreter.Finished(new StreamSentence("Erster Satz.", "de", 0, 1, 1));
-        await Task.Delay(100);
+        // Waited for, not timed: under a whole run's load 100 ms wasn't always enough for it to be asked alone.
+        for (var waited = System.Diagnostics.Stopwatch.StartNew(); Volatile.Read(ref translator.Asking) == 0 && waited.Elapsed < TimeSpan.FromSeconds(10);)
+            await Task.Delay(5);
         interpreter.Finished(new StreamSentence("Zweiter Satz.", "de", 1, 2, 2));
         interpreter.Finished(new StreamSentence("Dritter Satz.", "de", 2, 3, 3));
         interpreter.Heard(Talk(4, "und der", "vierte"));
