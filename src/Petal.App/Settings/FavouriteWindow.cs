@@ -1,5 +1,7 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 using Petal.App.Jobs;
 using Petal.App.Localization;
 using Petal.App.Tools;
@@ -8,14 +10,20 @@ using Petal.Core.Jobs;
 
 namespace Petal.App.Settings;
 
-/// <summary>Adds or changes one favourite: a format plus an optional size and quality.</summary>
+/// <summary>
+/// Adds or changes one favourite: a format plus an optional size and quality, the resolution pages are
+/// drawn at, whether metadata stays, where results go and how they are named.
+/// </summary>
 public sealed class FavouriteWindow : ToolWindow
 {
     private readonly Favourite _favourite;
     private readonly ComboBox _format;
     private readonly ContentControl _sizeHost = new() { Focusable = false };
     private readonly ContentControl _qualityHost = new() { Focusable = false };
-    private readonly Grid _sizeRow, _qualityRow;
+    private readonly Grid _sizeRow, _qualityRow, _dpiRow, _metadataRow;
+    private readonly ComboBox _dpi, _metadata, _naming;
+    private readonly Button _folder = new() { HorizontalContentAlignment = HorizontalAlignment.Left };
+    private readonly Button _clearFolder;
     private readonly TextBox _name = new();
     private readonly TextBlock _nameHint;
     private readonly TextBlock _summary;
@@ -24,7 +32,7 @@ public sealed class FavouriteWindow : ToolWindow
     /// <param name="existing">The favourite to change, or null for a new one.</param>
     /// <param name="saved">Called with the result; <paramref name="deleted"/> when it is removed instead.</param>
     public FavouriteWindow(Favourite? existing, Action<Favourite> saved, Action<Favourite>? deleted = null)
-        : base(existing is null ? "New Favourite" : "Favourite", 420)
+        : base(existing is null ? "New Favourite" : "Favourite", 460)
     {
         _favourite = existing?.Copy() ?? new Favourite { Format = Formats.Webp.Id, LongestSide = 1600 };
 
@@ -37,11 +45,63 @@ public sealed class FavouriteWindow : ToolWindow
             _favourite.Format = ValueOf<string>(_format);
             Rebuild();
         };
-        Body.Children.Add(Row("Format", _format, 110, 0));
-        _sizeRow = Row("Longest side", _sizeHost, 110);
+        Body.Children.Add(Row("Format", _format, Labels, 0));
+        _sizeRow = Row("Longest side", _sizeHost, Labels);
         Body.Children.Add(_sizeRow);
-        _qualityRow = Row("Quality", _qualityHost, 110);
+        _qualityRow = Row("Quality", _qualityHost, Labels);
         Body.Children.Add(_qualityRow);
+
+        _dpi = Choice(FavouriteText.ResolutionChoices, FavouriteText.Resolutions.Contains(_favourite.Dpi) ? _favourite.Dpi : 0);
+        _dpi.SelectionChanged += (_, _) =>
+        {
+            _favourite.Dpi = ValueOf<int>(_dpi);
+            Describe();
+        };
+        _dpiRow = Row("Page resolution", _dpi, Labels);
+        Body.Children.Add(_dpiRow);
+        _metadata = Choice([(false, L.T("Keep")), (true, L.T("Remove"))], _favourite.RemoveMetadata);
+        _metadata.SelectionChanged += (_, _) =>
+        {
+            _favourite.RemoveMetadata = ValueOf<bool>(_metadata);
+            Describe();
+        };
+        _metadataRow = Row("Metadata", _metadata, Labels);
+        Body.Children.Add(_metadataRow);
+
+        _clearFolder = IconButton("x", "Use the folder in Settings", 14);
+        _clearFolder.Margin = new Thickness(6, 0, 0, 0);
+        _clearFolder.Click += (_, _) =>
+        {
+            _favourite.Folder = null;
+            ShowFolder();
+        };
+        _folder.Click += (_, _) =>
+        {
+            var dialog = new OpenFolderDialog { Title = L.T("Save results in"), InitialDirectory = _favourite.FolderIfThere ?? "" };
+            if (dialog.ShowDialog(this) == true)
+            {
+                _favourite.Folder = dialog.FolderName;
+                ShowFolder();
+            }
+        };
+        var folderRow = new DockPanel();
+        DockPanel.SetDock(_clearFolder, Dock.Right);
+        folderRow.Children.Add(_clearFolder);
+        folderRow.Children.Add(_folder);
+        Body.Children.Add(Row("Save to", folderRow, Labels, 10));
+
+        var names = FavouriteText.NameChoices.ToList();
+        var pattern = _favourite.NamePattern ?? "";
+        if (!names.Any(n => n.Value == pattern))
+            names.Add((pattern, FavouriteText.NameLabel(pattern)));
+        _naming = Choice(names, pattern);
+        _naming.SelectionChanged += (_, _) =>
+        {
+            var chosen = ValueOf<string>(_naming);
+            _favourite.NamePattern = string.IsNullOrEmpty(chosen) ? null : chosen;
+            Describe();
+        };
+        Body.Children.Add(Row("File names", _naming, Labels));
 
         _name.MaxLength = 24;
         _name.TextChanged += (_, _) =>
@@ -49,9 +109,9 @@ public sealed class FavouriteWindow : ToolWindow
             _favourite.Name = _name.Text.Trim();
             Describe();
         };
-        Body.Children.Add(Row("Name", _name, 110, 10));
+        Body.Children.Add(Row("Name", _name, Labels, 10));
         _nameHint = Text("", "Petal.Caption");
-        _nameHint.Margin = new Thickness(110, 4, 0, 0);
+        _nameHint.Margin = new Thickness(Labels, 4, 0, 0);
         Body.Children.Add(_nameHint);
 
         _summary = Text("", "Petal.Caption");
@@ -60,6 +120,7 @@ public sealed class FavouriteWindow : ToolWindow
         Body.Children.Add(_summary);
 
         _name.Text = _favourite.Name;
+        ShowFolder();
         PrimaryButton.Content = L.T(existing is null ? "Add" : "Save");
         PrimaryButton.Click += (_, _) =>
         {
@@ -79,11 +140,28 @@ public sealed class FavouriteWindow : ToolWindow
         Rebuild();
     }
 
+    private const double Labels = 130;
+
+    /// <summary>The folder chosen, or that results go where Settings says.</summary>
+    private void ShowFolder()
+    {
+        var folder = _favourite.Folder;
+        bool chosen = !string.IsNullOrWhiteSpace(folder);
+        _folder.Content = chosen
+            ? Directory.Exists(folder) ? FavouriteText.FolderName(folder!) : L.F("{0} (not found)", FavouriteText.FolderName(folder!))
+            : L.T("As in Settings…");
+        _folder.ToolTip = chosen ? folder : null;
+        _clearFolder.Visibility = chosen ? Visibility.Visible : Visibility.Collapsed;
+        Describe();
+    }
+
     /// <summary>The size and quality choices depend on the format.</summary>
     private void Rebuild()
     {
         if (_favourite.Target is not { } target)
             return;
+        _dpiRow.Visibility = _favourite.DpiApplies ? Visibility.Visible : Visibility.Collapsed;
+        _metadataRow.Visibility = _favourite.MetadataApplies ? Visibility.Visible : Visibility.Collapsed;
         _sizeRow.Visibility = _favourite.SizeApplies ? Visibility.Visible : Visibility.Collapsed;
         if (_favourite.SizeApplies)
         {

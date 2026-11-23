@@ -39,6 +39,13 @@ public sealed class ConversionSettings
     [System.Text.Json.Serialization.JsonIgnore]
     public int MaxLongEdge { get; set; }
 
+    /// <summary>
+    /// Copy the camera, place, dates and other metadata into picture, video and audio results. Only
+    /// favourites turn it off, so it is not saved with the user's defaults.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool KeepMetadata { get; set; } = true;
+
     public static ConversionSettings Default { get; } = new();
 
     public ConversionSettings Clone() => (ConversionSettings)MemberwiseClone();

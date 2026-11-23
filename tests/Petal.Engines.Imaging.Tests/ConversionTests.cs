@@ -216,6 +216,36 @@ public sealed class ConversionTests(ConversionSamples samples) : IClassFixture<C
         Assert.Contains("Adobe", icc!.Description ?? "", StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("jpg")]
+    [InlineData("webp")]
+    [InlineData("png")]
+    public async Task A_favourite_without_metadata_leaves_out_the_camera_and_the_place(string toId)
+    {
+        var dir = Fixtures.NewDirectory();
+        var source = Path.Combine(dir, "phone.jpg");
+        using (var image = Fixtures.Quadrants())
+        {
+            var exif = new ExifProfile();
+            exif.SetValue(ExifTag.Make, "PhoneCam");
+            exif.SetValue(ExifTag.GPSLatitudeRef, "N");
+            exif.SetValue(ExifTag.GPSLatitude, [new Rational(41, 1), new Rational(0, 1), new Rational(0, 1)]);
+            image.SetProfile(exif);
+            image.Write(source, MagickFormat.Jpeg);
+        }
+        var to = F.FromId(toId)!;
+        var settings = new Favourite { Format = toId, RemoveMetadata = true }.Apply(ConversionSettings.Default);
+        Assert.False(settings.KeepMetadata);
+        var output = Path.Combine(dir, "out." + to.WriteExtension);
+        await _converter.ConvertAsync(new ConversionJob(source, F.Jpg, to, output, settings), null, default);
+
+        using var result = ImageLoader.Load(output);
+        var exifOut = result.GetExifProfile();
+        Assert.Null(exifOut?.GetValue(ExifTag.Make));
+        Assert.Null(exifOut?.GetValue(ExifTag.GPSLatitude));
+        Assert.DoesNotContain("PhoneCam", File.ReadAllText(output, System.Text.Encoding.Latin1), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TiffExifSurvivesBothWays()
     {

@@ -2192,7 +2192,7 @@
  "kind:favourite": {
   "category": "general",
   "summary": "Convierte a un formato que usas a menudo con tu propio tamaño y calidad, desde un pétalo con estrella que aparece primero en la rueda.",
-  "details": "Un favorito es un formato más un lado más largo y una calidad, como «WEBP 1600» o «MP4 720p»; se pueden crear hasta seis en Configuración › Favoritos con Añadir un favorito…. Elige el Formato, el Lado más largo (Mantener el tamaño, o de 3840 a 512 px para imágenes; 4K, 1440p, 1080p, 720p o 480p para videos), la Calidad (de 95 a 50 para JPG, WEBP, HEIC y AVIF; Óptima, Alta, Equilibrado o Pequeño para video; de 320 a 96 kbps para audio; o Como en Configuración) y un Nombre opcional. Los favoritos aparecen primero en la rueda de conversiones con una estrella, en el orden fijado en Configuración, y los archivos más pequeños nunca se agrandan. También funcionan con archivos que ya están en ese formato, creando una copia más pequeña como «photo 1600px.jpg».",
+  "details": "Un favorito es un formato más un lado más largo y una calidad, como «WEBP 1600» o «MP4 720p»; se pueden crear hasta seis en Configuración › Favoritos con Añadir un favorito…. Elige el Formato, el Lado más largo (Mantener el tamaño, o de 3840 a 512 px para imágenes; 4K, 1440p, 1080p, 720p o 480p para videos), la Calidad (de 95 a 50 para JPG, WEBP, HEIC y AVIF; Óptima, Alta, Equilibrado o Pequeño para video; de 320 a 96 kbps para audio; o Como en Configuración) y un Nombre opcional. Los favoritos aparecen primero en la rueda de conversiones con una estrella, en el orden fijado en Configuración, y los archivos más pequeños nunca se agrandan. También funcionan con archivos que ya están en ese formato, creando una copia más pequeña como «photo 1600px.jpg». Un favorito también puede dibujar páginas PDF, diapositivas y documentos con una Resolución de página de 72 a 600 ppp, Quitar los Metadatos (cámara, lugar, fechas) de imágenes, vídeos y audio, guardar en una carpeta propia y nombrar los resultados con su nombre y la fecha de hoy. El botón de compartir junto a un favorito lo guarda como archivo .petalpreset o lo copia como una línea de texto para enviar; Importar… muestra cada favorito de ese archivo o línea y lo que hace añadirlo (uno que ya tienes, una carpeta que este PC no tiene) antes de que cambie nada, y Exportar… los guarda todos. Galería… ofrece favoritos listos, como Web, Correo e Imprimir, y los archivos .petalpreset guardados en su carpeta; no se descarga nada de internet.",
   "how": "Añade uno en Configuración › Favoritos, y luego arrastra archivos, pulsa Shift y suéltalos sobre su pétalo con estrella.",
   "worksOn": "Imágenes, videos, audio y otros archivos que se puedan convertir al formato elegido; uno o muchos.",
   "examples": [
@@ -2210,7 +2210,13 @@
    "tamaño para web",
    "con estrella",
    "tamaño predeterminado",
-   "preset"
+   "preset",
+   "compartir favorito",
+   "importar ajuste",
+   "exportar",
+   "galería",
+   "ppp",
+   "quitar metadatos"
   ]
  },
  "kind:recipe": {

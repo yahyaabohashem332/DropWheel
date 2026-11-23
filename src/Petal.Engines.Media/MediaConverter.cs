@@ -127,6 +127,7 @@ public sealed class MediaConverter : IConverter, IResaver
             Video = videoMode,
             Audio = audioMode,
             Subtitles = true,
+            Metadata = settings.KeepMetadata,
             VideoFilter = videoFilter,
             Quality = new VideoQuality(settings.VideoCrf),
             AudioKbps = settings.AudioBitrateKbps,

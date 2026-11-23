@@ -89,6 +89,21 @@ public class ConverterTests
         _ => "none",
     };
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task A_favourite_can_leave_out_a_video_s_metadata(bool keep)
+    {
+        var input = await Fixtures.GetAsync("tagged.mp4");
+        var settings = new Favourite { Format = "mkv", RemoveMetadata = !keep }.Apply(ConversionSettings.Default);
+        var job = new ConversionJob(input, F.Mp4, F.Mkv, Path.Combine(Fixtures.NewDir(), "tags.mkv"), settings);
+        await Converter.ConvertAsync(job, null, CancellationToken.None);
+        var output = await MediaAssert.ValidAsync(job.OutputPath, 1.0);
+        var tags = output.Tags.Concat(output.Streams.SelectMany(s => s.Tags)).Select(t => t.Value).ToList();
+        Assert.Equal(keep, tags.Contains("Clip Title"));
+        Assert.Equal(keep, tags.Contains("Hello"));
+    }
+
     [Fact]
     public async Task Mov_with_h264_and_aac_is_remuxed_into_mp4_without_reencoding()
     {

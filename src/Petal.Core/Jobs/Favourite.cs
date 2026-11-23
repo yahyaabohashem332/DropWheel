@@ -5,7 +5,9 @@ namespace Petal.Core.Jobs;
 
 /// <summary>
 /// A conversion the user does often, kept as a starred petal on the conversion wheel: a target
-/// format plus, optionally, a size limit and a quality ("WEBP, 1600 px, quality 80").
+/// format plus, optionally, a size limit and a quality ("WEBP, 1600 px, quality 80"), the resolution
+/// pages are drawn at, whether metadata stays, where results go and how they are named. Shared between
+/// people as a .petalpreset file.
 /// </summary>
 public sealed class Favourite
 {
@@ -26,16 +28,43 @@ public sealed class Favourite
     /// </summary>
     public int Quality { get; set; }
 
+    /// <summary>Resolution PDF pages, slides and documents are drawn at when made into pictures; 0 uses Settings.</summary>
+    public int Dpi { get; set; }
+
+    /// <summary>Leaves out the camera, place, dates and other details a picture, video or audio file carries.</summary>
+    public bool RemoveMetadata { get; set; }
+
+    /// <summary>Where results go; empty uses Settings. A folder that isn't there (any more) is ignored.</summary>
+    public string? Folder { get; set; }
+
+    /// <summary>
+    /// The result's name, from <see cref="PresetNaming"/>'s words: "{name}", "{date}", "{preset}" and text
+    /// of the user's. Empty keeps DropWheel's usual names.
+    /// </summary>
+    public string? NamePattern { get; set; }
+
     [JsonIgnore]
     public FileFormat? Target => Formats.Formats.FromId(Format);
 
     /// <summary>True when it does more than change the format, so it is useful for files already in it.</summary>
     [JsonIgnore]
-    public bool ChangesMoreThanFormat => SizeApplies && LongestSide > 0 || QualityApplies && Quality > 0;
+    public bool ChangesMoreThanFormat => SizeApplies && LongestSide > 0 || QualityApplies && Quality > 0 || MetadataApplies && RemoveMetadata;
 
     /// <summary>Pictures and videos (GIF included) can be made smaller.</summary>
     [JsonIgnore]
     public bool SizeApplies => Target?.Family is FormatFamily.Image or FormatFamily.Video;
+
+    /// <summary>Pages are drawn at a resolution only when they become pictures.</summary>
+    [JsonIgnore]
+    public bool DpiApplies => Target?.Family == FormatFamily.Image;
+
+    /// <summary>Pictures, videos and audio carry metadata DropWheel can leave out.</summary>
+    [JsonIgnore]
+    public bool MetadataApplies => Target?.Family is FormatFamily.Image or FormatFamily.Video or FormatFamily.Audio;
+
+    /// <summary>The folder results go to, when it is set and there.</summary>
+    [JsonIgnore]
+    public string? FolderIfThere => !string.IsNullOrWhiteSpace(Folder) && Directory.Exists(Folder) ? Folder : null;
 
     /// <summary>Quality only means something for lossy targets.</summary>
     [JsonIgnore]
@@ -54,6 +83,9 @@ public sealed class Favourite
     {
         var settings = defaults.Clone();
         settings.MaxLongEdge = SizeApplies ? Math.Max(0, LongestSide) : 0;
+        if (DpiApplies && Dpi > 0)
+            settings.RenderDpi = Math.Clamp(Dpi, 36, 1200);
+        settings.KeepMetadata = !(MetadataApplies && RemoveMetadata);
         if (Quality > 0 && Target is { } target)
         {
             switch (QualityKindOf(target))

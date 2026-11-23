@@ -2153,7 +2153,7 @@
  "kind:favourite": {
   "category": "general",
   "summary": "Converts to a format you use often with your own size and quality, from a starred petal first on the wheel.",
-  "details": "A favourite is a format plus a longest side and a quality, such as 'WEBP 1600' or 'MP4 720p'; up to six can be made in Settings › Favourites with Add a Favourite…. Choose the Format, the Longest side (Keep the size, or 3840 down to 512 px for pictures; 4K, 1440p, 1080p, 720p or 480p for videos), the Quality (95 to 50 for JPG, WEBP, HEIC and AVIF; Best, High, Balanced or Small for video; 320 to 96 kbps for audio; or As in Settings) and an optional Name. Favourites sit first on the conversion wheel with a star, in the order set in Settings, and smaller files are never enlarged. They also work on files already in that format, making a smaller copy such as 'photo 1600px.jpg'.",
+  "details": "A favourite is a format plus a longest side and a quality, such as 'WEBP 1600' or 'MP4 720p'; up to six can be made in Settings › Favourites with Add a Favourite…. Choose the Format, the Longest side (Keep the size, or 3840 down to 512 px for pictures; 4K, 1440p, 1080p, 720p or 480p for videos), the Quality (95 to 50 for JPG, WEBP, HEIC and AVIF; Best, High, Balanced or Small for video; 320 to 96 kbps for audio; or As in Settings) and an optional Name. Favourites sit first on the conversion wheel with a star, in the order set in Settings, and smaller files are never enlarged. They also work on files already in that format, making a smaller copy such as 'photo 1600px.jpg'. A favourite can also draw PDF pages, slides and documents at a Page resolution of 72 to 600 dpi, Remove the Metadata (camera, place, dates) from pictures, videos and audio, Save to a folder of its own, and name the results by their name and today's date. The share button beside a favourite saves it as a .petalpreset file or copies it as a line of text to send; Import… shows every favourite in such a file or line and what adding it does (one you have already, a folder this PC doesn't have) before anything changes, and Export… saves them all. Gallery… offers ready-made favourites, such as Web, E-mail and Print, and the .petalpreset files kept in its folder; nothing is fetched from the internet.",
   "how": "Add one in Settings › Favourites, then drag files, tap Shift and drop on its starred petal.",
   "examples": [
    "'WEBP 1600' for every picture you upload to your shop's website.",
@@ -2170,7 +2170,14 @@
    "resize and convert",
    "web size",
    "starred",
-   "default size"
+   "default size",
+   "share favourite",
+   "import preset",
+   "export preset",
+   "gallery",
+   "dpi",
+   "remove metadata",
+   "file name with date"
   ]
  },
  "kind:recipe": {

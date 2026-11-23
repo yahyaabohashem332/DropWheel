@@ -402,9 +402,20 @@ public sealed partial class SettingsWindow : ToolWindow
     {
         var panel = new StackPanel();
         panel.Children.Add(_favourites);
-        var add = new Button { Content = L.T("Add a Favourite…"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 10, 0, 0) };
+        var buttons = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+        var add = new Button { Content = L.T("Add a Favourite…"), Margin = new Thickness(0, 0, 8, 6) };
+        var gallery = new Button { Content = L.T("Gallery…"), Margin = new Thickness(0, 0, 8, 6) };
+        var import = new Button { Content = L.T("Import…"), Margin = new Thickness(0, 0, 8, 6) };
+        var export = new Button { Content = L.T("Export…"), Margin = new Thickness(0, 0, 8, 6) };
+        buttons.Children.Add(add);
+        buttons.Children.Add(gallery);
+        buttons.Children.Add(import);
+        buttons.Children.Add(export);
+        panel.Children.Add(buttons);
         add.Click += (_, _) => Edit(null);
-        panel.Children.Add(add);
+        gallery.Click += (_, _) => new PresetGalleryWindow(FillFavourites) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
+        import.Click += (_, _) => new ImportPresetsWindow(FillFavourites) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
+        export.Click += (_, _) => SavePresets(_s.Favourites.ToList(), L.T("My favourites"));
         FillFavourites();
         return panel;
 
@@ -433,6 +444,7 @@ public sealed partial class SettingsWindow : ToolWindow
         {
             _favourites.Children.Clear();
             add.IsEnabled = _s.Favourites.Count < MaxFavourites;
+            export.IsEnabled = _s.Favourites.Count > 0;
             if (_s.Favourites.Count == 0)
             {
                 _favourites.Children.Add(Text("None yet. Try “WEBP, 1600 px” for pictures you put online, or “MP4, 720p” for videos you send.", "Petal.Caption"));
@@ -475,7 +487,25 @@ public sealed partial class SettingsWindow : ToolWindow
                     Save();
                     FillFavourites();
                 };
+                var share = IconButton("share", "Share this favourite", 15);
+                share.Click += (_, _) =>
+                {
+                    var menu = new ContextMenu { PlacementTarget = share, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+                    L.Apply(menu);
+                    var file = new MenuItem { Header = L.T("Save as a File…") };
+                    file.Click += (_, _) => SavePresets([favourite], Jobs.FavouriteText.Label(favourite));
+                    var code = new MenuItem { Header = L.T("Copy as Text") };
+                    code.Click += (_, _) =>
+                    {
+                        if (Words.SelectedText.TrySet(Jobs.PresetSharing.ToCode([favourite])))
+                            Hud.HudCard.ShowAt(Hud.HudCard.CornerPoint(), "", "").Succeed(L.T("Favourite copied"), L.T("Paste it in a chat or an e-mail; Import adds it."), null);
+                    };
+                    menu.Items.Add(file);
+                    menu.Items.Add(code);
+                    menu.IsOpen = true;
+                };
                 buttons.Children.Add(up);
+                buttons.Children.Add(share);
                 buttons.Children.Add(edit);
                 buttons.Children.Add(remove);
                 Grid.SetColumn(buttons, 2);
@@ -483,6 +513,31 @@ public sealed partial class SettingsWindow : ToolWindow
                 _favourites.Children.Add(row);
             }
         }
+    }
+
+    /// <summary>Saves favourites as a .petalpreset file, by default in the gallery's folder, where the gallery offers them.</summary>
+    private void SavePresets(IReadOnlyList<Petal.Core.Jobs.Favourite> favourites, string name)
+    {
+        if (favourites.Count == 0)
+            return;
+        foreach (var c in Path.GetInvalidFileNameChars())
+            name = name.Replace(c, '-');
+        try
+        {
+            Directory.CreateDirectory(Jobs.PresetSharing.GalleryFolder);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+        var dialog = new SaveFileDialog
+        {
+            FileName = name,
+            DefaultExt = Jobs.PresetSharing.Extension,
+            Filter = L.T("DropWheel favourites") + $"|*{Jobs.PresetSharing.Extension}",
+            InitialDirectory = Directory.Exists(Jobs.PresetSharing.GalleryFolder) ? Jobs.PresetSharing.GalleryFolder : "",
+        };
+        if (dialog.ShowDialog(this) == true)
+            File.WriteAllText(dialog.FileName, Jobs.PresetSharing.ToJson(favourites));
     }
 
     private readonly StackPanel _recipes = new();
@@ -913,7 +968,7 @@ public sealed partial class SettingsWindow : ToolWindow
     }
 
     /// <summary>More than this crowds the wheel.</summary>
-    private const int MaxFavourites = 6;
+    private const int MaxFavourites = Jobs.FavouriteText.Most;
 
     private UIElement GeneralSection()
     {

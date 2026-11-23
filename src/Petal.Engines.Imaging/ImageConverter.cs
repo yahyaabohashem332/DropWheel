@@ -49,10 +49,11 @@ public sealed class ImageConverter : IConverter, IResaver
                 Quality = Math.Clamp(job.Settings.ImageQuality, 1, 100),
                 PdfJpegSource = actual == F.Jpg && !shrunk ? job.InputPath : null,
                 PdfPreferJpeg = ImageFormats.IsLossy(actual),
+                KeepMetadata = job.Settings.KeepMetadata,
             };
             await ImageWriter.WriteAsync(image, job.OutputPath, job.To, options, cancellationToken);
             // The RAW decoder keeps no metadata: copy the camera's (date, camera, lens, exposure, place).
-            if (actual == F.Raw && job.To != F.Pdf && job.To != F.Ico && job.To != F.Bmp)
+            if (actual == F.Raw && job.Settings.KeepMetadata && job.To != F.Pdf && job.To != F.Ico && job.To != F.Bmp)
                 await RawMetadata.CopyAsync(job.InputPath, job.OutputPath, cancellationToken);
             progress?.Report(1);
             return JobResult.Single(job.OutputPath);

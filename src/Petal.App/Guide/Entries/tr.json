@@ -2204,7 +2204,7 @@
  "kind:favourite": {
   "category": "general",
   "summary": "Sık kullandığın bir biçime kendi boyutun ve kalitenle, çarkta ilk sırada duran yıldızlı bir yapraktan dönüştürür.",
-  "details": "Favori, bir biçim artı bir uzun kenar ve bir kalitedir, örneğin 'WEBP 1600' ya da 'MP4 720p'; Ayarlar › Favoriler bölümünde Favori Ekle… ile altı taneye kadar yapılabilir. Biçim'i, Uzun kenar'ı (resimler için Boyutu koru ya da 3840'tan 512 px'e kadar; videolar için 4K, 1440p, 1080p, 720p veya 480p), Kalite'yi (JPG, WEBP, HEIC ve AVIF için 95'ten 50'ye; video için En iyi, Yüksek, Dengeli veya Küçük; ses için 320'den 96 kbps'ye ya da Ayarlar'daki gibi) ve isteğe bağlı bir Ad seç. Favoriler dönüştürme çarkında yıldızla, Ayarlar'da belirlenen sırayla ilk sırada durur; daha küçük dosyalar asla büyütülmez. Zaten o biçimde olan dosyalarda da çalışır ve 'photo 1600px.jpg' gibi daha küçük bir kopya yapar.",
+  "details": "Favori, bir biçim artı bir uzun kenar ve bir kalitedir, örneğin 'WEBP 1600' ya da 'MP4 720p'; Ayarlar › Favoriler bölümünde Favori Ekle… ile altı taneye kadar yapılabilir. Biçim'i, Uzun kenar'ı (resimler için Boyutu koru ya da 3840'tan 512 px'e kadar; videolar için 4K, 1440p, 1080p, 720p veya 480p), Kalite'yi (JPG, WEBP, HEIC ve AVIF için 95'ten 50'ye; video için En iyi, Yüksek, Dengeli veya Küçük; ses için 320'den 96 kbps'ye ya da Ayarlar'daki gibi) ve isteğe bağlı bir Ad seç. Favoriler dönüştürme çarkında yıldızla, Ayarlar'da belirlenen sırayla ilk sırada durur; daha küçük dosyalar asla büyütülmez. Zaten o biçimde olan dosyalarda da çalışır ve 'photo 1600px.jpg' gibi daha küçük bir kopya yapar. Bir favori ayrıca PDF sayfalarını, slaytları ve belgeleri 72 ile 600 dpi arasında bir Sayfa çözünürlüğüyle çizebilir, resimlerden, videolardan ve seslerden Meta verileri (fotoğraf makinesi, yer, tarihler) kaldırabilir, kendi klasörüne kaydedebilir ve sonuçları adları ve bugünün tarihiyle adlandırabilir. Favorinin yanındaki paylaş düğmesi onu bir .petalpreset dosyası olarak kaydeder ya da göndermek için tek satırlık metin olarak kopyalar; İçe Aktar… böyle bir dosya ya da satırdaki her favoriyi ve eklemenin ne yapacağını (zaten sende olan, bu bilgisayarda olmayan bir klasör) hiçbir şey değişmeden önce gösterir; Dışa Aktar… hepsini kaydeder. Galeri…, Web, E-posta ve Yazdır gibi hazır favorileri ve klasöründeki .petalpreset dosyalarını sunar; internetten hiçbir şey indirilmez.",
   "how": "Ayarlar › Favoriler bölümünde bir tane ekle, sonra dosyaları sürükle, Shift'e dokun ve onun yıldızlı yaprağına bırak.",
   "worksOn": "Resimler, videolar, sesler ve seçilen biçimin yapılabildiği diğer dosyalar; bir tane ya da birçok tane.",
   "examples": [
@@ -2222,7 +2222,13 @@
    "web boyutu",
    "yıldızlı",
    "varsayılan boyut",
-   "favori format"
+   "favori format",
+   "favori paylaş",
+   "ön ayar içe aktar",
+   "ön ayar dışa aktar",
+   "galeri",
+   "dpi",
+   "meta verileri kaldır"
   ]
  },
  "kind:recipe": {

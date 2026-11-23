@@ -2224,7 +2224,7 @@
  "kind:favourite": {
   "category": "general",
   "summary": "Mengonversi ke format yang sering Anda pakai dengan ukuran dan kualitas Anda sendiri, dari kelopak berbintang yang tampil pertama di roda.",
-  "details": "Favorit adalah sebuah format ditambah sisi terpanjang dan kualitas, seperti 'WEBP 1600' atau 'MP4 720p'; hingga enam favorit bisa dibuat di Pengaturan › Favorit dengan Tambah Favorit…. Pilih Format, Sisi terpanjang (Pertahankan ukuran, atau 3840 hingga 512 px untuk gambar; 4K, 1440p, 1080p, 720p, atau 480p untuk video), Kualitas (95 hingga 50 untuk JPG, WEBP, HEIC, dan AVIF; Terbaik, Tinggi, Seimbang, atau Kecil untuk video; 320 hingga 96 kbps untuk audio; atau Sesuai Pengaturan), dan Nama opsional. Favorit tampil pertama di roda konversi dengan bintang, sesuai urutan yang diatur di Pengaturan, dan file yang lebih kecil tidak pernah diperbesar. Favorit juga berfungsi pada file yang sudah dalam format itu, dengan membuat salinan yang lebih kecil seperti 'photo 1600px.jpg'.",
+  "details": "Favorit adalah sebuah format ditambah sisi terpanjang dan kualitas, seperti 'WEBP 1600' atau 'MP4 720p'; hingga enam favorit bisa dibuat di Pengaturan › Favorit dengan Tambah Favorit…. Pilih Format, Sisi terpanjang (Pertahankan ukuran, atau 3840 hingga 512 px untuk gambar; 4K, 1440p, 1080p, 720p, atau 480p untuk video), Kualitas (95 hingga 50 untuk JPG, WEBP, HEIC, dan AVIF; Terbaik, Tinggi, Seimbang, atau Kecil untuk video; 320 hingga 96 kbps untuk audio; atau Sesuai Pengaturan), dan Nama opsional. Favorit tampil pertama di roda konversi dengan bintang, sesuai urutan yang diatur di Pengaturan, dan file yang lebih kecil tidak pernah diperbesar. Favorit juga berfungsi pada file yang sudah dalam format itu, dengan membuat salinan yang lebih kecil seperti 'photo 1600px.jpg'. Favorit juga bisa menggambar halaman PDF, slide, dan dokumen pada Resolusi halaman 72 hingga 600 dpi, menghapus Metadata (kamera, tempat, tanggal) dari gambar, video, dan audio, menyimpan ke foldernya sendiri, dan menamai hasil dengan namanya dan tanggal hari ini. Tombol bagikan di samping favorit menyimpannya sebagai file .petalpreset atau menyalinnya sebagai satu baris teks untuk dikirim; Impor… menampilkan setiap favorit dalam file atau baris itu dan apa yang terjadi bila ditambahkan (yang sudah Anda punya, folder yang tidak ada di PC ini) sebelum apa pun berubah, dan Ekspor… menyimpan semuanya. Galeri… menawarkan favorit siap pakai, seperti Web, Email, dan Cetak, serta file .petalpreset di foldernya; tidak ada yang diambil dari internet.",
   "how": "Tambahkan di Pengaturan › Favorit, lalu seret file, ketuk Shift, dan lepaskan di kelopak berbintangnya.",
   "worksOn": "Gambar, video, audio, dan file lain yang bisa diubah ke format yang dipilih; satu atau banyak.",
   "examples": [
@@ -2242,7 +2242,13 @@
    "ubah ukuran dan konversi",
    "ukuran web",
    "berbintang",
-   "ukuran bawaan"
+   "ukuran bawaan",
+   "bagikan favorit",
+   "impor preset",
+   "ekspor preset",
+   "galeri",
+   "dpi",
+   "hapus metadata"
   ]
  },
  "kind:recipe": {

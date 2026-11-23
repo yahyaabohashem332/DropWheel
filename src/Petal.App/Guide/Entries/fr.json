@@ -2164,7 +2164,7 @@
  "kind:favourite": {
   "category": "general",
   "summary": "Convertit dans un format que vous utilisez souvent, avec votre taille et votre qualité, depuis un pétale étoilé placé en premier sur la roue.",
-  "details": "Un favori est un format accompagné d'un côté le plus long et d'une qualité, comme « WEBP 1600 » ou « MP4 720p » ; vous pouvez en créer jusqu'à six dans Paramètres › Favoris avec Ajouter un favori…. Choisissez le Format, le Côté le plus long (Conserver la taille, ou de 3840 à 512 px pour les images ; 4K, 1440p, 1080p, 720p ou 480p pour les vidéos), la Qualité (de 95 à 50 pour JPG, WEBP, HEIC et AVIF ; Meilleure, Élevée, Équilibré ou Petit pour la vidéo ; de 320 à 96 kbit/s pour l'audio ; ou Comme dans les paramètres) et un Nom facultatif. Les favoris se placent en premier sur la roue des conversions avec une étoile, dans l'ordre défini dans les paramètres, et les fichiers plus petits ne sont jamais agrandis. Ils fonctionnent aussi sur des fichiers déjà dans ce format, en créant une copie plus petite comme « photo 1600px.jpg ».",
+  "details": "Un favori est un format accompagné d'un côté le plus long et d'une qualité, comme « WEBP 1600 » ou « MP4 720p » ; vous pouvez en créer jusqu'à six dans Paramètres › Favoris avec Ajouter un favori…. Choisissez le Format, le Côté le plus long (Conserver la taille, ou de 3840 à 512 px pour les images ; 4K, 1440p, 1080p, 720p ou 480p pour les vidéos), la Qualité (de 95 à 50 pour JPG, WEBP, HEIC et AVIF ; Meilleure, Élevée, Équilibré ou Petit pour la vidéo ; de 320 à 96 kbit/s pour l'audio ; ou Comme dans les paramètres) et un Nom facultatif. Les favoris se placent en premier sur la roue des conversions avec une étoile, dans l'ordre défini dans les paramètres, et les fichiers plus petits ne sont jamais agrandis. Ils fonctionnent aussi sur des fichiers déjà dans ce format, en créant une copie plus petite comme « photo 1600px.jpg ». Un favori peut aussi dessiner les pages PDF, les diapositives et les documents à une Résolution des pages de 72 à 600 ppp, Supprimer les Métadonnées (appareil, lieu, dates) des images, vidéos et sons, enregistrer dans un dossier à lui et nommer les résultats par leur nom et la date du jour. Le bouton de partage à côté d’un favori l’enregistre dans un fichier .petalpreset ou le copie en une ligne de texte à envoyer ; Importer… montre chaque favori d’un tel fichier ou d’une telle ligne et ce que fait son ajout (un favori que vous avez déjà, un dossier absent de ce PC) avant que rien ne change, et Exporter… les enregistre tous. Galerie… propose des favoris tout prêts, comme Web, E-mail et Imprimer, et les fichiers .petalpreset rangés dans son dossier ; rien n’est récupéré sur Internet.",
   "how": "Ajoutez-en un dans Paramètres › Favoris, puis faites glisser des fichiers, appuyez sur Shift et déposez-les sur son pétale étoilé.",
   "worksOn": "Images, vidéos, audio et autres fichiers convertibles dans le format choisi ; un ou plusieurs.",
   "examples": [
@@ -2181,7 +2181,13 @@
    "redimensionner et convertir",
    "taille web",
    "étoilé",
-   "taille par défaut"
+   "taille par défaut",
+   "partager un favori",
+   "importer un préréglage",
+   "exporter",
+   "galerie",
+   "ppp",
+   "supprimer les métadonnées"
   ]
  },
  "kind:recipe": {

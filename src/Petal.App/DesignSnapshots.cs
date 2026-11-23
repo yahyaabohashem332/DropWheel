@@ -398,6 +398,14 @@ internal static class DesignSnapshots
             ("transcribe", () => new Tools.Windows.TranscribeWindow(T(Petal.Core.Tools.ToolId.Transcribe), video, jobs, at)),
             ("history", () => { SampleHistory(file); return Private<Tools.Windows.HistoryWindow>(); }),
             ("favourite", () => new Settings.FavouriteWindow(new Favourite { Format = "webp", LongestSide = 1600, Quality = 80 }, _ => { }, _ => { })),
+            ("favouritepreset", () => new Settings.FavouriteWindow(new Favourite { Format = "png", Dpi = 300, RemoveMetadata = true, Folder = Path.GetDirectoryName(file("landscape.jpg")), NamePattern = Petal.Core.Jobs.PresetNaming.Offered[1], Name = "Print" }, _ => { }, _ => { })),
+            ("importpresets", () => new Settings.ImportPresetsWindow(() => { }, Jobs.PresetSharing.ToCode(
+            [
+                new Favourite { Name = "Web", Format = "webp", LongestSide = 1600, Quality = 80, RemoveMetadata = true },
+                new Favourite { Name = "Print", Format = "png", Dpi = 300, Folder = @"Z:\Studio\Prints" },
+                new Favourite { Format = "webp", LongestSide = 1600, Quality = 80 },
+            ]))),
+            ("presetgallery", () => new Settings.PresetGalleryWindow(() => { })),
             ("automation", () => new Settings.AutomationWindow(new WatchRule { Folder = Path.GetDirectoryName(file("landscape.jpg"))!, Kind = WatchedKind.Pictures, Target = "jpg" }, _ => { }, _ => { })),
             ("automationsort", () => new Settings.AutomationWindow(new WatchRule { Folder = Path.GetDirectoryName(file("landscape.jpg"))!, Kind = WatchedKind.Any, Action = WatchAction.Organize }, _ => { }, _ => { })),
             ("recipe", () => new Settings.RecipeWindow(SampleRecipe(), _ => { }, _ => { })),

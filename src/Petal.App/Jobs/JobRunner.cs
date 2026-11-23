@@ -113,14 +113,7 @@ public sealed class JobRunner(ConverterRegistry converters)
             if (from is null || favourite.ConverterFor(from, Converters) is not { } converter)
                 continue;
             var index = names.Count;
-            names.Add(new(() =>
-            {
-                var dir = outputDirectory ?? settings.OutputDirectoryFor(file);
-                // Saved again in its own format: keep the original and say what changed in the name.
-                return from == target
-                    ? OutputNaming.WithSuffix(file, FavouriteText.Suffix(favourite), target.WriteExtension, dir)
-                    : OutputNaming.ForConversion(file, target, dir);
-            }));
+            names.Add(new(() => FavouriteOutput(file, from, favourite, outputDirectory ?? favourite.FolderIfThere ?? settings.OutputDirectoryFor(file))));
             work.Add(new WorkItem(file, Path.GetFileName(file), async (progress, ct) =>
             {
                 var output = InOrder(names, index);
@@ -131,6 +124,22 @@ public sealed class JobRunner(ConverterRegistry converters)
         }
         var label = FavouriteText.Label(favourite);
         return RunAsync(L.F("Converting to {0}", label), L.F("Converted to {0}", label), work, at, describe, BatchWidth(files, target));
+    }
+
+    /// <summary>
+    /// Where a favourite puts one file's result: in <paramref name="directory"/> (unless the file came from a
+    /// dropped folder, whose copy keeps it), named by the favourite's pattern or as DropWheel names results.
+    /// </summary>
+    internal static string FavouriteOutput(string file, FileFormat from, Favourite favourite, string? directory)
+    {
+        var target = favourite.Target!;
+        if (OutputNaming.PlacedIn?.Invoke(file) is null
+            && PresetNaming.Stem(favourite.NamePattern, file, FavouriteText.Suffix(favourite), DateTime.Now) is { } stem)
+            return OutputNaming.Unique(directory ?? OutputNaming.DirectoryFor(file), stem, target.WriteExtension);
+        // Saved again in its own format: keep the original and say what changed in the name.
+        return from == target
+            ? OutputNaming.WithSuffix(file, FavouriteText.Suffix(favourite), target.WriteExtension, directory)
+            : OutputNaming.ForConversion(file, target, directory);
     }
 
     /// <summary>

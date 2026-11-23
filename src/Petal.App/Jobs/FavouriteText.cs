@@ -7,6 +7,9 @@ namespace Petal.App.Jobs;
 /// <summary>How favourites are named on the wheel, in Settings and in file names.</summary>
 public static class FavouriteText
 {
+    /// <summary>Most favourites there can be: they share the conversion wheel with the formats.</summary>
+    public const int Most = 6;
+
     private static readonly int[] PictureSizes = [0, 3840, 2560, 2048, 1600, 1280, 1024, 800, 512];
 
     private static readonly int[] VideoSizes = [0, 3840, 2560, 1920, 1280, 854];
@@ -18,6 +21,26 @@ public static class FavouriteText
         [(0, "As in Settings"), (17, "Best"), (20, "High"), (24, "Balanced"), (28, "Small")];
 
     private static readonly int[] AudioBitrates = [320, 256, 192, 128, 96];
+
+    /// <summary>Resolutions pages can be drawn at; 0 uses Settings.</summary>
+    public static readonly int[] Resolutions = [0, 72, 150, 200, 300, 600];
+
+    public static (int Value, string Label)[] ResolutionChoices =>
+        Resolutions.Select(d => (d, d == 0 ? L.T("As in Settings") : L.F("{0} dpi", d))).ToArray();
+
+    /// <summary>The name patterns offered, in words.</summary>
+    public static (string Value, string Label)[] NameChoices =>
+        PresetNaming.Offered.Select(p => (p, NameLabel(p))).ToArray();
+
+    /// <summary>A pattern in words: "Name and date"; one from elsewhere is shown as written.</summary>
+    public static string NameLabel(string? pattern) => (pattern ?? "") switch
+    {
+        "" => L.T("As DropWheel names them"),
+        $"{PresetNaming.Name} {PresetNaming.Date}" => L.T("Name and date"),
+        $"{PresetNaming.Date} {PresetNaming.Name}" => L.T("Date and name"),
+        $"{PresetNaming.Name} {PresetNaming.Preset}" => L.T("Name and favourite"),
+        _ => pattern!,
+    };
 
     /// <summary>Formats a favourite can save to, in the order Petal lists formats.</summary>
     public static IReadOnlyList<FileFormat> Targets { get; } =
@@ -61,7 +84,15 @@ public static class FavouriteText
                 parts.Add(SizeName(target, f.LongestSide));
             if (f.QualityApplies && f.Quality > 0)
                 parts.Add(QualityName(target, f.Quality));
+            if (f.DpiApplies && f.Dpi > 0)
+                parts.Add(L.F("pages at {0} dpi", f.Dpi));
+            if (f.MetadataApplies && f.RemoveMetadata)
+                parts.Add(L.T("without metadata"));
         }
+        if (!string.IsNullOrWhiteSpace(f.NamePattern))
+            parts.Add(L.F("named “{0}”", NameLabel(f.NamePattern)));
+        if (!string.IsNullOrWhiteSpace(f.Folder))
+            parts.Add(L.F("into “{0}”", FolderName(f.Folder)));
         return string.Join(Separator, parts);
     }
 
@@ -74,6 +105,14 @@ public static class FavouriteText
         foreach (var c in System.IO.Path.GetInvalidFileNameChars())
             text = text.Replace(c, '-');
         return text;
+    }
+
+    /// <summary>A folder's own name ("Exports"), or the whole path for a drive.</summary>
+    public static string FolderName(string folder)
+    {
+        var trimmed = folder.TrimEnd('\\', '/');
+        var name = System.IO.Path.GetFileName(trimmed);
+        return name.Length > 0 ? name : folder;
     }
 
     private static string Short(Favourite f)

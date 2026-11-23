@@ -73,7 +73,7 @@ public partial class LocalizationTests
         "The meeting moves to Thursday at ten.", "Call Sara before five", "Send the updated slides", "Address: 14 Harbour Road, Bristol",
         "Thanks for your time, I'll send the file today.", "12% of 340", "5 km in mi",
         // Apps the gallery has wheels for, by their own names; their program names; keycaps; a wheel code's mark; words added to searches.
-        "Figma", "Illustrator", "Premiere Pro", "Blender", "Notion", "Outlook", "adobe premiere pro", "Space", "Tab", "PETAL-WHEEL:", "snippet", "wheel", "workspace",
+        "Figma", "Illustrator", "Premiere Pro", "Blender", "Notion", "Outlook", "adobe premiere pro", "Space", "Tab", "PETAL-WHEEL:", "PETAL-PRESET:", "snippet", "wheel", "workspace",
         // Made-up windows, snippets, PCs, notes and captions in the design snapshots of 1.7 (the Arabic ones are written beside them).
         "Spotify", "WINWORD", "Code", "petal-site — Visual Studio Code", "Project board - Google Chrome", "Landing page – Figma",
         ";addr", ";thx", "14 Harbour Road, Bristol BS1 5TT", "Thanks so much, {cursor}. Best wishes.", "Office PC", "Sara's laptop", "Study",
