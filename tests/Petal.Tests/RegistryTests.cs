@@ -8,7 +8,7 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_551_paths()
+    public void Conversion_matrix_has_632_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
         // +4 in 1.22 for PDF long/first page image outputs.
@@ -17,7 +17,9 @@ public class RegistryTests
         // +65 in 1.24 for pictures: JXL with the everyday formats, TGA, DDS, JPEG 2000, QOI and PCX from PNG and
         // TIFF and to six common formats, GIMP's XCF to seven.
         // +45 in 1.24 for video and audio: TS written and read, 3GP and FLV read, M4B audiobooks.
-        Assert.Equal(551, ConversionMatrix.TotalPaths);
+        // +81 in 1.24 for documents: DOC, DOCM, DOTX, MHTML and RST to the document formats, PPSX, POTX and PPTM,
+        // XLSM and XLTX, a document, presentation and workbook to their templates and shows, RST from three.
+        Assert.Equal(632, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

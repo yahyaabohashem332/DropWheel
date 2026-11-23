@@ -4037,5 +4037,15 @@ internal static class Arabic
         ["Older phone video"] = "فيديو هواتف قديمة",
         ["Flash video"] = "فيديو فلاش",
         ["Audiobook with chapters"] = "كتاب مسموع بفصوله",
+        ["Older Word"] = "Word القديم",
+        ["Word with macros"] = "Word بوحدات ماكرو",
+        ["Word template"] = "قالب Word",
+        ["Saved web page"] = "صفحة ويب محفوظة",
+        ["For Python docs"] = "لتوثيق Python",
+        ["Opens as a show"] = "يُفتح عرضًا مباشرة",
+        ["PowerPoint template"] = "قالب PowerPoint",
+        ["Slides with macros"] = "شرائح بوحدات ماكرو",
+        ["Excel with macros"] = "Excel بوحدات ماكرو",
+        ["Excel template"] = "قالب Excel",
     };
 }

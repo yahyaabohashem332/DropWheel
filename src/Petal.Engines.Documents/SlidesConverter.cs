@@ -18,7 +18,7 @@ public sealed class SlidesConverter(DocumentEngineOptions? options = null) : ICo
     public string Name => "Slides";
 
     public bool CanConvert(FileFormat from, FileFormat to) =>
-        (from == F.Pptx || from == F.Ppt) && (to == F.Pdf || to == F.Png || to == F.Jpg) &&
+        (from == F.Pptx || from == F.Ppt || OfficePackages.PlainOf(from) == F.Pptx) && (to == F.Pdf || to == F.Png || to == F.Jpg) &&
         ConversionMatrix.CanConvert(from, to) && HighFidelity.Available(from, _options);
 
     public Task<JobResult> ConvertAsync(ConversionJob job, IProgress<double>? progress, CancellationToken cancellationToken) =>
@@ -28,7 +28,9 @@ public sealed class SlidesConverter(DocumentEngineOptions? options = null) : ICo
             progress?.Report(0.02);
             using var scratch = SafeOutput.CreateScratch();
             var pdf = scratch.File("slides.pdf");
-            if (!await HighFidelity.TryPdfAsync(job.InputPath, OfficeApp.PowerPoint, pdf, _options, cancellationToken, throwOnFailure: true).ConfigureAwait(false))
+            // A show, a template or a presentation with macros goes to PowerPoint as the plain presentation it holds.
+            var (input, _) = OfficePackages.AsPlain(job.InputPath, job.From, scratch);
+            if (!await HighFidelity.TryPdfAsync(input, OfficeApp.PowerPoint, pdf, _options, cancellationToken, throwOnFailure: true).ConfigureAwait(false))
                 throw new InvalidOperationException("Converting slides needs Microsoft PowerPoint or LibreOffice.");
             progress?.Report(0.6);
 

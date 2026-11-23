@@ -15,13 +15,21 @@ namespace Petal.Engines.Documents.Converters;
 /// <summary>Format dispatch for the document model.</summary>
 internal static class DocumentIO
 {
-    public static bool CanRead(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub || f == F.Idml;
+    public static bool CanRead(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub || f == F.Idml
+        || f == F.Doc || f == F.Docm || f == F.Dotx || f == F.Mhtml || f == F.Rst;
 
-    public static bool CanWrite(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub;
+    public static bool CanWrite(FileFormat f) => f == F.Docx || f == F.Odt || f == F.Rtf || f == F.Md || f == F.Html || f == F.Txt || f == F.Epub || f == F.Rst;
 
+    /// <summary>
+    /// The document model of a file. A DOCM or DOTX is read as the DOCX it holds (its macros are never run); a DOC
+    /// here gives its words alone (<see cref="DocumentConverter"/> has Word or LibreOffice read it whole first).
+    /// </summary>
     public static DocModel Read(string path, FileFormat format) => format.Id switch
     {
-        "docx" => DocxReader.Read(path),
+        "docx" or "docm" or "dotx" => DocxReader.Read(path),
+        "doc" => WordBinaryReader.Read(path),
+        "mhtml" => MhtmlReader.Read(path),
+        "rst" => RstReader.Read(path),
         "odt" => OdtReader.Read(path),
         "rtf" => RtfReader.Read(path),
         "md" => MarkdownReader.Read(path),
@@ -44,6 +52,7 @@ internal static class DocumentIO
                 case "odt": OdtWriter.Write(doc, temp); break;
                 case "rtf": RtfWriter.Write(doc, temp); break;
                 case "md": extra = MarkdownWriter.Write(doc, temp, outputPath); break;
+                case "rst": extra = RstWriter.Write(doc, temp, outputPath); break;
                 case "html": HtmlWriter.Write(doc, temp); break;
                 case "txt": PlainTextIO.Write(doc, temp); break;
                 case "epub":
@@ -62,7 +71,7 @@ internal static class DocumentIO
 internal static class HighFidelity
 {
     public static OfficeApp? AppFor(FileFormat from) =>
-        from == F.Docx || from == F.Odt || from == F.Rtf ? OfficeApp.Word :
+        from == F.Docx || from == F.Odt || from == F.Rtf || from == F.Doc ? OfficeApp.Word :
         from == F.Xlsx || from == F.Xls || from == F.Ods ? OfficeApp.Excel :
         from == F.Pptx || from == F.Ppt ? OfficeApp.PowerPoint : null;
 
@@ -73,7 +82,49 @@ internal static class HighFidelity
         options.UseLibreOffice && LibreOffice.IsInstalled;
 
     public static bool Available(FileFormat from, DocumentEngineOptions options) =>
-        AppFor(from) is { } app && (OfficeAvailable(app, options) || LibreOfficeAvailable(options));
+        AppFor(OfficePackages.PlainOf(from) ?? from) is { } app && (OfficeAvailable(app, options) || LibreOfficeAvailable(options));
+
+    /// <summary>
+    /// A Word 97–2003 document as DOCX, through Word, else LibreOffice: everything in it, where the built-in reader
+    /// has its words alone. False when neither is there or both failed.
+    /// </summary>
+    public static async Task<bool> TryDocxAsync(string input, string outputDocx, DocumentEngineOptions options, CancellationToken ct)
+    {
+        if (OfficeAvailable(OfficeApp.Word, options))
+        {
+            try
+            {
+                // 12: wdFormatXMLDocument.
+                await OfficeAutomation.SaveAsAsync(OfficeApp.Word, Path.GetFullPath(input), Path.GetFullPath(outputDocx), 12, options.OfficeTimeout, ct).ConfigureAwait(false);
+                if (File.Exists(outputDocx) && new FileInfo(outputDocx).Length > 0)
+                    return true;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+            }
+        }
+        if (LibreOfficeAvailable(options))
+        {
+            try
+            {
+                await LibreOffice.ConvertAsync(input, "docx", outputDocx, options.OfficeTimeout, ct).ConfigureAwait(false);
+                if (File.Exists(outputDocx) && new FileInfo(outputDocx).Length > 0)
+                    return true;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+            }
+        }
+        return false;
+    }
 
     /// <summary>Exports <paramref name="input"/> to <paramref name="outputPdf"/>. False when no engine is available or all failed.</summary>
     public static async Task<bool> TryPdfAsync(string input, OfficeApp app, string outputPdf, DocumentEngineOptions options, CancellationToken ct, bool throwOnFailure = false)

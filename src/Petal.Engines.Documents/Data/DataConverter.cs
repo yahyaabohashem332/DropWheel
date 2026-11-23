@@ -19,7 +19,7 @@ public sealed class DataConverter : IConverter
 
     private static bool IsTree(FileFormat f) => f == F.Json || f == F.Jsonl || f == F.Yaml || f == F.Toml || f == F.Xml;
 
-    private static bool IsSheet(FileFormat f) => f == F.Xlsx || f == F.Xls || f == F.Ods || f == F.Csv || f == F.Tsv;
+    private static bool IsSheet(FileFormat f) => f == F.Xlsx || f == F.Xls || f == F.Ods || f == F.Csv || f == F.Tsv || f == F.Xlsm || f == F.Xltx;
 
     public bool CanConvert(FileFormat from, FileFormat to) =>
         ConversionMatrix.CanConvert(from, to) && (from.Family == FormatFamily.Data || IsSheet(from) && to == F.Json);

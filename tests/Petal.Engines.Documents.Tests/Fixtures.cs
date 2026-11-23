@@ -72,6 +72,66 @@ public sealed class Fixtures
         Epub.Write(rich, _files["epub"]);
         _files["pptx"] = Path.Combine(Dir, "sample.pptx");
         PdfToPptx.WriteAsync(_files["pdf"], _files["pptx"], PdfToPptxMode.EditableText, 110, 85, new PdfContentOptions { Ocr = false }, null, CancellationToken.None).GetAwaiter().GetResult();
+
+        // 1.24: templates, shows and files with macros (a macro project in them, never run), a saved web page and
+        // reStructuredText.
+        _files["dotx"] = Variant(_files["docx"], F.Dotx, "sample.dotx");
+        _files["xltx"] = Variant(_files["xlsx"], F.Xltx, "sample.xltx");
+        _files["ppsx"] = Variant(_files["pptx"], F.Ppsx, "sample.ppsx");
+        _files["potx"] = Variant(_files["pptx"], F.Potx, "sample.potx");
+        _files["docm"] = WithMacros(_files["docx"], "sample.docm");
+        _files["xlsm"] = WithMacros(_files["xlsx"], "sample.xlsm");
+        _files["pptm"] = WithMacros(_files["pptx"], "sample.pptm");
+        _files["mhtml"] = Save("sample.mhtml", Mhtml(File.ReadAllBytes(_files["png-image"])));
+        _files["rst"] = Save("sample.rst", System.Text.Encoding.UTF8.GetBytes(Rst));
+    }
+
+    private string Variant(string source, FileFormat to, string name)
+    {
+        var path = Path.Combine(Dir, name);
+        OfficePackages.Retype(source, to, path);
+        return path;
+    }
+
+    /// <summary>The bytes of the macro project the samples carry, to show it is gone after.</summary>
+    public static readonly byte[] MacroProject = System.Text.Encoding.ASCII.GetBytes("Attribute VB_Name = \"PetalMacro\"\r\nSub AutoOpen()\r\nEnd Sub\r\n");
+
+    /// <summary>A copy of a DOCX, XLSX or PPTX as its macro-enabled kind, with a macro project in it.</summary>
+    internal string WithMacros(string source, string name)
+    {
+        var path = Path.Combine(Dir, name);
+        File.Copy(source, path);
+        switch (Path.GetExtension(name))
+        {
+            case ".docm":
+            {
+                using var package = WordprocessingDocument.Open(path, true);
+                package.ChangeDocumentType(WordprocessingDocumentType.MacroEnabledDocument);
+                Fill(package.MainDocumentPart!.AddNewPart<VbaProjectPart>());
+                break;
+            }
+            case ".xlsm":
+            {
+                using var package = SpreadsheetDocument.Open(path, true);
+                package.ChangeDocumentType(SpreadsheetDocumentType.MacroEnabledWorkbook);
+                Fill(package.WorkbookPart!.AddNewPart<VbaProjectPart>());
+                break;
+            }
+            default:
+            {
+                using var package = PresentationDocument.Open(path, true);
+                package.ChangeDocumentType(PresentationDocumentType.MacroEnabledPresentation);
+                Fill(package.PresentationPart!.AddNewPart<VbaProjectPart>());
+                break;
+            }
+        }
+        return path;
+
+        static void Fill(VbaProjectPart part)
+        {
+            using var stream = part.GetStream(FileMode.Create);
+            stream.Write(MacroProject);
+        }
     }
 
     /// <summary>The fixture for a format, or null when it cannot be made on this machine (legacy Office formats need Office).</summary>
@@ -85,6 +145,8 @@ public sealed class Fixtures
             {
                 "xls" => MakeLegacy(OfficeApp.Excel, _files["xlsx"], "sample.xls", 56),
                 "ppt" => MakeLegacy(OfficeApp.PowerPoint, _files["pptx"], "sample.ppt", 1),
+                // 0: wdFormatDocument, Word 97–2003.
+                "doc" => MakeLegacy(OfficeApp.Word, _files["docx"], "sample.doc", 0),
                 _ => null,
             };
             if (made is not null)
@@ -174,6 +236,79 @@ public sealed class Fixtures
         """;
 
     public const string PlainText = "Petal plain text\n\nFirst paragraph line one\nline two of the same paragraph.\n\nSecond paragraph.\n";
+
+    public const string Rst = """
+        ===============
+        Petal RST Guide
+        ===============
+
+        :Author: Petal Tests
+
+        Intro paragraph with **bold**, *italic*, ``code`` and a `link <https://example.com>`_.
+
+        Shopping list
+        =============
+
+        - Apples
+        - Bananas
+
+          - Green ones
+
+        - Cherries
+
+        #. First step
+        #. Second step
+
+        +-------+-------+
+        | Name  | Count |
+        +=======+=======+
+        | Petal | 3     |
+        +-------+-------+
+        | Leaf  | 5     |
+        +-------+-------+
+
+        .. note:: Notes become quotes.
+
+        Example::
+
+            code block
+
+        مرحبا بالعالم
+        """;
+
+    /// <summary>
+    /// A page as Chrome saves one: MIME, the page in quoted-printable (UTF-8, Arabic and a long line broken softly),
+    /// its picture in base64 at the address the page names it by.
+    /// </summary>
+    public static byte[] Mhtml(byte[] png)
+    {
+        const string page = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><title>Petal Saved Page</title></head>" +
+            "<body><h1>Petal Saved Page</h1><p>A saved page with a picture, a <a href=\"https://example.com/petal\">link</a> and Arabic: مرحبا بالعالم</p>" +
+            "<p><img src=\"images/picture.png\" alt=\"A picture\"></p><table><tr><th>City</th><th>Petals</th></tr><tr><td>Paris</td><td>12</td></tr></table></body></html>";
+        var qp = new System.Text.StringBuilder();
+        var column = 0;
+        foreach (var b in System.Text.Encoding.UTF8.GetBytes(page))
+        {
+            var piece = b is >= 33 and <= 126 and not (byte)'=' || b == ' ' ? ((char)b).ToString() : "=" + b.ToString("X2");
+            if (column + piece.Length > 75)
+            {
+                qp.Append("=\r\n");
+                column = 0;
+            }
+            qp.Append(piece);
+            column += piece.Length;
+        }
+        var base64 = string.Join("\r\n", Convert.ToBase64String(png).Chunk(76).Select(c => new string(c)));
+        var message =
+            "From: <Saved by Blink>\r\nSnapshot-Content-Location: https://example.com/petal/page.html\r\nSubject: Petal Saved Page\r\n" +
+            "MIME-Version: 1.0\r\nContent-Type: multipart/related;\r\n\ttype=\"text/html\";\r\n\tboundary=\"----MultipartBoundary--petal----\"\r\n\r\n\r\n" +
+            "------MultipartBoundary--petal----\r\nContent-Type: text/html\r\nContent-ID: <frame-1@mhtml.blink>\r\n" +
+            "Content-Transfer-Encoding: quoted-printable\r\nContent-Location: https://example.com/petal/page.html\r\n\r\n" + qp + "\r\n" +
+            "------MultipartBoundary--petal----\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: base64\r\n" +
+            "Content-Location: https://example.com/petal/images/picture.png\r\n\r\n" + base64 + "\r\n" +
+            "------MultipartBoundary--petal------\r\n";
+        return System.Text.Encoding.UTF8.GetBytes(message);
+    }
 
     internal static DocModel RichModel()
     {

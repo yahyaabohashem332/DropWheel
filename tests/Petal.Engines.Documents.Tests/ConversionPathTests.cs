@@ -14,7 +14,8 @@ public sealed class OfficeCollection;
 public sealed class ConversionPathTests(ITestOutputHelper output)
 {
     private static readonly FileFormat[] Sources =
-        [F.Pdf, F.Docx, F.Odt, F.Rtf, F.Md, F.Html, F.Txt, F.Epub, F.Pptx, F.Ppt, F.Xlsx, F.Xls, F.Ods, F.Csv, F.Tsv];
+        [F.Pdf, F.Docx, F.Odt, F.Rtf, F.Md, F.Html, F.Txt, F.Epub, F.Pptx, F.Ppt, F.Xlsx, F.Xls, F.Ods, F.Csv, F.Tsv,
+         F.Doc, F.Docm, F.Dotx, F.Mhtml, F.Rst, F.Ppsx, F.Potx, F.Pptm, F.Xlsm, F.Xltx];
 
     public static IEnumerable<object[]> Paths() =>
         ConversionMatrix.AllPaths()
@@ -25,16 +26,17 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
     [Fact]
     public void Every_document_path_in_the_matrix_has_a_converter()
     {
-        // Slides depend on PowerPoint/LibreOffice; every other path must be covered without them.
+        // Slides' pages depend on PowerPoint/LibreOffice; every other path must be covered without them (a show,
+        // a template and a presentation with macros become each other by their package alone).
         var options = new DocumentEngineOptions { UseMicrosoftOffice = false, UseLibreOffice = false };
         var missing = ConversionMatrix.AllPaths()
-            .Where(p => Sources.Contains(p.From) && p.From != F.Pptx && p.From != F.Ppt)
+            .Where(p => Sources.Contains(p.From) && !(p.From.Family == FormatFamily.Slides && (p.To == F.Pdf || p.To == F.Jpg || p.To == F.Png)))
             .Where(p => Fixtures.ConverterFor(p.From, p.To, options) is null)
             .Select(p => $"{p.From} → {p.To}")
             .ToList();
         Assert.Empty(missing);
-        // +5 in 1.24: every spreadsheet to JSON.
-        Assert.Equal(106, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
+        // +5 in 1.24: every spreadsheet to JSON; +81 for DOC, DOCM, DOTX, MHTML, RST, PPSX, POTX, PPTM, XLSM and XLTX.
+        Assert.Equal(187, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
     }
 
     [Fact]
@@ -103,12 +105,12 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
             PdfPageBoxTests.AssertNoEmptyBoxes(file);
             return;
         }
-        if (format != F.Docx && format != F.Xlsx && format != F.Pptx)
+        if (format != F.Docx && format != F.Xlsx && format != F.Pptx && format != F.Dotx && format != F.Xltx && format != F.Ppsx && format != F.Potx)
             return;
         using DocumentFormat.OpenXml.Packaging.OpenXmlPackage package = format.Id switch
         {
-            "docx" => DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(file, false),
-            "xlsx" => DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Open(file, false),
+            "docx" or "dotx" => DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(file, false),
+            "xlsx" or "xltx" => DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Open(file, false),
             _ => DocumentFormat.OpenXml.Packaging.PresentationDocument.Open(file, false),
         };
         var errors = new DocumentFormat.OpenXml.Validation.OpenXmlValidator(DocumentFormat.OpenXml.FileFormatVersions.Office2019)

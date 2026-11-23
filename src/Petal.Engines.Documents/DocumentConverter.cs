@@ -34,7 +34,16 @@ public sealed class DocumentConverter(DocumentEngineOptions? options = null) : I
             if (job.To == F.Pdf || job.To == F.Png || job.To == F.Jpg)
                 return await ToPdfOrImagesAsync(job, progress, cancellationToken).ConfigureAwait(false);
 
-            var doc = DocumentIO.Read(job.InputPath, job.From);
+            using var scratch = SafeOutput.CreateScratch();
+            var (input, from) = await ReadableAsync(job.InputPath, job.From, scratch, _options, cancellationToken).ConfigureAwait(false);
+            // Word's own DOCX of an older document is the DOCX asked for.
+            if (job.From == F.Doc && from == F.Docx && job.To == F.Docx)
+            {
+                SafeOutput.Write(job.OutputPath, temp => File.Copy(input, temp));
+                progress?.Report(1);
+                return JobResult.Single(job.OutputPath);
+            }
+            var doc = DocumentIO.Read(input, from);
             cancellationToken.ThrowIfCancellationRequested();
             progress?.Report(0.5);
             var paths = DocumentIO.Write(doc, job.To, job.OutputPath);
@@ -66,6 +75,9 @@ public sealed class DocumentConverter(DocumentEngineOptions? options = null) : I
     /// </summary>
     internal static async Task RenderPdfAsync(string input, FileFormat from, string outputPdf, DocumentEngineOptions options, CancellationToken ct)
     {
+        // A document with macros or a template goes to Word as the plain document it holds.
+        using var plainScratch = SafeOutput.CreateScratch();
+        (input, from) = OfficePackages.AsPlain(input, from, plainScratch);
         if (HighFidelity.AppFor(from) is { } app && await HighFidelity.TryPdfAsync(input, app, outputPdf, options, ct).ConfigureAwait(false))
             return;
 
@@ -82,5 +94,20 @@ public sealed class DocumentConverter(DocumentEngineOptions? options = null) : I
                 return;
         }
         PdfDocWriter.Write(doc, outputPdf);
+    }
+
+    /// <summary>
+    /// The file to read and its format: a DOCM or DOTX as the plain DOCX it holds, a DOC as Word's (or LibreOffice's)
+    /// DOCX of it when either is there (else the DOC, whose words the built-in reader takes), any other as it is.
+    /// </summary>
+    internal static async Task<(string Path, FileFormat Format)> ReadableAsync(string path, FileFormat format, ScratchFolder scratch,
+        DocumentEngineOptions options, CancellationToken ct)
+    {
+        if (format == F.Doc)
+        {
+            var docx = scratch.File("document.docx");
+            return await HighFidelity.TryDocxAsync(path, docx, options, ct).ConfigureAwait(false) ? (docx, F.Docx) : (path, format);
+        }
+        return OfficePackages.AsPlain(path, format, scratch);
     }
 }

@@ -24,6 +24,33 @@ internal static class OutputVerifier
                 Assert.True(pdf.NumberOfPages > 0);
                 return string.Join("\n", pdf.GetPages().Select(p => string.Join(" ", p.GetWords().Select(w => w.Text))));
             }
+            case "dotx":
+            {
+                using (var template = WordprocessingDocument.Open(path, false))
+                    Assert.Equal(DocumentFormat.OpenXml.WordprocessingDocumentType.Template, template.DocumentType);
+                return TextOf(path, Petal.Core.Formats.Formats.Docx);
+            }
+            case "ppsx" or "potx":
+            {
+                using (var show = PresentationDocument.Open(path, false))
+                    Assert.Equal(format.Id == "ppsx" ? DocumentFormat.OpenXml.PresentationDocumentType.Slideshow : DocumentFormat.OpenXml.PresentationDocumentType.Template, show.DocumentType);
+                return TextOf(path, Petal.Core.Formats.Formats.Pptx);
+            }
+            case "xltx":
+            {
+                using (var template = SpreadsheetDocument.Open(path, false))
+                    Assert.Equal(DocumentFormat.OpenXml.SpreadsheetDocumentType.Template, template.DocumentType);
+                var copy = Path.Combine(Path.GetTempPath(), "petal-xltx-" + Guid.NewGuid().ToString("N") + ".xlsx");
+                try
+                {
+                    Petal.Engines.Documents.Office.OfficePackages.Retype(path, Petal.Core.Formats.Formats.Xlsx, copy);
+                    return TextOf(copy, Petal.Core.Formats.Formats.Xlsx);
+                }
+                finally
+                {
+                    File.Delete(copy);
+                }
+            }
             case "docx":
             {
                 using var doc = WordprocessingDocument.Open(path, false);

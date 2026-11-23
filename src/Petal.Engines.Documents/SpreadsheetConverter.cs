@@ -19,7 +19,7 @@ public sealed class SpreadsheetConverter(DocumentEngineOptions? options = null) 
 
     public string Name => "Spreadsheets";
 
-    private static bool IsSheet(FileFormat f) => f == F.Xlsx || f == F.Xls || f == F.Ods || f == F.Csv || f == F.Tsv;
+    private static bool IsSheet(FileFormat f) => f == F.Xlsx || f == F.Xls || f == F.Ods || f == F.Csv || f == F.Tsv || f == F.Xlsm || f == F.Xltx;
 
     public bool CanConvert(FileFormat from, FileFormat to) =>
         IsSheet(from) && ConversionMatrix.CanConvert(from, to) && (to == F.Xlsx || to == F.Ods || to == F.Csv || to == F.Tsv || to == F.Pdf);
@@ -30,12 +30,15 @@ public sealed class SpreadsheetConverter(DocumentEngineOptions? options = null) 
             SafeOutput.EnsureNotInput(job.InputPath, job.OutputPath);
             progress?.Report(0.02);
             var ct = cancellationToken;
+            // A workbook with macros or a template is read, and goes to Excel, as the plain workbook it holds.
+            using var plainScratch = SafeOutput.CreateScratch();
+            var (input, from) = OfficePackages.AsPlain(job.InputPath, job.From, plainScratch);
 
-            if (job.To == F.Pdf && HighFidelity.AppFor(job.From) is { } app)
+            if (job.To == F.Pdf && HighFidelity.AppFor(from) is { } app)
             {
                 using var scratch = SafeOutput.CreateScratch();
                 var pdf = scratch.File("workbook.pdf");
-                if (await HighFidelity.TryPdfAsync(job.InputPath, app, pdf, _options, ct).ConfigureAwait(false))
+                if (await HighFidelity.TryPdfAsync(input, app, pdf, _options, ct).ConfigureAwait(false))
                 {
                     SafeOutput.Write(job.OutputPath, temp => File.Copy(pdf, temp));
                     progress?.Report(1);
@@ -43,7 +46,7 @@ public sealed class SpreadsheetConverter(DocumentEngineOptions? options = null) 
                 }
             }
 
-            var workbook = Read(job.InputPath, job.From);
+            var workbook = Read(input, from);
             ct.ThrowIfCancellationRequested();
             progress?.Report(0.4);
             var result = Write(workbook, job, ScaledProgress.Of(progress, 0.4, 1), ct);
@@ -55,11 +58,19 @@ public sealed class SpreadsheetConverter(DocumentEngineOptions? options = null) 
     {
         "xlsx" => ExcelSheets.ReadXlsx(path),
         "xls" => ExcelSheets.ReadXls(path),
+        "xlsm" or "xltx" => ReadPlain(path, format),
         "ods" => OdsSheets.Read(path),
         "csv" => DelimitedText.Read(path, ','),
         "tsv" => DelimitedText.Read(path, '\t'),
         _ => throw new NotSupportedException($"Cannot read {format.Label} spreadsheets."),
     };
+
+    private static WorkbookModel ReadPlain(string path, FileFormat format)
+    {
+        using var scratch = SafeOutput.CreateScratch();
+        var (plain, _) = OfficePackages.AsPlain(path, format, scratch);
+        return ExcelSheets.ReadXlsx(plain);
+    }
 
     internal static JobResult Write(WorkbookModel workbook, ConversionJob job, IProgress<double>? progress, CancellationToken ct)
     {

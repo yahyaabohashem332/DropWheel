@@ -58,14 +58,22 @@ public static class ConversionMatrix
 
         map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, PdfLongJpg, PdfFirstJpg, PdfLongPng, PdfFirstPng, Epub, Txt, Md, Html];
 
-        map[Pptx] = [Pdf, Jpg, Png];
+        // A presentation becomes a show or a template, and they and presentations with macros a plain one again.
+        map[Pptx] = [Pdf, Jpg, Png, Ppsx, Potx];
         map[Ppt] = [Pdf, Jpg, Png];
+        foreach (var slides in new[] { Ppsx, Potx, Pptm })
+            map[slides] = [Pptx, Pdf, Jpg, Png];
 
-        foreach (var sheet in new[] { Xlsx, Xls, Ods, Csv, Tsv })
+        foreach (var sheet in new[] { Xlsx, Xls, Ods, Csv, Tsv, Xlsm, Xltx })
             map[sheet] = [.. SpreadsheetOutputs.Where(f => f != sheet)];
+        map[Xlsx] = [.. map[Xlsx], Xltx];
 
-        foreach (var doc in new[] { Docx, Odt, Rtf, Md, Html })
+        foreach (var doc in new[] { Docx, Odt, Rtf, Md, Html, Doc, Docm, Dotx, Mhtml, Rst })
             map[doc] = [.. DocumentOutputs.Where(f => f != doc)];
+        // A document becomes a template; Markdown, web pages and Word documents become reStructuredText.
+        map[Docx] = [.. map[Docx], Dotx, Rst];
+        map[Md] = [.. map[Md], Rst];
+        map[Html] = [.. map[Html], Rst];
         map[Txt] = [Docx, Odt, Rtf, Pdf, Md, Html, Epub, Jpg, Png];
         map[Epub] = [Pdf, Docx, Odt, Txt, Md, Html];
 

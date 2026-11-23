@@ -165,14 +165,30 @@
               <uap:FileType>.html</uap:FileType>
               <uap:FileType>.htm</uap:FileType>
               <uap:FileType>.xhtml</uap:FileType>
+              <uap:FileType>.doc</uap:FileType>
+              <uap:FileType>.dot</uap:FileType>
+              <uap:FileType>.docm</uap:FileType>
+              <uap:FileType>.dotm</uap:FileType>
+              <uap:FileType>.dotx</uap:FileType>
+              <uap:FileType>.mhtml</uap:FileType>
+              <uap:FileType>.mht</uap:FileType>
+              <uap:FileType>.rst</uap:FileType>
+              <uap:FileType>.rest</uap:FileType>
               <uap:FileType>.txt</uap:FileType>
               <uap:FileType>.text</uap:FileType>
               <uap:FileType>.log</uap:FileType>
               <uap:FileType>.epub</uap:FileType>
               <uap:FileType>.pptx</uap:FileType>
               <uap:FileType>.ppt</uap:FileType>
+              <uap:FileType>.ppsx</uap:FileType>
+              <uap:FileType>.potx</uap:FileType>
+              <uap:FileType>.pptm</uap:FileType>
+              <uap:FileType>.ppsm</uap:FileType>
+              <uap:FileType>.potm</uap:FileType>
               <uap:FileType>.xlsx</uap:FileType>
               <uap:FileType>.xlsm</uap:FileType>
+              <uap:FileType>.xltm</uap:FileType>
+              <uap:FileType>.xltx</uap:FileType>
               <uap:FileType>.xls</uap:FileType>
               <uap:FileType>.ods</uap:FileType>
               <uap:FileType>.csv</uap:FileType>

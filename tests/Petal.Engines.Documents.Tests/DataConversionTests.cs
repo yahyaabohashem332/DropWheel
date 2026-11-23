@@ -141,7 +141,8 @@ public sealed class DataConversionTests
         var missing = ConversionMatrix.AllPaths().Where(p => p.From.Family == FormatFamily.Data || p.To.Family == FormatFamily.Data)
             .Where(p => registry.Find(p.From, p.To) is null).Select(p => $"{p.From} → {p.To}").ToList();
         Assert.Empty(missing);
-        Assert.Equal(27, ConversionMatrix.AllPaths().Count(p => p.From.Family == FormatFamily.Data || p.To.Family == FormatFamily.Data));
+        // 29 since workbooks with macros and templates (XLSM, XLTX) also become JSON.
+        Assert.Equal(29, ConversionMatrix.AllPaths().Count(p => p.From.Family == FormatFamily.Data || p.To.Family == FormatFamily.Data));
     }
 
     [Theory]

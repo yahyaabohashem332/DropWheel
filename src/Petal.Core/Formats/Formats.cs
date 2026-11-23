@@ -102,13 +102,29 @@ public static class Formats
     public static readonly FileFormat Html = new("html", "HTML", FormatFamily.Document, ["html", "htm", "xhtml"]);
     public static readonly FileFormat Txt = new("txt", "TXT", FormatFamily.Text, ["txt", "text", "log"]);
     public static readonly FileFormat Epub = new("epub", "EPUB", FormatFamily.Ebook, ["epub"]);
+    // Word's other files: older binary documents (read through Word or LibreOffice, else their text), documents
+    // with macros (read without them, never run) and templates.
+    public static readonly FileFormat Doc = new("doc", "DOC", FormatFamily.Document, ["doc", "dot"], CanWrite: false);
+    public static readonly FileFormat Docm = new("docm", "DOCM", FormatFamily.Document, ["docm", "dotm"], CanWrite: false);
+    public static readonly FileFormat Dotx = new("dotx", "DOTX", FormatFamily.Document, ["dotx"]);
+    // A web page saved as one file (Chrome, Edge, Word), its pictures inside.
+    public static readonly FileFormat Mhtml = new("mhtml", "MHTML", FormatFamily.Document, ["mhtml", "mht"], CanWrite: false);
+    // reStructuredText, Python's documentation format.
+    public static readonly FileFormat Rst = new("rst", "RST", FormatFamily.Document, ["rst", "rest"]);
 
     // Slides
     public static readonly FileFormat Pptx = new("pptx", "PPTX", FormatFamily.Slides, ["pptx"]);
     public static readonly FileFormat Ppt = new("ppt", "PPT", FormatFamily.Slides, ["ppt"], CanWrite: false);
+    // A presentation that opens as a show, a template, and presentations with macros (read without them).
+    public static readonly FileFormat Ppsx = new("ppsx", "PPSX", FormatFamily.Slides, ["ppsx"]);
+    public static readonly FileFormat Potx = new("potx", "POTX", FormatFamily.Slides, ["potx"]);
+    public static readonly FileFormat Pptm = new("pptm", "PPTM", FormatFamily.Slides, ["pptm", "ppsm", "potm"], CanWrite: false);
 
     // Spreadsheets
-    public static readonly FileFormat Xlsx = new("xlsx", "XLSX", FormatFamily.Spreadsheet, ["xlsx", "xlsm"]);
+    public static readonly FileFormat Xlsx = new("xlsx", "XLSX", FormatFamily.Spreadsheet, ["xlsx"]);
+    // Workbooks with macros (read without them, never run) and templates.
+    public static readonly FileFormat Xlsm = new("xlsm", "XLSM", FormatFamily.Spreadsheet, ["xlsm", "xltm"], CanWrite: false);
+    public static readonly FileFormat Xltx = new("xltx", "XLTX", FormatFamily.Spreadsheet, ["xltx"]);
     public static readonly FileFormat Xls = new("xls", "XLS", FormatFamily.Spreadsheet, ["xls"], CanWrite: false);
     public static readonly FileFormat Ods = new("ods", "ODS", FormatFamily.Spreadsheet, ["ods"]);
     public static readonly FileFormat Csv = new("csv", "CSV", FormatFamily.Spreadsheet, ["csv"]);
@@ -154,9 +170,9 @@ public static class Formats
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma, M4b,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif, Ts, ThreeGp, Flv,
         Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,
-        Docx, Odt, Rtf, Md, Html, Txt, Epub,
-        Pptx, Ppt,
-        Xlsx, Xls, Ods, Csv, Tsv,
+        Docx, Odt, Rtf, Md, Html, Txt, Epub, Doc, Docm, Dotx, Mhtml, Rst,
+        Pptx, Ppt, Ppsx, Potx, Pptm,
+        Xlsx, Xls, Ods, Csv, Tsv, Xlsm, Xltx,
         Json, Jsonl, Yaml, Toml, Xml, Vcf,
         Srt, Vtt, Ass, Ssa, Ttml, Sami, MicroDvd, Lrc,
         Zip, Tar, Tgz, Rar, SevenZip,

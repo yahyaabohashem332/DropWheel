@@ -12,7 +12,11 @@ internal static class LibreOffice
     public static bool IsInstalled => Executable is not null;
 
     /// <summary>Converts <paramref name="input"/> to PDF and writes it to <paramref name="outputPdf"/>.</summary>
-    public static async Task ExportPdfAsync(string input, string outputPdf, TimeSpan timeout, CancellationToken ct)
+    public static Task ExportPdfAsync(string input, string outputPdf, TimeSpan timeout, CancellationToken ct) =>
+        ConvertAsync(input, "pdf", outputPdf, timeout, ct);
+
+    /// <summary>Converts <paramref name="input"/> to another format LibreOffice writes ("pdf", "docx"…).</summary>
+    public static async Task ConvertAsync(string input, string extension, string output, TimeSpan timeout, CancellationToken ct)
     {
         var soffice = Executable ?? throw new InvalidOperationException("LibreOffice is not installed.");
         using var scratch = Util.SafeOutput.CreateScratch();
@@ -38,17 +42,17 @@ internal static class LibreOffice
                 [
                     "--headless", "--invisible", "--nologo", "--norestore", "--nodefault", "--nolockcheck", "--nofirststartwizard",
                     "-env:UserInstallation=" + profileUrl,
-                    "--convert-to", "pdf", "--outdir", scratch.Path, source,
+                    "--convert-to", extension, "--outdir", scratch.Path, source,
                 ], workingDirectory: scratch.Path, cancellationToken: cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
                 throw new TimeoutException($"LibreOffice did not finish within {timeout.TotalSeconds:0} seconds.");
             }
-            var produced = scratch.File("input.pdf");
+            var produced = scratch.File("input." + extension);
             if (!result.Succeeded || !File.Exists(produced))
                 throw new ExternalToolException("LibreOffice", result);
-            File.Copy(produced, outputPdf, overwrite: true);
+            File.Copy(produced, output, overwrite: true);
         }
         finally
         {
