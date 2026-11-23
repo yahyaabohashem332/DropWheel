@@ -8,7 +8,7 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_506_paths()
+    public void Conversion_matrix_has_551_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
         // +4 in 1.22 for PDF long/first page image outputs.
@@ -16,7 +16,8 @@ public class RegistryTests
         // +60 in 1.24 for subtitles: ASS, SSA, TTML, SAMI, MicroDVD and LRC, every one to every other and to text.
         // +65 in 1.24 for pictures: JXL with the everyday formats, TGA, DDS, JPEG 2000, QOI and PCX from PNG and
         // TIFF and to six common formats, GIMP's XCF to seven.
-        Assert.Equal(506, ConversionMatrix.TotalPaths);
+        // +45 in 1.24 for video and audio: TS written and read, 3GP and FLV read, M4B audiobooks.
+        Assert.Equal(551, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

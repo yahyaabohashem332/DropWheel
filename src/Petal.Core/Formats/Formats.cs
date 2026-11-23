@@ -66,6 +66,8 @@ public static class Formats
     public static readonly FileFormat Aiff = new("aiff", "AIFF", FormatFamily.Audio, ["aiff", "aif", "aifc"]);
     // Read through Windows' own decoders; not written, as their encoders aren't free to ship.
     public static readonly FileFormat Wma = new("wma", "WMA", FormatFamily.Audio, ["wma"], CanWrite: false);
+    // Audiobooks: AAC in an MP4 file, with its chapters.
+    public static readonly FileFormat M4b = new("m4b", "M4B", FormatFamily.Audio, ["m4b"]);
 
     // Video (GIF behaves like a video: it converts to and from video formats)
     public static readonly FileFormat Mp4 = new("mp4", "MP4", FormatFamily.Video, ["mp4", "m4v"]);
@@ -75,6 +77,12 @@ public static class Formats
     public static readonly FileFormat Avi = new("avi", "AVI", FormatFamily.Video, ["avi"]);
     public static readonly FileFormat Wmv = new("wmv", "WMV", FormatFamily.Video, ["wmv"], CanWrite: false);
     public static readonly FileFormat Gif = new("gif", "GIF", FormatFamily.Video, ["gif"]);
+    // Television, camcorders (AVCHD's .mts) and screen recorders. A ".ts" that isn't a transport stream (TypeScript
+    // source code) is no video: FromPath looks at its first bytes.
+    public static readonly FileFormat Ts = new("ts", "TS", FormatFamily.Video, ["ts", "m2ts", "mts"]);
+    // Older phones' and Flash's videos: read, no longer made.
+    public static readonly FileFormat ThreeGp = new("3gp", "3GP", FormatFamily.Video, ["3gp", "3g2"], CanWrite: false);
+    public static readonly FileFormat Flv = new("flv", "FLV", FormatFamily.Video, ["flv"], CanWrite: false);
 
     // Documents
     public static readonly FileFormat Pdf = new("pdf", "PDF", FormatFamily.Pdf, ["pdf"]);
@@ -143,8 +151,8 @@ public static class Formats
         Pages, Numbers, Keynote,
         Ase, Aco,
         Ttf, Otf, Woff, Woff2,
-        Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma,
-        Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif,
+        Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma, M4b,
+        Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif, Ts, ThreeGp, Flv,
         Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,
         Docx, Odt, Rtf, Md, Html, Txt, Epub,
         Pptx, Ppt,
@@ -158,8 +166,8 @@ public static class Formats
 
     /// <summary>Pictures for particular uses (games, print, older programs): written only from PNG and TIFF.</summary>
     public static readonly IReadOnlyList<FileFormat> SpecialImages = [Tga, Dds, Jp2, Qoi, Pcx];
-    public static readonly IReadOnlyList<FileFormat> AudioFormats = [Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma];
-    public static readonly IReadOnlyList<FileFormat> VideoFormats = [Mp4, Mov, Mkv, Webm, Avi, Wmv];
+    public static readonly IReadOnlyList<FileFormat> AudioFormats = [Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma, M4b];
+    public static readonly IReadOnlyList<FileFormat> VideoFormats = [Mp4, Mov, Mkv, Webm, Avi, Wmv, Ts, ThreeGp, Flv];
 
     private static readonly FrozenDictionary<string, FileFormat> ById = All.ToFrozenDictionary(f => f.Id, StringComparer.OrdinalIgnoreCase);
 
@@ -182,7 +190,31 @@ public static class Formats
         if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
             return Tgz;
         var ext = Path.GetExtension(name);
-        return ext.Length > 1 ? ByExtension.GetValueOrDefault(ext[1..]) : null;
+        var format = ext.Length > 1 ? ByExtension.GetValueOrDefault(ext[1..]) : null;
+        if (format == Ts && ext.Equals(".ts", StringComparison.OrdinalIgnoreCase) && !LooksLikeTransportStream(path))
+            return null;
+        return format;
+    }
+
+    /// <summary>
+    /// A ".ts" file is a video when it starts with a transport stream's packets (0x47 every 188 bytes); TypeScript
+    /// source code doesn't. A file that isn't there yet (a name for a result) is taken as video.
+    /// </summary>
+    private static bool LooksLikeTransportStream(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+                return true;
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            Span<byte> head = stackalloc byte[189];
+            int read = stream.ReadAtLeast(head, head.Length, throwOnEndOfStream: false);
+            return read >= 1 && head[0] == 0x47 && (read < 189 || head[188] == 0x47);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return true;
+        }
     }
 
     /// <summary>The file name without its format extension (handles ".tar.gz").</summary>

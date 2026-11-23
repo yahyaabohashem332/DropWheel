@@ -24,10 +24,10 @@ public class ConverterTests
     public void Matrix_has_every_audio_and_video_path_covered_by_this_converter()
     {
         var paths = MediaPaths();
-        // Each of the 8 audio formats into every other one DropWheel writes (all but WMA, which it only reads), each
-        // of the 6 video formats into every other written one (all but WMV) and into GIF and MP3, and GIF into the 5
-        // written video formats.
-        Assert.Equal(7 * 6 + 7 + 5 * 6 + 7 + 5, paths.Count);
+        // Each of the 9 audio formats into every other one DropWheel writes (all but WMA, which it only reads), each
+        // of the 9 video formats into every other written one (all but WMV, 3GP and FLV) and into GIF and MP3, and
+        // GIF into the 6 written video formats.
+        Assert.Equal(8 * 7 + 8 + 6 * 7 + 3 * 8 + 6, paths.Count);
         foreach (var (from, to) in ConversionMatrix.AllPaths().Where(p => p.From.Family is FormatFamily.Audio or FormatFamily.Video))
             Assert.True(Converter.CanConvert(from, to), $"{from} → {to}");
     }

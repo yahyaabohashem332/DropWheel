@@ -176,7 +176,17 @@ internal static partial class FfmpegCommand
                     tracks.Add(new BridgeTrack(stream, nth, lead, tenBit, tellTale));
                 }
                 var (start, duration) = Window(tokens, input, info);
-                var bridge = await WindowsBridge.StartAsync(new BridgeRequest(info.Path, tracks, start, duration), cancellationToken).ConfigureAwait(false);
+                var copy = await CopyForWindowsAsync(info, cancellationToken).ConfigureAwait(false);
+                WindowsBridge bridge;
+                try
+                {
+                    bridge = await WindowsBridge.StartAsync(new BridgeRequest(info.Path, tracks, start, duration, copy), cancellationToken).ConfigureAwait(false);
+                }
+                catch when (copy is not null)
+                {
+                    TryDelete(copy);
+                    throw;
+                }
                 bridges.Add(bridge);
                 bridgeOf[index] = (inputs.Count + bridgeOf.Count, streams.ToList());
                 foreach (var name in new[] { "itsoffset" })
@@ -240,6 +250,37 @@ internal static partial class FfmpegCommand
             foreach (var bridge in bridges)
                 await bridge.DisposeAsync().ConfigureAwait(false);
             throw;
+        }
+    }
+
+    /// <summary>Containers Windows doesn't open, though it decodes what they hold.</summary>
+    private static readonly HashSet<string> ClosedToWindows = new(StringComparer.OrdinalIgnoreCase) { "flv" };
+
+    /// <summary>
+    /// For a file in a container Windows doesn't open (Flash video), its pictures and sound copied as they are into
+    /// Matroska, which it does, keeping their times; null for any other file.
+    /// </summary>
+    private static async Task<string?> CopyForWindowsAsync(MediaInfo info, CancellationToken cancellationToken)
+    {
+        if (!info.Container.Split(',').Any(ClosedToWindows.Contains))
+            return null;
+        var copy = Path.Combine(Path.GetTempPath(), "petal-windows-" + Guid.NewGuid().ToString("N") + ".mkv");
+        string[] args = ["-hide_banner", "-nostdin", "-loglevel", "error", "-y", "-i", info.Path, "-map", "0:v?", "-map", "0:a?", "-c", "copy", "-copyts", "-f", "matroska", copy];
+        var result = await FfmpegProcess.RunAsync(Ffmpeg.Exe, args, null, cancellationToken).ConfigureAwait(false);
+        if (result.Succeeded)
+            return copy;
+        TryDelete(copy);
+        throw new MediaException("Couldn't make the file ready for Windows to decode: " + result.StandardError.Trim());
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
         }
     }
 

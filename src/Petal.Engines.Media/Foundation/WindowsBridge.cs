@@ -12,8 +12,11 @@ namespace Petal.Engines.Media.Foundation;
 /// </summary>
 internal sealed record BridgeTrack(MediaStreamInfo Stream, int Nth, TimeSpan? Lead = null, bool TenBit = false, byte[]? TellTale = null);
 
-/// <summary>What to decode of a file: the tracks, from where, and for how long.</summary>
-internal sealed record BridgeRequest(string Path, IReadOnlyList<BridgeTrack> Tracks, TimeSpan Start, TimeSpan? Duration);
+/// <summary>
+/// What to decode of a file: the tracks, from where, and for how long. <paramref name="Copy"/>: a copy of the file's
+/// streams in a container Windows opens, made for the bridge and deleted with it.
+/// </summary>
+internal sealed record BridgeRequest(string Path, IReadOnlyList<BridgeTrack> Tracks, TimeSpan Start, TimeSpan? Duration, string? Copy = null);
 
 /// <summary>
 /// Decodes streams of a file with Windows' own decoders and hands them to FFmpeg as raw pictures and sound, through a
@@ -105,6 +108,9 @@ internal sealed class WindowsBridge : IAsyncDisposable
         /// <summary>Added to Windows' times to give FFmpeg's.</summary>
         public long Shift { get; set; }
 
+        /// <summary>Windows' time of the track's first sample, read before decoding starts.</summary>
+        public long? FirstTime { get; set; }
+
         /// <summary>Sound too short to send on its own, held to go with what follows it; and the frame it starts at.</summary>
         public byte[]? Carry { get; set; }
 
@@ -123,7 +129,7 @@ internal sealed class WindowsBridge : IAsyncDisposable
         var tracks = new List<Track>();
         try
         {
-            reader = WindowsReader.Open(_request.Path);
+            reader = WindowsReader.Open(_request.Copy ?? _request.Path);
             // Which of Windows' streams each one is, all found before any is set to be decoded: telling streams apart
             // reads them as the file holds them.
             var taken = new HashSet<uint>();
@@ -163,9 +169,26 @@ internal sealed class WindowsBridge : IAsyncDisposable
                 {
                     Marshal.ReleaseComObject(sample);
                     track.Shift = track.Source.Lead!.Value.Ticks - time;
+                    track.FirstTime = time;
                     shifted = true;
                 }
             }
+            // A file whose clock doesn't start at 0 (a transport stream starts at 1.4 s, which Windows gives as 0.7):
+            // FFmpeg counts from the file's own start, so Windows' times are counted from its first sample.
+            foreach (var track in tracks.Where(t => t.Source.Lead is null))
+            {
+                var (sample, time, _) = reader.Read(track.Stream);
+                if (sample is not null)
+                {
+                    Marshal.ReleaseComObject(sample);
+                    track.FirstTime = time;
+                    shifted = true;
+                }
+            }
+            var origin = tracks.Where(t => t.FirstTime is not null).Select(t => t.FirstTime!.Value).DefaultIfEmpty(0).Min();
+            if (origin > 0)
+                foreach (var track in tracks.Where(t => t.Source.Lead is null))
+                    track.Shift = -origin;
 
             var start = _request.Start.Ticks;
             // Where Windows can't seek, reading from the beginning and dropping what comes before does the same.
@@ -525,6 +548,16 @@ internal sealed class WindowsBridge : IAsyncDisposable
             catch (TimeoutException)
             {
                 // A decoder that doesn't return: the thread is a background one and goes with the process.
+            }
+        }
+        if (_request.Copy is { } copy && !_thread.IsAlive)
+        {
+            try
+            {
+                File.Delete(copy);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
             }
         }
     }

@@ -130,6 +130,7 @@
               <uap:FileType>.aif</uap:FileType>
               <uap:FileType>.aifc</uap:FileType>
               <uap:FileType>.wma</uap:FileType>
+              <uap:FileType>.m4b</uap:FileType>
               <uap:FileType>.mp4</uap:FileType>
               <uap:FileType>.m4v</uap:FileType>
               <uap:FileType>.mov</uap:FileType>
@@ -139,6 +140,12 @@
               <uap:FileType>.avi</uap:FileType>
               <uap:FileType>.wmv</uap:FileType>
               <uap:FileType>.gif</uap:FileType>
+              <uap:FileType>.ts</uap:FileType>
+              <uap:FileType>.m2ts</uap:FileType>
+              <uap:FileType>.mts</uap:FileType>
+              <uap:FileType>.3gp</uap:FileType>
+              <uap:FileType>.3g2</uap:FileType>
+              <uap:FileType>.flv</uap:FileType>
             </uap:SupportedFileTypes>
             <uap2:SupportedVerbs>
               <uap3:Verb Id="convert" Parameters="--wheel &quot;%1&quot;">ms-resource:ConvertVerb</uap3:Verb>

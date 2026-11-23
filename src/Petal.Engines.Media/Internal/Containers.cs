@@ -61,9 +61,14 @@ internal static class Containers
         new("wmv", "asf", VideoCodecKind.Wmv2, AudioCodecKind.Wma,
             Set("wmv1", "wmv2", "wmv3", "vc1"), Set("wmav1", "wmav2", "wmapro")),
         new("gif", "gif", VideoCodecKind.Gif, AudioCodecKind.None, None, None),
+        // A transport stream: H.264 and AAC, as televisions and players expect; MP4's streams are copied as they are.
+        new("ts", "mpegts", VideoCodecKind.H264, AudioCodecKind.Aac,
+            Set("h264", "hevc", "mpeg2video"), Set("aac", "mp3", "ac3", "eac3", "mp2"), MultipleAudio: true),
 
         new("mp3", "mp3", VideoCodecKind.None, AudioCodecKind.Mp3, None, Set("mp3"), CoverArt: true),
         new("m4a", "ipod", VideoCodecKind.None, AudioCodecKind.Aac, None, Set("aac", "alac"), FastStart: true, CoverArt: true),
+        // An audiobook: the same as M4A, chapters and cover kept, named so players file it with books.
+        new("m4b", "ipod", VideoCodecKind.None, AudioCodecKind.Aac, None, Set("aac", "alac"), FastStart: true, CoverArt: true),
         new("wav", "wav", VideoCodecKind.None, AudioCodecKind.PcmLe, None, Set("pcm_s16le", "pcm_s24le", "pcm_s32le", "pcm_f32le", "pcm_u8")),
         new("aiff", "aiff", VideoCodecKind.None, AudioCodecKind.PcmBe, None, Set("pcm_s16be", "pcm_s24be", "pcm_s32be")),
         new("flac", "flac", VideoCodecKind.None, AudioCodecKind.Flac, None, Set("flac"), CoverArt: true),

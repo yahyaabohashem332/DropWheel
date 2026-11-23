@@ -4033,5 +4033,9 @@ internal static class Arabic
         ["Fast and lossless"] = "سريعة وبلا فقد",
         ["Very old programs"] = "برامج قديمة جدًا",
         ["GIMP layers"] = "طبقات GIMP",
+        ["For TVs and players"] = "للتلفاز والمشغّلات",
+        ["Older phone video"] = "فيديو هواتف قديمة",
+        ["Flash video"] = "فيديو فلاش",
+        ["Audiobook with chapters"] = "كتاب مسموع بفصوله",
     };
 }

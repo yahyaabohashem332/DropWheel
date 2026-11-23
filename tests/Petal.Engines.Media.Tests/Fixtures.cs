@@ -54,6 +54,10 @@ internal static class Fixtures
         ["video.webm"] = [.. AV, "-c:v", "libvpx-vp9", "-deadline", "realtime", "-cpu-used", "8", "-b:v", "300k", "-c:a", "libopus", "-b:a", "64k", "-shortest"],
         ["video.avi"] = [.. AV, "-c:v", "mpeg4", "-q:v", "4", "-c:a", "libmp3lame", "-b:a", "128k", "-shortest"],
         ["video.gif"] = ["-f", "lavfi", "-i", "testsrc2=s=160x120:r=10:d=1", "-c:v", "gif"],
+        // 1.24: a transport stream as televisions write it, an old phone's 3GP (H.263, a size it allows), a Flash video.
+        ["video.ts"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "aac_mf", "-b:a", "128k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
+        ["video.3gp"] = ["-f", "lavfi", "-i", "testsrc2=s=176x144:r=15:d=1", "-f", "lavfi", "-i", Tone, "-ac", "2", "-c:v", "h263", "-q:v", "5", "-c:a", "aac_mf", "-b:a", "96k", "-ar", "44100", "-sample_fmt", "s16", "-shortest"],
+        ["video.flv"] = [.. AV, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12", "-c:a", "libmp3lame", "-b:a", "128k", "-shortest"],
         ["audio.mp3"] = [.. A, "-c:a", "libmp3lame", "-b:a", "192k"],
         ["audio.m4a"] = [.. A, "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16"],
         ["audio.aac"] = [.. A, "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16"],
@@ -62,6 +66,7 @@ internal static class Fixtures
         ["audio.ogg"] = [.. A, "-c:a", "libvorbis", "-q:a", "5"],
         ["audio.opus"] = [.. A, "-c:a", "libopus", "-b:a", "96k"],
         ["audio.aiff"] = [.. A, "-c:a", "pcm_s16be"],
+        ["audio.m4b"] = [.. A, "-c:a", "aac_mf", "-b:a", "192k", "-ar", "44100", "-sample_fmt", "s16"],
 
         // Special cases.
         ["silent.mp4"] = ["-f", "lavfi", "-i", Picture, "-c:v", "h264_mf", "-rate_control", "quality", "-quality", "80", "-compression_level", "0", "-pix_fmt", "nv12"],
