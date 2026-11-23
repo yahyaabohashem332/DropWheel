@@ -162,18 +162,19 @@ internal sealed class MediaView : FloatView
         Play();
     }
 
-    /// <summary>Subtitles beside a video with its name (.srt or .vtt), or none.</summary>
+    /// <summary>Subtitles beside a video with its name (.srt, .vtt, .ass, .ssa, .ttml, .smi), or none.</summary>
     internal static List<SubtitleCue> Subtitles(string video)
     {
-        foreach (var ext in new[] { ".srt", ".vtt" })
+        foreach (var format in new[] { Petal.Core.Formats.Formats.Srt, Petal.Core.Formats.Formats.Vtt, Petal.Core.Formats.Formats.Ass,
+                     Petal.Core.Formats.Formats.Ssa, Petal.Core.Formats.Formats.Ttml, Petal.Core.Formats.Formats.Sami })
         {
-            var beside = System.IO.Path.ChangeExtension(video, ext);
+            var beside = System.IO.Path.ChangeExtension(video, "." + format.WriteExtension);
             try
             {
                 if (File.Exists(beside) && new FileInfo(beside).Length < 4 * 1024 * 1024)
-                    return SubtitleConverter.Parse(File.ReadAllText(beside));
+                    return SubtitleFile.Read(SubtitleFile.Decode(File.ReadAllBytes(beside)), format);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or InvalidDataException)
             {
             }
         }

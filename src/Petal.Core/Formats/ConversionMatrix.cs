@@ -71,8 +71,10 @@ public static class ConversionMatrix
         map[Xml] = [Json, Yaml];
         map[Vcf] = [Csv, Xlsx, Json];
 
-        map[Srt] = [Vtt, Txt];
-        map[Vtt] = [Srt, Txt];
+        // Every subtitle format to every other, and to the words alone.
+        FileFormat[] subtitles = [Srt, Vtt, Ass, Ttml, Sami, Ssa, MicroDvd, Lrc];
+        foreach (var subtitle in subtitles)
+            map[subtitle] = [.. subtitles.Where(f => f != subtitle), Txt];
 
         foreach (var archive in new[] { Zip, Tar, Tgz, Rar, SevenZip })
             map[archive] = [.. ArchiveOutputs.Where(f => f != archive)];

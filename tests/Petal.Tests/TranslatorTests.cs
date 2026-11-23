@@ -78,7 +78,7 @@ public sealed class TranslatorTests(ITestOutputHelper output)
             <i>You only need flour, water, salt and yeast.</i>
             """;
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        var arabic = With(() => Translator.TranslateSubtitlesAsync(srt, false, "en", "ar").GetAwaiter().GetResult());
+        var arabic = With(() => Translator.TranslateSubtitlesAsync(srt, Petal.Core.Formats.Formats.Srt, "en", "ar").GetAwaiter().GetResult());
         output.WriteLine($"{clock.Elapsed.TotalSeconds:0.0} s\n{arabic}");
         var cues = Petal.Engines.Files.Subtitles.SubtitleConverter.Parse(arabic);
         Assert.Equal(3, cues.Count);

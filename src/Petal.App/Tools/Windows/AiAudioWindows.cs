@@ -194,9 +194,9 @@ public sealed class TranslateSubtitlesWindow : ToolWindow
         Close();
         var work = _files.Select(file => new WorkItem(file, Path.GetFileName(file), async (p, ct) =>
         {
-            var text = await File.ReadAllTextAsync(file, ct);
-            var vtt = OutputNaming.ExtensionOf(file).Equals("vtt", StringComparison.OrdinalIgnoreCase);
-            var translated = await Translator.TranslateSubtitlesAsync(text, vtt, from == "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "en" : from, into, p, ct);
+            var text = Petal.Engines.Files.Subtitles.SubtitleFile.Decode(await File.ReadAllBytesAsync(file, ct));
+            var format = Petal.Core.Formats.Formats.FromPath(file) ?? Petal.Core.Formats.Formats.Srt;
+            var translated = await Translator.TranslateSubtitlesAsync(text, format, from == "auto" ? Petal.Core.Text.LanguageGuess.Of(text) ?? "en" : from, into, p, ct);
             var output = OutputFor(file, into);
             await File.WriteAllTextAsync(output, translated, new UTF8Encoding(true), ct);
             return (IReadOnlyList<string>)[output];

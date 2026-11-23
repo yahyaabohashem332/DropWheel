@@ -9,7 +9,10 @@ namespace Petal.Engines.Files.Subtitles;
 
 public sealed record SubtitleCue(TimeSpan Start, TimeSpan End, string Text, string? Settings = null);
 
-/// <summary>SRT ↔ VTT keeping cue timing, and either one → plain text.</summary>
+/// <summary>
+/// Every subtitle format to every other, keeping each cue's timing and its italic, bold and underline, and to plain
+/// text (see <see cref="SubtitleFile"/> for ASS, SSA, LRC, SAMI, MicroDVD and TTML).
+/// </summary>
 public sealed partial class SubtitleConverter : IConverter
 {
     public string Name => "Subtitles";
@@ -19,15 +22,10 @@ public sealed partial class SubtitleConverter : IConverter
 
     public async Task<JobResult> ConvertAsync(ConversionJob job, IProgress<double>? progress, CancellationToken cancellationToken)
     {
-        var text = await File.ReadAllTextAsync(job.InputPath, cancellationToken);
-        var cues = Parse(text);
+        var text = SubtitleFile.Decode(await File.ReadAllBytesAsync(job.InputPath, cancellationToken));
+        var cues = SubtitleFile.Read(text, job.From);
         progress?.Report(0.5);
-        var output = job.To.Id switch
-        {
-            "srt" => WriteSrt(cues),
-            "vtt" => WriteVtt(cues),
-            _ => WriteText(cues),
-        };
+        var output = SubtitleFile.Write(cues, job.To);
         var temp = job.OutputPath + ".petal-tmp";
         await File.WriteAllTextAsync(temp, output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
         File.Move(temp, job.OutputPath);

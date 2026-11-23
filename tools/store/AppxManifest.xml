@@ -159,6 +159,14 @@
               <uap:FileType>.tab</uap:FileType>
               <uap:FileType>.srt</uap:FileType>
               <uap:FileType>.vtt</uap:FileType>
+              <uap:FileType>.ass</uap:FileType>
+              <uap:FileType>.ssa</uap:FileType>
+              <uap:FileType>.ttml</uap:FileType>
+              <uap:FileType>.dfxp</uap:FileType>
+              <uap:FileType>.smi</uap:FileType>
+              <uap:FileType>.sami</uap:FileType>
+              <uap:FileType>.sub</uap:FileType>
+              <uap:FileType>.lrc</uap:FileType>
               <uap:FileType>.json</uap:FileType>
               <uap:FileType>.jsonl</uap:FileType>
               <uap:FileType>.ndjson</uap:FileType>

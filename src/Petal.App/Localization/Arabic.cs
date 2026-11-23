@@ -4020,5 +4020,11 @@ internal static class Arabic
         ["Settings files"] = "ملفات إعدادات",
         ["Tagged data"] = "بيانات بوسوم",
         ["Phone contacts"] = "جهات اتصال الهاتف",
+        ["Styled subtitles"] = "ترجمة منسّقة",
+        ["Older styled subtitles"] = "ترجمة منسّقة قديمة",
+        ["Streaming subtitles"] = "ترجمة منصات البث",
+        ["Older Windows subtitles"] = "ترجمة Windows قديمة",
+        ["Frame-timed subtitles"] = "ترجمة بتوقيت الإطارات",
+        ["Timed song lyrics"] = "كلمات أغنية بتوقيتها",
     };
 }

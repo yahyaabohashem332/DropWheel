@@ -243,13 +243,13 @@ public static class Translator
 
     /// <summary>Subtitles in another language: the same cues and timing, the words translated.</summary>
     /// <param name="from">The language they are in; "auto" tells it from the words.</param>
-    public static async Task<string> TranslateSubtitlesAsync(string text, bool vtt, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    /// <param name="format">The file's format, which the translation keeps (an ASS file its styles and positions too).</param>
+    public static async Task<string> TranslateSubtitlesAsync(string text, Petal.Core.Formats.FileFormat format, string from, string to, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var cues = Petal.Engines.Files.Subtitles.SubtitleConverter.Parse(text);
+        var cues = Petal.Engines.Files.Subtitles.SubtitleFile.Read(text, format);
         // A cue's lines are one sentence more often than not: translated together.
         var words = await TranslateAsync(cues.Select(c => string.Join(' ', c.Text.Split('\n').Select(StripTags))).ToList(), from, to, progress, cancellationToken).ConfigureAwait(false);
-        var translated = cues.Select((c, i) => c with { Text = words[i] }).ToList();
-        return vtt ? Petal.Engines.Files.Subtitles.SubtitleConverter.WriteVtt(translated) : Petal.Engines.Files.Subtitles.SubtitleConverter.WriteSrt(translated);
+        return Petal.Engines.Files.Subtitles.SubtitleFile.WithTexts(text, format, cues, words);
     }
 
     /// <summary>Formatting tags (&lt;i&gt;, {\an8}) don't go through translation.</summary>

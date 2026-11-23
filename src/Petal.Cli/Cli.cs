@@ -962,19 +962,19 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         a.Only("out", "to", "from");
         var files = a.Files();
         if (files.Any(f => F.FromPath(f)?.Family != FormatFamily.Subtitle))
-            throw new UsageException("Name subtitle files (SRT or VTT).");
+            throw new UsageException("Name subtitle files (SRT, VTT, ASS, SSA, TTML, SAMI, SUB or LRC).");
         var into = a.Get("to") ?? "";
         if (Petal.Recipes.Translation.Translator.Languages.All(l => l.Code != into))
             throw new UsageException("--to takes a language code: " + string.Join(", ", Petal.Recipes.Translation.Translator.Languages.Select(l => l.Code)) + ".");
         var outDir = a.OutputFolder();
         foreach (var file in files)
         {
-            var text = await File.ReadAllTextAsync(file, ct);
-            var vtt = OutputNaming.ExtensionOf(file).Equals("vtt", StringComparison.OrdinalIgnoreCase);
+            var text = Petal.Engines.Files.Subtitles.SubtitleFile.Decode(await File.ReadAllBytesAsync(file, ct));
+            var format = F.FromPath(file)!;
             var from = a.Get("from") ?? Petal.Core.Text.LanguageGuess.Of(text.Length > 4000 ? text[..4000] : text) ?? "en";
             if (MissingModel(Petal.Recipes.Translation.Translator.ModelsFor(from, into), "Translate Subtitles") is not null)
                 return Failed;
-            var translated = await Petal.Recipes.Translation.Translator.TranslateSubtitlesAsync(text, vtt, from, into, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
+            var translated = await Petal.Recipes.Translation.Translator.TranslateSubtitlesAsync(text, format, from, into, new Progress<double>(f => ShowProgress(Path.GetFileName(file), f)), ct);
             ClearProgress();
             var path = OutputNaming.Unique(outDir ?? Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + "." + into, OutputNaming.ExtensionOf(file));
             await File.WriteAllTextAsync(path, translated, new System.Text.UTF8Encoding(true), ct);

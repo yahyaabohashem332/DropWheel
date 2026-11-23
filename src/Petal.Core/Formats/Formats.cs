@@ -107,6 +107,14 @@ public static class Formats
     // Subtitles
     public static readonly FileFormat Srt = new("srt", "SRT", FormatFamily.Subtitle, ["srt"]);
     public static readonly FileFormat Vtt = new("vtt", "VTT", FormatFamily.Subtitle, ["vtt"]);
+    public static readonly FileFormat Ass = new("ass", "ASS", FormatFamily.Subtitle, ["ass"]);
+    public static readonly FileFormat Ssa = new("ssa", "SSA", FormatFamily.Subtitle, ["ssa"]);
+    public static readonly FileFormat Ttml = new("ttml", "TTML", FormatFamily.Subtitle, ["ttml", "dfxp"]);
+    public static readonly FileFormat Sami = new("smi", "SAMI", FormatFamily.Subtitle, ["smi", "sami"]);
+    // MicroDVD's text subtitles. A VobSub .sub (pictures, with an .idx) is told apart when it is read, and refused.
+    public static readonly FileFormat MicroDvd = new("sub", "SUB", FormatFamily.Subtitle, ["sub"]);
+    // Timed lyrics.
+    public static readonly FileFormat Lrc = new("lrc", "LRC", FormatFamily.Subtitle, ["lrc"]);
 
     // Archives (".tar.gz" and ".tgz" are both the TGZ format)
     public static readonly FileFormat Zip = new("zip", "ZIP", FormatFamily.Archive, ["zip"]);
@@ -130,7 +138,7 @@ public static class Formats
         Pptx, Ppt,
         Xlsx, Xls, Ods, Csv, Tsv,
         Json, Jsonl, Yaml, Toml, Xml, Vcf,
-        Srt, Vtt,
+        Srt, Vtt, Ass, Ssa, Ttml, Sami, MicroDvd, Lrc,
         Zip, Tar, Tgz, Rar, SevenZip,
     ];
 
