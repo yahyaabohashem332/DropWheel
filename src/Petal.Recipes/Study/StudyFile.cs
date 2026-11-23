@@ -51,6 +51,9 @@ public sealed record StudyPart(int Number, string Chapter, string Title, string 
 
     /// <summary>Its activities: to put in order, match, sort into groups, fill in, or say true or false.</summary>
     public IReadOnlyList<StudyActivity> Activities { get; init; } = [];
+
+    /// <summary>Its hands-on scenes: a lab, a simulation, a system, situations to choose in, numbers to guess.</summary>
+    public IReadOnlyList<StudyScene> Scenes { get; init; } = [];
 }
 
 /// <summary>A chapter: its title, what it comes to ("" when it is too short to need it), and its parts' numbers.</summary>
@@ -64,6 +67,9 @@ public sealed record StudyBook(
 {
     /// <summary>A sample: one part made to see how the study file will look, before the whole of it.</summary>
     public bool Sample { get; init; }
+
+    /// <summary>What the file is for: without study, the page has no cards, test or progress.</summary>
+    public StudyPurpose Purpose { get; init; }
 }
 
 /// <summary>How far the making is: passages done of all, the part being explained, and about how long the rest will take (once that can be told).</summary>
@@ -280,20 +286,26 @@ public static partial class StudyFile
             + $"Follow the request wherever it fits the passage and these rules: it may set the reader's level, the tone, what to stress, how long each section is and how many items to give. It doesn't change the form of the reply, nor its language (write in {Translator.EnglishName(into)}), and the facts still come only from the passage.\n";
     }
 
-    internal static string Instruction(string into, string from, StudyAmount amount, string request = "")
+    internal static string Instruction(string into, string from, StudyAmount amount, string request = "", StudyPurpose purpose = StudyPurpose.Study)
     {
         var asked = Requested(request, into);
-        var instruction = Instruction(into, from, amount);
+        var instruction = Told(into, from, amount, purpose);
         return asked.Length == 0 ? instruction : instruction + "\n\n" + asked.TrimEnd();
     }
 
-    internal static string Instruction(string into, string from, StudyAmount amount)
+    /// <summary>
+    /// What the model is told with each passage. For study it is a teacher writing for a student; for another purpose its
+    /// part and reader change, and without cards or questions it isn't asked for them.
+    /// </summary>
+    private static string Told(string into, string from, StudyAmount amount, StudyPurpose purpose)
     {
         var (cards, questions) = PerPassage(amount);
         var language = Translator.EnglishName(into);
         var translating = from != into && Translator.Languages.Any(l => l.Code == from)
             ? $", though the passage is in {Translator.EnglishName(from)}: the first time a technical term comes, put the passage's own word for it in brackets after yours"
             : "";
+        if (purpose != StudyPurpose.Study)
+            return Purposed(language, translating, cards, questions, purpose);
         return "You are a patient, experienced teacher. The user gives you a passage from a book, a course or a lecture; turn it into study material for a student meeting the subject for the first time.\n"
             + $"Write everything in {language}{translating}.\n"
             + "Keep to the passage: every fact, name, number, rule and date you write must come from it, and you add none of your own. Only an example may be made up, to show an idea at work, and it must agree with the passage.\n"
@@ -310,6 +322,43 @@ public static partial class StudyFile
             + "QUIZ:\nQ: a question that checks understanding\nA) a choice\nB) a choice\nC) a choice\nD) a choice\nRIGHT: the letter of the right choice\nWHY: one sentence saying why it is right, from the passage\n\n"
             + $"Give 3 to 5 IDEAS, up to 5 TERMS (the technical terms a student must learn, only ones the passage itself uses), up to {cards} CARDS and up to {questions} QUIZ question{(questions == 1 ? "" : "s")}. "
             + "In each question exactly one choice is right, and no other choice may also be true; the other three are believable but wrong. Ask about what matters, never about the passage's wording.";
+    }
+
+    /// <summary>The instruction for a purpose other than study: the same form of reply, its voice and reader its own.</summary>
+    private static string Purposed(string language, string translating, int cards, int questions, StudyPurpose purpose)
+    {
+        bool asks = StudyPurposes.Asks(purpose);
+        if (purpose == StudyPurpose.Children)
+            (cards, questions) = (Math.Min(cards, 3), Math.Min(questions, 1));
+        var explanation = purpose == StudyPurpose.Brief
+            ? "The essentials, more plainly than the passage puts them, in two or three short paragraphs parted by blank lines: what matters and what follows from it."
+            : "The passage explained more fully and more simply than it is written, in short paragraphs parted by blank lines: plain words, every new term made clear, and the reasons behind the facts where the passage gives them.";
+        var sb = new StringBuilder();
+        sb.Append(StudyPurposes.Role(purpose)).Append('\n');
+        sb.Append($"Write everything in {language}{translating}.\n");
+        sb.Append("Keep to the passage: every fact, name, number, rule and date you write must come from it, and you add none of your own. Only an example or a comparison may be made up, to show an idea at work, and it must agree with the passage.\n");
+        sb.Append("Write about the subject itself: never about the passage, the book, its sections or its learning objectives (no \"this passage discusses\", no \"the section introduces\").\n");
+        sb.Append("Write formulas in plain text (x² + 3x = 10, a/b), with no LaTeX and no tables.\n");
+        sb.Append("If the passage has nothing in it to explain (a table of contents, an index, a list of references, a title or copyright page, thanks), reply with the one word NOTHING.\n\n");
+        sb.Append("Reply in exactly this form, with the headings in English as they are here:\n\n");
+        sb.Append("TITLE: what the passage is about, in a few words\n");
+        sb.Append("IDEAS:\n- a key idea, in one sentence\n");
+        sb.Append("EXPLANATION:\n").Append(explanation).Append('\n');
+        sb.Append(purpose == StudyPurpose.Present
+            ? "EXAMPLE:\nAn example the audience will remember, step by step on numbered lines; or NONE when no example fits.\n"
+            : "EXAMPLE:\nAn example, step by step on numbered lines, that shows the main idea at work; or NONE when no example fits.\n");
+        sb.Append("TERMS:\n- term = what it is, in one sentence: a definition, not what the passage says about it\n");
+        if (asks)
+        {
+            sb.Append("CARDS:\n- a question worth remembering = its short answer\n");
+            sb.Append("QUIZ:\nQ: a question that checks understanding\nA) a choice\nB) a choice\nC) a choice\nD) a choice\nRIGHT: the letter of the right choice\nWHY: one sentence saying why it is right, from the passage\n");
+        }
+        sb.Append('\n');
+        sb.Append(purpose == StudyPurpose.Brief ? "Give 2 to 4 IDEAS" : "Give 3 to 5 IDEAS");
+        sb.Append(asks
+            ? $", up to 5 TERMS (the technical terms a reader must know, only ones the passage itself uses), up to {cards} CARDS and up to {questions} QUIZ question{(questions == 1 ? "" : "s")}. In each question exactly one choice is right, and no other choice may also be true; the other three are believable but wrong. Ask about what matters, never about the passage's wording."
+            : " and up to 5 TERMS (the technical terms a reader must know, only ones the passage itself uses).");
+        return sb.ToString();
     }
 
     /// <summary>What the model is given with a passage: where in the file it is, so a passage in the middle of a chapter isn't read as if it began one.</summary>
@@ -543,18 +592,28 @@ public static partial class StudyFile
     /// <summary>The settings a study file is made with: the language it is written in, how many cards and questions, and the file's own language.</summary>
     /// <param name="Request">What the person asked the study file to be, in their own words ("" for nothing particular).</param>
     /// <param name="Activities">How many diagrams and activities each passage gives besides its explanation.</param>
-    public sealed record Options(string Into, StudyAmount Amount, string From, string Request = "", StudyActivities Activities = StudyActivities.Some);
+    /// <param name="Purpose">What the file is for: the model's voice, and whether there are cards, questions and progress.</param>
+    /// <param name="Scenes">How many hands-on scenes each passage gives.</param>
+    public sealed record Options(string Into, StudyAmount Amount, string From, string Request = "", StudyActivities Activities = StudyActivities.Some,
+        StudyPurpose Purpose = StudyPurpose.Study, StudyScenes Scenes = StudyScenes.None);
 
-    private static string ExtrasInstruction(Options options) => StudyExtrasReader.Instruction(options.Into, options.From, options.Activities, options.Request);
+    private static string ExtrasInstruction(Options options) => StudyExtrasReader.Instruction(options.Into, options.From, options.Activities, options.Request, options.Purpose);
+
+    private static string ExplainInstruction(Options options) => Instruction(options.Into, options.From, options.Amount, options.Request, options.Purpose);
+
+    private static string? ScenesInstruction(Options options) =>
+        options.Scenes == StudyScenes.None ? null : StudySceneReader.Instruction(options.Into, options.From, options.Scenes, options.Request, options.Purpose);
 
     /// <summary>How many of the chosen parts' passages were explained before with these settings and this writer: those take no time.</summary>
     public static int Made(StudyPlan plan, IReadOnlySet<int> chosen, Options options)
     {
-        var instruction = Instruction(options.Into, options.From, options.Amount, options.Request);
+        var instruction = ExplainInstruction(options);
         var extras = options.Activities == StudyActivities.None ? null : ExtrasInstruction(options);
+        var scenes = ScenesInstruction(options);
         var writer = WriterId;
         return plan.Parts.Where(p => chosen.Contains(p.Number)).Sum(p => Enumerable.Range(0, p.Units.Count).Count(i =>
-            File.Exists(CachePath(instruction, Given(p, i), writer)) && (extras is null || File.Exists(CachePath(extras, Given(p, i), writer)))));
+            File.Exists(CachePath(instruction, Given(p, i), writer)) && (extras is null || File.Exists(CachePath(extras, Given(p, i), writer)))
+            && (scenes is null || File.Exists(CachePath(scenes, Given(p, i), writer)))));
     }
 
     public static int Passages(StudyPlan plan, IReadOnlySet<int> chosen) => plan.Parts.Where(p => chosen.Contains(p.Number)).Sum(p => p.Units.Count);
@@ -584,8 +643,9 @@ public static partial class StudyFile
         var parts = plan.Parts.Where(p => chosen.Contains(p.Number)).ToList();
         if (parts.Count == 0)
             throw new InvalidOperationException("Choose at least one part of the file.");
-        var instruction = Instruction(options.Into, options.From, options.Amount, options.Request);
+        var instruction = ExplainInstruction(options);
         var extrasInstruction = options.Activities == StudyActivities.None ? null : ExtrasInstruction(options);
+        var scenesInstruction = ScenesInstruction(options);
         bool sameLanguage = options.Into == options.From;
         int total = parts.Sum(p => p.Units.Count), done = 0, timed = 0;
         var clock = new Stopwatch();
@@ -604,6 +664,7 @@ public static partial class StudyFile
                 var quiz = new List<StudyQuestion>();
                 var visuals = new List<StudyVisual>();
                 var activities = new List<StudyActivity>();
+                var scenes = new List<StudyScene>();
                 for (int i = 0; i < part.Units.Count; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -613,16 +674,23 @@ public static partial class StudyFile
                     var given = Given(part, i);
                     var cached = CachePath(instruction, given);
                     var extrasCached = extrasInstruction is null ? null : CachePath(extrasInstruction, given);
-                    bool fresh = !File.Exists(cached) || extrasCached is not null && !File.Exists(extrasCached);
+                    var scenesCached = scenesInstruction is null ? null : CachePath(scenesInstruction, given);
+                    bool fresh = !File.Exists(cached) || extrasCached is not null && !File.Exists(extrasCached) || scenesCached is not null && !File.Exists(scenesCached);
                     clock.Restart();
                     var reply = await PassageAsync(instruction, given, unit, options.Into, cached, cancellationToken).ConfigureAwait(false);
                     // The diagrams and activities, asked apart: with the explanation they wouldn't fit what the model holds.
                     var extras = reply is { Nothing: false } && extrasInstruction is not null
                         ? await ExtrasAsync(extrasInstruction, given, options.Into, where, extrasCached!, cancellationToken).ConfigureAwait(false)
                         : StudyExtras.Empty;
-                    // A passage with nothing to learn has no activities either: kept as made.
+                    // Its hands-on scenes, asked apart again: what they need would crowd out the rest.
+                    var played = reply is { Nothing: false } && scenesInstruction is not null
+                        ? await ScenesAsync(scenesInstruction, given, options.Into, where, scenesCached!, cancellationToken).ConfigureAwait(false)
+                        : [];
+                    // A passage with nothing to learn has no activities or scenes either: kept as made.
                     if (reply is { Nothing: true } && extrasCached is not null && !File.Exists(extrasCached))
                         Keep(extrasCached, "NONE");
+                    if (reply is { Nothing: true } && scenesCached is not null && !File.Exists(scenesCached))
+                        Keep(scenesCached, "NONE");
                     if (fresh)
                     {
                         spent += clock.Elapsed.TotalSeconds;
@@ -640,6 +708,7 @@ public static partial class StudyFile
                     passages.Add(new StudyExplained(reply.Title, where, reply.Ideas, reply.Explanation, reply.Example));
                     visuals.AddRange(extras.Visuals);
                     activities.AddRange(extras.Activities);
+                    scenes.AddRange(played);
                     var known = Fold(unit.Text + "\n" + reply.Explanation + "\n" + reply.Example);
                     foreach (var (term, meaning) in reply.Terms)
                     {
@@ -675,7 +744,7 @@ public static partial class StudyFile
                 if (passages.Count == 0)
                     continue;
                 var heading = part.Title.Length > 0 ? part.Title : passages.FirstOrDefault(p => p.Title.Length > 0)?.Title ?? "";
-                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz) { Visuals = visuals, Activities = activities });
+                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz) { Visuals = visuals, Activities = activities, Scenes = scenes });
             }
             if (made.Count == 0)
                 throw new InvalidOperationException("The model didn't find anything to make notes from in this file.");
@@ -700,7 +769,7 @@ public static partial class StudyFile
             // A sample is one part: no overview of a whole it hasn't read.
             var overview = sample ? "" : await SummaryAsync(OverviewInstruction(options.Into, plan.Recording), Clip(Outline(made, chapters)), cancellationToken).ConfigureAwait(false);
             var (about, goals) = sample ? ("", (IReadOnlyList<string>)[]) : Overview(overview);
-            return new StudyBook(title, source, options.Into, options.From, about, goals, chapters, made, terms, WriterName, DateTime.Now, plan.Recording) { Sample = sample };
+            return new StudyBook(title, source, options.Into, options.From, about, goals, chapters, made, terms, WriterName, DateTime.Now, plan.Recording) { Sample = sample, Purpose = options.Purpose };
         }
         finally
         {
@@ -826,6 +895,29 @@ public static partial class StudyFile
             }
         }
         return StudyExtras.Empty;
+    }
+
+    /// <summary>
+    /// A passage's hands-on scenes, from what was kept or asked anew: once more when the reply has none in the form asked
+    /// for (and doesn't say there are none) or isn't in the language asked for; what came the second time is kept.
+    /// </summary>
+    private static async Task<IReadOnlyList<StudyScene>> ScenesAsync(string instruction, string given, string into, string where, string cached, CancellationToken cancellationToken)
+    {
+        if (File.Exists(cached))
+            return StudySceneReader.Read(await File.ReadAllTextAsync(cached, cancellationToken).ConfigureAwait(false), where, given);
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            var reply = await WriteAsync(instruction, given, CloudAi.CanWrite ? 3000 : 1300, attempt == 0 ? 0.3 : 0.6, cancellationToken).ConfigureAwait(false);
+            var read = StudySceneReader.Read(reply, where, given);
+            bool none = read.Count == 0 && Regex.IsMatch(reply.Trim(), @"^\W*NONE\W*$", RegexOptions.IgnoreCase);
+            bool inLanguage = read.Count == 0 || InLanguage(string.Join(" ", read.Select(r => r.Said)), into);
+            if (none || read.Count > 0 && inLanguage || attempt == 1)
+            {
+                Keep(cached, inLanguage ? reply : "NONE");
+                return inLanguage ? read : [];
+            }
+        }
+        return [];
     }
 
     /// <summary>The words of a passage's diagrams and activities, to tell their language by.</summary>

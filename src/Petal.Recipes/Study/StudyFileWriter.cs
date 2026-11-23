@@ -30,10 +30,15 @@ public sealed class StudyFileWords(IReadOnlyDictionary<string, string> words, Fu
         "again", "allRight", "rightOf", "dragHint", "bank", "placeHere", "picked", "placed", "true", "false", "backToStart",
         "activitiesSolved", "practiceChapter", "activityOf", "solvedScore", "noActivities", "skipIt", "orderHint",
         "kindMapFill", "mapHint", "stepOf", "sample",
+        "handsOn", "kindLab", "kindSimulate", "kindSystem", "kindScenario", "kindEstimate", "labHint", "labShelf", "flask", "pourOut",
+        "hintMe", "labNothing", "labMore", "labFound", "labAll", "tryThing", "takeOut", "whyItHappens", "play", "pause", "along", "simHint",
+        "moreOf", "lessOf", "raisesLink", "lowersLink", "sysHint", "loopUp", "loopDown", "bothWays", "situationOf", "goodChoice",
+        "badChoice", "partly", "otherChoices", "goodChoices", "yourGuess", "reveal", "spotOn", "nearly", "farOff", "theAnswer", "nearScore",
+        "inFormula",
     ];
 
     /// <summary>The counted phrases the page uses: parts, terms, cards, questions and activities.</summary>
-    public static readonly string[] Counted = ["parts", "terms", "cards", "questions", "activities"];
+    public static readonly string[] Counted = ["parts", "terms", "cards", "questions", "activities", "scenes"];
 
     public string this[string key] => words.TryGetValue(key, out var w) ? w : key;
 
@@ -100,6 +105,10 @@ public static partial class StudyFileWriter
         int cardCount = book.Parts.Sum(p => p.Cards.Count), questionCount = book.Parts.Sum(p => p.Quiz.Count);
         var activityIds = ActivityIds(book);
         int activityCount = activityIds.Count;
+        var sceneIds = SceneIds(book);
+        int sceneCount = sceneIds.Count;
+        // Only a file to study from has parts to mark as studied and progress to keep.
+        bool studies = StudyPurposes.Studies(book.Purpose);
         var sb = new StringBuilder(256 * 1024);
         var script = Resource("StudyFile.js");
         var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(script)));
@@ -108,7 +117,7 @@ public static partial class StudyFileWriter
         sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'sha256-").Append(hash).Append("'; base-uri 'none'; form-action 'none'\">\n");
         sb.Append("<meta name=\"generator\" content=\"DropWheel\">\n<meta name=\"color-scheme\" content=\"light dark\">\n");
         sb.Append("<title>").Append(E(book.Title)).Append("</title>\n<style>\n").Append(Resource("StudyFile.css")).Append("\n</style>\n</head>\n");
-        sb.Append("<body class=\"nojs\" data-id=\"").Append(Id(book)).Append("\">\n");
+        sb.Append("<body class=\"nojs").Append(studies ? "" : " free").Append("\" data-id=\"").Append(Id(book)).Append("\">\n");
         sb.Append("<a class=\"skip\" href=\"#main\">").Append(E(words["skip"])).Append("</a>\n");
 
         // ── the bar along the top ──
@@ -119,7 +128,8 @@ public static partial class StudyFileWriter
         sb.Append("<div class=\"prefs needs-js\"><button type=\"button\" class=\"icon size\" data-d=\"-1\" aria-label=\"").Append(A(words["smaller"])).Append("\"><span aria-hidden=\"true\">A−</span></button>");
         sb.Append("<button type=\"button\" class=\"icon size\" data-d=\"1\" aria-label=\"").Append(A(words["larger"])).Append("\"><span aria-hidden=\"true\">A+</span></button>");
         sb.Append("<button type=\"button\" class=\"icon theme\" aria-label=\"").Append(A(words["theme"])).Append("\">").Append(Svg("contrast")).Append("</button></div>");
-        sb.Append("<a class=\"meter needs-js\" href=\"#progress\" aria-label=\"").Append(A(words["partsStudied"])).Append("\"><span class=\"ring\"><span></span></span><span class=\"num\"></span></a>");
+        if (studies)
+            sb.Append("<a class=\"meter needs-js\" href=\"#progress\" aria-label=\"").Append(A(words["partsStudied"])).Append("\"><span class=\"ring\"><span></span></span><span class=\"num\"></span></a>");
         sb.Append("</header>\n<div class=\"shell\">\n");
 
         // ── contents ──
@@ -131,9 +141,13 @@ public static partial class StudyFileWriter
             sb.Append("<li class=\"needs-js\"><a href=\"#cards\">").Append(Svg("cards")).Append(E(words["cards"])).Append("<span class=\"n\">").Append(cardCount).Append("</span></a></li>");
         if (questionCount > 0)
             sb.Append("<li class=\"needs-js\"><a href=\"#test\">").Append(Svg("test")).Append(E(words["test"])).Append("</a></li>");
+        if (sceneCount > 0)
+            sb.Append("<li><a href=\"#play\">").Append(Svg("hand")).Append(E(words["handsOn"])).Append("<span class=\"n\">").Append(sceneCount).Append("</span></a></li>");
         if (activityCount > 0)
             sb.Append("<li class=\"needs-js\"><a href=\"#practice\">").Append(Svg("puzzle")).Append(E(words["activities"])).Append("<span class=\"n\">").Append(activityCount).Append("</span></a></li>");
-        sb.Append("<li class=\"needs-js\"><a href=\"#progress\">").Append(Svg("chart")).Append(E(words["progress"])).Append("</a></li></ul><ol class=\"toc\">");
+        if (studies)
+            sb.Append("<li class=\"needs-js\"><a href=\"#progress\">").Append(Svg("chart")).Append(E(words["progress"])).Append("</a></li>");
+        sb.Append("</ul><ol class=\"toc\">");
         foreach (var run in Groups(book))
         {
             if (run.Chapter is { } chapter)
@@ -164,6 +178,8 @@ public static partial class StudyFileWriter
             sb.Append("<li>").Append(E(words.Count("cards", cardCount))).Append("</li>");
         if (questionCount > 0)
             sb.Append("<li>").Append(E(words.Count("questions", questionCount))).Append("</li>");
+        if (sceneCount > 0)
+            sb.Append("<li>").Append(E(words.Count("scenes", sceneCount))).Append("</li>");
         if (activityCount > 0)
             sb.Append("<li>").Append(E(words.Count("activities", activityCount))).Append("</li>");
         sb.Append("</ul>");
@@ -176,7 +192,8 @@ public static partial class StudyFileWriter
                 sb.Append("<li>").Append(Inline(goal, null, null)).Append("</li>");
             sb.Append("</ul></section>");
         }
-        sb.Append("<section class=\"how needs-js\"><h2>").Append(E(words["howTo"])).Append("</h2><ol><li>").Append(E(words["step1"])).Append("</li><li>").Append(E(words["step2"])).Append("</li><li>").Append(E(words["step3"])).Append("</li></ol></section>");
+        if (studies)
+            sb.Append("<section class=\"how needs-js\"><h2>").Append(E(words["howTo"])).Append("</h2><ol><li>").Append(E(words["step1"])).Append("</li><li>").Append(E(words["step2"])).Append("</li><li>").Append(E(words["step3"])).Append("</li></ol></section>");
         sb.Append("<p class=\"begin needs-js\"><a class=\"btn primary\" href=\"#p").Append(first.Number).Append("\">").Append(E(words["begin"])).Append(Svg("next")).Append("</a></p>");
         sb.Append("<section class=\"outline\"><h2>").Append(E(words["contents"])).Append("</h2><ol class=\"tiles\">");
         foreach (var run in Groups(book))
@@ -261,6 +278,13 @@ public static partial class StudyFileWriter
                 sb.Append("<p class=\"src\">").Append(Svg("pin")).Append(E(passage.Where)).Append("</p></article>");
             }
             sb.Append("</section>");
+            if (part.Scenes.Any(sceneIds.ContainsKey))
+            {
+                sb.Append("<section class=\"scenes\"><h2>").Append(Svg("hand")).Append(E(words["handsOn"])).Append("</h2>");
+                foreach (var scene in part.Scenes.Where(sceneIds.ContainsKey))
+                    AppendScene(sb, scene, sceneIds[scene], words, Culture(book.Language));
+                sb.Append("</section>");
+            }
             if (part.Visuals.Count > 0)
             {
                 sb.Append("<section class=\"visuals\"><h2>").Append(Svg("eye")).Append(E(words["seeIt"])).Append("</h2>");
@@ -309,7 +333,10 @@ public static partial class StudyFileWriter
                     AppendCard(sb, card, words);
                 sb.Append("</div></section>");
             }
-            sb.Append("<footer class=\"finish needs-js\"><button type=\"button\" class=\"btn mark\" data-p=\"").Append(part.Number).Append("\" aria-pressed=\"false\">").Append(Svg("check")).Append("<span>").Append(E(words["markStudied"])).Append("</span></button><nav class=\"pager\">");
+            sb.Append("<footer class=\"finish needs-js\">");
+            if (studies)
+                sb.Append("<button type=\"button\" class=\"btn mark\" data-p=\"").Append(part.Number).Append("\" aria-pressed=\"false\">").Append(Svg("check")).Append("<span>").Append(E(words["markStudied"])).Append("</span></button>");
+            sb.Append("<nav class=\"pager\">");
             if (i > 0)
                 sb.Append("<a class=\"btn quiet\" rel=\"prev\" href=\"#p").Append(book.Parts[i - 1].Number).Append("\">").Append(Svg("prev")).Append("<span>").Append(E(words["previous"])).Append("</span></a>");
             if (i + 1 < book.Parts.Count)
@@ -341,12 +368,22 @@ public static partial class StudyFileWriter
             sb.Append("<section class=\"view exam needs-js\" id=\"test\" aria-labelledby=\"h-test\"><h1 id=\"h-test\" tabindex=\"-1\">").Append(E(words["test"])).Append("</h1><div class=\"slot\"></div></section>\n");
         if (activityCount > 0)
             sb.Append("<section class=\"view practice needs-js\" id=\"practice\" aria-labelledby=\"h-practice\"><h1 id=\"h-practice\" tabindex=\"-1\">").Append(E(words["activities"])).Append("</h1><div class=\"slot\"></div></section>\n");
-        sb.Append("<section class=\"view stand needs-js\" id=\"progress\" aria-labelledby=\"h-progress\"><h1 id=\"h-progress\" tabindex=\"-1\">").Append(E(words["progress"])).Append("</h1><div class=\"slot\"></div></section>\n");
+        if (sceneCount > 0)
+        {
+            sb.Append("<section class=\"view play\" id=\"play\" aria-labelledby=\"h-play\"><h1 id=\"h-play\" tabindex=\"-1\">").Append(E(words["handsOn"])).Append("</h1><ol class=\"tiles\">");
+            foreach (var part in book.Parts)
+                foreach (var scene in part.Scenes.Where(sceneIds.ContainsKey))
+                    sb.Append("<li><a class=\"tile scenetile\" href=\"#").Append(sceneIds[scene]).Append("\" data-k=\"").Append(SceneKind(scene.Kind)).Append("\"><span class=\"kind\">").Append(Svg(SceneIcon(scene.Kind))).Append(E(words[SceneLabel(scene.Kind)])).Append("</span><strong><bdi>")
+                        .Append(E(scene.Title.Length > 0 ? scene.Title : partLabel(part))).Append("</bdi></strong><span class=\"small\"><bdi>").Append(E(partLabel(part))).Append("</bdi></span></a></li>");
+            sb.Append("</ol></section>\n");
+        }
+        if (studies)
+            sb.Append("<section class=\"view stand needs-js\" id=\"progress\" aria-labelledby=\"h-progress\"><h1 id=\"h-progress\" tabindex=\"-1\">").Append(E(words["progress"])).Append("</h1><div class=\"slot\"></div></section>\n");
         sb.Append("<noscript><p class=\"note\">").Append(E(words["needsScript"])).Append("</p></noscript>\n");
         sb.Append("<footer class=\"foot\"><p>").Append(E(string.Format(CultureInfo.InvariantCulture, words["madeFrom"], book.Source))).Append(" · <time datetime=\"").Append(book.Made.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("\">").Append(book.Made.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("</time> · DropWheel</p>");
         sb.Append("<p class=\"ai\">").Append(Svg("info")).Append("<span>").Append(E(string.Format(CultureInfo.InvariantCulture, words["aiNote"], book.Writer))).Append("</span></p></footer>\n</main>\n</div>\n");
         sb.Append("<div class=\"pop\" id=\"pop\" role=\"tooltip\" hidden></div>\n<div class=\"sr\" id=\"say\" aria-live=\"polite\"></div>\n");
-        sb.Append("<script type=\"application/json\" id=\"data\">").Append(Data(book, words, ids, activityIds)).Append("</script>\n");
+        sb.Append("<script type=\"application/json\" id=\"data\">").Append(Data(book, words, ids, activityIds, sceneIds)).Append("</script>\n");
         sb.Append("<script>").Append(script).Append("</script>\n</body>\n</html>\n");
         return sb.ToString();
     }
@@ -363,6 +400,141 @@ public static partial class StudyFileWriter
                 ids[activity] = id;
         }
         return ids;
+    }
+
+    /// <summary>Each scene's name, by its kind and words: what was found in it stays when the file is made again.</summary>
+    private static Dictionary<StudyScene, string> SceneIds(StudyBook book)
+    {
+        var ids = new Dictionary<StudyScene, string>(ReferenceEqualityComparer.Instance);
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var scene in book.Parts.SelectMany(p => p.Scenes))
+        {
+            var id = ItemId("s", scene.Kind + "\n" + scene.Title + "\n" + scene.Said);
+            if (taken.Add(id))
+                ids[scene] = id;
+        }
+        return ids;
+    }
+
+    internal static string SceneKind(StudySceneKind kind) => kind switch
+    {
+        StudySceneKind.Lab => "lab",
+        StudySceneKind.Simulate => "sim",
+        StudySceneKind.System => "sys",
+        StudySceneKind.Scenario => "sce",
+        _ => "est",
+    };
+
+    private static string SceneLabel(StudySceneKind kind) => kind switch
+    {
+        StudySceneKind.Lab => "kindLab",
+        StudySceneKind.Simulate => "kindSimulate",
+        StudySceneKind.System => "kindSystem",
+        StudySceneKind.Scenario => "kindScenario",
+        _ => "kindEstimate",
+    };
+
+    private static string SceneIcon(StudySceneKind kind) => kind switch
+    {
+        StudySceneKind.Lab => "flask",
+        StudySceneKind.Simulate => "sliders",
+        StudySceneKind.System => "web",
+        StudySceneKind.Scenario => "sign",
+        _ => "target",
+    };
+
+    private static string Number(double value, CultureInfo culture) =>
+        Math.Abs(value) >= 1e7 || value != 0 && Math.Abs(value) < 1e-4 ? value.ToString("G3", culture) : value.ToString("#,0.####", culture);
+
+    /// <summary>
+    /// A hands-on scene as the page has it without its script, and in print: what is on the shelf and what each mix
+    /// does, the sliders and the formula, what pushes what, the situations with what follows each choice, the numbers to
+    /// guess with their answers in a part that opens. The page's script makes it something to play with.
+    /// </summary>
+    private static void AppendScene(StringBuilder sb, StudyScene scene, string id, StudyFileWords words, CultureInfo culture)
+    {
+        string Text(string t) => Inline(t, null, null);
+        string Unit(double v, string unit) => E(Number(v, culture)) + (unit.Length > 0 ? "\u00a0" + E(unit) : "");
+        sb.Append("<div class=\"scene\" id=\"").Append(id).Append("\" data-s=\"").Append(id).Append("\" data-k=\"").Append(SceneKind(scene.Kind)).Append("\">");
+        sb.Append("<p class=\"kind\">").Append(Svg(SceneIcon(scene.Kind))).Append(E(words[SceneLabel(scene.Kind)])).Append("</p>");
+        if (scene.Title.Length > 0)
+            sb.Append("<p class=\"ask\">").Append(Text(scene.Title)).Append("</p>");
+        sb.Append("<div class=\"static\">");
+        switch (scene.Kind)
+        {
+            case StudySceneKind.Lab:
+                sb.Append("<ul class=\"things\">");
+                foreach (var thing in scene.Things)
+                {
+                    sb.Append("<li><strong>").Append(Text(thing.Name)).Append("</strong>");
+                    if (thing.About.Length > 0)
+                        sb.Append(" — ").Append(Text(thing.About));
+                    sb.Append("</li>");
+                }
+                sb.Append("</ul><dl class=\"mixes\">");
+                foreach (var mix in scene.Mixes)
+                {
+                    sb.Append("<dt>").Append(string.Join(" + ", mix.Things.Select(i => Text(scene.Things[i].Name)))).Append("</dt><dd>").Append(Text(mix.Seen));
+                    if (mix.Why.Length > 0)
+                        sb.Append(" <span class=\"why\">").Append(E(words["whyItHappens"])).Append(" ").Append(Text(mix.Why)).Append("</span>");
+                    sb.Append("</dd>");
+                }
+                sb.Append("</dl>");
+                break;
+            case StudySceneKind.Simulate:
+                sb.Append("<ul class=\"legend\">");
+                foreach (var v in scene.Vars)
+                    sb.Append("<li><code dir=\"ltr\">").Append(E(v.Id)).Append("</code> ").Append(Text(v.Name)).Append(": ").Append(Unit(v.Lowest, v.Unit)).Append(" – ").Append(Unit(v.Highest, v.Unit)).Append("</li>");
+                foreach (var r in scene.Results)
+                    sb.Append("<li><code dir=\"ltr\">").Append(E(r.Id)).Append("</code> ").Append(Text(r.Name)).Append(r.Unit.Length > 0 ? " (" + E(r.Unit) + ")" : "").Append("</li>");
+                sb.Append("</ul>");
+                foreach (var r in scene.Results)
+                    sb.Append("<p class=\"formula\"><span class=\"label\">").Append(E(words["inFormula"])).Append("</span> <code dir=\"ltr\">").Append(E(r.Id + " = " + r.Formula)).Append("</code></p>");
+                if (scene.Levels.Count > 0)
+                {
+                    sb.Append("<ul class=\"levels\">");
+                    foreach (var l in scene.Levels)
+                        sb.Append("<li><code dir=\"ltr\">").Append(E(l.Id + " " + l.Op + " " + Number(l.Value, CultureInfo.InvariantCulture))).Append("</code> ").Append(Text(l.Says)).Append("</li>");
+                    sb.Append("</ul>");
+                }
+                break;
+            case StudySceneKind.System:
+                sb.Append("<ul class=\"links\">");
+                foreach (var link in scene.Links)
+                {
+                    sb.Append("<li><span class=\"sign ").Append(link.Raises ? "up" : "down").Append("\" aria-hidden=\"true\">").Append(link.Raises ? "+" : "−").Append("</span> ")
+                        .Append(E(string.Format(CultureInfo.InvariantCulture, words[link.Raises ? "raisesLink" : "lowersLink"], scene.Parts[link.From], scene.Parts[link.To])));
+                    if (link.Why.Length > 0)
+                        sb.Append(" — ").Append(Text(link.Why));
+                    sb.Append("</li>");
+                }
+                sb.Append("</ul>");
+                break;
+            case StudySceneKind.Scenario:
+                sb.Append("<ol class=\"stages\">");
+                foreach (var stage in scene.Stages)
+                {
+                    sb.Append("<li><p>").Append(Text(stage.Situation)).Append("</p><ul>");
+                    foreach (var choice in stage.Choices)
+                        sb.Append("<li><details class=\"key\"><summary>").Append(Text(choice.Text)).Append("</summary><p><strong>")
+                            .Append(E(words[choice.Grade > 0 ? "goodChoice" : choice.Grade < 0 ? "badChoice" : "partly"])).Append("</strong> — ").Append(Text(choice.Outcome)).Append("</p></details></li>");
+                    sb.Append("</ul></li>");
+                }
+                sb.Append("</ol>");
+                break;
+            default:
+                sb.Append("<ol class=\"guesses\">");
+                foreach (var g in scene.Guesses)
+                {
+                    sb.Append("<li><p>").Append(Text(g.Question)).Append("</p><details class=\"key\"><summary>").Append(E(words["answer"])).Append("</summary><p><strong>").Append(Unit(g.Answer, g.Unit)).Append("</strong>");
+                    if (g.Why.Length > 0)
+                        sb.Append(" — ").Append(Text(g.Why));
+                    sb.Append("</p></details></li>");
+                }
+                sb.Append("</ol>");
+                break;
+        }
+        sb.Append("<p class=\"src\">").Append(Svg("pin")).Append(E(scene.Where)).Append("</p></div></div>");
     }
 
     /// <summary>The blanks of an activity's sentences, in order.</summary>
@@ -532,7 +704,7 @@ public static partial class StudyFileWriter
     }
 
     /// <summary>What the script works from: the words of the page, and the parts, chapters, cards, questions and terms.</summary>
-    private static string Data(StudyBook book, StudyFileWords words, Dictionary<StudyTerm, string> ids, Dictionary<StudyActivity, string> activityIds)
+    private static string Data(StudyBook book, StudyFileWords words, Dictionary<StudyTerm, string> ids, Dictionary<StudyActivity, string> activityIds, Dictionary<StudyScene, string> sceneIds)
     {
         static string Kind(StudyActivityKind kind) => kind switch
         {
@@ -568,9 +740,40 @@ public static partial class StudyFileWriter
                 ["g"] = a.Groups,
                 ["o"] = Mixed(a),
             })).ToList(),
+            // Each scene: its kind, its title, where it is, and what it is made of, in lists as short as can be read.
+            ["scenes"] = book.Parts.SelectMany(p => p.Scenes.Where(sceneIds.ContainsKey).Select(sc => Scene(sc, sceneIds[sc], p.Number))).ToList(),
+            ["purpose"] = book.Purpose.ToString().ToLowerInvariant(),
         };
         // Every letter as it is (an Arabic file isn't six times its size), but nothing that could close the script.
         return JsonSerializer.Serialize(data, new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) });
+    }
+
+    private static Dictionary<string, object> Scene(StudyScene sc, string id, int part)
+    {
+        var d = new Dictionary<string, object> { ["id"] = id, ["p"] = part, ["k"] = SceneKind(sc.Kind), ["t"] = sc.Title, ["w"] = sc.Where };
+        switch (sc.Kind)
+        {
+            case StudySceneKind.Lab:
+                d["th"] = sc.Things.Select(t => new object[] { t.Name, t.About, t.Color }).ToList();
+                d["mx"] = sc.Mixes.Select(m => new object[] { m.Things, m.Seen, m.Why, m.Effect, m.Color }).ToList();
+                break;
+            case StudySceneKind.Simulate:
+                d["v"] = sc.Vars.Select(v => new object[] { v.Id, v.Name, v.Unit, v.Lowest, v.Highest, v.Start }).ToList();
+                d["r"] = sc.Results.Select(r => new object[] { r.Id, r.Name, r.Unit, r.Formula }).ToList();
+                d["l"] = sc.Levels.Select(l => new object[] { l.Id, l.Op, l.Value, l.Says }).ToList();
+                break;
+            case StudySceneKind.System:
+                d["n"] = sc.Parts;
+                d["l"] = sc.Links.Select(l => new object[] { l.From, l.Raises ? 1 : 0, l.To, l.Why }).ToList();
+                break;
+            case StudySceneKind.Scenario:
+                d["s"] = sc.Stages.Select(st => new object[] { st.Situation, st.Choices.Select(c => new object[] { c.Text, c.Grade, c.Outcome }).ToList() }).ToList();
+                break;
+            default:
+                d["g"] = sc.Guesses.Select(g => new object[] { g.Question, g.Answer, g.Unit, g.Lowest, g.Highest, g.Why }).ToList();
+                break;
+        }
+        return d;
     }
 
     /// <summary>
@@ -816,6 +1019,12 @@ public static partial class StudyFileWriter
             "check" => "<path d=\"M20 6 9 17l-5-5\"/>",
             "eye" => "<path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
             "puzzle" => "<path d=\"M19.4 13.8a2.4 2.4 0 1 0 0-3.6V7a1 1 0 0 0-1-1h-3.2a2.4 2.4 0 1 0-3.6 0H8.4a1 1 0 0 0-1 1v3.2a2.4 2.4 0 1 1 0 3.6V17a1 1 0 0 0 1 1h3.2a2.4 2.4 0 1 1 3.6 0h3.2a1 1 0 0 0 1-1z\"/>",
+            "hand" => "<path d=\"M18 11V6a2 2 0 0 0-4 0v5\"/><path d=\"M14 10V4a2 2 0 0 0-4 0v2\"/><path d=\"M10 10.5V6a2 2 0 0 0-4 0v8\"/><path d=\"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15\"/>",
+            "flask" => "<path d=\"M14 2v6a2 2 0 0 0 .25.96l5.5 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.75-2.96l5.5-10.08A2 2 0 0 0 10 8V2\"/><path d=\"M6.5 15h11\"/><path d=\"M8.5 2h7\"/>",
+            "sliders" => "<path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/>",
+            "web" => "<circle cx=\"12\" cy=\"5\" r=\"2.5\"/><circle cx=\"5\" cy=\"18\" r=\"2.5\"/><circle cx=\"19\" cy=\"18\" r=\"2.5\"/><path d=\"M10.8 7.2 6.3 15.8M13.2 7.2l4.5 8.6M7.5 18h9\"/>",
+            "sign" => "<path d=\"M12 13v8M12 3v3\"/><path d=\"M4 6h13l3 3.5-3 3.5H4z\"/>",
+            "target" => "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1\"/>",
             "loop" => "<path d=\"M3 12a9 9 0 0 1 15.5-6.2L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15.5 6.2L3 16\"/><path d=\"M3 21v-5h5\"/>",
             "next" => "<path class=\"fwd\" d=\"m9 18 6-6-6-6\"/>",
             "prev" => "<path class=\"fwd\" d=\"m15 18-6-6 6-6\"/>",

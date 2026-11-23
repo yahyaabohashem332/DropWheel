@@ -18,7 +18,7 @@
     try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* a page that may keep nothing still works */ }
   }
   var KEY = 'dropwheel-study:' + body.getAttribute('data-id'), UI = 'dropwheel-study:ui';
-  function fresh() { return { read: {}, q: {}, c: {}, a: {}, best: {}, last: 0 }; }
+  function fresh() { return { read: {}, q: {}, c: {}, a: {}, s: {}, best: {}, last: 0 }; }
   var state = load(KEY) || fresh();
   ['read', 'q', 'c', 'a', 'best'].forEach(function (k) { if (!state[k] || typeof state[k] !== 'object') state[k] = {}; });
   var ui = load(UI) || {};
@@ -117,6 +117,7 @@
     if (/^test-/.test(hash)) { name = 'test'; scope = hash.slice(5); }
     else if (/^practice-/.test(hash)) { name = 'practice'; scope = hash.slice(9); }
     else if (/^a[0-9a-f]{10}$/.test(hash)) { var act = actsById[hash]; if (act) { name = 'p' + act.p; anchor = hash; } }
+    else if (/^s[0-9a-f]{10}$/.test(hash)) { var sc = scenesById[hash]; if (sc) { name = 'p' + sc.p; anchor = hash; } }
     else if (/^t\d+$/.test(hash)) { name = 'terms'; anchor = hash; }
     else if (/^p\d+-\d+$/.test(hash)) { name = hash.split('-')[0]; anchor = hash; }
     if (!views[name]) name = 'home';
@@ -802,6 +803,654 @@
   $$('.part .act').forEach(function (el) {
     var act = actsById[el.getAttribute('data-a')];
     if (act) el.insertBefore(Board(act), $('.key', el));
+  });
+
+  // ───── hands-on scenes: drawn and moved here from what the model said, nothing it wrote is run ─────
+  var NS = 'http://www.w3.org/2000/svg';
+  function sv(tag, props, kids) {
+    var el = doc.createElementNS(NS, tag);
+    if (props) Object.keys(props).forEach(function (k) { if (props[k] !== null && props[k] !== undefined) el.setAttribute(k, props[k]); });
+    (kids || []).forEach(function (c) { if (c) el.appendChild(c); });
+    return el;
+  }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var numbers = (function () { try { return new Intl.NumberFormat(data.lang, { maximumSignificantDigits: 4 }); } catch (e) { return null; } })();
+  function num(v) {
+    if (!isFinite(v)) return '—';
+    var a = Math.abs(v);
+    if (a !== 0 && (a >= 1e7 || a < 1e-4)) {
+      try { return new Intl.NumberFormat(data.lang, { notation: 'compact', maximumSignificantDigits: 3 }).format(v); } catch (e) { return v.toPrecision(3); }
+    }
+    return numbers ? numbers.format(v) : String(Math.round(v * 1000) / 1000);
+  }
+  // What leads to what, pointing the way the line reads.
+  var arrow = rtl ? ' ← ' : ' → ';
+  function withUnit(v, unit) { return unit ? num(v) + ' ' + unit : num(v); }
+  function sceneState(id) { return state.s[id] || (state.s[id] = {}); }
+  if (!state.s) state.s = {};
+  var COLOURS = { clear: '#cfe6ff', white: '#f5f5ef', grey: '#9aa0a6', black: '#333', red: '#e0483e', orange: '#f08c2e', yellow: '#f2cf3a', green: '#3fae5a', blue: '#3a7fe0', purple: '#8a5bd6', pink: '#ec6fa8', brown: '#8b5a2b' };
+  function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function blend(colours) {
+    var list = colours.filter(Boolean).map(function (c) { return rgb(COLOURS[c] || COLOURS.clear); });
+    if (!list.length) return COLOURS.clear;
+    var sum = [0, 0, 0];
+    list.forEach(function (c) { sum[0] += c[0]; sum[1] += c[1]; sum[2] += c[2]; });
+    return 'rgb(' + sum.map(function (s) { return Math.round(s / list.length); }).join(',') + ')';
+  }
+
+  // A formula, read as the file was checked to have it: numbers, names, + − × ÷ ^, brackets and a few functions.
+  function formula(text, known) {
+    var tokens = String(text).toLowerCase().match(/\d*\.?\d+(?:e[-+]?\d+)?|[\p{L}_][\p{L}\p{N}_]*|[-+*\/^(),]/gu) || [], at = 0;
+    var fns = { sqrt: Math.sqrt, abs: Math.abs, sin: Math.sin, cos: Math.cos, tan: Math.tan, log: Math.log10, ln: Math.log, exp: Math.exp,
+      round: function (x) { return Math.sign(x) * Math.round(Math.abs(x)); }, pow: Math.pow, min: Math.min, max: Math.max };
+    function expr() {
+      var l = term();
+      while (l && (tokens[at] === '+' || tokens[at] === '-')) { var op = tokens[at++], r = term(); if (!r) return null; l = (function (a, b, o) { return o === '+' ? function (v) { return a(v) + b(v); } : function (v) { return a(v) - b(v); }; })(l, r, op); }
+      return l;
+    }
+    function term() {
+      var l = unary();
+      while (l && (tokens[at] === '*' || tokens[at] === '/')) { var op = tokens[at++], r = unary(); if (!r) return null; l = (function (a, b, o) { return o === '*' ? function (v) { return a(v) * b(v); } : function (v) { return a(v) / b(v); }; })(l, r, op); }
+      return l;
+    }
+    function unary() {
+      if (tokens[at] === '-' || tokens[at] === '+') { var op = tokens[at++], x = unary(); return !x ? null : op === '-' ? function (v) { return -x(v); } : x; }
+      var b = atom();
+      if (b && tokens[at] === '^') { at++; var e = unary(); return e ? function (v) { return Math.pow(b(v), e(v)); } : null; }
+      return b;
+    }
+    function atom() {
+      var t = tokens[at++];
+      if (t === undefined) return null;
+      if (t === '(') { var x = expr(); return x && tokens[at++] === ')' ? x : null; }
+      if (/^[\d.]/.test(t)) { var n = parseFloat(t); return function () { return n; }; }
+      if (fns[t]) {
+        if (tokens[at++] !== '(') return null;
+        var args = [];
+        for (;;) { var a = expr(); if (!a) return null; args.push(a); if (tokens[at] === ',') { at++; continue; } if (tokens[at++] !== ')') return null; break; }
+        var f = fns[t];
+        return function (v) { return f.apply(null, args.map(function (g) { return g(v); })); };
+      }
+      if (t === 'pi') return function () { return Math.PI; };
+      if (t === 'e') return function () { return Math.E; };
+      if (known.indexOf(t) < 0) return null;
+      return function (v) { return v[t]; };
+    }
+    var f = expr();
+    return f && at === tokens.length ? f : null;
+  }
+
+  // ── the lab: things on a shelf, a flask, and what the file says happens when they meet ──
+  function Lab(sc) {
+    var things = sc.th, mixes = sc.mx, inside = [], kept = sceneState(sc.id), found = kept.f || (kept.f = {});
+    var root = h('div', { class: 'live lab' });
+    var hint = h('p', { class: 'hint', text: W.labHint });
+    var shelf = h('div', { class: 'shelf', role: 'group', 'aria-label': W.labShelf });
+    var clip = 'lc' + sc.id;
+    var liquid = sv('rect', { class: 'liquid', x: 0, y: 150, width: 120, height: 150, fill: COLOURS.clear });
+    var fx = sv('g', { class: 'fx' });
+    var above = sv('g', { class: 'above' });
+    var shape = 'M50 8 h20 v44 l34 74 q5 14 -10 16 h-68 q-15 -2 -10 -16 l34 -74 z';
+    var flask = sv('svg', { class: 'flask', viewBox: '0 -40 120 190', role: 'img', 'aria-label': W.flask }, [
+      sv('defs', null, [sv('clipPath', { id: clip }, [sv('path', { d: shape })])]),
+      sv('g', { 'clip-path': 'url(#' + clip + ')' }, [liquid, fx]),
+      sv('path', { class: 'glass', d: shape }),
+      sv('path', { class: 'shine', d: 'M42 92 l14 -30' }),
+      above,
+    ]);
+    var drop = h('div', { class: 'well flaskwell', tabindex: '-1' }, [flask]);
+    var tray = h('div', { class: 'inside', 'aria-live': 'polite' });
+    var empty = h('button', { type: 'button', class: 'btn quiet', text: W.pourOut });
+    var hintBtn = h('button', { type: 'button', class: 'btn quiet', text: W.hintMe });
+    var counter = h('p', { class: 'count' });
+    var outcome = h('div', { class: 'outcome', role: 'status', 'aria-live': 'polite' });
+    var log = h('ol', { class: 'found' });
+    var timer = 0;
+
+    function level() { return inside.length === 0 ? 150 : inside.length === 1 ? 100 : inside.length === 2 ? 80 : 66; }
+    function paint(colour) { liquid.setAttribute('y', level()); liquid.setAttribute('fill', colour); }
+    function clearFx() { while (fx.firstChild) fx.removeChild(fx.firstChild); while (above.firstChild) above.removeChild(above.firstChild); flask.classList.remove('glowing', 'hot', 'cold', 'shake'); clearTimeout(timer); }
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function spawn(effect) {
+      clearFx();
+      if (effect === 'none') return;
+      // Without motion the effect is drawn all the same, standing still where it would be seen.
+      var top = level(), n, i;
+      if (effect === 'bubbles' || effect === 'fizz') {
+        n = effect === 'fizz' ? 26 : 12;
+        for (i = 0; i < n; i++) fx.appendChild(sv('circle', { class: 'bubble', cx: rand(24, 96), cy: reduced ? rand(top + 6, 136) : 138, r: effect === 'fizz' ? rand(1, 2.4) : rand(2.5, 5), style: 'animation-delay:' + rand(0, 1.6).toFixed(2) + 's;--rise:' + (top - 140) + 'px' }));
+        if (effect === 'fizz') fx.appendChild(sv('rect', { class: 'foam', x: 0, y: top - 6, width: 120, height: 9 }));
+      } else if (effect === 'solid') {
+        for (i = 0; i < 30; i++) fx.appendChild(sv('circle', { class: 'grain', cx: rand(22, 98), cy: reduced ? rand(128, 138) : top + 4, r: rand(1.2, 2.6), style: 'animation-delay:' + rand(0, 1.4).toFixed(2) + 's;--fall:' + (136 - top - rand(0, 6)) + 'px' }));
+      } else if (effect === 'smoke') {
+        for (i = 0; i < 7; i++) above.appendChild(sv('circle', { class: 'puff', cx: rand(50, 70), cy: reduced ? -i * 6 : 4, r: rand(5, 9), style: 'animation-delay:' + (i * .35).toFixed(2) + 's' }));
+      } else if (effect === 'glow') {
+        flask.classList.add('glowing');
+      } else if (effect === 'heat') {
+        flask.classList.add('hot');
+        for (i = 0; i < 3; i++) above.appendChild(sv('path', { class: 'wave', d: 'M' + (48 + i * 10) + ' 0 q-5 -8 0 -16 q5 -8 0 -16', style: 'animation-delay:' + (i * .3) + 's' }));
+      } else if (effect === 'cold') {
+        flask.classList.add('cold');
+        for (i = 0; i < 8; i++) fx.appendChild(sv('text', { class: 'flake', x: rand(26, 92), y: rand(top + 10, 136), text: '' }, [doc.createTextNode('❄')]));
+      } else if (effect === 'spark') {
+        for (i = 0; i < 10; i++) { var a = i / 10 * Math.PI * 2; above.appendChild(sv('line', { class: 'spark', x1: 60, y1: 0, x2: 60 + Math.cos(a) * 22, y2: Math.sin(a) * 18, style: 'animation-delay:' + (i % 3 * .15) + 's' })); }
+        flask.classList.add('shake');
+      }
+      flask.classList.toggle('stir', true);
+      timer = setTimeout(function () { flask.classList.remove('stir'); }, 900);
+    }
+    function key(list) { return list.slice().sort(function (a, b) { return a - b; }).join('+'); }
+    function names(list) { return list.map(function (i) { return things[i][0]; }).join(' + '); }
+    function showMix(m, fresh) {
+      paint(m[4] ? COLOURS[m[4]] || blend(m[0].map(function (i) { return things[i][2]; })) : blend(m[0].map(function (i) { return things[i][2]; })));
+      spawn(m[3]);
+      outcome.className = 'outcome happened';
+      outcome.innerHTML = '';
+      outcome.appendChild(h('p', { class: 'what' }, [h('strong', { text: names(m[0]) }), arrow, m[1]]));
+      if (m[2]) outcome.appendChild(h('p', { class: 'why' }, [h('span', { class: 'label', text: W.whyItHappens + ' ' }), m[2]]));
+      if (fresh) flash(outcome);
+    }
+    function refresh() {
+      var n = Object.keys(found).length;
+      counter.textContent = fmt(W.labFound, n, mixes.length);
+      root.classList.toggle('all', n === mixes.length);
+      log.innerHTML = '';
+      mixes.forEach(function (m) {
+        if (!found[key(m[0])]) return;
+        var b = h('button', { type: 'button', class: 'link', text: names(m[0]) + arrow + m[1] });
+        b.onclick = function () { inside = m[0].slice(); drawInside(); showMix(m, true); };
+        log.appendChild(h('li', null, [b]));
+      });
+      $$('.bottle', shelf).forEach(function (b, i) { b.classList.toggle('in', inside.indexOf(i) >= 0); b.setAttribute('aria-pressed', inside.indexOf(i) >= 0 ? 'true' : 'false'); });
+    }
+    function drawInside() {
+      tray.innerHTML = '';
+      inside.forEach(function (i) {
+        var chip = h('button', { type: 'button', class: 'chip', 'aria-label': fmt(W.takeOut, things[i][0]) }, [things[i][0], h('span', { 'aria-hidden': 'true', text: ' ×' })]);
+        chip.onclick = function () { inside.splice(inside.indexOf(i), 1); drawInside(); judge(false); };
+        tray.appendChild(chip);
+      });
+      refresh();
+    }
+    function judge(added) {
+      clearFx();
+      var k = key(inside), mix = null, maybe = false;
+      mixes.forEach(function (m) {
+        if (key(m[0]) === k) mix = m;
+        else if (inside.every(function (i) { return m[0].indexOf(i) >= 0; })) maybe = true;
+      });
+      outcome.innerHTML = ''; outcome.className = 'outcome';
+      if (!inside.length) { paint(COLOURS.clear); refresh(); return; }
+      if (mix) {
+        var fresh = !found[k];
+        found[k] = 1; keep();
+        showMix(mix, true);
+        if (fresh && Object.keys(found).length === mixes.length) { outcome.appendChild(h('p', { class: 'all', text: W.labAll })); root.classList.add('cheer'); }
+        announce(names(mix[0]) + ': ' + mix[1]);
+      } else {
+        paint(blend(inside.map(function (i) { return things[i][2]; })));
+        outcome.className = 'outcome ' + (maybe ? 'waiting' : 'nothing');
+        outcome.appendChild(h('p', { text: maybe ? W.labMore : W.labNothing }));
+        if (!maybe && added) { flask.classList.add('shake'); setTimeout(function () { flask.classList.remove('shake'); }, 500); }
+      }
+      refresh();
+    }
+    function add(i) {
+      if (inside.indexOf(i) >= 0) { inside.splice(inside.indexOf(i), 1); drawInside(); judge(false); return; }
+      if (inside.length >= 3) inside.shift();
+      inside.push(i);
+      var b = $$('.bottle', shelf)[i];
+      if (b && !reduced) { b.classList.remove('pour'); void b.offsetWidth; b.classList.add('pour'); }
+      drawInside();
+      judge(true);
+    }
+    things.forEach(function (t, i) {
+      var tint = COLOURS[t[2]] || COLOURS.clear;
+      var b = h('button', { type: 'button', class: 'bottle', 'aria-pressed': 'false', title: t[1] || '' }, [
+        sv('svg', { viewBox: '0 0 24 32', class: 'vial', 'aria-hidden': 'true' }, [sv('path', { d: 'M9 2h6v8l5 16q1 4-3 4H7q-4 0-3-4l5-16z', fill: tint, class: 'tint' }), sv('path', { d: 'M9 2h6v8l5 16q1 4-3 4H7q-4 0-3-4l5-16z', class: 'rim' })]),
+        h('span', { class: 'n', text: t[0] }),
+        t[1] ? h('span', { class: 'd', text: t[1] }) : null,
+      ]);
+      b.onclick = function () { if (!b._dragged) add(i); b._dragged = false; };
+      // Dragged onto the flask, or anywhere near it.
+      b.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        var ghost = null, x0 = e.clientX, y0 = e.clientY;
+        function move(ev) {
+          if (!ghost && Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) > 8) { ghost = h('div', { class: 'ghost', text: t[0] }); body.appendChild(ghost); b._dragged = true; }
+          if (ghost) { ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px'; var r = drop.getBoundingClientRect(); drop.classList.toggle('over', ev.clientX > r.left - 30 && ev.clientX < r.right + 30 && ev.clientY > r.top - 30 && ev.clientY < r.bottom + 30); }
+        }
+        function up(ev) {
+          doc.removeEventListener('pointermove', move); doc.removeEventListener('pointerup', up);
+          if (!ghost) return;
+          ghost.remove();
+          if (drop.classList.contains('over')) add(i);
+          drop.classList.remove('over');
+        }
+        doc.addEventListener('pointermove', move); doc.addEventListener('pointerup', up);
+      });
+      shelf.appendChild(b);
+    });
+    empty.onclick = function () { inside = []; drawInside(); judge(false); };
+    hintBtn.onclick = function () {
+      var next = mixes.filter(function (m) { return !found[key(m[0])]; })[0];
+      if (!next) return;
+      var pick = next[0].filter(function (i) { return inside.indexOf(i) < 0; })[0];
+      if (inside.some(function (i) { return next[0].indexOf(i) < 0; })) { inside = []; drawInside(); judge(false); pick = next[0][0]; }
+      var b = $$('.bottle', shelf)[pick];
+      if (b) { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); b.focus(); }
+      announce(fmt(W.tryThing, things[pick][0]));
+      outcome.className = 'outcome waiting'; outcome.innerHTML = ''; outcome.appendChild(h('p', { text: fmt(W.tryThing, things[pick][0]) }));
+    };
+    root.appendChild(hint);
+    root.appendChild(h('div', { class: 'bench' }, [shelf, h('div', { class: 'stand' }, [drop, tray, h('div', { class: 'row' }, [empty, hintBtn])])]));
+    root.appendChild(outcome);
+    root.appendChild(h('div', { class: 'tally' }, [counter, log]));
+    paint(COLOURS.clear);
+    refresh();
+    return root;
+  }
+
+  // ── a simulation: sliders, what follows from them as numbers, a meter and a curve, and what each range means ──
+  function Simulate(sc) {
+    var vars = sc.v, results = sc.r, levels = sc.l || [], ids = vars.map(function (v) { return v[0]; });
+    var fns = [];
+    results.forEach(function (r) { fns.push(formula(r[3], ids.concat(results.map(function (x) { return x[0]; })))); });
+    if (fns.some(function (f) { return !f; })) return null;
+    var values = {}, along = 0, playing = 0;
+    vars.forEach(function (v) { values[v[0]] = v[5]; });
+    function work(vals) {
+      var all = {}; Object.keys(vals).forEach(function (k) { all[k] = vals[k]; });
+      results.forEach(function (r, i) { var x; try { x = fns[i](all); } catch (e) { x = NaN; } all[r[0]] = x; });
+      return all;
+    }
+    // How far each result goes, from corners and samples of the sliders.
+    var span = results.map(function () { return [Infinity, -Infinity]; });
+    for (var s = 0; s < 160; s++) {
+      var probe = {};
+      vars.forEach(function (v, k) { var t = s < (1 << vars.length) ? (s >> k & 1) : Math.random(); probe[v[0]] = v[3] + (v[4] - v[3]) * t; });
+      var out = work(probe);
+      results.forEach(function (r, i) { var x = out[r[0]]; if (isFinite(x)) { span[i][0] = Math.min(span[i][0], x); span[i][1] = Math.max(span[i][1], x); } });
+    }
+    var root = h('div', { class: 'live sim' });
+    root.appendChild(h('p', { class: 'hint', text: W.simHint }));
+    var grid = h('div', { class: 'simgrid' });
+    var controls = h('div', { class: 'sliders' });
+    var readouts = h('div', { class: 'readouts' });
+    var says = h('div', { class: 'outcome', role: 'status', 'aria-live': 'polite' });
+    var inputs = vars.map(function (v) {
+      var step = (v[4] - v[3]) / 200, p = Math.pow(10, Math.floor(Math.log10(step || 1)));
+      step = Math.max(p, Math.round(step / p) * p);
+      var input = h('input', { type: 'range', min: v[3], max: v[4], step: step, value: v[5], 'aria-label': v[1] });
+      var shown = h('output', { class: 'val' });
+      input.addEventListener('input', function () { values[v[0]] = parseFloat(input.value); update(); });
+      controls.appendChild(h('label', { class: 'slider' }, [h('span', { class: 'name' }, [h('bdi', { text: v[1] })]), shown, input,
+        h('span', { class: 'ends' }, [h('span', { text: withUnit(v[3], v[2]) }), h('span', { text: withUnit(v[4], v[2]) })])]));
+      input._shown = shown;
+      return input;
+    });
+    var meters = results.map(function (r) {
+      var big = h('span', { class: 'big' }), fill = h('span', { class: 'fill' });
+      readouts.appendChild(h('div', { class: 'readout' }, [h('span', { class: 'name' }, [h('bdi', { text: r[1] })]), big, h('span', { class: 'gauge' }, [fill])]));
+      return { big: big, fill: fill, shown: NaN };
+    });
+    // The curve of the first result as one slider goes from end to end, the others where they are.
+    var W0 = 320, H0 = 170, padL = 8, padR = 8, padT = 10, padB = 22;
+    var path = sv('path', { class: 'curve' }), dot = sv('circle', { class: 'dot', r: 5 }), axis = sv('path', { class: 'axis', d: 'M' + padL + ' ' + (H0 - padB) + 'H' + (W0 - padR) });
+    var lowLabel = sv('text', { class: 'lbl', x: padL, y: H0 - 6 }), highLabel = sv('text', { class: 'lbl end', x: W0 - padR, y: H0 - 6 });
+    var topLabel = sv('text', { class: 'lbl', x: padL + 2, y: padT + 8 });
+    var chart = sv('svg', { class: 'chart', viewBox: '0 0 ' + W0 + ' ' + H0, role: 'img', 'aria-label': results[0][1] }, [axis, path, dot, lowLabel, highLabel, topLabel]);
+    var tabs = h('div', { class: 'tabs', role: 'group', 'aria-label': W.along });
+    if (vars.length > 1) vars.forEach(function (v, k) {
+      var b = h('button', { type: 'button', class: 'tab', 'aria-pressed': k === 0 ? 'true' : 'false', text: v[1] });
+      b.onclick = function () { along = k; $$('.tab', tabs).forEach(function (t, j) { t.setAttribute('aria-pressed', j === k ? 'true' : 'false'); }); update(); };
+      tabs.appendChild(b);
+    });
+    var play = h('button', { type: 'button', class: 'btn primary play' }, [h('span', { class: 'glyph', 'aria-hidden': 'true', text: '▶' }), h('span', { class: 't', text: W.play })]);
+    var again = h('button', { type: 'button', class: 'btn quiet', text: W.again });
+    function draw() {
+      var v = vars[along], pts = [], lo = Infinity, hi = -Infinity, k, x, probe;
+      for (k = 0; k <= 80; k++) {
+        probe = {}; Object.keys(values).forEach(function (n) { probe[n] = values[n]; });
+        probe[v[0]] = v[3] + (v[4] - v[3]) * k / 80;
+        x = work(probe)[results[0][0]];
+        pts.push(x);
+        if (isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); }
+      }
+      if (!isFinite(lo)) { path.setAttribute('d', ''); return; }
+      if (hi - lo < 1e-12) { hi = lo + 1; lo = lo - 1; }
+      var flip = rtl, d = '', pen = false;
+      function px(t) { var X = padL + (W0 - padL - padR) * t; return flip ? W0 - X : X; }
+      function py(y) { return padT + (H0 - padT - padB) * (1 - (y - lo) / (hi - lo)); }
+      pts.forEach(function (y, i) { if (!isFinite(y)) { pen = false; return; } d += (pen ? 'L' : 'M') + px(i / 80).toFixed(1) + ' ' + py(y).toFixed(1); pen = true; });
+      path.setAttribute('d', d);
+      var now = work(values)[results[0][0]], t = (values[v[0]] - v[3]) / (v[4] - v[3]);
+      if (isFinite(now)) { dot.setAttribute('cx', px(t)); dot.setAttribute('cy', py(now)); dot.style.display = ''; } else dot.style.display = 'none';
+      lowLabel.textContent = withUnit(v[3], v[2]); highLabel.textContent = withUnit(v[4], v[2]);
+      lowLabel.setAttribute('x', flip ? W0 - padL : padL); highLabel.setAttribute('x', flip ? padL : W0 - padR);
+      lowLabel.setAttribute('class', flip ? 'lbl end' : 'lbl'); highLabel.setAttribute('class', flip ? 'lbl' : 'lbl end');
+      topLabel.textContent = results[0][1] + ' ' + withUnit(hi, results[0][2]);
+      topLabel.setAttribute('x', flip ? W0 - padL - 2 : padL + 2); topLabel.setAttribute('class', flip ? 'lbl end' : 'lbl');
+    }
+    function update() {
+      inputs.forEach(function (input, k) { input._shown.textContent = withUnit(values[vars[k][0]], vars[k][2]); });
+      var all = work(values);
+      results.forEach(function (r, i) {
+        var x = all[r[0]], m = meters[i];
+        m.big.textContent = withUnit(x, r[2]);
+        var range = span[i], share = isFinite(x) && range[1] > range[0] ? (x - range[0]) / (range[1] - range[0]) : 0;
+        m.fill.style.width = Math.max(0, Math.min(100, share * 100)).toFixed(1) + '%';
+      });
+      says.innerHTML = ''; says.className = 'outcome';
+      levels.forEach(function (l) {
+        var x = all[l[0]], ok = l[1] === '>' ? x > l[2] : l[1] === '<' ? x < l[2] : l[1] === '>=' ? x >= l[2] : x <= l[2];
+        if (isFinite(x) && ok) says.appendChild(h('p', { class: 'level' }, [l[3]]));
+      });
+      if (says.firstChild) says.className = 'outcome happened';
+      draw();
+    }
+    function stop() { cancelAnimationFrame(playing); playing = 0; root.classList.remove('playing'); $('.glyph', play).textContent = '▶'; $('.t', play).textContent = W.play; }
+    play.onclick = function () {
+      if (playing) { stop(); return; }
+      var v = vars[along], input = inputs[along], start = performance.now(), from = values[v[0]] >= v[4] ? v[3] : values[v[0]], length = 4000 * (v[4] - from) / (v[4] - v[3]) || 4000;
+      root.classList.add('playing'); $('.glyph', play).textContent = '❚❚'; $('.t', play).textContent = W.pause;
+      function frame(now) {
+        var t = Math.min(1, (now - start) / length);
+        values[v[0]] = from + (v[4] - from) * t; input.value = values[v[0]]; update();
+        if (t < 1) playing = requestAnimationFrame(frame); else stop();
+      }
+      playing = requestAnimationFrame(frame);
+    };
+    again.onclick = function () { stop(); vars.forEach(function (v, k) { values[v[0]] = v[5]; inputs[k].value = v[5]; }); update(); };
+    grid.appendChild(controls);
+    grid.appendChild(h('div', { class: 'result' }, [readouts, tabs.firstChild ? h('p', { class: 'label', text: W.along }) : null, tabs.firstChild ? tabs : null, chart]));
+    root.appendChild(grid);
+    root.appendChild(says);
+    root.appendChild(h('div', { class: 'row' }, [play, again]));
+    update();
+    sceneState(sc.id).t = 1;
+    return root;
+  }
+
+  // ── a system: press a part up or down and watch the pushes run along its arrows ──
+  function System(sc) {
+    var parts = sc.n, links = sc.l, n = parts.length;
+    var root = h('div', { class: 'live sys' });
+    root.appendChild(h('p', { class: 'hint', text: W.sysHint }));
+    var stage = h('div', { class: 'stage' }), Wd = 400, Ht = 300;
+    var spots = parts.map(function (p, i) {
+      var a = -Math.PI / 2 + i / n * Math.PI * 2, x = Wd / 2 + Math.cos(a) * 150, y = Ht / 2 + Math.sin(a) * 110;
+      return [rtl ? Wd - x : x, y];
+    });
+    var arrows = sv('svg', { class: 'arrows', viewBox: '0 0 ' + Wd + ' ' + Ht, 'aria-hidden': 'true' });
+    var defs = sv('defs');
+    ['up', 'down'].forEach(function (k) { defs.appendChild(sv('marker', { id: 'm' + k + sc.id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, [sv('path', { d: 'M0 0L10 5L0 10z', class: k })])); });
+    arrows.appendChild(defs);
+    var signs = [];
+    var lines = links.map(function (l) {
+      var k = l[1] ? 'up' : 'down';
+      var p = sv('path', { class: 'link ' + k, 'marker-end': 'url(#m' + k + sc.id + ')' });
+      arrows.appendChild(p);
+      var dot = sv('circle', { r: 8 }), mark = sv('text', null, [doc.createTextNode(l[1] ? '+' : '−')]);
+      arrows.appendChild(sv('g', { class: 'sign ' + k }, [dot, mark]));
+      signs.push([dot, mark]);
+      return p;
+    });
+    // Each arrow from the edge of one part's box to the edge of the other's, bent a little so two ways between the
+    // same parts don't lie on one another: drawn again whenever the stage's size changes, as the boxes keep theirs.
+    function geometry() {
+      var unit = stage.clientWidth / Wd;
+      if (!unit || !nodes) return;
+      links.forEach(function (l, i) {
+        var a = spots[l[0]], b = spots[l[2]], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var ux = dx / len, uy = dy / len, bend = 18;
+        function cut(node) {
+          var hw = node.offsetWidth / 2 / unit + 5, hh = node.offsetHeight / 2 / unit + 5;
+          return Math.min(hw / Math.max(Math.abs(ux), 1e-6), hh / Math.max(Math.abs(uy), 1e-6));
+        }
+        var c1 = cut(nodes[l[0]]), c2 = cut(nodes[l[2]]) + 3;
+        var x1 = a[0] + ux * c1, y1 = a[1] + uy * c1, x2 = b[0] - ux * c2, y2 = b[1] - uy * c2;
+        var mx = (x1 + x2) / 2 - uy * bend, my = (y1 + y2) / 2 + ux * bend;
+        lines[i].setAttribute('d', 'M' + x1.toFixed(1) + ' ' + y1.toFixed(1) + 'Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + x2.toFixed(1) + ' ' + y2.toFixed(1));
+        var cx = (x1 + 2 * mx + x2) / 4, cy = (y1 + 2 * my + y2) / 4;
+        signs[i][0].setAttribute('cx', cx); signs[i][0].setAttribute('cy', cy);
+        signs[i][1].setAttribute('x', cx); signs[i][1].setAttribute('y', cy + 4);
+      });
+    }
+    var nodes = null;
+    var runner = sv('circle', { class: 'runner', r: 5, cx: -20, cy: -20 });
+    arrows.appendChild(runner);
+    stage.appendChild(arrows);
+    nodes = parts.map(function (p, i) {
+      var up = h('button', { type: 'button', class: 'push up', 'aria-label': fmt(W.moreOf, p), text: '▲' });
+      var down = h('button', { type: 'button', class: 'push down', 'aria-label': fmt(W.lessOf, p), text: '▼' });
+      var badge = h('span', { class: 'badge', 'aria-hidden': 'true' });
+      var node = h('div', { class: 'node', style: 'left:' + (spots[i][0] / Wd * 100).toFixed(2) + '%;top:' + (spots[i][1] / Ht * 100).toFixed(2) + '%' }, [up, h('span', { class: 'n' }, [h('bdi', { text: p })]), down, badge]);
+      up.onclick = function () { run(i, 1); };
+      down.onclick = function () { run(i, -1); };
+      stage.appendChild(node);
+      return node;
+    });
+    var story = h('ol', { class: 'story', 'aria-live': 'polite' });
+    var again = h('button', { type: 'button', class: 'btn quiet', text: W.again });
+    var token = 0;
+    function reset() {
+      token++;
+      nodes.forEach(function (nd) { nd.classList.remove('up', 'down', 'both', 'start', 'hit'); $('.badge', nd).textContent = ''; });
+      lines.forEach(function (l) { l.classList.remove('on'); });
+      story.innerHTML = '';
+      runner.setAttribute('cx', -20);
+    }
+    function mark(i, sign) {
+      var nd = nodes[i];
+      nd.classList.remove('up', 'down'); nd.classList.add(sign > 0 ? 'up' : 'down');
+      $('.badge', nd).textContent = sign > 0 ? '↑' : '↓';
+      nd.classList.remove('hit'); void nd.offsetWidth; nd.classList.add('hit');
+    }
+    function said(i, sign) { return fmt(sign > 0 ? W.moreOf : W.lessOf, parts[i]); }
+    function travel(path, done, mine) {
+      if (reduced) { done(); return; }
+      var total = path.getTotalLength(), start = performance.now();
+      runner.classList.add('go');
+      function frame(now) {
+        if (mine !== token) return;
+        var t = Math.min(1, (now - start) / 650), pt = path.getPointAtLength(total * t);
+        runner.setAttribute('cx', pt.x); runner.setAttribute('cy', pt.y);
+        if (t < 1) requestAnimationFrame(frame); else { runner.classList.remove('go'); done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+    function run(first, sign) {
+      reset();
+      var mine = token, signs = {}, queue = [[first, sign]], used = {};
+      signs[first] = sign;
+      nodes[first].classList.add('start');
+      mark(first, sign);
+      story.appendChild(h('li', { class: 'first' }, [h('strong', { text: said(first, sign) })]));
+      function step() {
+        if (mine !== token) return;
+        var next = null;
+        while (queue.length && !next) {
+          var at = queue[0], from = at[0], s0 = at[1];
+          var out = links.map(function (l, k) { return [l, k]; }).filter(function (x) { return x[0][0] === from && !used[x[1]]; })[0];
+          if (!out) { queue.shift(); continue; }
+          next = [out[0], out[1], s0];
+        }
+        if (!next) return;
+        var l = next[0], k = next[1], s1 = next[2] * (l[1] ? 1 : -1), to = l[2];
+        used[k] = 1;
+        lines[k].classList.add('on');
+        travel(lines[k], function () {
+          if (mine !== token) return;
+          var line = [said(l[0], next[2]), arrow, h('strong', { text: said(to, s1) })];
+          if (l[3]) line.push(h('span', { class: 'why', text: ' ' + l[3] }));
+          if (to === first) {
+            story.appendChild(h('li', null, line));
+            story.appendChild(h('li', { class: 'loop', text: s1 === sign ? W.loopUp : W.loopDown }));
+          } else if (signs[to] !== undefined && signs[to] !== s1) {
+            nodes[to].classList.add('both'); $('.badge', nodes[to]).textContent = '↕';
+            story.appendChild(h('li', null, line));
+            story.appendChild(h('li', { class: 'loop', text: fmt(W.bothWays, parts[to]) }));
+          } else {
+            story.appendChild(h('li', null, line));
+            if (signs[to] === undefined) { signs[to] = s1; mark(to, s1); queue.push([to, s1]); }
+          }
+          setTimeout(step, reduced ? 0 : 160);
+        }, mine);
+      }
+      step();
+      sceneState(sc.id).t = 1; keep();
+    }
+    again.onclick = reset;
+    if (window.ResizeObserver) new ResizeObserver(geometry).observe(stage);
+    else { window.addEventListener('resize', geometry); window.addEventListener('hashchange', function () { setTimeout(geometry, 0); }); }
+    root.appendChild(stage);
+    root.appendChild(story);
+    root.appendChild(h('div', { class: 'row' }, [again]));
+    return root;
+  }
+
+  // ── a scenario: a situation, choices, what follows from each ──
+  function Scenario(sc) {
+    var stages = sc.s, at = 0, good = 0, kept = sceneState(sc.id);
+    var root = h('div', { class: 'live scenario' });
+    var dots = h('div', { class: 'stepbar' });
+    var card = h('div', { class: 'card2' });
+    stages.forEach(function () { dots.appendChild(h('span', { class: 'dot' })); });
+    function show() {
+      $$('.dot', dots).forEach(function (d, i) { d.classList.toggle('done', i < at); d.classList.toggle('on', i === at); });
+      card.innerHTML = '';
+      card.classList.remove('enter'); void card.offsetWidth; card.classList.add('enter');
+      if (at >= stages.length) {
+        kept.b = Math.max(kept.b || 0, good); kept.n = stages.length; keep();
+        card.appendChild(h('p', { class: 'score', text: fmt(W.goodChoices, good, stages.length) }));
+        card.appendChild(h('p', { class: 'stars', 'aria-hidden': 'true', text: '★'.repeat(good) + '☆'.repeat(stages.length - good) }));
+        var again = h('button', { type: 'button', class: 'btn primary', text: W.again });
+        again.onclick = function () { at = 0; good = 0; show(); };
+        card.appendChild(again);
+        return;
+      }
+      var st = stages[at];
+      card.appendChild(h('p', { class: 'count', text: fmt(W.situationOf, at + 1, stages.length) }));
+      card.appendChild(h('p', { class: 'situation', text: st[0] }));
+      var list = h('div', { class: 'choices' });
+      var told = h('div', { class: 'outcome', role: 'status', 'aria-live': 'polite' });
+      var next = h('button', { type: 'button', class: 'btn primary', text: at + 1 < stages.length ? W.next : W.finish, hidden: true });
+      var others = h('button', { type: 'button', class: 'btn quiet', text: W.otherChoices, hidden: true });
+      var buttons = st[1].map(function (c, i) {
+        var b = h('button', { type: 'button', class: 'choice' }, [h('span', { class: 't', text: c[0] })]);
+        b.onclick = function () {
+          buttons.forEach(function (x) { x.disabled = true; });
+          b.classList.add('picked', c[1] > 0 ? 'good' : c[1] < 0 ? 'bad' : 'ok');
+          if (c[1] > 0) good++;
+          told.className = 'outcome ' + (c[1] > 0 ? 'good' : c[1] < 0 ? 'bad' : 'ok');
+          told.innerHTML = '';
+          told.appendChild(h('p', { class: 'judged', text: c[1] > 0 ? W.goodChoice : c[1] < 0 ? W.badChoice : W.partly }));
+          told.appendChild(h('p', { text: c[2] }));
+          flash(told);
+          next.hidden = false; others.hidden = st[1].length < 2;
+          next.focus();
+        };
+        list.appendChild(b);
+        return b;
+      });
+      others.onclick = function () {
+        others.hidden = true;
+        st[1].forEach(function (c, i) {
+          var b = buttons[i];
+          if (b.classList.contains('picked')) return;
+          b.classList.add('shown', c[1] > 0 ? 'good' : c[1] < 0 ? 'bad' : 'ok');
+          b.appendChild(h('span', { class: 'after', text: c[2] }));
+        });
+      };
+      next.onclick = function () { at++; show(); };
+      card.appendChild(list);
+      card.appendChild(told);
+      card.appendChild(h('div', { class: 'row' }, [others, next]));
+    }
+    root.appendChild(dots);
+    root.appendChild(card);
+    show();
+    return root;
+  }
+
+  // ── guess the number: a slider to guess with, then the answer slides into place ──
+  function Estimate(sc) {
+    var guesses = sc.g, at = 0, near = 0;
+    var root = h('div', { class: 'live estimate' });
+    var card = h('div', { class: 'card2' });
+    function show() {
+      card.innerHTML = '';
+      card.classList.remove('enter'); void card.offsetWidth; card.classList.add('enter');
+      if (at >= guesses.length) {
+        card.appendChild(h('p', { class: 'score', text: fmt(W.nearScore, near, guesses.length) }));
+        var again = h('button', { type: 'button', class: 'btn primary', text: W.again });
+        again.onclick = function () { at = 0; near = 0; show(); };
+        card.appendChild(again);
+        sceneState(sc.id).b = Math.max(sceneState(sc.id).b || 0, near); keep();
+        return;
+      }
+      var g = guesses[at], lo = g[3], hi = g[4];
+      var step = (hi - lo) / 500, p = Math.pow(10, Math.floor(Math.log10(step || 1)));
+      step = Math.max(p, Math.round(step / p) * p);
+      var mid = lo + (hi - lo) / 2;
+      var input = h('input', { type: 'range', min: lo, max: hi, step: step, value: mid, 'aria-label': W.yourGuess });
+      var shown = h('output', { class: 'val', text: withUnit(mid, g[2]) });
+      var track = h('div', { class: 'track' });
+      var truth = h('span', { class: 'truth', 'aria-hidden': 'true' });
+      var mine = h('span', { class: 'mine', 'aria-hidden': 'true' });
+      var gap = h('span', { class: 'gap', 'aria-hidden': 'true' });
+      track.appendChild(gap); track.appendChild(mine); track.appendChild(truth);
+      var told = h('div', { class: 'outcome', role: 'status', 'aria-live': 'polite' });
+      var reveal = h('button', { type: 'button', class: 'btn primary', text: W.reveal });
+      var next = h('button', { type: 'button', class: 'btn', text: at + 1 < guesses.length ? W.next : W.finish, hidden: true });
+      function share(v) { return Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100)); }
+      function side(el, v) { el.style[rtl ? 'right' : 'left'] = share(v) + '%'; }
+      input.addEventListener('input', function () { shown.textContent = withUnit(parseFloat(input.value), g[2]); side(mine, parseFloat(input.value)); });
+      side(mine, mid);
+      reveal.onclick = function () {
+        var guess = parseFloat(input.value), off = Math.abs(guess - g[1]) / (Math.abs(g[1]) || (hi - lo) || 1);
+        input.disabled = true; reveal.hidden = true; next.hidden = false;
+        side(truth, guess);
+        track.classList.add('shown');
+        setTimeout(function () {
+          side(truth, g[1]);
+          var a = share(Math.min(guess, g[1])), b = share(Math.max(guess, g[1]));
+          gap.style[rtl ? 'right' : 'left'] = a + '%'; gap.style.width = (b - a) + '%';
+        }, 30);
+        var verdict = off <= .1 ? W.spotOn : off <= .3 ? W.nearly : W.farOff;
+        if (off <= .3) near++;
+        told.className = 'outcome ' + (off <= .1 ? 'good' : off <= .3 ? 'ok' : 'bad');
+        told.innerHTML = '';
+        told.appendChild(h('p', { class: 'judged', text: verdict }));
+        told.appendChild(h('p', null, [fmt(W.theAnswer, ''), h('strong', { text: withUnit(g[1], g[2]) })]));
+        if (g[5]) told.appendChild(h('p', { text: g[5] }));
+        next.focus();
+      };
+      next.onclick = function () { at++; show(); };
+      card.appendChild(h('p', { class: 'count', text: fmt(W.questionOf, at + 1, guesses.length) }));
+      card.appendChild(h('p', { class: 'situation', text: g[0] }));
+      card.appendChild(h('label', { class: 'slider' }, [h('span', { class: 'name', text: W.yourGuess }), shown, input,
+        h('span', { class: 'ends' }, [h('span', { text: withUnit(lo, g[2]) }), h('span', { text: withUnit(hi, g[2]) })])]));
+      card.appendChild(track);
+      card.appendChild(told);
+      card.appendChild(h('div', { class: 'row' }, [reveal, next]));
+    }
+    root.appendChild(card);
+    show();
+    return root;
+  }
+
+  var scenesById = {};
+  (data.scenes || []).forEach(function (s) { scenesById[s.id] = s; });
+  $$('.scene').forEach(function (el) {
+    var sc = scenesById[el.getAttribute('data-s')];
+    if (!sc) return;
+    var live = null;
+    try { live = { lab: Lab, sim: Simulate, sys: System, sce: Scenario, est: Estimate }[sc.k](sc); } catch (e) { live = null; }
+    if (!live) return;
+    el.classList.add('playable');
+    el.insertBefore(live, $('.static', el));
   });
 
   // ───── the activities one after another ─────

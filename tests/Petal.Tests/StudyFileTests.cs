@@ -30,7 +30,7 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         try { Directory.Delete(_dir, true); } catch (IOException) { }
     }
 
-    private static PlacedText Page(int number, string text) => new(PlaceKind.Page, number, text);
+    internal static PlacedText Page(int number, string text) => new(PlaceKind.Page, number, text);
 
     private static string Words(int count, string seed) => string.Join(" ", Enumerable.Range(0, count).Select(i => seed + (i % 7 == 6 ? "." : "")));
 
@@ -315,7 +315,7 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
 
     // ───────────── making it ─────────────
 
-    private static string Answer(string given) =>
+    internal static string Answer(string given) =>
         given.Contains("garbage") ? "I can't." :
         given.Contains("nothing here") ? "NOTHING" :
         given.StartsWith("Below are the titles", StringComparison.Ordinal) || given.Contains("## ") || given.Contains("# ") && !given.Contains("passage") ? "OVERVIEW:\nA book about cells.\nGOALS:\n- Explain what a membrane does." :
@@ -463,6 +463,20 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
     }
 
     // ───────────── the page ─────────────
+
+    internal static StudyBook Sample(string language) => SampleBook(language);
+
+    /// <summary>Where the study file's page, style and script are written.</summary>
+    internal static string RecipesFolder
+    {
+        get
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "Petal.Recipes")))
+                dir = dir.Parent;
+            return Path.Combine(dir!.FullName, "src", "Petal.Recipes", "Study");
+        }
+    }
 
     private static StudyBook SampleBook(string language) => new(
         "Cells & <Energy>", "cells.pdf", language, "en", "A book about **cells**.", ["Explain membranes."],
@@ -742,6 +756,87 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         Assert.Contains("give 1 to 2 sections", StudyExtrasReader.Instruction("en", "en", StudyActivities.Some, ""));
     }
 
+    /// <summary>A reply with a scene of every kind, as a small model writes it: a kind given twice, a thing named only in a mix, a number with its unit.</summary>
+    internal const string ScenesReply = """
+        LAB: Acids, bases and metals
+        THING: Hydrochloric acid = an acid that releases hydrogen ions | clear
+        THING: Sodium hydroxide = a base that dissolves in water | clear
+        THING: Universal indicator = shows how acidic a solution is by its colour | green
+        THING: Magnesium ribbon = a reactive metal | grey
+        THING: Copper = a metal less reactive than hydrogen | brown
+        MIX: Hydrochloric acid + Sodium hydroxide | the mixture becomes warm | they neutralise each other, making salt and water | heat | clear
+        MIX: Hydrochloric acid + Universal indicator | the indicator turns red | the solution is a strong acid | color | red
+        MIX: Sodium hydroxide + Universal indicator | the indicator turns purple | the solution is a strong alkali | color | purple
+        MIX: Magnesium ribbon + Hydrochloric acid | it fizzes and the ribbon slowly disappears | bubbles of hydrogen gas form as magnesium chloride is made | fizz | grey
+        MIX: Copper + Hydrochloric acid | nothing happens | copper is less reactive than hydrogen | none | clear
+
+        LAB: Acid and carbonate
+        MIX: Vinegar + Baking soda | it foams up strongly | carbon dioxide gas is given off | bubbles | white
+
+        SIMULATE: Thinking distance
+        VAR: speed | speed | m/s | 0 | 40 | 13
+        VAR: reaction | reaction time | s | 0.3 | 2.1 | 0.7
+        RESULT: thinking | thinking distance | m | speed * reaction
+        - thinking > 20 = Longer than four cars: tiredness or a phone makes it worse.
+        - thinking <= 20 = A short distance, at this speed and reaction time.
+
+        SYSTEM: Water in the air
+        - Sun's warmth | RAISES | Water vapour | The sun warms the oceans and water evaporates.
+        - Water vapour | RAISES | Clouds | Rising moist air cools and condenses into droplets.
+        - Water vapour | RAISES | Heat trapped | Water vapour is a greenhouse gas.
+        - Heat trapped | RAISES | Water vapour | Warmer air holds more vapour.
+        - Clouds | LOWERS | Sunlight reaching the ground | Clouds reflect sunlight back to space.
+        - Forests | RAISES | Water vapour | Trees release water from their leaves.
+
+        SCENARIO: Someone is choking
+        SITUATION: A friend is choking but can still cough strongly.
+        - Encourage them to keep coughing | GOOD | Coughing is the best way to clear the blockage.
+        - Slap them on the back at once | BAD | Not yet: while they can cough, coughing works best.
+        SCENARIO: Someone is choking
+        SITUATION: They can no longer cough, speak or breathe.
+        - Give up to five back blows, then up to five abdominal thrusts | GOOD | This is what clears a blocked airway.
+        - Put your fingers into their mouth | BAD | You may push the object further down.
+        - Wait to see if it clears | BAD | Act at once: they cannot breathe.
+
+        ESTIMATE: The Solar System in numbers
+        - How far is the Moon from the Earth? | 384,000 km | km | 0 | 1,000,000 | The Moon is about 384,000 kilometres away.
+        - How long does a day on Jupiter last? | 10 | hours | 0 | 48 | Jupiter spins fast: a day there is about 10 hours, the shortest of any planet.
+        - How long does light take from the Sun? | 8 minutes and 20 seconds | time | 0 | 20 | (not one number)
+        """;
+
+    internal const string ScenesReplyArabic = """
+        LAB: الأحماض والقواعد والفلزات
+        THING: حمض الهيدروكلوريك = حمض يطلق أيونات الهيدروجين | clear
+        THING: هيدروكسيد الصوديوم = قاعدة تذوب في الماء | clear
+        THING: الكاشف العام = يدل بلونه على حموضة المحلول | green
+        THING: شريط المغنيسيوم = فلز نشيط | grey
+        MIX: حمض الهيدروكلوريك + هيدروكسيد الصوديوم | يسخن المزيج | يتعادلان فيتكوّن ملح وماء | heat | clear
+        MIX: حمض الهيدروكلوريك + الكاشف العام | يحمرّ الكاشف | المحلول حمض قوي | color | red
+        MIX: شريط المغنيسيوم + حمض الهيدروكلوريك | يفور ويختفي الشريط شيئًا فشيئًا | تتصاعد فقاعات غاز الهيدروجين | fizz | grey
+
+        SIMULATE: مسافة التفكير
+        VAR: speed | السرعة | م/ث | 0 | 40 | 13
+        VAR: reaction | زمن رد الفعل | ث | 0.3 | 2.1 | 0.7
+        RESULT: thinking | مسافة التفكير | م | speed * reaction
+        - thinking > 20 = أطول من أربع سيارات: التعب أو الهاتف يزيدانها.
+
+        SYSTEM: الماء في الهواء
+        - دفء الشمس | RAISES | بخار الماء | تدفئ الشمس المحيطات فيتبخر الماء.
+        - بخار الماء | RAISES | الغيوم | يبرد الهواء الرطب الصاعد فيتكثف.
+        - بخار الماء | RAISES | الحرارة المحبوسة | بخار الماء غاز دفيئة.
+        - الحرارة المحبوسة | RAISES | بخار الماء | الهواء الأدفأ يحمل بخارًا أكثر.
+        - الغيوم | LOWERS | ضوء الشمس على الأرض | تعكس الغيوم ضوء الشمس إلى الفضاء.
+
+        SCENARIO: شخص يختنق
+        SITUATION: صديقك يختنق لكنه ما زال يسعل بقوة.
+        - شجّعه على مواصلة السعال | GOOD | السعال أفضل طريقة لإزالة الانسداد.
+        - اضربه على ظهره فورًا | BAD | ليس بعد: ما دام يسعل فالسعال أنفع.
+
+        ESTIMATE: المجموعة الشمسية بالأرقام
+        - كم يبعد القمر عن الأرض؟ | 384000 | كم | 0 | 1000000 | يبعد القمر نحو 384 ألف كيلومتر.
+        - كم ساعة يدوم اليوم على المشتري؟ | ١٠ | ساعات | 0 | 48 | يدور المشتري بسرعة: يومه نحو 10 ساعات.
+        """;
+
     private const string ExtrasReply = """
         **STEPS:** How a nerve signal travels
         1. A stimulus reaches a receptor
@@ -870,8 +965,9 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         {
             var sample = SampleBook(language);
             var parts = sample.Parts.ToList();
-            parts[1] = parts[1] with { Visuals = [.. walk.Visuals, .. extras.Visuals], Activities = [.. walk.Activities, .. extras.Activities] };
+            parts[1] = parts[1] with { Visuals = [.. walk.Visuals, .. extras.Visuals], Activities = [.. walk.Activities, .. extras.Activities], Scenes = StudySceneReader.Read(language == "ar" ? ScenesReplyArabic : ScenesReply, "Page 4") };
             StudyFileWriter.Write(Path.Combine(folder, $"study-{language}.html"), sample with { Parts = parts, Sample = true }, StudyFileWindow.Words(language));
+            StudyFileWriter.Write(Path.Combine(folder, $"explore-{language}.html"), sample with { Parts = parts, Purpose = StudyPurpose.Explore }, StudyFileWindow.Words(language));
         }
     }
 
@@ -981,8 +1077,13 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         var chosen = plan.Parts.Where(p => p.Number >= from && p.Number <= to && p.Suggested).Select(p => p.Number).ToHashSet();
         var into = Environment.GetEnvironmentVariable("PETAL_STUDYFILE_INTO") is { Length: > 0 } wanted ? wanted : plan.Language;
         clock.Restart();
-        var book = await StudyFile.MakeAsync(plan, chosen, new StudyFile.Options(into, StudyAmount.Normal, plan.Language), Path.GetFileNameWithoutExtension(file), Path.GetFileName(file),
+        var purpose = Enum.TryParse<StudyPurpose>(Environment.GetEnvironmentVariable("PETAL_STUDYFILE_PURPOSE"), true, out var p0) ? p0 : StudyPurpose.Study;
+        var scenes = Enum.TryParse<StudyScenes>(Environment.GetEnvironmentVariable("PETAL_STUDYFILE_SCENES"), true, out var s0) ? s0 : StudyScenes.Some;
+        var book = await StudyFile.MakeAsync(plan, chosen, new StudyFile.Options(into, StudyAmount.Normal, plan.Language, Environment.GetEnvironmentVariable("PETAL_STUDYFILE_REQUEST") ?? "",
+                StudyActivities.Some, purpose, scenes), Path.GetFileNameWithoutExtension(file), Path.GetFileName(file),
             (a, b) => StudyFileWindow.Place(into, a, b), new Synchronous<StudyProgress>(p => output.WriteLine($"{p.Done}/{p.Total} {p.Part}")));
+        foreach (var scene in book.Parts.SelectMany(x => x.Scenes))
+            output.WriteLine($"scene {scene.Kind} «{scene.Title}»: {scene.Things.Count} things, {scene.Mixes.Count} mixes, {scene.Vars.Count} sliders, {string.Join("; ", scene.Results.Select(r => r.Id + "=" + r.Formula))}, {scene.Links.Count} links, {scene.Stages.Count} situations, {scene.Guesses.Count} guesses");
         var page = Path.Combine(outFolder, Path.GetFileNameWithoutExtension(file) + "-" + into + ".html");
         StudyFileWriter.Write(page, book, StudyFileWindow.Words(into));
         output.WriteLine($"made in {clock.Elapsed.TotalSeconds:0}s: {book.Parts.Count} parts, {book.Terms.Count} terms, {book.Parts.Sum(p => p.Cards.Count)} cards, {book.Parts.Sum(p => p.Quiz.Count)} questions → {page}");

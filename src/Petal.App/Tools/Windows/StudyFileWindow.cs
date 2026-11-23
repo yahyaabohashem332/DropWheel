@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using Petal.App.Input;
@@ -50,6 +51,24 @@ public sealed class StudyFileWindow : ToolWindow
     private readonly CancellationTokenSource _closing = new();
     private readonly Dictionary<int, CheckBox> _boxes = [];
     private readonly Segmented<StudyActivities> _activities;
+    private readonly Segmented<StudyScenes> _scenes;
+    private readonly WrapPanel _purposes = new() { Margin = new Thickness(0, 6, 0, 0) };
+    private readonly List<(StudyPurpose Purpose, Button Button)> _purposeButtons = [];
+    private readonly TextBlock _purposeNote = Text("", "Petal.Caption");
+    private Grid? _amountRow;
+    private StudyPurpose _purpose = StudyPurpose.Study;
+
+    /// <summary>What the file can be for, as the window offers it: its name, its picture and what it gives.</summary>
+    internal static readonly (StudyPurpose Purpose, string Label, string Icon, string About)[] Purposes =
+    [
+        (StudyPurpose.Study, "Study", "book", "Explanations, diagrams, things to try by hand, cards, questions, a test and your progress."),
+        (StudyPurpose.Teach, "Teach a lesson", "users", "A lesson to teach from: explanations to say aloud, an example for the board and questions for the class."),
+        (StudyPurpose.Explain, "Explain to someone", "speech", "The idea made plain for someone who isn't a specialist, with things to try by hand. No tests."),
+        (StudyPurpose.Present, "Present", "presentation", "Points that carry for an audience, with an example they will remember. No tests."),
+        (StudyPurpose.Brief, "Quick briefing", "summary", "The essentials only, quickly. No tests."),
+        (StudyPurpose.Children, "For children", "heart", "Simply and warmly, for children of about 8 to 12, with a few easy questions."),
+        (StudyPurpose.Explore, "Explore and play", "hand", "Things to mix, move and change by hand above all, to see how it works. No tests."),
+    ];
     private readonly TextBox _request = new()
     {
         AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 80, MaxHeight = 150, MaxLength = StudyRequest.Longest,
@@ -128,6 +147,7 @@ public sealed class StudyFileWindow : ToolWindow
         _recording = IsRecording(file);
         _amount = Segments([(StudyAmount.Fewer, "Fewer"), (StudyAmount.Normal, "Normal"), (StudyAmount.More, "More")], StudyAmount.Normal);
         _activities = Segments([(StudyActivities.None, "None"), (StudyActivities.Some, "A few"), (StudyActivities.Many, "Many")], StudyActivities.Some);
+        _scenes = Segments([(StudyScenes.None, "None"), (StudyScenes.Some, "A few"), (StudyScenes.Many, "Many")], StudyScenes.Some);
         _send = IconButton("send", "Make the study file with this request (Ctrl+Enter)", 15);
         _keepAs = IconButton("star", "Keep this request as a template", 15);
 
@@ -137,10 +157,13 @@ public sealed class StudyFileWindow : ToolWindow
         about.Margin = new Thickness(0, 6, 0, 0);
         _setup.Children.Add(about);
         var left = new StackPanel();
+        left.Children.Add(PurposeBox());
         left.Children.Add(RequestBox());
         left.Children.Add(Row("Write in", _into, 150, 12));
-        left.Children.Add(Row("Cards and questions", _amount, 150, 8));
+        _amountRow = Row("Cards and questions", _amount, 150, 8);
+        left.Children.Add(_amountRow);
         left.Children.Add(Row("Diagrams and activities", _activities, 150, 8));
+        left.Children.Add(Row("Things to try by hand", _scenes, 150, 8));
         _where.Margin = new Thickness(0, 10, 0, 0);
         _where.TextWrapping = TextWrapping.Wrap;
         left.Children.Add(_where);
@@ -218,6 +241,7 @@ public sealed class StudyFileWindow : ToolWindow
         };
         _amount.Changed += _ => RequestChanged();
         _activities.Changed += _ => RequestChanged();
+        _scenes.Changed += _ => RequestChanged();
         _request.TextChanged += (_, _) => RequestChanged();
         _request.PreviewKeyDown += async (_, e) =>
         {
@@ -259,7 +283,61 @@ public sealed class StudyFileWindow : ToolWindow
 
     private string Into => _into.Value == SameLanguage ? _plan?.Language ?? "en" : _into.Value;
 
-    private StudyFile.Options Options => new(Into, _amount.Value, _plan?.Language ?? Into, _request.Text.Trim(), _activities.Value);
+    private StudyFile.Options Options => new(Into, _amount.Value, _plan?.Language ?? Into, _request.Text.Trim(), _activities.Value, _purpose, _scenes.Value);
+
+    // ───────────── what it is for ─────────────
+
+    /// <summary>What the file is for, one to choose, and what the chosen one gives.</summary>
+    private StackPanel PurposeBox()
+    {
+        var panel = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
+        panel.Children.Add(Text("What is it for?", "Petal.Label"));
+        foreach (var (purpose, label, icon, about) in Purposes)
+        {
+            var chip = Chip(label, icon);
+            chip.ToolTip = L.T(about);
+            var p = purpose;
+            chip.Click += (_, _) => Purpose = p;
+            AutomationProperties.SetName(chip, L.T(label));
+            _purposeButtons.Add((purpose, chip));
+            _purposes.Children.Add(chip);
+        }
+        panel.Children.Add(_purposes);
+        _purposeNote.TextWrapping = TextWrapping.Wrap;
+        panel.Children.Add(_purposeNote);
+        ShowPurpose();
+        return panel;
+    }
+
+    /// <summary>What the file is for: the choice lit, what it gives said, and the cards and questions only where there are some.</summary>
+    internal StudyPurpose Purpose
+    {
+        get => _purpose;
+        set
+        {
+            if (_purpose == value)
+                return;
+            _purpose = value;
+            ShowPurpose();
+            RequestChanged();
+        }
+    }
+
+    private void ShowPurpose()
+    {
+        foreach (var (purpose, button) in _purposeButtons)
+        {
+            bool on = purpose == _purpose;
+            button.SetResourceReference(BorderBrushProperty, on ? "Petal.Accent" : "Petal.ControlBorder");
+            button.BorderThickness = new Thickness(on ? 2 : 1);
+            button.FontWeight = on ? FontWeights.SemiBold : FontWeights.Normal;
+            button.Padding = on ? new Thickness(9, 2, 9, 3) : new Thickness(10, 3, 10, 4);
+            AutomationProperties.SetItemStatus(button, on ? L.T("Chosen") : "");
+        }
+        _purposeNote.Text = L.T(Purposes.First(p => p.Purpose == _purpose).About);
+        if (_amountRow is not null)
+            _amountRow.Visibility = StudyPurposes.Asks(_purpose) ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     // ───────────── the request ─────────────
 
@@ -1155,6 +1233,50 @@ public sealed class StudyFileWindow : ToolWindow
             ["solvedScore"] = W("{0} solved out of {1}"),
             ["noActivities"] = W("There are no activities here."),
             ["skipIt"] = W("Skip"),
+            ["handsOn"] = W("Try it by hand"),
+            ["kindLab"] = W("Lab: mix and see"),
+            ["kindSimulate"] = W("Simulation"),
+            ["kindSystem"] = W("What leads to what"),
+            ["kindScenario"] = W("What would you do?"),
+            ["kindEstimate"] = W("Guess the number"),
+            ["labHint"] = W("Press the things on the shelf, or drag them, to put them in the flask and see what happens."),
+            ["labShelf"] = W("Things to mix"),
+            ["flask"] = W("The flask"),
+            ["pourOut"] = W("Empty the flask"),
+            ["hintMe"] = W("A hint"),
+            ["labNothing"] = W("The file tells of nothing happening with these. Empty the flask and try others."),
+            ["labMore"] = W("Add something else to it."),
+            ["labFound"] = W("{0} of {1} found"),
+            ["labAll"] = W("You found everything the file tells of!"),
+            ["tryThing"] = W("Try {0}."),
+            ["takeOut"] = W("Take out {0}"),
+            ["whyItHappens"] = W("Why:"),
+            ["play"] = W("Play"),
+            ["pause"] = W("Pause"),
+            ["along"] = W("The curve as this changes:"),
+            ["simHint"] = W("Move the sliders and watch what follows."),
+            ["moreOf"] = W("More {0}"),
+            ["lessOf"] = W("Less {0}"),
+            ["raisesLink"] = W("More {0} means more {1}"),
+            ["lowersLink"] = W("More {0} means less {1}"),
+            ["sysHint"] = W("Press ▲ or ▼ on a part to make it more or less, and watch what follows from it."),
+            ["loopUp"] = W("…and back to where it began: a loop that feeds itself."),
+            ["loopDown"] = W("…and back to where it began: a loop that holds itself in check."),
+            ["bothWays"] = W("{0} is pushed both ways."),
+            ["situationOf"] = W("Situation {0} of {1}"),
+            ["goodChoice"] = W("A good choice"),
+            ["badChoice"] = W("Not a good choice"),
+            ["partly"] = W("Partly right"),
+            ["otherChoices"] = W("See the other choices"),
+            ["goodChoices"] = W("Good choices: {0} of {1}"),
+            ["yourGuess"] = W("Your guess"),
+            ["reveal"] = W("Show the answer"),
+            ["spotOn"] = W("Spot on!"),
+            ["nearly"] = W("Close!"),
+            ["farOff"] = W("Quite far off."),
+            ["theAnswer"] = W("The answer: {0}"),
+            ["nearScore"] = W("Close on {0} of {1}"),
+            ["inFormula"] = W("Worked out as:"),
         };
         string Count(string key, int n) => key switch
         {
@@ -1162,6 +1284,7 @@ public sealed class StudyFileWindow : ToolWindow
             "terms" => L.P(n, "{0} term", "{0} terms", language),
             "cards" => L.P(n, "{0} card", "{0} cards", language),
             "activities" => L.P(n, "{0} activity", "{0} activities", language),
+            "scenes" => L.P(n, "{0} thing to try by hand", "{0} things to try by hand", language),
             _ => L.P(n, "{0} question", "{0} questions", language),
         };
         return new StudyFileWords(words, Count);

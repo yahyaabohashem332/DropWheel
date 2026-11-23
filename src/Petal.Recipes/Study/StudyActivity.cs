@@ -99,7 +99,7 @@ public static partial class StudyExtrasReader
         _ => (0, 0),
     };
 
-    internal static string Instruction(string into, string from, StudyActivities amount, string request)
+    internal static string Instruction(string into, string from, StudyActivities amount, string request, StudyPurpose purpose = StudyPurpose.Study)
     {
         var (least, most) = Range(amount);
         var language = Translator.EnglishName(into);
@@ -108,6 +108,9 @@ public static partial class StudyExtrasReader
             : "";
         var sb = new StringBuilder();
         sb.Append("You are an experienced teacher who makes study material visual and hands-on. The user gives you a passage from a book, a course or a lecture; a student has just read it explained. Turn what it teaches into diagrams and activities.\n");
+        // Study is told nothing more: what was made for it before stays as it was.
+        if (purpose != StudyPurpose.Study)
+            sb.Append(StudyPurposes.Reader(purpose)).Append('\n');
         sb.Append($"Write everything in {language}{translating}.\n");
         sb.Append("Keep to the passage: every fact, name, number and date must come from it; add none of your own.\n");
         sb.Append(StudyFile.Requested(request, into));

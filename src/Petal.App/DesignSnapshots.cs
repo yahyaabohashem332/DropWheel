@@ -434,6 +434,7 @@ internal static class DesignSnapshots
                 window.Ask(ar ? "اشرحه للأطفال ببساطة مع ألعاب للسحب والتوصيل، بالإنجليزية" : "Explain it simply for children, with games to drag and match, in Arabic", Petal.Recipes.Study.StudyActivities.None);
                 return window;
             }),
+            ("studyfileexplore", () => new Tools.Windows.StudyFileWindow(T(Petal.Core.Tools.ToolId.StudyFile), file("album.pdf"), jobs, at, SampleStudyReading(), null) { Purpose = Petal.Recipes.Study.StudyPurpose.Explore }),
             ("timetracker", () => new Work.TimeTrackerWindow(SampleTimeLog())),
             ("checksum", () => new Actions.ChecksumWindow(file("landscape.jpg"), "0000000000000000000000000000000000000000000000000000000000000000")),
             ("tracesvg", () => new Tools.Windows.TraceToSvgWindow(T(Petal.Core.Tools.ToolId.TraceToSvg), [file("figures.png")], jobs, at)),
