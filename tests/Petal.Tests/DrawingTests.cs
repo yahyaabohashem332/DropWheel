@@ -16,7 +16,23 @@ public class DrawingTests : IDisposable
 {
     private readonly string _dir = Directory.CreateTempSubdirectory("petal-drawing-").FullName;
 
-    public void Dispose() => Directory.Delete(_dir, recursive: true);
+    /// <summary>
+    /// The scratch folder goes, a few tries apart: Windows (its antivirus, its indexer) may still be reading a picture
+    /// just written there. Left behind in the temp folder if it still can't go.
+    /// </summary>
+    public void Dispose()
+    {
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            try
+            {
+                Directory.Delete(_dir, recursive: true);
+                return;
+            }
+            catch (IOException) { Thread.Sleep(200); }
+            catch (UnauthorizedAccessException) { Thread.Sleep(200); }
+        }
+    }
 
     private async Task<string> Convert(string input, FileFormat from, FileFormat to, string? output = null)
     {

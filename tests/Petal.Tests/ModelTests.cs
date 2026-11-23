@@ -14,7 +14,23 @@ public class ModelTests : IDisposable
 {
     private readonly string _dir = Directory.CreateTempSubdirectory("petal-model-").FullName;
 
-    public void Dispose() => Directory.Delete(_dir, recursive: true);
+    /// <summary>
+    /// The scratch folder goes, a few tries apart: Windows (its antivirus, its indexer) may still be reading a picture
+    /// just written there. Left behind in the temp folder if it still can't go.
+    /// </summary>
+    public void Dispose()
+    {
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            try
+            {
+                Directory.Delete(_dir, recursive: true);
+                return;
+            }
+            catch (IOException) { Thread.Sleep(200); }
+            catch (UnauthorizedAccessException) { Thread.Sleep(200); }
+        }
+    }
 
     private static readonly Vector4 Red = new(0.9f, 0.1f, 0.1f, 1);
     private static readonly Vector4 Blue = new(0.1f, 0.2f, 0.9f, 1);
