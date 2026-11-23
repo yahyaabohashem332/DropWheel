@@ -56,6 +56,8 @@ internal static class ImageLoader
             image = new MagickImage(path, CreateReadSettings(path, format, options)); // relative hrefs need the path
         else if (format == F.Heic)
             image = WindowsHeif.Read(path, options.DecodeSizeHint); // HEVC, decoded by Windows
+        else if (format == F.Xcf)
+            image = XcfFile.Load(path); // GIMP: its layers, flattened
         else
         {
             // Read from a stream: given a path, ImageMagick lets the extension pick the decoder,
@@ -91,9 +93,9 @@ internal static class ImageLoader
             settings.BackgroundColor = MagickColors.Transparent;
             settings.Density = new Density(SvgDensityFor(path, options));
         }
-        else if (format == F.Gif || format == F.Webp || format == F.Tiff || format == F.Avif)
+        else if (format == F.Gif || format == F.Webp || format == F.Tiff || format == F.Avif || format == F.Jxl || format == F.Dds)
         {
-            // Animated WEBP/GIF and multi-page TIFF: decode only the first frame.
+            // Animated WEBP/GIF/JXL, multi-page TIFF and a texture's smaller copies (DDS mipmaps): only the first.
             settings.FrameIndex = 0;
             settings.FrameCount = 1;
         }

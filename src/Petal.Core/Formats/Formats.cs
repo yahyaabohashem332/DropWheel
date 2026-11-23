@@ -14,7 +14,18 @@ public static class Formats
     public static readonly FileFormat Avif = new("avif", "AVIF", FormatFamily.Image, ["avif"]);
     public static readonly FileFormat Bmp = new("bmp", "BMP", FormatFamily.Image, ["bmp", "dib"]);
     public static readonly FileFormat Ico = new("ico", "ICO", FormatFamily.Image, ["ico"]);
+    public static readonly FileFormat Jxl = new("jxl", "JXL", FormatFamily.Image, ["jxl"]);
     public static readonly FileFormat Svg = new("svg", "SVG", FormatFamily.Vector, ["svg"], CanWrite: false);
+
+    // Pictures for games, print and older programs: read, and written from PNG and TIFF. (EXR waits for a build of
+    // ImageMagick with more than 8 bits a channel: its light can't be kept in 8.)
+    public static readonly FileFormat Tga = new("tga", "TGA", FormatFamily.Image, ["tga", "icb", "vda", "vst"]);
+    public static readonly FileFormat Dds = new("dds", "DDS", FormatFamily.Image, ["dds"]);
+    public static readonly FileFormat Jp2 = new("jp2", "JP2", FormatFamily.Image, ["jp2", "j2k", "j2c", "jpf", "jpx"]);
+    public static readonly FileFormat Qoi = new("qoi", "QOI", FormatFamily.Image, ["qoi"]);
+    public static readonly FileFormat Pcx = new("pcx", "PCX", FormatFamily.Image, ["pcx"]);
+    // GIMP's own files: their layers, as one picture; never written.
+    public static readonly FileFormat Xcf = new("xcf", "XCF", FormatFamily.Vector, ["xcf"], CanWrite: false);
 
     // Design files and camera originals: read like pictures, never written.
     public static readonly FileFormat Psd = new("psd", "PSD", FormatFamily.Vector, ["psd"], CanWrite: false);
@@ -125,8 +136,9 @@ public static class Formats
 
     public static readonly IReadOnlyList<FileFormat> All =
     [
-        Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Svg,
-        Psd, Psb, Raw, Ai, Eps,
+        Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Jxl, Svg,
+        Tga, Dds, Jp2, Qoi, Pcx,
+        Psd, Psb, Raw, Ai, Eps, Xcf,
         Indd, Idml, Xd, Prproj, Aep,
         Pages, Numbers, Keynote,
         Ase, Aco,
@@ -142,7 +154,10 @@ public static class Formats
         Zip, Tar, Tgz, Rar, SevenZip,
     ];
 
-    public static readonly IReadOnlyList<FileFormat> RasterImages = [Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico];
+    public static readonly IReadOnlyList<FileFormat> RasterImages = [Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Jxl];
+
+    /// <summary>Pictures for particular uses (games, print, older programs): written only from PNG and TIFF.</summary>
+    public static readonly IReadOnlyList<FileFormat> SpecialImages = [Tga, Dds, Jp2, Qoi, Pcx];
     public static readonly IReadOnlyList<FileFormat> AudioFormats = [Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma];
     public static readonly IReadOnlyList<FileFormat> VideoFormats = [Mp4, Mov, Mkv, Webm, Avi, Wmv];
 

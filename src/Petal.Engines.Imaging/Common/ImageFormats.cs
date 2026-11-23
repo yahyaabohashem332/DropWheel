@@ -31,6 +31,13 @@ internal static class ImageFormats
         "raw" => MagickFormat.Dng,
         "gif" => MagickFormat.Gif,
         "pdf" => MagickFormat.Pdf,
+        "jxl" => MagickFormat.Jxl,
+        "tga" => MagickFormat.Tga,
+        "dds" => MagickFormat.Dds,
+        "jp2" => MagickFormat.Jp2,
+        "qoi" => MagickFormat.Qoi,
+        "pcx" => MagickFormat.Pcx,
+        "xcf" => MagickFormat.Xcf,
         _ => throw new NotSupportedException($"{format.Label} is not an image format"),
     };
 
@@ -47,6 +54,13 @@ internal static class ImageFormats
         MagickFormat.Svg or MagickFormat.Svgz or MagickFormat.Msvg or MagickFormat.Rsvg => F.Svg,
         MagickFormat.Gif or MagickFormat.Gif87 => F.Gif,
         MagickFormat.Pdf => F.Pdf,
+        MagickFormat.Jxl => F.Jxl,
+        MagickFormat.Tga or MagickFormat.Icb or MagickFormat.Vda or MagickFormat.Vst => F.Tga,
+        MagickFormat.Dds or MagickFormat.Dxt1 or MagickFormat.Dxt5 => F.Dds,
+        MagickFormat.Jp2 or MagickFormat.J2k or MagickFormat.J2c or MagickFormat.Jpc or MagickFormat.Jpt or MagickFormat.Jpm => F.Jp2,
+        MagickFormat.Qoi => F.Qoi,
+        MagickFormat.Pcx => F.Pcx,
+        MagickFormat.Xcf => F.Xcf,
         _ => null,
     };
 
@@ -90,6 +104,13 @@ internal static class ImageFormats
         if (h.Length >= 2 && h[0] == (byte)'B' && h[1] == (byte)'M') return F.Bmp;
         if (h.Length >= 4 && h[0] == 0 && h[1] == 0 && h[2] == 1 && h[3] == 0) return F.Ico;
         if (h.Length >= 5 && h[..5].SequenceEqual("%PDF-"u8)) return F.Pdf;
+        if (h.Length >= 2 && h[0] == 0xFF && h[1] == 0x0A) return F.Jxl; // JPEG XL code stream
+        if (h.Length >= 12 && h[..12].SequenceEqual((ReadOnlySpan<byte>)[0, 0, 0, 0x0C, (byte)'J', (byte)'X', (byte)'L', (byte)' ', 0x0D, 0x0A, 0x87, 0x0A])) return F.Jxl;
+        if (h.Length >= 12 && h[..12].SequenceEqual((ReadOnlySpan<byte>)[0, 0, 0, 0x0C, (byte)'j', (byte)'P', (byte)' ', (byte)' ', 0x0D, 0x0A, 0x87, 0x0A])) return F.Jp2;
+        if (h.Length >= 4 && h[0] == 0xFF && h[1] == 0x4F && h[2] == 0xFF && h[3] == 0x51) return F.Jp2; // JPEG 2000 code stream
+        if (h.Length >= 4 && h[..4].SequenceEqual("qoif"u8)) return F.Qoi;
+        if (h.Length >= 4 && h[..4].SequenceEqual("DDS "u8)) return F.Dds;
+        if (h.Length >= 9 && h[..9].SequenceEqual("gimp xcf "u8)) return F.Xcf;
         if (PsdFile.IsPsd(h)) return h[5] == 2 ? F.Psb : F.Psd;
         if (EpsFile.IsDosEps(h) || h.StartsWith("%!PS-Adobe"u8)) return F.Eps;
         if (h.Length >= 12 && h[4..8].SequenceEqual("ftyp"u8))
@@ -110,8 +131,9 @@ internal static class ImageFormats
 
     /// <summary>True for formats that store pixels with lossy compression, so re-encoding should reuse their quality.</summary>
     public static bool IsLossy(FileFormat format) =>
-        format == F.Jpg || format == F.Webp || format == F.Heic || format == F.Avif;
+        format == F.Jpg || format == F.Webp || format == F.Heic || format == F.Avif || format == F.Jxl || format == F.Jp2 || format == F.Dds;
 
     public static bool SupportsAlpha(FileFormat format) =>
-        format == F.Png || format == F.Webp || format == F.Tiff || format == F.Avif || format == F.Ico || format == F.Gif;
+        format == F.Png || format == F.Webp || format == F.Tiff || format == F.Avif || format == F.Ico || format == F.Gif
+        || format == F.Jxl || format == F.Tga || format == F.Dds || format == F.Jp2 || format == F.Qoi;
 }

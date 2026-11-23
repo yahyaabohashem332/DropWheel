@@ -227,6 +227,40 @@ internal static class ImageWriter
                 image.Write(output, MagickFormat.Gif);
                 break;
 
+            case "jxl":
+                // Quality 100 is mathematically lossless in JPEG XL; below it, as close to the quality asked.
+                image.Quality = (uint)quality;
+                image.Settings.SetDefine(MagickFormat.Jxl, "effort", "7");
+                image.Write(output, MagickFormat.Jxl);
+                break;
+
+            case "jp2":
+                // A palette PNG can load at 2 bits a channel, which JPEG 2000 would keep: full colour, 8 bits.
+                image.ClassType = ClassType.Direct;
+                image.Depth = 8;
+                image.Quality = (uint)quality;
+                image.Write(output, MagickFormat.Jp2);
+                break;
+
+            case "dds":
+                // A texture: DXT5 (with alpha) or DXT1, with the smaller copies (mipmaps) games read at a distance.
+                image.Settings.SetDefine(MagickFormat.Dds, "compression", image.HasAlpha ? "dxt5" : "dxt1");
+                image.Write(output, MagickFormat.Dds);
+                break;
+
+            case "tga":
+                image.Settings.Compression = CompressionMethod.RLE;
+                image.Write(output, MagickFormat.Tga);
+                break;
+
+            case "qoi":
+                image.Write(output, MagickFormat.Qoi);
+                break;
+
+            case "pcx":
+                image.Write(output, MagickFormat.Pcx);
+                break;
+
             default:
                 throw new NotSupportedException($"Cannot write {format.Label} images");
         }

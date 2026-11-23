@@ -12,8 +12,20 @@ public sealed class ConversionSamples : IDisposable
     {
         Directory = Fixtures.NewDirectory();
         using var image = Fixtures.Quadrants();
-        foreach (var format in F.RasterImages.Append(F.Svg))
+        foreach (var format in F.RasterImages.Append(F.Svg).Concat(F.SpecialImages))
             Sources[format] = Fixtures.Save(image, Directory, format);
+        // A GIMP file whose layers make the quadrants: a light background, three coloured quarters at their
+        // places, and a black layer over everything that is hidden.
+        Sources[F.Xcf] = Path.Combine(Directory, "sample.xcf");
+        static Func<int, int, (byte, byte, byte, byte)> Solid(MagickColor c) => (_, _) => ((byte)c.R, (byte)c.G, (byte)c.B, 255);
+        File.WriteAllBytes(Sources[F.Xcf], XcfWriter.Write(64, 48,
+        [
+            new XcfLayer("Black", 0, 0, 64, 48, (_, _) => (0, 0, 0, 255), Visible: false),
+            new XcfLayer("Red", 0, 0, 32, 24, Solid(Fixtures.Red)),
+            new XcfLayer("Green", 32, 0, 32, 24, Solid(Fixtures.Green)),
+            new XcfLayer("Blue", 0, 24, 32, 24, Solid(Fixtures.Blue)),
+            new XcfLayer("Background", 0, 0, 64, 48, Solid(Fixtures.Light)),
+        ]));
         // Photoshop files whose flat picture is the quadrants, with one layer.
         var rgba = image.GetPixels().ToByteArray(PixelMapping.RGBA)!;
         (byte, byte, byte, byte) At(int x, int y) => (rgba[(y * 64 + x) * 4], rgba[(y * 64 + x) * 4 + 1], rgba[(y * 64 + x) * 4 + 2], 255);
@@ -49,7 +61,9 @@ public sealed class ConversionTests(ConversionSamples samples) : IClassFixture<C
     }
 
     [Fact]
-    public void MatrixHasEveryImagePath() => Assert.Equal(8 * 8 + 9 + 9 + 9, ImagePaths().Count);
+    // Nine everyday formats to each other and PDF; PNG and TIFF also to the five special ones; SVG, PSD and PSB;
+    // the special ones to six common formats; XCF to seven.
+    public void MatrixHasEveryImagePath() => Assert.Equal(9 * 9 + 2 * 5 + 10 + 9 + 9 + 5 * 6 + 7, ImagePaths().Count);
 
     [Theory]
     [MemberData(nameof(ImagePaths))]

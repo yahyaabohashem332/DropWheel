@@ -64,7 +64,21 @@
               <uap:FileType>.bmp</uap:FileType>
               <uap:FileType>.dib</uap:FileType>
               <uap:FileType>.ico</uap:FileType>
+              <uap:FileType>.jxl</uap:FileType>
+              <uap:FileType>.tga</uap:FileType>
+              <uap:FileType>.icb</uap:FileType>
+              <uap:FileType>.vda</uap:FileType>
+              <uap:FileType>.vst</uap:FileType>
+              <uap:FileType>.dds</uap:FileType>
+              <uap:FileType>.jp2</uap:FileType>
+              <uap:FileType>.j2k</uap:FileType>
+              <uap:FileType>.j2c</uap:FileType>
+              <uap:FileType>.jpf</uap:FileType>
+              <uap:FileType>.jpx</uap:FileType>
+              <uap:FileType>.qoi</uap:FileType>
+              <uap:FileType>.pcx</uap:FileType>
               <uap:FileType>.svg</uap:FileType>
+              <uap:FileType>.xcf</uap:FileType>
               <uap:FileType>.psd</uap:FileType>
               <uap:FileType>.psb</uap:FileType>
               <uap:FileType>.dng</uap:FileType>

@@ -8,13 +8,15 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_441_paths()
+    public void Conversion_matrix_has_506_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
         // +4 in 1.22 for PDF long/first page image outputs.
         // +27 in 1.24 for data: JSON, JSON Lines, YAML, TOML, XML and vCard, and spreadsheets to JSON.
         // +60 in 1.24 for subtitles: ASS, SSA, TTML, SAMI, MicroDVD and LRC, every one to every other and to text.
-        Assert.Equal(441, ConversionMatrix.TotalPaths);
+        // +65 in 1.24 for pictures: JXL with the everyday formats, TGA, DDS, JPEG 2000, QOI and PCX from PNG and
+        // TIFF and to six common formats, GIMP's XCF to seven.
+        Assert.Equal(506, ConversionMatrix.TotalPaths);
     }
 
     [Fact]
@@ -31,7 +33,7 @@ public class RegistryTests
     public void Jpg_wheel_order_starts_at_png()
     {
         var labels = ConversionMatrix.TargetsFor(F.Jpg).Select(f => f.Label);
-        Assert.Equal(["PNG", "WEBP", "HEIC", "TIFF", "AVIF", "BMP", "ICO", "PDF"], labels);
+        Assert.Equal(["PNG", "WEBP", "HEIC", "TIFF", "AVIF", "BMP", "ICO", "JXL", "PDF"], labels);
     }
 
     [Theory]

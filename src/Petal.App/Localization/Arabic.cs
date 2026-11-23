@@ -4026,5 +4026,12 @@ internal static class Arabic
         ["Older Windows subtitles"] = "ترجمة Windows قديمة",
         ["Frame-timed subtitles"] = "ترجمة بتوقيت الإطارات",
         ["Timed song lyrics"] = "كلمات أغنية بتوقيتها",
+        ["Small and sharp, newer"] = "صغيرة وحادة، أحدث",
+        ["Textures for games"] = "خامات للألعاب",
+        ["Game textures, ready"] = "خامات ألعاب جاهزة",
+        ["Archives and scans"] = "أرشيف وصور ممسوحة",
+        ["Fast and lossless"] = "سريعة وبلا فقد",
+        ["Very old programs"] = "برامج قديمة جدًا",
+        ["GIMP layers"] = "طبقات GIMP",
     };
 }

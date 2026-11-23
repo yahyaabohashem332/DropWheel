@@ -21,6 +21,12 @@ public static class ConversionMatrix
 
         foreach (var image in RasterImages)
             map[image] = [.. RasterImages.Where(f => f != image), Pdf];
+        // Textures, archives and older formats: made from the pictures people keep them as.
+        map[Png] = [.. map[Png], .. SpecialImages];
+        map[Tiff] = [.. map[Tiff], .. SpecialImages];
+        foreach (var special in SpecialImages)
+            map[special] = [Png, Jpg, Webp, Jxl, Tiff, Pdf];
+        map[Xcf] = [Png, Jpg, Webp, Tiff, Avif, Jxl, Pdf];
         map[Svg] = [.. RasterImages, Pdf];
         map[Psd] = [Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico, Pdf];
         map[Psb] = [Png, Jpg, Webp, Tiff, Avif, Heic, Bmp, Ico, Pdf];
