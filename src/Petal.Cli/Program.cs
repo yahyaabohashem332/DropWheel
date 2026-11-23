@@ -21,7 +21,7 @@ internal static class Program
         if (!await StoreLicence.AllowsAsync())
         {
             Console.Error.WriteLine("DropWheel's trial is over. Buy DropWheel in the Microsoft Store to keep using it, the command line included.");
-            return 1;
+            return Cli.TrialOver;
         }
         var cli = new Cli(Console.Out, Console.Error, showProgress: !Console.IsErrorRedirected);
         return await cli.RunAsync(args, cancel.Token);

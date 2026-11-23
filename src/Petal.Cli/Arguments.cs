@@ -3,6 +3,12 @@ namespace Petal.Cli;
 /// <summary>A mistake in how the command was typed; the message says what to fix.</summary>
 internal sealed class UsageException(string message) : Exception(message);
 
+/// <summary>Nothing to work on: no file matches, or a folder holds none that the command can take.</summary>
+internal sealed class NothingToDoException(string message) : Exception(message);
+
+/// <summary>A file to work on, and the folder named on the command line it was found in (null for a file named itself).</summary>
+internal sealed record Input(string File, string? Root);
+
 /// <summary>
 /// "--to png", "--to=png", "-o out.zip" and plain values, in any order. Options listed as flags
 /// take no value.
@@ -86,7 +92,7 @@ internal sealed class Arguments
                     ? Directory.GetFiles(dir, Path.GetFileName(value)).Order(StringComparer.OrdinalIgnoreCase).ToList()
                     : [];
                 if (matches.Count == 0)
-                    throw new UsageException($"Nothing matches {value}.");
+                    throw new NothingToDoException($"Nothing matches {value}.");
                 files.AddRange(matches);
                 continue;
             }
@@ -96,9 +102,35 @@ internal sealed class Arguments
             else if (Directory.Exists(full))
                 throw new UsageException($"{value} is a folder; name the files in it (for example \"{Path.Combine(value, "*.jpg")}\").");
             else
-                throw new UsageException($"{value} doesn't exist.");
+                throw new NothingToDoException($"{value} doesn't exist.");
         }
         return files.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Files and folders: a folder gives the files in it (and in its subfolders with
+    /// <paramref name="subfolders"/>), in name order, each with the folder it came from so results can keep
+    /// their place under --out. Hidden and system files are left out.
+    /// </summary>
+    public IReadOnlyList<Input> FilesAndFolders(bool subfolders)
+    {
+        var inputs = new List<Input>();
+        foreach (var item in Files(allowFolders: true))
+        {
+            if (!Directory.Exists(item))
+            {
+                inputs.Add(new(item, null));
+                continue;
+            }
+            var options = new EnumerationOptions
+            {
+                RecurseSubdirectories = subfolders,
+                AttributesToSkip = FileAttributes.Hidden | FileAttributes.System,
+                IgnoreInaccessible = true,
+            };
+            inputs.AddRange(Directory.EnumerateFiles(item, "*", options).Order(StringComparer.OrdinalIgnoreCase).Select(f => new Input(f, item)));
+        }
+        return inputs.DistinctBy(i => i.File, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     /// <summary>--out: an existing folder for the results, or null to save beside each original.</summary>

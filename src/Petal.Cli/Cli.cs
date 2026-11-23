@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using ImageMagick;
 using Petal.Core.Formats;
 using Petal.Core.Jobs;
@@ -20,9 +21,19 @@ namespace Petal.Cli;
 /// <summary>The commands. Results are printed one path per line, so they can be piped.</summary>
 internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress)
 {
-    private const int Ok = 0, Failed = 1, Usage = 2, Cancelled = 130;
+    /// <summary>The exit codes, as "petal help" lists them.</summary>
+    internal const int Ok = 0, Failed = 1, Usage = 2, NothingToDo = 3, NotRunning = 4, TrialOver = 5, Cancelled = 130;
+
+    /// <summary>With --json: what the command did, written as one JSON object when it ends.</summary>
+    private Report? _report;
+
+    /// <summary>With --json while watching: each file's outcome is written here as a line of JSON as it happens.</summary>
+    private TextWriter? _events;
 
     private ConverterRegistry? _converters;
+
+    /// <summary>The quality defaults from Settings, read once per command.</summary>
+    private ConversionSettings? _defaults;
 
     private static string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
@@ -44,7 +55,54 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         return converters;
     }
 
-    public async Task<int> RunAsync(IReadOnlyList<string> args, CancellationToken ct)
+    public Task<int> RunAsync(IReadOnlyList<string> args, CancellationToken ct) =>
+        args.Any(a => a.Equals("--json", StringComparison.OrdinalIgnoreCase))
+            ? RunJsonAsync(args.Where(a => !a.Equals("--json", StringComparison.OrdinalIgnoreCase)).ToList(), ct)
+            : RunCommandAsync(args, ct);
+
+    /// <summary>
+    /// --json: the command runs as usual, and what it did is written as one JSON object (the files made, the
+    /// ones that failed or were skipped, what it printed, its exit code). "petal watch" also writes a line of
+    /// JSON for each file as it is done.
+    /// </summary>
+    private async Task<int> RunJsonAsync(List<string> args, CancellationToken ct)
+    {
+        var lines = new StringWriter();
+        var messages = new StringWriter();
+        var report = new Report { Command = args.Count > 0 ? args[0].ToLowerInvariant() : "help" };
+        var inner = new Cli(lines, messages, showProgress: false) { _report = report, _events = output };
+        report.ExitCode = await inner.RunCommandAsync(args, ct);
+        report.Lines = Split(lines.ToString());
+        report.Messages = Split(messages.ToString());
+        output.WriteLine(JsonSerializer.Serialize(report, JsonOut));
+        return report.ExitCode;
+
+        static List<string> Split(string text) => text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).ToList();
+    }
+
+    internal static readonly JsonSerializerOptions JsonOut = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
+    internal sealed class Report
+    {
+        public string Command { get; set; } = "";
+        public int ExitCode { get; set; }
+        public bool Ok => ExitCode == Cli.Ok;
+        public List<Made> Results { get; } = [];
+        public List<Problem> Failures { get; } = [];
+        public List<Problem> Skipped { get; } = [];
+        public List<string> Lines { get; set; } = [];
+        public List<string> Messages { get; set; } = [];
+    }
+
+    internal sealed record Made(string Input, IReadOnlyList<string> Outputs);
+
+    internal sealed record Problem(string Input, string Reason);
+
+    private async Task<int> RunCommandAsync(IReadOnlyList<string> args, CancellationToken ct)
     {
         if (args.Count == 0 || args[0] is "help" or "--help" or "-h" or "/?")
         {
@@ -56,7 +114,9 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         {
             return args[0].ToLowerInvariant() switch
             {
-                "convert" => await ConvertAsync(Arguments.Parse(rest), ct),
+                "convert" => await ConvertAsync(Arguments.Parse(rest, PresetFlags), ct),
+                "watch" => await WatchAsync(Arguments.Parse(rest, [.. PresetFlags, "existing"]), ct),
+                "favourites" or "favorites" => ListFavourites(),
                 "resize" => await ResizeAsync(Arguments.Parse(rest, "enlarge", "ai"), ct),
                 "compress" => await CompressAsync(Arguments.Parse(rest, "strong"), ct),
                 "zip" => await ZipAsync(Arguments.Parse(rest), ct),
@@ -94,8 +154,15 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         }
         catch (UsageException ex)
         {
+            ClearProgress();
             error.WriteLine(ex.Message);
             return Usage;
+        }
+        catch (NothingToDoException ex)
+        {
+            ClearProgress();
+            error.WriteLine(ex.Message);
+            return NothingToDo;
         }
         catch (OperationCanceledException)
         {
@@ -115,7 +182,12 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         DropWheel — convert and tidy up files from the command line.
 
         Usage:
-          petal convert <files> --to <format> [--max <px>] [--quality <n>] [--out <folder>]
+          petal convert <files or folders> (--to <format> | --favourite <name>)
+                       [--max <px>] [--quality <n>] [--dpi <n>] [--no-metadata]
+                       [--subfolders] [--out <folder>]
+          petal watch <folder> (--to <format> | --favourite <name>) [the same options]
+                       [--existing]   Converts each new file as it arrives, until Ctrl+C
+          petal favourites          The favourites made in DropWheel's Settings
           petal resize <images> (--max <px> | --width <px> | --height <px> | --percent <n>)
                        [--to <format>] [--enlarge] [--ai] [--out <folder>]
           petal compress <files> [--strong | --for whatsapp|email|discord|upload|instagram] [--out <folder>]
@@ -168,11 +240,31 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
 
         Notes:
           Wildcards work everywhere: petal convert *.heic --to jpg
+          A folder gives every file in it (--subfolders: and in its subfolders) that can
+          become that format; the others are skipped. With --out, results keep their subfolder.
+          --favourite uses a favourite from DropWheel's Settings by its name: its format, size,
+          quality, resolution, metadata, folder and file names. Options given as well change it.
+          --dpi is the resolution PDF pages, slides and documents are drawn at as pictures.
+          --no-metadata leaves the camera, place and dates out of pictures, videos and audio.
+          "petal watch" also converts files that were already there with --existing; files it
+          makes itself, and files still being written, are left alone.
+          --json (any command): one JSON object when the command ends, with "results"
+          (input and outputs), "failures", "skipped", the lines it printed and "exitCode".
+          While watching, a line of JSON is also written for each file as it is done.
           --max keeps pictures and videos within that many pixels on the longest side.
           --quality is 1-100 for pictures, the bitrate in kbps for audio, and the CRF for
           video (17 best ... 28 small). Without it, the quality set in DropWheel is used.
           Results are saved beside the originals unless --out names a folder; nothing is
           ever overwritten. Each saved path is printed on its own line.
+
+        Exit codes:
+          0    Done.
+          1    One or more files failed; the others are done.
+          2    The command was typed wrong: an unknown command or option, a missing value.
+          3    Nothing to work on: no file matches, or none can become that format.
+          4    DropWheel isn't running, or doesn't let other programs in.
+          5    DropWheel's trial is over.
+          130  Stopped with Ctrl+C. "petal watch" stops this way and ends with 0 (1 after a failure).
 
         """;
 
@@ -188,7 +280,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         if (answer is null)
         {
             error.WriteLine("DropWheel isn't running, or \"Let other programs run petals\" is off in its Settings.");
-            return Failed;
+            return NotRunning;
         }
         if (answer["ok"]?.GetValue<bool>() != true)
         {
@@ -235,7 +327,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         if (answer is null)
         {
             output.WriteLine("DropWheel isn't running (or doesn't let other programs in).");
-            return Failed;
+            return NotRunning;
         }
         output.WriteLine($"DropWheel {answer["version"]?.GetValue<string>()} is running{(answer["paused"]?.GetValue<bool>() == true ? ", paused" : "")}.");
         return Ok;
@@ -243,40 +335,271 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
 
     // ---------- convert ----------
 
+    private static readonly string[] PresetFlags = ["no-metadata", "subfolders"];
+
+    private static readonly string[] PresetOptions = ["to", "max", "quality", "dpi", "no-metadata", "favourite", "favorite", "subfolders", "out"];
+
     private async Task<int> ConvertAsync(Arguments a, CancellationToken ct)
     {
-        a.Only("to", "max", "quality", "out");
-        var target = FormatNamed(a.Get("to") ?? throw new UsageException("Say which format with --to, for example --to jpg."));
-        var favourite = new Favourite { Format = target.Id, LongestSide = a.Int("max", 16, 20000) ?? 0, Quality = a.Int("quality", 1, 512) ?? 0 };
-        var settings = favourite.Apply(UserDefaults());
-        var files = a.Files();
-        var outDir = a.OutputFolder();
-        int failures = 0;
-        foreach (var file in files)
+        a.Only(PresetOptions);
+        var favourite = PresetFrom(a);
+        var inputs = a.FilesAndFolders(a.Has("subfolders"));
+        var outDir = a.OutputFolder() ?? favourite.FolderIfThere;
+        int failures = 0, done = 0, skipped = 0;
+        foreach (var input in inputs)
         {
-            var from = F.FromPath(file);
-            if (from is null)
+            switch (await ConvertOneAsync(input, favourite, outDir, null, ct))
             {
-                failures += Fail(file, "DropWheel doesn't know this kind of file.");
-                continue;
+                case Outcome.Done: done++; break;
+                case Outcome.Failed: failures++; break;
+                default: skipped++; break;
             }
-            if (favourite.ConverterFor(from, Converters) is not { } converter)
-            {
-                failures += Fail(file, from == target
-                    ? $"It's already {target.Label}. Add --max or --quality to make a smaller copy."
-                    : $"{from.Label} can't be converted to {target.Label}{(ConversionMatrix.CanConvert(from, target) ? " on this PC (a helper program is missing)" : "")}.");
-                continue;
-            }
-            var path = from == target
-                ? OutputNaming.WithSuffix(file, SameFormatSuffix(favourite), target.WriteExtension, outDir)
-                : OutputNaming.ForConversion(file, target, outDir);
-            failures += await StepAsync(file, async progress =>
-            {
-                var result = await converter.ConvertAsync(new ConversionJob(file, from, target, path, settings), progress, ct);
-                return result.OutputPaths;
-            }, ct);
         }
+        if (skipped > 0)
+            Note(skipped == 1 ? $"Skipped 1 file that can't become {favourite.Target!.Label}." : $"Skipped {skipped} files that can't become {favourite.Target!.Label}.");
+        if (done == 0 && failures == 0)
+            throw new NothingToDoException($"Nothing there can become {favourite.Target!.Label}.");
         return failures == 0 ? Ok : Failed;
+    }
+
+    private enum Outcome { Done, Failed, Skipped }
+
+    /// <summary>
+    /// One file through the favourite (or the options that make one). A file found in a folder that can't
+    /// become the format is skipped, not a failure. <paramref name="made"/> collects what is made, for
+    /// "petal watch" to leave alone.
+    /// </summary>
+    private async Task<Outcome> ConvertOneAsync(Input input, Favourite favourite, string? outDir, ISet<string>? made, CancellationToken ct)
+    {
+        var file = input.File;
+        var target = favourite.Target!;
+        var from = F.FromPath(file);
+        string? problem = from is null ? "DropWheel doesn't know this kind of file."
+            : favourite.ConverterFor(from, Converters) is null
+                ? from == target
+                    ? $"It's already {target.Label}. Add --max or --quality to make a smaller copy."
+                    : $"{from.Label} can't be converted to {target.Label}{(ConversionMatrix.CanConvert(from, target) ? " on this PC (a helper program is missing)" : "")}."
+                : null;
+        if (problem is not null)
+        {
+            if (input.Root is null)
+            {
+                Fail(file, problem);
+                return Outcome.Failed;
+            }
+            Skip(file, problem);
+            return Outcome.Skipped;
+        }
+        var converter = favourite.ConverterFor(from!, Converters)!;
+        var dir = outDir;
+        if (dir is not null && input.Root is not null)
+        {
+            // A folder's subfolders are kept under --out.
+            var sub = Path.GetRelativePath(input.Root, Path.GetDirectoryName(file)!);
+            if (sub != ".")
+                dir = Path.Combine(dir, sub);
+            Directory.CreateDirectory(dir);
+        }
+        var path = OutputFor(file, from!, favourite, dir);
+        made?.Add(path);
+        var settings = favourite.Apply(_defaults ??= UserDefaults());
+        var failed = await StepAsync(file, async progress =>
+        {
+            var result = await converter.ConvertAsync(new ConversionJob(file, from!, target, path, settings), progress, ct);
+            foreach (var output in result.OutputPaths)
+                made?.Add(output);
+            return result.OutputPaths;
+        }, ct);
+        return failed == 0 ? Outcome.Done : Outcome.Failed;
+    }
+
+    /// <summary>Where one file's result goes: under the favourite's name pattern, or as DropWheel names results.</summary>
+    internal static string OutputFor(string file, FileFormat from, Favourite favourite, string? dir)
+    {
+        var target = favourite.Target!;
+        if (PresetNaming.Stem(favourite.NamePattern, file, FavouriteLabel(favourite), DateTime.Now) is { } stem)
+            return OutputNaming.Unique(dir ?? Path.GetDirectoryName(file)!, stem, target.WriteExtension);
+        return from == target
+            ? OutputNaming.WithSuffix(file, SameFormatSuffix(favourite), target.WriteExtension, dir)
+            : OutputNaming.ForConversion(file, target, dir);
+    }
+
+    /// <summary>
+    /// The favourite to convert with: --favourite from Settings, or one made of --to; --max, --quality, --dpi
+    /// and --no-metadata change either.
+    /// </summary>
+    private static Favourite PresetFrom(Arguments a)
+    {
+        Favourite favourite;
+        if (a.Get("favourite", "favorite") is { } name)
+        {
+            favourite = FindFavourite(name, UserFavourites()).Copy();
+            if (a.Get("to") is { } to)
+                favourite.Format = FormatNamed(to).Id;
+        }
+        else
+        {
+            favourite = new Favourite { Format = FormatNamed(a.Get("to") ?? throw new UsageException("Say which format with --to, for example --to jpg, or name a favourite with --favourite.")).Id };
+        }
+        if (a.Int("max", 16, 20000) is { } max)
+            favourite.LongestSide = max;
+        if (a.Int("quality", 1, 512) is { } quality)
+            favourite.Quality = quality;
+        if (a.Int("dpi", 36, 1200) is { } dpi)
+            favourite.Dpi = dpi;
+        if (a.Has("no-metadata"))
+            favourite.RemoveMetadata = true;
+        if (favourite.Target is not { CanWrite: true })
+            throw new UsageException($"\"{favourite.Format}\" isn't a format DropWheel can write. See \"petal formats\".");
+        return favourite;
+    }
+
+    /// <summary>A favourite's name: the user's own, or its format and size ("WEBP 1600").</summary>
+    internal static string FavouriteLabel(Favourite f) =>
+        !string.IsNullOrWhiteSpace(f.Name) ? f.Name.Trim()
+            : (f.Target?.Label ?? f.Format.ToUpperInvariant()) + (f.SizeApplies && f.LongestSide > 0 ? $" {f.LongestSide}" : "");
+
+    /// <summary>Favourites are looked up by name (or a unique start of it), ignoring case.</summary>
+    internal static Favourite FindFavourite(string name, IReadOnlyList<Favourite> favourites)
+    {
+        var matches = favourites.Where(f => FavouriteLabel(f).Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        if (matches.Count == 0)
+            matches = favourites.Where(f => FavouriteLabel(f).StartsWith(name.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        if (matches.Count == 1)
+            return matches[0];
+        throw new UsageException(matches.Count == 0
+            ? $"No favourite called \"{name}\". See \"petal favourites\"."
+            : $"\"{name}\" matches several favourites; type more of the name.");
+    }
+
+    private int ListFavourites()
+    {
+        var favourites = UserFavourites();
+        if (favourites.Count == 0)
+        {
+            output.WriteLine("No favourites yet. Make one in DropWheel's Settings › Favourites.");
+            return Ok;
+        }
+        foreach (var f in favourites)
+        {
+            var parts = new List<string> { f.Target?.Label ?? f.Format.ToUpperInvariant() };
+            if (f.SizeApplies && f.LongestSide > 0) parts.Add($"{f.LongestSide} px");
+            if (f.QualityApplies && f.Quality > 0) parts.Add($"quality {f.Quality}");
+            if (f.DpiApplies && f.Dpi > 0) parts.Add($"pages at {f.Dpi} dpi");
+            if (f.MetadataApplies && f.RemoveMetadata) parts.Add("without metadata");
+            if (!string.IsNullOrWhiteSpace(f.NamePattern)) parts.Add($"named \"{f.NamePattern}\"");
+            if (!string.IsNullOrWhiteSpace(f.Folder)) parts.Add($"into {f.Folder}");
+            output.WriteLine($"{FavouriteLabel(f)}: {string.Join(" · ", parts)}");
+        }
+        return Ok;
+    }
+
+    // ---------- watch ----------
+
+    /// <summary>
+    /// Converts each file that arrives in the folder, once it is whole, until Ctrl+C. Files it makes itself,
+    /// files still being written and downloads in progress are left alone.
+    /// </summary>
+    private async Task<int> WatchAsync(Arguments a, CancellationToken ct)
+    {
+        a.Only([.. PresetOptions, "existing"]);
+        if (a.Values.Count != 1)
+            throw new UsageException("Usage: petal watch <folder> --to <format>");
+        var folder = Path.GetFullPath(a.Values[0]);
+        if (!Directory.Exists(folder))
+            throw new NothingToDoException($"{a.Values[0]} isn't a folder.");
+        var favourite = PresetFrom(a);
+        bool subfolders = a.Has("subfolders");
+        var outDir = a.OutputFolder() ?? favourite.FolderIfThere;
+        var made = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var queue = Channel.CreateUnbounded<string>();
+        using var watcher = new FileSystemWatcher(folder)
+        {
+            IncludeSubdirectories = subfolders,
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite,
+            InternalBufferSize = 64 * 1024,
+        };
+        watcher.Created += (_, e) => queue.Writer.TryWrite(e.FullPath);
+        watcher.Renamed += (_, e) => queue.Writer.TryWrite(e.FullPath);
+        watcher.Changed += (_, e) => queue.Writer.TryWrite(e.FullPath);
+        watcher.EnableRaisingEvents = true;
+        if (a.Has("existing"))
+        {
+            var options = new EnumerationOptions { RecurseSubdirectories = subfolders, AttributesToSkip = FileAttributes.Hidden | FileAttributes.System, IgnoreInaccessible = true };
+            foreach (var file in Directory.EnumerateFiles(folder, "*", options).Order(StringComparer.OrdinalIgnoreCase))
+                queue.Writer.TryWrite(file);
+        }
+        Note($"Watching {folder}: new files become {FavouriteLabel(favourite)}. Ctrl+C stops.");
+        var done = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+        int failures = 0;
+        try
+        {
+            await foreach (var file in queue.Reader.ReadAllAsync(ct))
+            {
+                if (Ignored(file, made) || !File.Exists(file) || !await SettledAsync(file, ct))
+                    continue;
+                var written = File.GetLastWriteTimeUtc(file);
+                if (done.TryGetValue(file, out var last) && last == written)
+                    continue;
+                done[file] = written;
+                if (await ConvertOneAsync(new Input(file, folder), favourite, outDir, made, ct) == Outcome.Failed)
+                    failures++;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        Note("Stopped watching.");
+        return failures == 0 ? Ok : Failed;
+    }
+
+    private static readonly string[] Unfinished = [".tmp", ".temp", ".crdownload", ".part", ".partial", ".download", ".opdownload", ".!ut", ".petal-tmp"];
+
+    /// <summary>What a watch leaves alone: what it made itself (and what is inside a folder it made), and files still arriving.</summary>
+    internal static bool Ignored(string file, ICollection<string> made)
+    {
+        if (made.Contains(file) || made.Any(m => file.StartsWith(m.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)))
+            return true;
+        var name = Path.GetFileName(file);
+        return name.StartsWith("~$", StringComparison.Ordinal) || name.StartsWith('.')
+            || Unfinished.Any(u => name.EndsWith(u, StringComparison.OrdinalIgnoreCase) || name.Contains(u + ".", StringComparison.OrdinalIgnoreCase))
+            || Directory.Exists(file);
+    }
+
+    /// <summary>
+    /// Waits until a file has stopped growing and nothing is writing it, as a copy or a download finishes.
+    /// False when it goes away meanwhile.
+    /// </summary>
+    internal static async Task<bool> SettledAsync(string file, CancellationToken ct, int pauseMs = 600)
+    {
+        long size = -1;
+        for (int i = 0; i < 2000; i++)
+        {
+            try
+            {
+                var now = new FileInfo(file).Length;
+                if (now == size && now > 0)
+                {
+                    using (new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+                    return true;
+                }
+                size = now;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                // Still being written: try again.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+            await Task.Delay(pauseMs, ct);
+        }
+        return false;
     }
 
     private static string SameFormatSuffix(Favourite f) => f.LongestSide > 0 ? $"{f.LongestSide}px" : $"q{f.Quality}";
@@ -1045,6 +1368,8 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
             ClearProgress();
             foreach (var path in results)
                 output.WriteLine(path);
+            _report?.Results.Add(new(file, results));
+            Event(new { @event = "done", input = file, outputs = results });
             return 0;
         }
         catch (OperationCanceledException)
@@ -1063,7 +1388,25 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
     {
         ClearProgress();
         error.WriteLine($"{Path.GetFileName(file)}: {message}");
+        _report?.Failures.Add(new(file, message));
+        Event(new { @event = "failed", input = file, reason = message });
         return 1;
+    }
+
+    /// <summary>A file a folder held that the command can't take: said in the report, not as a failure.</summary>
+    private void Skip(string file, string reason)
+    {
+        _report?.Skipped.Add(new(file, reason));
+        Event(new { @event = "skipped", input = file, reason });
+    }
+
+    /// <summary>While watching with --json: a line of JSON for each file, as it happens.</summary>
+    private void Event(object line)
+    {
+        if (_events is null || _report?.Command != "watch")
+            return;
+        _events.WriteLine(JsonSerializer.Serialize(line, JsonOut));
+        _events.Flush();
     }
 
     private void Note(string message)
@@ -1112,7 +1455,7 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
     /// <summary>The quality defaults chosen in Petal's Settings, so the command line matches the app.</summary>
     internal static ConversionSettings UserDefaults(string? settingsFile = null)
     {
-        settingsFile ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal", "settings.json");
+        settingsFile ??= SettingsFile;
         try
         {
             if (File.Exists(settingsFile))
@@ -1134,12 +1477,40 @@ internal sealed class Cli(TextWriter output, TextWriter error, bool showProgress
         public ConversionSettings? Conversion { get; set; }
 
         public List<Petal.Recipes.Recipe>? Recipes { get; set; }
+
+        public List<Favourite>? Favourites { get; set; }
+    }
+
+    /// <summary>For tests: a settings file of their own.</summary>
+    internal static string? SettingsFileForTests { get; set; }
+
+    /// <summary>DropWheel's settings, where the app keeps them (PETAL_SETTINGS_DIR moves them, as for the app).</summary>
+    internal static string SettingsFile => SettingsFileForTests ??
+        Path.Combine(Environment.GetEnvironmentVariable("PETAL_SETTINGS_DIR") is { Length: > 0 } own ? own
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal"), "settings.json");
+
+    /// <summary>The favourites saved in DropWheel's Settings.</summary>
+    internal static IReadOnlyList<Favourite> UserFavourites(string? settingsFile = null)
+    {
+        settingsFile ??= SettingsFile;
+        try
+        {
+            if (File.Exists(settingsFile))
+            {
+                var options = new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
+                return JsonSerializer.Deserialize<SavedSettings>(File.ReadAllText(settingsFile), options)?.Favourites?.Where(f => f is not null).ToList() ?? [];
+            }
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+        }
+        return [];
     }
 
     /// <summary>The recipes saved in Petal's Settings.</summary>
     internal static IReadOnlyList<Petal.Recipes.Recipe> UserRecipes(string? settingsFile = null)
     {
-        settingsFile ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Petal", "settings.json");
+        settingsFile ??= SettingsFile;
         try
         {
             if (File.Exists(settingsFile))
