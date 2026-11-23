@@ -4065,5 +4065,8 @@ internal static class Arabic
         ["3D scans"] = "مسح ثلاثي الأبعاد",
         ["Opens in every CAD app"] = "يفتح في كل برامج الرسم الهندسي",
         ["CAD drawings"] = "رسومات هندسية",
+        ["Learn"] = "التعلّم",
+        ["Try the wheel here: nothing runs while this page is open. Each choice says what would have happened."] = "جرّب العجلة هنا: لا يعمل شيء ما دامت هذه الصفحة مفتوحة. كل اختيار يخبرك بما كان سيحدث.",
+        ["Drag it anywhere, tap Shift, and drop it on a format. While this page is open, nothing is made: you're practising."] = "اسحبها إلى أي مكان، واضغط Shift، ثم أفلتها على صيغة. ما دامت هذه الصفحة مفتوحة لا يُنشأ شيء: أنت تتدرّب.",
     };
 }

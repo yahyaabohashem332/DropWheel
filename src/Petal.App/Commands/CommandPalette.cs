@@ -315,13 +315,13 @@ internal sealed class CommandPalette : Window
         foreach (var (key, name, icon, run) in new (string, string, string, Action<PaletteContext>)[]
         {
             ("settings", "DropWheel Settings", "settings", _ => App.Current.ShowSettings()),
-            ("history", "History", "history", _ => Tools.Windows.HistoryWindow.ShowSingle()),
+            ("history", "History", "history", _ => Settings.SettingsWindow.ShowPage("History")),
             ("search", "Search by Meaning", "search", _ => Search.SearchWindow.ShowSingle()),
             ("scan", "Scan with Phone", "scanLine", _ => Actions.ScanWindow.ShowSingle()),
-            ("qr", "Create QR Code", "qr", _ => Tools.Windows.QrWindow.ShowSingle()),
+            ("qr", "Create QR Code", "qr", _ => Settings.SettingsWindow.ShowPage("Create QR Code")),
             ("stats", "Your Statistics", "chart", _ => Stats.StatsWindow.ShowSingle()),
             ("duplicates", "Find Duplicates", "copy", _ => Tools.Windows.DuplicatesWindow.ChooseAndShow()),
-            ("practice", "Practice", "target", _ => Onboarding.PracticeWindow.ShowSingle()),
+            ("practice", "Practice", "target", _ => Settings.SettingsWindow.ShowPage("Practice")),
             ("health", "DropWheel Health", "heart", _ => Settings.HealthWindow.ShowSingle()),
             ("ask", "Ask DropWheel", "ask", c => { if (c.Files.Count > 0) Tools.Windows.AskWindow.Show(c.Files, controller.Jobs, c.At); else Tools.Windows.AskWindow.ChooseAndShow(controller.Jobs); }),
         })

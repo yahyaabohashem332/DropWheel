@@ -122,15 +122,21 @@ public sealed class PracticeWindow : ToolWindow
         _open.Activate();
     }
 
-    private PracticeWindow() : base("Practice", 460)
+    /// <summary>Practice as a page of the main window: on while the page is in view.</summary>
+    internal static PracticeWindow ForPage() => new(asPage: true);
+
+    private PracticeWindow(bool asPage = false) : base("Practice", 460, asPage)
     {
-        Practice.Start();
-        Closed += (_, _) =>
+        if (!asPage)
         {
-            Practice.Stop();
-            Practice.Explained -= OnExplained;
-        };
-        Practice.Explained += OnExplained;
+            Practice.Start();
+            Closed += (_, _) =>
+            {
+                Practice.Stop();
+                Practice.Explained -= OnExplained;
+            };
+            Practice.Explained += OnExplained;
+        }
         var photo = Practice.SamplePhoto();
         Body.Children.Add(Text("Try the wheel here: nothing runs while this window is open. Each choice says what would have happened.", "Petal.Body"));
         Body.Children.Add(Text("Drag the photo, tap Shift on the way, and drop it on a petal. Ctrl and Alt switch to the tools and actions.", "Petal.Caption").WithMargin(0, 6, 0, 0));
@@ -153,6 +159,32 @@ public sealed class PracticeWindow : ToolWindow
         Body.Children.Add(_said);
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
+        if (asPage)
+        {
+            PrimaryButton.Visibility = Visibility.Collapsed;
+            Body.Children.RemoveAt(0);
+            Body.Children.Insert(0, Text("Try the wheel here: nothing runs while this page is open. Each choice says what would have happened.", "Petal.Body"));
+        }
+    }
+
+    private bool _practising;
+
+    protected override void OnPageShown()
+    {
+        if (_practising)
+            return;
+        _practising = true;
+        Practice.Start();
+        Practice.Explained += OnExplained;
+    }
+
+    protected override void OnPageLeft()
+    {
+        if (!_practising)
+            return;
+        _practising = false;
+        Practice.Stop();
+        Practice.Explained -= OnExplained;
     }
 
     private void OnExplained(string text) => Dispatcher.BeginInvoke(() =>

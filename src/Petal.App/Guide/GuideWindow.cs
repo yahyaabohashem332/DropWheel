@@ -21,8 +21,6 @@ namespace Petal.App.Guide;
 /// </summary>
 public sealed class GuideWindow : ToolWindow
 {
-    private static GuideWindow? _open;
-
     private readonly TextBox _request = new() { FontSize = 15, MinHeight = 38, VerticalContentAlignment = VerticalAlignment.Center };
     private readonly TextBlock _placeholder;
     private readonly Button _askButton;
@@ -39,28 +37,28 @@ public sealed class GuideWindow : ToolWindow
     private bool _searching;
     private CancellationTokenSource? _asking;
 
-    /// <summary>Opens the guide (or brings it forward), at an entry or with a request asked.</summary>
-    public static void ShowSingle(string? key = null, string? request = null)
+    /// <summary>Opens the guide, a page of the main window, at an entry or with a request asked.</summary>
+    public static void ShowSingle(string? key = null, string? request = null) => SettingsWindow.ShowGuide(key, request);
+
+    /// <summary>The guide as a page of the main window.</summary>
+    internal static GuideWindow ForPage() => new(asPage: true);
+
+    /// <summary>Shows an entry, or asks a request; else puts the cursor in the request box.</summary>
+    internal void Open(string? key, string? request)
     {
-        if (_open is null)
-        {
-            _open = new GuideWindow();
-            _open.Closed += (_, _) => _open = null;
-            _open.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            _open.Show();
-        }
-        _open.Activate();
         if (key is not null && GuideBook.Get(key) is not null)
-            _open.Reveal(key);
+            Reveal(key);
         if (request is { Length: > 0 })
         {
-            _open._request.Text = request;
-            _open._request.CaretIndex = request.Length;
-            _ = _open.AskAsync();
+            _request.Text = request;
+            _request.CaretIndex = request.Length;
+            _ = AskAsync();
         }
         else
-            _open._request.Focus();
+            _request.Focus();
     }
+
+    protected override void OnPageShown() => Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => _request.Focus());
 
     /// <summary>For design snapshots: the guide at an entry, opened.</summary>
     internal static GuideWindow ForSnapshot(string? key, string? request)
@@ -76,7 +74,7 @@ public sealed class GuideWindow : ToolWindow
         return window;
     }
 
-    private GuideWindow(bool live = true) : base("Tools Guide", 760)
+    private GuideWindow(bool live = true, bool asPage = false) : base("Tools Guide", 760, asPage)
     {
         _request.FlowDirection = L.Direction;
         _placeholder = new TextBlock
@@ -101,7 +99,8 @@ public sealed class GuideWindow : ToolWindow
         _model.Ready += async () => await AskAsync();
 
         // The sections down the side, their entries beside them.
-        var columns = new Grid { Margin = new Thickness(0, 14, 0, 0), Height = 470 };
+        // On its page there is room for more of the list.
+        var columns = new Grid { Margin = new Thickness(0, 14, 0, 0), Height = asPage ? 640 : 470 };
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(178) });
         columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         var sectionsScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _sections, Margin = new Thickness(0, 0, 12, 0) };
@@ -143,6 +142,8 @@ public sealed class GuideWindow : ToolWindow
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.IsDefault = false;
         PrimaryButton.Click += (_, _) => Close();
+        if (asPage)
+            PrimaryButton.Visibility = Visibility.Collapsed;
         FooterNote = "Answers come from DropWheel's own guide, worked out on this PC.";
         ShowSection(_section);
     }
@@ -317,7 +318,7 @@ public sealed class GuideWindow : ToolWindow
         status.Visibility = Visibility.Collapsed;
         try
         {
-            if (await GuideRunner.RunAsync(key, this) is { } why)
+            if (await GuideRunner.RunAsync(key, Host) is { } why)
             {
                 status.Text = why;
                 status.Visibility = Visibility.Visible;

@@ -53,11 +53,13 @@ internal sealed class CardColumns : Panel
 /// <summary>The window as the app's main one: its pages down the side, one page at a time.</summary>
 public sealed partial class SettingsWindow
 {
-    private sealed record Page(string Title, string Icon, FrameworkElement Content, Button Button);
+    /// <summary>A page; one that is a tool's (the guide, the history…) makes the tool when first opened, into <see cref="Holder"/>.</summary>
+    private sealed record Page(string Title, string Icon, FrameworkElement Content, Button Button, Func<ToolWindow>? Make = null, ContentControl? Holder = null);
 
     private static int _lastPage;
     private readonly List<Page> _pages = [];
     private readonly Dictionary<FrameworkElement, Page> _pageOfCard = [];
+    private readonly Dictionary<Page, ToolWindow> _tools = [];
     private readonly StackPanel _nav = new() { Margin = new Thickness(12, 4, 12, 8) };
     private readonly StackPanel _found = new() { Margin = new Thickness(12, 4, 12, 8), Visibility = Visibility.Collapsed };
     private readonly TextBox _search = new();
@@ -71,6 +73,9 @@ public sealed partial class SettingsWindow
     private FrameworkElement Build()
     {
         AddPage("Home", "appWindow", HomePage());
+        // What the home page's tiles open: each a page here, not a window of its own.
+        AddToolPage("Tools Guide", "book", "Every tool explained, and your questions answered.", Guide.GuideWindow.ForPage, 1120);
+        AddToolPage("History", "history", "What DropWheel made, and undoing it.", Tools.Windows.HistoryWindow.ForPage, 780);
         Group("The Wheel");
         AddPage("Keys & Behaviour", "keyboard", CardsPage("Keys & Behaviour", "What opens the wheel, and how it behaves.",
             Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()),
@@ -95,6 +100,7 @@ public sealed partial class SettingsWindow
         AddPage("Conversions", "sliders", CardsPage("Conversions", "Where results go, and their quality.",
             Card("Results", null, OutputSection()),
             Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection())));
+        AddToolPage("Create QR Code", "qr", "From a link or any text.", Tools.Windows.QrWindow.ForPage, 520);
         Group("App");
         AddPage("Saved Files", "folderOpen", CardsPage("Saved Files", "Where each thing DropWheel makes is saved. Open any folder from here, or copy its path.",
             Card("What You Make", "Change any folder: new files go there, and what is already saved stays where it is.", _placesMade),
@@ -104,6 +110,10 @@ public sealed partial class SettingsWindow
             Card("Helpers", "DropWheel uses these programs when they're installed, on this PC.", EnginesSection()),
             Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()),
             Card("Updates", null, UpdatesSection())));
+        Group("Learn");
+        AddToolPage("How it works", "info", "A short look at the wheel.", Onboarding.WelcomeWindow.ForPage, 760);
+        AddToolPage("Practice", "target", "Try the wheel on a sample file.", Onboarding.PracticeWindow.ForPage, 620);
+        Closed += (_, _) => EndTools();
 
         var side = new DockPanel();
         side.SetResourceReference(BackgroundProperty, "Petal.Surface");
@@ -148,7 +158,14 @@ public sealed partial class SettingsWindow
         _nav.Children.Add(heading);
     }
 
-    private void AddPage(string title, string icon, FrameworkElement content)
+    /// <summary>A tool as a page: its title and what it is for at the top, the tool under them, no wider than it reads well.</summary>
+    private void AddToolPage(string title, string icon, string subtitle, Func<ToolWindow> make, double width)
+    {
+        var holder = new ContentControl { Focusable = false, MaxWidth = width, HorizontalAlignment = HorizontalAlignment.Left, HorizontalContentAlignment = HorizontalAlignment.Stretch };
+        AddPage(title, icon, Titled(title, subtitle, holder), make, holder);
+    }
+
+    private void AddPage(string title, string icon, FrameworkElement content, Func<ToolWindow>? make = null, ContentControl? holder = null)
     {
         var glyph = ThemedIcon(icon, 17, "Petal.TextSecondary");
         glyph.Margin = new Thickness(0, 0, 10, 0);
@@ -164,7 +181,7 @@ public sealed partial class SettingsWindow
             Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { glyph, words } },
         };
         System.Windows.Automation.AutomationProperties.SetName(button, L.T(title));
-        var page = new Page(title, icon, content, button);
+        var page = new Page(title, icon, content, button, make, holder);
         button.Click += (_, _) => Go(page);
         _pages.Add(page);
         _nav.Children.Add(button);
@@ -175,6 +192,9 @@ public sealed partial class SettingsWindow
 
     private void Go(Page page)
     {
+        // A tool's page that is left stops what it does only in view (practice, the welcome's demo).
+        if (_current is { } left && left != page && _tools.GetValueOrDefault(left) is { } leaving)
+            leaving.PageLeft();
         _current = page;
         _lastPage = _pages.IndexOf(page);
         foreach (var other in _pages)
@@ -192,6 +212,59 @@ public sealed partial class SettingsWindow
         _scroll.ScrollToTop();
         if (page.Title == "Saved Files")
             FillPlaces();
+        if (ToolOf(page) is { } tool)
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+            {
+                if (_current == page && IsVisible)
+                    tool.PageShown();
+            });
+    }
+
+    /// <summary>The tool a page shows, made the first time it is asked for.</summary>
+    private ToolWindow? ToolOf(Page page)
+    {
+        if (page.Make is not { } make)
+            return null;
+        if (!_tools.TryGetValue(page, out var tool))
+        {
+            _tools[page] = tool = make();
+            page.Holder!.Content = tool.PageContent();
+        }
+        return tool;
+    }
+
+    /// <summary>When the window closes: the tool in view stops, and each tool ends as its own window would.</summary>
+    private void EndTools()
+    {
+        foreach (var (page, tool) in _tools)
+        {
+            if (page == _current)
+                tool.PageLeft();
+            tool.Close();
+        }
+        _tools.Clear();
+    }
+
+    /// <summary>Opens the main window at a page, by its title.</summary>
+    public static void ShowPage(string title)
+    {
+        ShowSingle();
+        _open?.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => _open?.GoToPage(title));
+    }
+
+    /// <summary>Opens the Tools Guide page, at an entry or with a request asked.</summary>
+    public static void ShowGuide(string? key = null, string? request = null)
+    {
+        ShowSingle();
+        _open?.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+        {
+            if (_open is not { } window)
+                return;
+            var page = window._pages.First(p => p.Title == "Tools Guide");
+            window.Go(page);
+            if (window.ToolOf(page) is Guide.GuideWindow guide)
+                guide.Open(key, request);
+        });
     }
 
     // ---------- where things are saved ----------
@@ -413,12 +486,13 @@ public sealed partial class SettingsWindow
         hero.Children.Add(words);
 
         var tiles = new System.Windows.Controls.Primitives.UniformGrid { Columns = 3, Margin = new Thickness(-6, 22, -6, 0) };
-        tiles.Children.Add(Tile("info", "How it works", "A short look at the wheel.", Onboarding.WelcomeWindow.ShowSingle));
-        tiles.Children.Add(Tile("book", "Tools Guide", "Every tool explained, and your questions answered.", () => Guide.GuideWindow.ShowSingle()));
-        tiles.Children.Add(Tile("target", "Practice", "Try the wheel on a sample file.", Onboarding.PracticeWindow.ShowSingle));
+        // Each goes to its page down the side (the tour walks through the pages themselves).
+        tiles.Children.Add(Tile("info", "How it works", "A short look at the wheel.", () => GoToPage("How it works")));
+        tiles.Children.Add(Tile("book", "Tools Guide", "Every tool explained, and your questions answered.", () => GoToPage("Tools Guide")));
+        tiles.Children.Add(Tile("target", "Practice", "Try the wheel on a sample file.", () => GoToPage("Practice")));
         tiles.Children.Add(Tile("arrowRight", "Take the Tour", "A walk through these pages.", StartTour));
-        tiles.Children.Add(Tile("qr", "Create QR Code", "From a link or any text.", () => Tools.Windows.QrWindow.ShowSingle()));
-        tiles.Children.Add(Tile("history", "History", "What DropWheel made, and undoing it.", Tools.Windows.HistoryWindow.ShowSingle));
+        tiles.Children.Add(Tile("qr", "Create QR Code", "From a link or any text.", () => GoToPage("Create QR Code")));
+        tiles.Children.Add(Tile("history", "History", "What DropWheel made, and undoing it.", () => GoToPage("History")));
 
         var page = new StackPanel { MaxWidth = 1320, Margin = new Thickness(28, 26, 28, 28), Children = { hero, tiles } };
         var statistics = Card("Statistics", "What DropWheel has done for you, counted on this PC only.", StatisticsSection());
@@ -534,7 +608,7 @@ public sealed partial class SettingsWindow
 
     // ---------- for checking by eye ----------
 
-    internal static int PageCount => 12;
+    internal static int PageCount => 17;
 
     internal WheelGalleryList GalleryForTest => _gallery!;
 
@@ -553,6 +627,9 @@ public sealed partial class SettingsWindow
     internal IReadOnlyList<string> PageTitles => _pages.Select(page => page.Title).ToList();
 
     internal string? CurrentPage => _current?.Title;
+
+    /// <summary>The tool a page shows (made if it hasn't been yet), for tests.</summary>
+    internal ToolWindow? ToolForTest(string title) => ToolOf(_pages.First(page => page.Title == title));
 
     /// <summary>Cards that no page would show.</summary>
     internal IReadOnlyList<string> CardsOffPages => _cards.Where(card => !_pageOfCard.ContainsKey(card.Value)).Select(card => card.Key).ToList();

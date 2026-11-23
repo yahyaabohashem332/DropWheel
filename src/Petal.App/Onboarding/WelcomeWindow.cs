@@ -36,7 +36,10 @@ public sealed class WelcomeWindow : ToolWindow
         _open.Activate();
     }
 
-    private WelcomeWindow() : base("Welcome to DropWheel", 600)
+    /// <summary>How it works, as a page of the main window: no Get Started, no Settings button (it is in Settings).</summary>
+    internal static WelcomeWindow ForPage() => new(asPage: true);
+
+    private WelcomeWindow(bool asPage = false) : base("Welcome to DropWheel", 600, asPage)
     {
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         PrimaryButton.Content = L.T("Get started");
@@ -49,6 +52,8 @@ public sealed class WelcomeWindow : ToolWindow
         ResetButton.Content = L.T("Settings");
         ResetButton.Visibility = Visibility.Visible;
         ResetButton.Click += (_, _) => SettingsWindow.ShowSingle();
+        if (asPage)
+            PrimaryButton.Visibility = ResetButton.Visibility = Visibility.Collapsed;
         FooterNote = "DropWheel lives in the notification area.";
 
         var stage = PreviewPanel(_demo, 270);
@@ -70,16 +75,41 @@ public sealed class WelcomeWindow : ToolWindow
 
         Body.Children.Add(TryIt());
         Body.Children.Add(Exercise());
-        // While this window is open the wheel only says what it would do: practice changes nothing.
+        // While this window is open (or its page is in view) the wheel only says what it would do: practice changes nothing.
+        if (!asPage)
+        {
+            Practice.Start();
+            Practice.Chosen += OnPracticeChoice;
+            Loaded += (_, _) => _demo.Start();
+            Closed += (_, _) =>
+            {
+                _demo.Stop();
+                Practice.Chosen -= OnPracticeChoice;
+                Practice.Stop();
+            };
+        }
+    }
+
+    private bool _practising;
+
+    protected override void OnPageShown()
+    {
+        if (_practising)
+            return;
+        _practising = true;
         Practice.Start();
         Practice.Chosen += OnPracticeChoice;
-        Loaded += (_, _) => _demo.Start();
-        Closed += (_, _) =>
-        {
-            _demo.Stop();
-            Practice.Chosen -= OnPracticeChoice;
-            Practice.Stop();
-        };
+        _demo.Start();
+    }
+
+    protected override void OnPageLeft()
+    {
+        if (!_practising)
+            return;
+        _practising = false;
+        _demo.Stop();
+        Practice.Chosen -= OnPracticeChoice;
+        Practice.Stop();
     }
 
     // ---------- the exercise: three things to try, ticked off as they happen ----------
@@ -131,7 +161,8 @@ public sealed class WelcomeWindow : ToolWindow
         {
             SettingsStore.Current.OnboardingDone = true;
             SettingsStore.Save();
-            Close();
+            if (!IsPage)
+                Close();
             SettingsWindow.ShowTour();
         };
         var well = Text("You've got it.", "Petal.Section");
@@ -213,7 +244,9 @@ public sealed class WelcomeWindow : ToolWindow
         var title = Text("Try it: drag this photo");
         title.FontWeight = FontWeights.SemiBold;
         text.Children.Add(title);
-        text.Children.Add(Text("Drag it anywhere, tap Shift, and drop it on a format. While this window is open, nothing is made: you're practising.", "Petal.Caption"));
+        text.Children.Add(Text(IsPage
+            ? "Drag it anywhere, tap Shift, and drop it on a format. While this page is open, nothing is made: you're practising."
+            : "Drag it anywhere, tap Shift, and drop it on a format. While this window is open, nothing is made: you're practising.", "Petal.Caption"));
         row.Children.Add(text);
         tile.Child = row;
 

@@ -33,12 +33,16 @@ public sealed class HistoryWindow : ToolWindow
         _open.Activate();
     }
 
-    private HistoryWindow() : base("History", 520)
+    /// <summary>The history as a page of the main window.</summary>
+    internal static HistoryWindow ForPage() => new(asPage: true);
+
+    private HistoryWindow(bool asPage = false) : base("History", 520, asPage)
     {
         _empty = Text("Nothing here yet. Finished conversions and tools appear here, newest first.", "Petal.Caption");
         _empty.Margin = new Thickness(0, 20, 0, 20);
         _empty.HorizontalAlignment = HorizontalAlignment.Center;
-        var scroll = new ScrollViewer { Content = _list, MaxHeight = 460, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-6, 0, -6, 0) };
+        // On its page the list has the page's height to itself.
+        var scroll = new ScrollViewer { Content = _list, MaxHeight = asPage ? 620 : 460, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(-6, 0, -6, 0) };
         Body.Children.Add(_empty);
         Body.Children.Add(scroll);
         Body.Children.Add(Text("Undo moves the results to the Recycle Bin (renames are put back). The history stays on this PC.", "Petal.Caption").WithMarginT(10));
@@ -48,6 +52,8 @@ public sealed class HistoryWindow : ToolWindow
         ResetButton.Click += (_, _) => History.Clear();
         PrimaryButton.Content = L.T("Done");
         PrimaryButton.Click += (_, _) => Close();
+        if (asPage)
+            PrimaryButton.Visibility = Visibility.Collapsed;
         FooterNote = SettingsStore.Current.KeepHistory ? "" : L.T("Keeping a history is off in Settings.");
 
         History.Changed += OnChanged;
@@ -102,7 +108,12 @@ public sealed class HistoryWindow : ToolWindow
             undo.Click += (_, _) =>
             {
                 int n = History.Undo(entry.Id);
-                var at = new ScreenPoint((int)((Left + ActualWidth / 2) * DpiX), (int)((Top + ActualHeight + 30) * DpiY));
+                var host = Host;
+                // On a page, under the button; in the window, under the window.
+                var below = undo.PointToScreen(new Point(undo.ActualWidth / 2, undo.ActualHeight + 30));
+                var at = IsPage
+                    ? new ScreenPoint((int)below.X, (int)below.Y)
+                    : new ScreenPoint((int)((host.Left + host.ActualWidth / 2) * DpiX), (int)((host.Top + host.ActualHeight + 30) * DpiY));
                 HudCard.ShowAt(at, "Undone", "").Succeed(L.T("Undone"), L.P(n, "{0} item", "{0} items"), null);
             };
             buttons.Children.Add(show);
@@ -116,8 +127,8 @@ public sealed class HistoryWindow : ToolWindow
         return line;
     }
 
-    private double DpiX => System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX;
-    private double DpiY => System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleY;
+    private double DpiX => System.Windows.Media.VisualTreeHelper.GetDpi(Host).DpiScaleX;
+    private double DpiY => System.Windows.Media.VisualTreeHelper.GetDpi(Host).DpiScaleY;
 
     /// <summary>"Today 14:32 · photo.png" and the like.</summary>
     private static string Describe(HistoryEntry entry)

@@ -57,7 +57,10 @@ public sealed class QrWindow : ToolWindow
         _open.Activate();
     }
 
-    private QrWindow() : base("Create QR Code", 420)
+    /// <summary>The QR maker as a page of the main window.</summary>
+    internal static QrWindow ForPage() => new(asPage: true);
+
+    private QrWindow(bool asPage = false) : base("Create QR Code", 420, asPage)
     {
         RenderOptions.SetBitmapScalingMode(_code, BitmapScalingMode.NearestNeighbor);
         var hint = Text("Type text or a link, and the code appears here.", "Petal.Caption");
@@ -110,6 +113,8 @@ public sealed class QrWindow : ToolWindow
         FooterNote = "PNG · SVG";
         _redraw = new DispatcherTimer(TimeSpan.FromMilliseconds(120), DispatcherPriority.Background, (_, _) => Encode(), Dispatcher);
         Loaded += (_, _) => _text.Focus();
+        if (asPage)
+            _text.Loaded += (_, _) => _text.Focus();
         Sync();
     }
 
@@ -229,7 +234,7 @@ public sealed class QrWindow : ToolWindow
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             AddExtension = true,
         };
-        if (dialog.ShowDialog(this) != true)
+        if (dialog.ShowDialog(Host) != true)
             return;
         try
         {
@@ -251,7 +256,14 @@ public sealed class QrWindow : ToolWindow
     /// <summary>Just below the window, for the confirmation card.</summary>
     private ScreenPoint Centre()
     {
-        var dpi = VisualTreeHelper.GetDpi(this);
-        return new ScreenPoint((int)((Left + ActualWidth / 2) * dpi.DpiScaleX), (int)((Top + ActualHeight + 30) * dpi.DpiScaleY));
+        var host = Host;
+        var dpi = VisualTreeHelper.GetDpi(host);
+        if (IsPage)
+        {
+            // Under the code on its page.
+            var under = _code.PointToScreen(new Point(_code.ActualWidth / 2, _code.ActualHeight + 40));
+            return new ScreenPoint((int)under.X, (int)under.Y);
+        }
+        return new ScreenPoint((int)((host.Left + host.ActualWidth / 2) * dpi.DpiScaleX), (int)((host.Top + host.ActualHeight + 30) * dpi.DpiScaleY));
     }
 }

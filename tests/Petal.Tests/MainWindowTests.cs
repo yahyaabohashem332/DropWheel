@@ -230,6 +230,71 @@ public sealed class MainWindowTests
         Assert.All(gallery.CardsForTest, card => Assert.True(card.Shown));
     });
 
+    /// <summary>Lets what the window put off until it is laid out happen (a page's tool hears it is shown then).</summary>
+    private static void Settle()
+    {
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () => frame.Continue = false);
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+    }
+
+    private static IEnumerable<T> Inside<T>(DependencyObject element) where T : DependencyObject
+    {
+        if (element is T found)
+            yield return found;
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(element); i++)
+            foreach (var child in Inside<T>(System.Windows.Media.VisualTreeHelper.GetChild(element, i)))
+                yield return child;
+    }
+
+    [Theory]
+    [InlineData("Tools Guide")]
+    [InlineData("History")]
+    [InlineData("Create QR Code")]
+    [InlineData("How it works")]
+    [InlineData("Practice")]
+    public void What_the_home_tiles_open_is_a_page_not_a_window(string title) => Run(window =>
+    {
+        window.GoToPage(title);
+        window.UpdateLayout();
+        Settle();
+        Assert.Equal(title, window.CurrentPage);
+        var tool = window.ToolForTest(title)!;
+        var content = tool.PageContent();
+        // The tool is in the main window, shown there; its own window never opens.
+        Assert.Same(window, Window.GetWindow(content));
+        Assert.True(content.IsVisible);
+        Assert.False(tool.IsVisible);
+        Assert.DoesNotContain(Application.Current.Windows.OfType<Petal.App.Tools.ToolWindow>(), w => w is not SettingsWindow && w.IsVisible);
+        // A page has nothing to close: no Done, no Get Started.
+        Assert.DoesNotContain(Inside<System.Windows.Controls.Button>(content), b => b.IsVisible && b.Content is string s && (s == L.T("Done") || s == L.T("Get started")));
+    }, 0);
+
+    [Fact]
+    public void Practice_is_on_only_while_its_page_is_in_view() => PdfEditorWindowTests.RunOnInterface(() =>
+    {
+        var window = (SettingsWindow)SettingsWindow.ForPage(0);
+        window.ShowInTaskbar = false;
+        window.ShowActivated = false;
+        window.WindowStartupLocation = WindowStartupLocation.Manual;
+        (window.Left, window.Top) = (-30000, -30000);
+        window.Show();
+        Settle();
+        Assert.False(Petal.App.Onboarding.Practice.IsOn);
+        window.GoToPage("Practice");
+        Settle();
+        Assert.True(Petal.App.Onboarding.Practice.IsOn);
+        window.GoToPage("Home");
+        Assert.False(Petal.App.Onboarding.Practice.IsOn);
+        window.GoToPage("How it works");
+        Settle();
+        Assert.True(Petal.App.Onboarding.Practice.IsOn);
+        // Closing the window with the page in view ends it too.
+        window.Close();
+        Assert.False(Petal.App.Onboarding.Practice.IsOn);
+        return Task.CompletedTask;
+    });
+
     [Fact]
     public void Each_page_opens() => Run(window =>
     {
@@ -308,7 +373,7 @@ public sealed class LanguageSwitchTests
         SettingsStore.Directory = folder;
         L.Configure(UiLanguage.English);
         SettingsStore.Current.Language = UiLanguage.English;
-        var window = (SettingsWindow)SettingsWindow.ForPage(7);
+        var window = (SettingsWindow)SettingsWindow.ForPage(9);
         window.ShowInTaskbar = false;
         window.ShowActivated = false;
         window.WindowStartupLocation = WindowStartupLocation.Manual;

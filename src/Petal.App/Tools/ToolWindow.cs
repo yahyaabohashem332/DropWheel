@@ -31,8 +31,9 @@ public abstract class ToolWindow : Window
     private readonly ContentControl _bodyHost = new() { Focusable = false };
     private readonly Border _footerLine;
 
-    protected ToolWindow(string title, double width = 400)
+    protected ToolWindow(string title, double width = 400, bool asPage = false)
     {
+        IsPage = asPage;
         Title = L.T(title);
         Width = width;
         L.Apply(this);
@@ -138,6 +139,50 @@ public abstract class ToolWindow : Window
     }
 
     protected StackPanel Body { get; }
+
+    // ---------- as a page of the main window ----------
+
+    private FrameworkElement? _page;
+
+    /// <summary>
+    /// Made to be a page of the main window rather than a window of its own: its body and footer are shown there,
+    /// and the window itself never is.
+    /// </summary>
+    protected bool IsPage { get; }
+
+    /// <summary>The window this tool is seen in: itself, or the main window it is a page of (for dialogs and positions).</summary>
+    protected Window Host => _page is not null && GetWindow(_page) is { } host ? host : this;
+
+    /// <summary>
+    /// The tool's body with its footer under it, taken out of the window for a page of the main window. A footer
+    /// with nothing to show (a page has no Done) isn't shown.
+    /// </summary>
+    internal FrameworkElement PageContent()
+    {
+        if (_page is not null)
+            return _page;
+        _bodyHost.Content = null;
+        _layout.Children.Remove(_footer);
+        Body.Margin = new Thickness(0);
+        _footer.Margin = new Thickness(0, 16, 0, 0);
+        PrimaryButton.IsDefault = false;
+        void Tidy() => _footer.Visibility = PrimaryButton.Visibility == Visibility.Visible || ResetButton.Visibility == Visibility.Visible
+            || _footerNote.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        Tidy();
+        var page = new StackPanel { Children = { Body, _footer } };
+        page.Loaded += (_, _) => Tidy();
+        return _page = page;
+    }
+
+    /// <summary>Its page has come into view in the main window.</summary>
+    internal void PageShown() => OnPageShown();
+
+    /// <summary>Its page was left, or the main window is closing.</summary>
+    internal void PageLeft() => OnPageLeft();
+
+    protected virtual void OnPageShown() { }
+
+    protected virtual void OnPageLeft() { }
 
     /// <summary>
     /// Makes this the app's main window rather than a small tool: solid, resizable, with minimize and maximize, its own
