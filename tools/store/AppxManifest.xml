@@ -263,6 +263,8 @@
               <uap:FileType>.obj</uap:FileType>
               <uap:FileType>.3mf</uap:FileType>
               <uap:FileType>.ply</uap:FileType>
+              <uap:FileType>.dxf</uap:FileType>
+              <uap:FileType>.dwg</uap:FileType>
             </uap:SupportedFileTypes>
             <uap2:SupportedVerbs>
               <uap3:Verb Id="convert" Parameters="--wheel &quot;%1&quot;">ms-resource:ConvertVerb</uap3:Verb>

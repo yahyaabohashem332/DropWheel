@@ -106,6 +106,11 @@ MIT:
 - SkiaSharp: Copyright (c) 2015-2016 Xamarin, Inc. and Copyright (c) 2017-2025 Microsoft Corporation.
 - RBush: Copyright (c) 2017 viceroypenguin.
 - SharpCompress: Copyright (c) 2014 Adam Hathcock.
+- ACadSharp (DXF and DWG drawings read, DXF written): Copyright (c) 2021 Albert Domenech. CSUtilities, built into
+  it: Copyright (c) 2020 Albert Domenech.
+- HarfBuzzSharp and SkiaSharp.HarfBuzz (text in drawings shaped for every script): Copyright (c) Microsoft
+  Corporation. HarfBuzz itself: Copyright (c) the HarfBuzz authors, MIT ("Old MIT"); its licence and those of
+  what it is built with are in licenses\packages\HarfBuzzSharp.NativeAssets.Win32 - THIRD-PARTY-NOTICES.txt.
 - SharpGLTF (SharpGLTF.Core, SharpGLTF.Runtime and SharpGLTF.Toolkit; glTF and GLB 3D models): Copyright (c)
   2018-2026 Vicente Penades.
 - SharpZipLib: Copyright (c) 2000-2018 SharpZipLib Contributors.

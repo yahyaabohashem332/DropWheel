@@ -4063,5 +4063,7 @@ internal static class Arabic
         ["For every 3D app"] = "لكل برامج الأبعاد الثلاثة",
         ["3D printing, in colour"] = "طباعة ثلاثية الأبعاد بالألوان",
         ["3D scans"] = "مسح ثلاثي الأبعاد",
+        ["Opens in every CAD app"] = "يفتح في كل برامج الرسم الهندسي",
+        ["CAD drawings"] = "رسومات هندسية",
     };
 }

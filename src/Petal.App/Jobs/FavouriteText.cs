@@ -42,9 +42,12 @@ public static class FavouriteText
         _ => pattern!,
     };
 
-    /// <summary>Formats a favourite can save to, in the order Petal lists formats.</summary>
+    /// <summary>
+    /// Formats a favourite can save to, in the order Petal lists formats. SVG is written only from drawings, where a
+    /// favourite's picture sizes mean nothing: it isn't one.
+    /// </summary>
     public static IReadOnlyList<FileFormat> Targets { get; } =
-        Formats.All.Where(f => f.CanWrite && ConversionMatrix.AllPaths().Any(p => p.To == f)).ToList();
+        Formats.All.Where(f => f.CanWrite && f != Formats.Svg && ConversionMatrix.AllPaths().Any(p => p.To == f)).ToList();
 
     public static (int Value, string Label)[] SizesFor(FileFormat target) =>
         (target.Family == FormatFamily.Video ? VideoSizes : PictureSizes)

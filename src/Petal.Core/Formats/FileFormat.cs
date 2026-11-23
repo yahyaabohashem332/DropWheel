@@ -3,7 +3,7 @@ namespace Petal.Core.Formats;
 public enum FormatFamily
 {
     Image,
-    /// <summary>Pictures Petal reads but never writes: SVG, Photoshop, camera RAW, Illustrator and EPS.</summary>
+    /// <summary>Pictures Petal reads but never writes as pictures: SVG (written only from drawings), Photoshop, camera RAW, Illustrator and EPS.</summary>
     Vector,
     Audio,
     Video,
@@ -25,6 +25,8 @@ public enum FormatFamily
     Data,
     /// <summary>3D models: for printing (STL, 3MF), from 3D programs (OBJ, PLY), for the web and AR (GLB, glTF).</summary>
     Model,
+    /// <summary>CAD drawings: DXF, and DWG read.</summary>
+    Drawing,
 }
 
 /// <summary>A file format Petal knows how to read and/or write.</summary>

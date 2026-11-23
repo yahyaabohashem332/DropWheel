@@ -15,7 +15,8 @@ public static class Formats
     public static readonly FileFormat Bmp = new("bmp", "BMP", FormatFamily.Image, ["bmp", "dib"]);
     public static readonly FileFormat Ico = new("ico", "ICO", FormatFamily.Image, ["ico"]);
     public static readonly FileFormat Jxl = new("jxl", "JXL", FormatFamily.Image, ["jxl"]);
-    public static readonly FileFormat Svg = new("svg", "SVG", FormatFamily.Vector, ["svg"], CanWrite: false);
+    // Written only from drawings (DXF, DWG): a picture is never made into an SVG.
+    public static readonly FileFormat Svg = new("svg", "SVG", FormatFamily.Vector, ["svg"]);
 
     // Pictures for games, print and older programs: read, and written from PNG and TIFF. (EXR waits for a build of
     // ImageMagick with more than 8 bits a channel: its light can't be kept in 8.)
@@ -58,6 +59,10 @@ public static class Formats
     public static readonly FileFormat Obj = new("obj", "OBJ", FormatFamily.Model, ["obj"]);
     public static readonly FileFormat ThreeMf = new("3mf", "3MF", FormatFamily.Model, ["3mf"]);
     public static readonly FileFormat Ply = new("ply", "PLY", FormatFamily.Model, ["ply"]);
+
+    // CAD drawings.
+    public static readonly FileFormat Dxf = new("dxf", "DXF", FormatFamily.Drawing, ["dxf"]);
+    public static readonly FileFormat Dwg = new("dwg", "DWG", FormatFamily.Drawing, ["dwg"], CanWrite: false);
 
     public static readonly FileFormat Ttf = new("ttf", "TTF", FormatFamily.Font, ["ttf"]);
     public static readonly FileFormat Otf = new("otf", "OTF", FormatFamily.Font, ["otf"]);
@@ -190,6 +195,7 @@ public static class Formats
         Ase, Aco,
         Ttf, Otf, Woff, Woff2,
         Glb, Gltf, Stl, Obj, ThreeMf, Ply,
+        Dxf, Dwg,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma, M4b,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif, Ts, ThreeGp, Flv,
         Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,

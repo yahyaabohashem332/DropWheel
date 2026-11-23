@@ -48,6 +48,10 @@ public static class ConversionMatrix
         foreach (var model in models)
             map[model] = [.. models.Where(f => f != model), Png];
 
+        // Drawings on paper (vector PDF and SVG, and PNG); a DWG also to DXF, which free CAD programs open.
+        map[Dxf] = [Pdf, Svg, Png];
+        map[Dwg] = [Pdf, Dxf, Svg, Png];
+
         map[Ttf] = [Woff2, Otf, Woff];
         map[Otf] = [Woff2, Ttf, Woff];
         map[Woff] = [Ttf, Otf, Woff2];

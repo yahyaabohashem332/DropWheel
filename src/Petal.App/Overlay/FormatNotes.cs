@@ -100,6 +100,8 @@ public static class FormatNotes
         ["obj"] = "For every 3D app",
         ["3mf"] = "3D printing, in colour",
         ["ply"] = "3D scans",
+        ["dxf"] = "Opens in every CAD app",
+        ["dwg"] = "CAD drawings",
         ["ase"] = "Adobe swatches",
         ["aco"] = "Photoshop swatches",
         ["json"] = "Data for apps",

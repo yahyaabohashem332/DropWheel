@@ -19,6 +19,10 @@
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.7" />
     <PackageReference Include="SkiaSharp" Version="4.150.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.150.1" />
+    <!-- Drawings: DXF and DWG read by ACadSharp (MIT); text in them shaped by HarfBuzz (MIT) for every script. -->
+    <PackageReference Include="ACadSharp" Version="3.8.35" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="4.150.1" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="14.2.1.1" />
   </ItemGroup>
 
   <PropertyGroup>
