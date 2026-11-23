@@ -34,7 +34,8 @@ public sealed class StudyFileWords(IReadOnlyDictionary<string, string> words, Fu
         "hintMe", "labNothing", "labMore", "labFound", "labAll", "tryThing", "takeOut", "whyItHappens", "play", "pause", "along", "simHint",
         "moreOf", "lessOf", "raisesLink", "lowersLink", "sysHint", "loopUp", "loopDown", "bothWays", "situationOf", "goodChoice",
         "badChoice", "partly", "otherChoices", "goodChoices", "yourGuess", "reveal", "spotOn", "nearly", "farOff", "theAnswer", "nearScore",
-        "inFormula",
+        "inFormula", "forExam", "signalWords", "traps", "writeLikeThis", "showOriginal", "hideOriginal", "mistakes2", "noMistakes",
+        "youSaid", "designedKind", "sceneFailed",
     ];
 
     /// <summary>The counted phrases the page uses: parts, terms, cards, questions and activities.</summary>
@@ -106,7 +107,8 @@ public static partial class StudyFileWriter
         var activityIds = ActivityIds(book);
         int activityCount = activityIds.Count;
         var sceneIds = SceneIds(book);
-        int sceneCount = sceneIds.Count;
+        int sceneCount = sceneIds.Count + book.Parts.Sum(p => p.Designed.Count);
+        bool translated = book.Parts.Any(p => p.Passages.Any(x => x.Source.Length > 0));
         // Only a file to study from has parts to mark as studied and progress to keep.
         bool studies = StudyPurposes.Studies(book.Purpose);
         var sb = new StringBuilder(256 * 1024);
@@ -114,7 +116,10 @@ public static partial class StudyFileWriter
         var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(script)));
         sb.Append("<!doctype html>\n<html lang=\"").Append(book.Language).Append("\" dir=\"").Append(rtl ? "rtl" : "ltr").Append("\">\n<head>\n<meta charset=\"utf-8\">\n");
         sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
-        sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'sha256-").Append(hash).Append("'; base-uri 'none'; form-action 'none'\">\n");
+        // The scenes the model wrote run in sandboxed frames, which keep this policy: their scripts are let in by their hashes too.
+        var designedScripts = book.Parts.SelectMany(p => p.Designed).SelectMany(d => d.Scripts).Select(StudyDesigner.Hash).Distinct(StringComparer.Ordinal).ToList();
+        var others = designedScripts.Count > 0 ? " " + StudyDesigner.Hash(StudyDesigner.Bridge) + " " + string.Join(" ", designedScripts) : "";
+        sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'sha256-").Append(hash).Append('\'').Append(others).Append("; base-uri 'none'; form-action 'none'\">\n");
         sb.Append("<meta name=\"generator\" content=\"DropWheel\">\n<meta name=\"color-scheme\" content=\"light dark\">\n");
         sb.Append("<title>").Append(E(book.Title)).Append("</title>\n<style>\n").Append(Resource("StudyFile.css")).Append("\n</style>\n</head>\n");
         sb.Append("<body class=\"nojs").Append(studies ? "" : " free").Append("\" data-id=\"").Append(Id(book)).Append("\">\n");
@@ -141,6 +146,8 @@ public static partial class StudyFileWriter
             sb.Append("<li class=\"needs-js\"><a href=\"#cards\">").Append(Svg("cards")).Append(E(words["cards"])).Append("<span class=\"n\">").Append(cardCount).Append("</span></a></li>");
         if (questionCount > 0)
             sb.Append("<li class=\"needs-js\"><a href=\"#test\">").Append(Svg("test")).Append(E(words["test"])).Append("</a></li>");
+        if (questionCount > 0)
+            sb.Append("<li class=\"needs-js\"><a href=\"#mistakes\">").Append(Svg("redo")).Append(E(words["mistakes2"])).Append("<span class=\"n wrongs\"></span></a></li>");
         if (sceneCount > 0)
             sb.Append("<li><a href=\"#play\">").Append(Svg("hand")).Append(E(words["handsOn"])).Append("<span class=\"n\">").Append(sceneCount).Append("</span></a></li>");
         if (activityCount > 0)
@@ -255,7 +262,10 @@ public static partial class StudyFileWriter
             if (chapterOf.TryGetValue(part.Number, out int c))
                 sb.Append("<p class=\"crumb\"><a href=\"#c").Append(c).Append("\"><bdi>").Append(E(book.Chapters[c - 1].Title)).Append("</bdi></a></p>");
             sb.Append("<h1 id=\"h-p").Append(part.Number).Append("\" tabindex=\"-1\"><bdi>").Append(E(partLabel(part))).Append("</bdi></h1>");
-            sb.Append("<p class=\"meta\"><span class=\"src\">").Append(Svg("pin")).Append(E(part.Where)).Append("</span><span class=\"state\"></span></p>");
+            sb.Append("<p class=\"meta\"><span class=\"src\">").Append(Svg("pin")).Append(E(part.Where)).Append("</span><span class=\"state\"></span>");
+            if (part.Passages.Any(x => x.Source.Length > 0))
+                sb.Append("<button type=\"button\" class=\"link beside-switch needs-js\" aria-pressed=\"false\">").Append(Svg("columns")).Append("<span>").Append(E(words["showOriginal"])).Append("</span></button>");
+            sb.Append("</p>");
             var ideas = Ideas(part);
             if (ideas.Count > 0)
             {
@@ -273,14 +283,20 @@ public static partial class StudyFileWriter
                     sb.Append("<h3><bdi>").Append(E(passage.Title)).Append("</bdi></h3>");
                 if (passage.Original.Length > 0)
                     sb.Append("<p class=\"note\">").Append(E(words["notExplained"])).Append("</p><blockquote class=\"raw\" dir=\"auto\" lang=\"").Append(book.SourceLanguage).Append("\">").Append(Rich(passage.Original, null)).Append("</blockquote>");
+                else if (passage.Source.Length > 0)
+                    // The explanation, and beside it the file's own words when it is in another language.
+                    sb.Append("<div class=\"pair\"><div class=\"mine\">").Append(Rich(passage.Explanation, linker, marked)).Append("</div><div class=\"orig\" lang=\"").Append(book.SourceLanguage)
+                        .Append("\" dir=\"auto\">").Append(Rich(passage.Source, null)).Append("</div></div>");
                 else
                     sb.Append(Rich(passage.Explanation, linker, marked));
                 sb.Append("<p class=\"src\">").Append(Svg("pin")).Append(E(passage.Where)).Append("</p></article>");
             }
             sb.Append("</section>");
-            if (part.Scenes.Any(sceneIds.ContainsKey))
+            if (part.Scenes.Any(sceneIds.ContainsKey) || part.Designed.Count > 0)
             {
                 sb.Append("<section class=\"scenes\"><h2>").Append(Svg("hand")).Append(E(words["handsOn"])).Append("</h2>");
+                for (int d = 0; d < part.Designed.Count; d++)
+                    AppendDesigned(sb, part.Designed[d], DesignedId(part, d), words, book.Language);
                 foreach (var scene in part.Scenes.Where(sceneIds.ContainsKey))
                     AppendScene(sb, scene, sceneIds[scene], words, Culture(book.Language));
                 sb.Append("</section>");
@@ -319,6 +335,8 @@ public static partial class StudyFileWriter
                     AppendActivity(sb, activity, activityIds[activity], words);
                 sb.Append("</section>");
             }
+            if (part.Signals.Count + part.Traps.Count + part.Exam.Count > 0)
+                AppendExam(sb, part, words, rtl);
             if (part.Quiz.Count > 0)
             {
                 sb.Append("<section class=\"check\"><h2>").Append(Svg("test")).Append(E(words["check"])).Append("</h2>");
@@ -372,11 +390,17 @@ public static partial class StudyFileWriter
         {
             sb.Append("<section class=\"view play\" id=\"play\" aria-labelledby=\"h-play\"><h1 id=\"h-play\" tabindex=\"-1\">").Append(E(words["handsOn"])).Append("</h1><ol class=\"tiles\">");
             foreach (var part in book.Parts)
+                for (int d = 0; d < part.Designed.Count; d++)
+                    sb.Append("<li><a class=\"tile scenetile\" href=\"#").Append(DesignedId(part, d)).Append("\" data-k=\"own\"><span class=\"kind\">").Append(Svg("sparkles")).Append(E(words["designedKind"])).Append("</span><strong><bdi>")
+                        .Append(E(part.Designed[d].Title)).Append("</bdi></strong><span class=\"small\"><bdi>").Append(E(partLabel(part))).Append("</bdi></span></a></li>");
+            foreach (var part in book.Parts)
                 foreach (var scene in part.Scenes.Where(sceneIds.ContainsKey))
                     sb.Append("<li><a class=\"tile scenetile\" href=\"#").Append(sceneIds[scene]).Append("\" data-k=\"").Append(SceneKind(scene.Kind)).Append("\"><span class=\"kind\">").Append(Svg(SceneIcon(scene.Kind))).Append(E(words[SceneLabel(scene.Kind)])).Append("</span><strong><bdi>")
                         .Append(E(scene.Title.Length > 0 ? scene.Title : partLabel(part))).Append("</bdi></strong><span class=\"small\"><bdi>").Append(E(partLabel(part))).Append("</bdi></span></a></li>");
             sb.Append("</ol></section>\n");
         }
+        if (questionCount > 0)
+            sb.Append("<section class=\"view mistakes needs-js\" id=\"mistakes\" aria-labelledby=\"h-mistakes\"><h1 id=\"h-mistakes\" tabindex=\"-1\">").Append(E(words["mistakes2"])).Append("</h1><div class=\"slot\"></div></section>\n");
         if (studies)
             sb.Append("<section class=\"view stand needs-js\" id=\"progress\" aria-labelledby=\"h-progress\"><h1 id=\"h-progress\" tabindex=\"-1\">").Append(E(words["progress"])).Append("</h1><div class=\"slot\"></div></section>\n");
         sb.Append("<noscript><p class=\"note\">").Append(E(words["needsScript"])).Append("</p></noscript>\n");
@@ -400,6 +424,54 @@ public static partial class StudyFileWriter
                 ids[activity] = id;
         }
         return ids;
+    }
+
+    /// <summary>A scene of the model's own: its name, by its part and place in it.</summary>
+    internal static string DesignedId(StudyPart part, int index) => "d" + part.Number + "-" + (index + 1);
+
+    /// <summary>
+    /// A scene the model designed: its title and idea in words (which is all there is in print or when it can't run), and
+    /// its sandboxed frame.
+    /// </summary>
+    private static void AppendDesigned(StringBuilder sb, DesignedScene scene, string id, StudyFileWords words, string language)
+    {
+        sb.Append("<div class=\"scene designed\" id=\"").Append(id).Append("\" data-k=\"own\">");
+        sb.Append("<p class=\"kind\">").Append(Svg("sparkles")).Append(E(words["designedKind"])).Append("</p>");
+        sb.Append("<p class=\"ask\">").Append(Inline(scene.Title, null, null)).Append("</p>");
+        sb.Append("<p class=\"idea\">").Append(Inline(scene.Idea, null, null)).Append("</p>");
+        sb.Append(StudyDesigner.Frame(scene, language));
+        sb.Append("<p class=\"note failed\" hidden>").Append(E(words["sceneFailed"])).Append("</p>");
+        sb.Append("<p class=\"src\">").Append(Svg("pin")).Append(E(scene.Where)).Append("</p></div>");
+    }
+
+    /// <summary>For the exam: the words in a question that give its answer away, what is easily mixed up, and sentences to write.</summary>
+    private static void AppendExam(StringBuilder sb, StudyPart part, StudyFileWords words, bool rtl)
+    {
+        string Text(string t) => Inline(t, null, null);
+        var arrow = rtl ? "←" : "→";
+        sb.Append("<section class=\"box examprep\"><h2>").Append(Svg("target")).Append(E(words["forExam"])).Append("</h2>");
+        if (part.Signals.Count > 0)
+        {
+            sb.Append("<h3>").Append(E(words["signalWords"])).Append("</h3><ul class=\"signals\">");
+            foreach (var (said, answer) in part.Signals)
+                sb.Append("<li><span class=\"said\">").Append(Text(said)).Append("</span><span class=\"arrow\" aria-hidden=\"true\">").Append(arrow).Append("</span><strong>").Append(Text(answer)).Append("</strong></li>");
+            sb.Append("</ul>");
+        }
+        if (part.Traps.Count > 0)
+        {
+            sb.Append("<h3>").Append(E(words["traps"])).Append("</h3><ul class=\"traps\">");
+            foreach (var (which, apart) in part.Traps)
+                sb.Append("<li><strong>").Append(Text(which)).Append("</strong> ").Append(Text(apart)).Append("</li>");
+            sb.Append("</ul>");
+        }
+        if (part.Exam.Count > 0)
+        {
+            sb.Append("<h3>").Append(E(words["writeLikeThis"])).Append("</h3><ul class=\"write\">");
+            foreach (var line in part.Exam)
+                sb.Append("<li>").Append(Text(line)).Append("</li>");
+            sb.Append("</ul>");
+        }
+        sb.Append("</section>");
     }
 
     /// <summary>Each scene's name, by its kind and words: what was found in it stays when the file is made again.</summary>
@@ -1019,6 +1091,9 @@ public static partial class StudyFileWriter
             "check" => "<path d=\"M20 6 9 17l-5-5\"/>",
             "eye" => "<path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
             "puzzle" => "<path d=\"M19.4 13.8a2.4 2.4 0 1 0 0-3.6V7a1 1 0 0 0-1-1h-3.2a2.4 2.4 0 1 0-3.6 0H8.4a1 1 0 0 0-1 1v3.2a2.4 2.4 0 1 1 0 3.6V17a1 1 0 0 0 1 1h3.2a2.4 2.4 0 1 1 3.6 0h3.2a1 1 0 0 0 1-1z\"/>",
+            "sparkles" => "<path d=\"M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z\"/><path d=\"M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z\"/>",
+            "columns" => "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M12 4v16\"/>",
+            "redo" => "<path d=\"M3 12a9 9 0 1 0 3-6.7L3 8\"/><path d=\"M3 3v5h5\"/>",
             "hand" => "<path d=\"M18 11V6a2 2 0 0 0-4 0v5\"/><path d=\"M14 10V4a2 2 0 0 0-4 0v2\"/><path d=\"M10 10.5V6a2 2 0 0 0-4 0v8\"/><path d=\"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15\"/>",
             "flask" => "<path d=\"M14 2v6a2 2 0 0 0 .25.96l5.5 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.75-2.96l5.5-10.08A2 2 0 0 0 10 8V2\"/><path d=\"M6.5 15h11\"/><path d=\"M8.5 2h7\"/>",
             "sliders" => "<path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/>",

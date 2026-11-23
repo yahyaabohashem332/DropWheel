@@ -93,7 +93,7 @@
     // The other look from the one shown, whatever the system's is.
     var dark = ui.theme ? ui.theme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     ui.theme = dark ? 'light' : 'dark';
-    save(UI, ui); applyPrefs();
+    save(UI, ui); applyPrefs(); tellFrames();
   });
 
   // ───── the contents on a narrow screen ─────
@@ -118,6 +118,7 @@
     else if (/^practice-/.test(hash)) { name = 'practice'; scope = hash.slice(9); }
     else if (/^a[0-9a-f]{10}$/.test(hash)) { var act = actsById[hash]; if (act) { name = 'p' + act.p; anchor = hash; } }
     else if (/^s[0-9a-f]{10}$/.test(hash)) { var sc = scenesById[hash]; if (sc) { name = 'p' + sc.p; anchor = hash; } }
+    else if (/^d\d+-\d+$/.test(hash)) { name = 'p' + hash.slice(1).split('-')[0]; anchor = hash; }
     else if (/^t\d+$/.test(hash)) { name = 'terms'; anchor = hash; }
     else if (/^p\d+-\d+$/.test(hash)) { name = hash.split('-')[0]; anchor = hash; }
     if (!views[name]) name = 'home';
@@ -135,6 +136,7 @@
     if (name === 'test') Exam.render(scope);
     if (name === 'practice') Practice.render(scope);
     if (name === 'progress') Stand.render();
+    if (name === 'mistakes') Mistakes.render();
     if (name === 'home') resume();
     if (/^p\d+$/.test(name)) { state.last = +name.slice(1); keep(); }
     var target = anchor && doc.getElementById(anchor);
@@ -202,7 +204,7 @@
     $('.key', q).open = true;
     if (record) {
       state.q[q.getAttribute('data-q')] = { c: choice, r: choice === right ? 1 : 0 };
-      keep();
+      keep(); countWrongs();
       announce(verdict.textContent);
     }
   }
@@ -477,7 +479,7 @@
       $$('.opt', opts).forEach(function (b, k) { b.disabled = true; b.classList.toggle('right', k === x.a); b.classList.toggle('wrong', k === i && !good); });
       if (good) this.right++; else this.wrong.push(x);
       state.q[x.id] = { c: i, r: good ? 1 : 0 };
-      keep();
+      keep(); countWrongs();
       after.hidden = false;
       after.appendChild(h('p', { class: 'verdict ' + (good ? 'good' : 'bad'), text: good ? W.right : W.wrong }));
       after.appendChild(h('p', null, [h('strong', { text: letter(x.a) + ') ' + x.o[x.a] }), x.y ? ' — ' + x.y : '']));
@@ -1452,6 +1454,81 @@
     el.classList.add('playable');
     el.insertBefore(live, $('.static', el));
   });
+
+
+  // ───── the scenes the model wrote: each in a sandboxed frame that says how tall it is and whether it failed ─────
+  function lookNow() {
+    return ui.theme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  function tellFrames() {
+    $$('iframe.designed-frame').forEach(function (f) { try { f.contentWindow.postMessage({ dw: 'theme', theme: lookNow() }, '*'); } catch (e) { /* not ready */ } });
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!m || typeof m !== 'object' || typeof m.dw !== 'string') return;
+    var f = $$('iframe.designed-frame').filter(function (x) { return x.contentWindow === e.source; })[0];
+    if (!f) return;
+    if (m.dw === 'h' && typeof m.h === 'number' && isFinite(m.h)) f.style.height = Math.max(120, Math.min(900, Math.ceil(m.h) + 4)) + 'px';
+    else if (m.dw === 'ready') { f.classList.add('ready'); tellFrames(); }
+    else if (m.dw === 'fail' && !f.classList.contains('ready')) {
+      // A scene that failed before it was ready gives way to its idea in words.
+      f.hidden = true;
+      var note = f.parentNode && $('.failed', f.parentNode);
+      if (note) note.hidden = false;
+    }
+  });
+  $$('iframe.designed-frame').forEach(function (f) { f.addEventListener('load', tellFrames); });
+  if (window.matchMedia) { var mq = window.matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', tellFrames); }
+
+  // ───── the file's own words beside the explanation, when it is in another language ─────
+  function applyBeside() {
+    body.classList.toggle('beside', !!ui.beside);
+    $$('.beside-switch').forEach(function (b) { b.setAttribute('aria-pressed', ui.beside ? 'true' : 'false'); $('span', b).textContent = ui.beside ? W.hideOriginal : W.showOriginal; });
+  }
+  $$('.beside-switch').forEach(function (b) { b.addEventListener('click', function () { ui.beside = !ui.beside; save(UI, ui); applyBeside(); }); });
+  applyBeside();
+
+  // ───── my mistakes: every question last answered wrong, to answer again ─────
+  function wrongs() { return (data.quiz || []).filter(function (x) { var a = state.q[x.id]; return a && !a.r; }); }
+  function countWrongs() {
+    var n = wrongs().length;
+    $$('.wrongs').forEach(function (el) { el.textContent = n ? String(n) : ''; });
+  }
+  var Mistakes = {
+    render: function () {
+      var slot = $('#mistakes .slot');
+      if (!slot) return;
+      slot.textContent = '';
+      var list = wrongs();
+      if (!list.length) { slot.appendChild(h('p', { class: 'note', text: W.noMistakes })); return; }
+      list.forEach(function (x) {
+        var box = h('div', { class: 'q mistake' }, [h('p', { class: 'ask', text: x.q })]);
+        var had = state.q[x.id];
+        box.appendChild(h('p', { class: 'said' }, [fmt(W.youSaid, letter(had.c) + ') ' + x.o[had.c])]));
+        var opts = h('ol', { class: 'opts' }), after = h('div', { class: 'after', hidden: true });
+        x.o.forEach(function (o, i) {
+          var b = h('button', { type: 'button', class: 'opt' }, [h('span', { class: 'l', text: letter(i) }), h('span', { class: 't', text: o })]);
+          b.addEventListener('click', function () {
+            var good = i === x.a;
+            $$('.opt', opts).forEach(function (c, k) { c.disabled = true; c.classList.toggle('right', k === x.a); c.classList.toggle('wrong', k === i && !good); });
+            state.q[x.id] = { c: i, r: good ? 1 : 0 };
+            keep(); countWrongs(); refreshMarks();
+            after.hidden = false;
+            after.appendChild(h('p', { class: 'verdict ' + (good ? 'good' : 'bad'), text: good ? W.right : W.wrong }));
+            after.appendChild(h('p', null, [h('strong', { text: letter(x.a) + ') ' + x.o[x.a] }), x.y ? ' — ' + x.y : '']));
+            after.appendChild(h('p', null, [h('a', { class: 'src', href: '#p' + x.p, text: x.w + ' · ' + W.readPart })]));
+            if (good) setTimeout(function () { box.classList.add('gone'); }, 1400);
+            announce(good ? W.right : W.wrong);
+          });
+          opts.appendChild(h('li', null, [b]));
+        });
+        box.appendChild(opts);
+        box.appendChild(after);
+        slot.appendChild(box);
+      });
+    },
+  };
+  countWrongs();
 
   // ───── the activities one after another ─────
   var Practice = {

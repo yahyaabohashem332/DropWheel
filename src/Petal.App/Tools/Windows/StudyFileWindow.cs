@@ -56,6 +56,8 @@ public sealed class StudyFileWindow : ToolWindow
     private readonly List<(StudyPurpose Purpose, Button Button)> _purposeButtons = [];
     private readonly TextBlock _purposeNote = Text("", "Petal.Caption");
     private Grid? _amountRow;
+    private readonly CheckBox _design = new() { Margin = new Thickness(0, 10, 0, 0) };
+    private readonly TextBlock _designNote = Text("", "Petal.Caption");
     private StudyPurpose _purpose = StudyPurpose.Study;
 
     /// <summary>What the file can be for, as the window offers it: its name, its picture and what it gives.</summary>
@@ -164,6 +166,13 @@ public sealed class StudyFileWindow : ToolWindow
         left.Children.Add(_amountRow);
         left.Children.Add(Row("Diagrams and activities", _activities, 150, 8));
         left.Children.Add(Row("Things to try by hand", _scenes, 150, 8));
+        _design.Content = new TextBlock { Text = L.T("The model designs a scene of its own for each part's main idea"), TextWrapping = TextWrapping.Wrap };
+        _design.Checked += (_, _) => RequestChanged();
+        _design.Unchecked += (_, _) => RequestChanged();
+        left.Children.Add(_design);
+        _designNote.TextWrapping = TextWrapping.Wrap;
+        _designNote.Margin = new Thickness(26, 2, 0, 0);
+        left.Children.Add(_designNote);
         _where.Margin = new Thickness(0, 10, 0, 0);
         _where.TextWrapping = TextWrapping.Wrap;
         left.Children.Add(_where);
@@ -283,7 +292,7 @@ public sealed class StudyFileWindow : ToolWindow
 
     private string Into => _into.Value == SameLanguage ? _plan?.Language ?? "en" : _into.Value;
 
-    private StudyFile.Options Options => new(Into, _amount.Value, _plan?.Language ?? Into, _request.Text.Trim(), _activities.Value, _purpose, _scenes.Value);
+    private StudyFile.Options Options => new(Into, _amount.Value, _plan?.Language ?? Into, _request.Text.Trim(), _activities.Value, _purpose, _scenes.Value, _design.IsChecked == true && StudyFile.CanDesign);
 
     // ───────────── what it is for ─────────────
 
@@ -796,6 +805,11 @@ public sealed class StudyFileWindow : ToolWindow
         {
             _where.Text = CloudAi.CanWrite ? L.F("The text goes to {0}, on your own API key.", CloudAi.Name(CloudAi.Writing!.Provider))
                 : L.T("It runs on this PC: the file doesn't leave it.");
+            // Scenes of the model's own need a model in the cloud: one on this PC can't write them well.
+            _design.IsEnabled = StudyFile.CanDesign;
+            _designNote.Text = StudyFile.CanDesign
+                ? L.T("Like a museum exhibit made for the idea: dust that gathers into a star, boxes pushed with sliders. One request a part, on your API key; each scene runs closed off in the page.")
+                : L.T("Needs your own API key (Use My API Key below): a model on this PC can't write these scenes well.");
             if (_plan is { } plan && !_recording)
             {
                 var chosen = Chosen;
@@ -1277,6 +1291,17 @@ public sealed class StudyFileWindow : ToolWindow
             ["theAnswer"] = W("The answer: {0}"),
             ["nearScore"] = W("Close on {0} of {1}"),
             ["inFormula"] = W("Worked out as:"),
+            ["forExam"] = W("For the exam"),
+            ["signalWords"] = W("If the question says…"),
+            ["traps"] = W("Don't mix them up"),
+            ["writeLikeThis"] = W("Write it like this in the exam"),
+            ["showOriginal"] = W("Show the original beside it"),
+            ["hideOriginal"] = W("Hide the original"),
+            ["mistakes2"] = W("My mistakes"),
+            ["noMistakes"] = W("No mistakes to go over. Answer the questions in the parts, or take a test."),
+            ["youSaid"] = W("You answered: {0}"),
+            ["designedKind"] = W("Made for this idea"),
+            ["sceneFailed"] = W("This scene couldn't run in this browser; its idea is above."),
         };
         string Count(string key, int n) => key switch
         {

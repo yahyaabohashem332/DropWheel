@@ -965,7 +965,15 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         {
             var sample = SampleBook(language);
             var parts = sample.Parts.ToList();
-            parts[1] = parts[1] with { Visuals = [.. walk.Visuals, .. extras.Visuals], Activities = [.. walk.Activities, .. extras.Activities], Scenes = StudySceneReader.Read(language == "ar" ? ScenesReplyArabic : ScenesReply, "Page 4") };
+            parts[1] = parts[1] with
+            {
+                Visuals = [.. walk.Visuals, .. extras.Visuals], Activities = [.. walk.Activities, .. extras.Activities], Scenes = StudySceneReader.Read(language == "ar" ? ScenesReplyArabic : ScenesReply, "Page 4"),
+                Designed = [.. StudyDesigner.Read(StudyDesignedSamples.Reply, "Page 4"), .. StudyDesigner.Read(StudyDesignedSamples.Failing, "Page 4")],
+                Signals = [("holds the cell together", "the membrane"), ("lets some things in and keeps others out", "selectively permeable")],
+                Traps = [("Membrane or wall?", "Every cell has a membrane; only plants, fungi and bacteria also have a wall around it.")],
+                Exam = ["The cell membrane surrounds the cell and controls what goes in and out."],
+                Passages = [.. parts[1].Passages.Select(x => x with { Source = "Hücre zarı hücreyi bir arada tutar ve hücreye neyin girip çıkacağını denetler." })],
+            };
             StudyFileWriter.Write(Path.Combine(folder, $"study-{language}.html"), sample with { Parts = parts, Sample = true }, StudyFileWindow.Words(language));
             StudyFileWriter.Write(Path.Combine(folder, $"explore-{language}.html"), sample with { Parts = parts, Purpose = StudyPurpose.Explore }, StudyFileWindow.Words(language));
         }
@@ -1070,7 +1078,10 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         Directory.CreateDirectory(outFolder);
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var whisper = Petal.Core.Models.ModelStore.Find(Petal.Core.Models.ModelCatalog.WhisperAccurate) ?? Petal.Core.Models.ModelStore.Find(Petal.Core.Models.ModelCatalog.WhisperBalanced);
-        var plan = await StudyFile.ReadAsync(file, whisper, cloud: false);
+        // PETAL_STUDYFILE_CLOUD "Claude:model" or "Gemini:model": written with the user's own key (billed).
+        if (Environment.GetEnvironmentVariable("PETAL_STUDYFILE_CLOUD") is { Length: > 0 } cloud && cloud.Split(':', 2) is [var provider, var model])
+            Petal.Recipes.Cloud.CloudAi.Writing = new(Enum.Parse<Petal.Recipes.Cloud.CloudProvider>(provider, true), model);
+        var plan = await StudyFile.ReadAsync(file, whisper, cloud: Petal.Recipes.Cloud.CloudAi.CanWrite);
         output.WriteLine($"read in {clock.Elapsed.TotalSeconds:0}s: {plan.Parts.Count} parts, {plan.Parts.Sum(p => p.Units.Count)} passages, structured {plan.Structured}");
         var range = (Environment.GetEnvironmentVariable("PETAL_STUDYFILE_PARTS") ?? "").Split('-');
         int from = range.Length == 2 ? int.Parse(range[0]) : 1, to = range.Length == 2 ? int.Parse(range[1]) : plan.Parts.Count;
@@ -1080,8 +1091,10 @@ public sealed partial class StudyFileTests(ITestOutputHelper output) : IDisposab
         var purpose = Enum.TryParse<StudyPurpose>(Environment.GetEnvironmentVariable("PETAL_STUDYFILE_PURPOSE"), true, out var p0) ? p0 : StudyPurpose.Study;
         var scenes = Enum.TryParse<StudyScenes>(Environment.GetEnvironmentVariable("PETAL_STUDYFILE_SCENES"), true, out var s0) ? s0 : StudyScenes.Some;
         var book = await StudyFile.MakeAsync(plan, chosen, new StudyFile.Options(into, StudyAmount.Normal, plan.Language, Environment.GetEnvironmentVariable("PETAL_STUDYFILE_REQUEST") ?? "",
-                StudyActivities.Some, purpose, scenes), Path.GetFileNameWithoutExtension(file), Path.GetFileName(file),
+                StudyActivities.Some, purpose, scenes, Environment.GetEnvironmentVariable("PETAL_STUDYFILE_DESIGN") == "1"), Path.GetFileNameWithoutExtension(file), Path.GetFileName(file),
             (a, b) => StudyFileWindow.Place(into, a, b), new Synchronous<StudyProgress>(p => output.WriteLine($"{p.Done}/{p.Total} {p.Part}")));
+        foreach (var part in book.Parts)
+            output.WriteLine($"part {part.Number} «{part.Title}»: {part.Signals.Count} signals, {part.Traps.Count} traps, {part.Exam.Count} exam lines, {part.Designed.Count} scenes of its own ({string.Join("; ", part.Designed.Select(d => d.Title + " " + d.Html.Length + " chars"))})");
         foreach (var scene in book.Parts.SelectMany(x => x.Scenes))
             output.WriteLine($"scene {scene.Kind} «{scene.Title}»: {scene.Things.Count} things, {scene.Mixes.Count} mixes, {scene.Vars.Count} sliders, {string.Join("; ", scene.Results.Select(r => r.Id + "=" + r.Formula))}, {scene.Links.Count} links, {scene.Stages.Count} situations, {scene.Guesses.Count} guesses");
         var page = Path.Combine(outFolder, Path.GetFileNameWithoutExtension(file) + "-" + into + ".html");

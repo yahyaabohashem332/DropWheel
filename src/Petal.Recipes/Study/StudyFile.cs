@@ -38,7 +38,11 @@ public sealed record StudyPartPlan(int Number, string Chapter, string Title, IRe
 public sealed record StudyPlan(IReadOnlyList<StudyPartPlan> Parts, bool Structured, string Language, string? Title, bool Recording);
 
 /// <summary>A passage explained: its title, where it is, its key ideas, the explanation and a worked example ("" for none); or, when it couldn't be explained, the file's own words.</summary>
-public sealed record StudyExplained(string Title, string Where, IReadOnlyList<string> Ideas, string Explanation, string Example, string Original = "");
+public sealed record StudyExplained(string Title, string Where, IReadOnlyList<string> Ideas, string Explanation, string Example, string Original = "")
+{
+    /// <summary>The file's own words, when it is explained in another language: the page can show them beside the explanation.</summary>
+    public string Source { get; init; } = "";
+}
 
 /// <summary>A term of the glossary: what it means, where in the file, and the part it is explained in.</summary>
 public sealed record StudyTerm(string Term, string Meaning, string Where, int Part);
@@ -54,6 +58,18 @@ public sealed record StudyPart(int Number, string Chapter, string Title, string 
 
     /// <summary>Its hands-on scenes: a lab, a simulation, a system, situations to choose in, numbers to guess.</summary>
     public IReadOnlyList<StudyScene> Scenes { get; init; } = [];
+
+    /// <summary>For an exam: words a question may use and what they point to.</summary>
+    public IReadOnlyList<(string Words, string Answer)> Signals { get; init; } = [];
+
+    /// <summary>For an exam: things easily mixed up, and how to tell them apart.</summary>
+    public IReadOnlyList<(string Which, string Apart)> Traps { get; init; } = [];
+
+    /// <summary>For an exam: sentences to write.</summary>
+    public IReadOnlyList<string> Exam { get; init; } = [];
+
+    /// <summary>Scenes the model designed for this part, each a small page of its own.</summary>
+    public IReadOnlyList<DesignedScene> Designed { get; init; } = [];
 }
 
 /// <summary>A chapter: its title, what it comes to ("" when it is too short to need it), and its parts' numbers.</summary>
@@ -321,8 +337,20 @@ public static partial class StudyFile
             + "CARDS:\n- a question worth remembering = its short answer\n"
             + "QUIZ:\nQ: a question that checks understanding\nA) a choice\nB) a choice\nC) a choice\nD) a choice\nRIGHT: the letter of the right choice\nWHY: one sentence saying why it is right, from the passage\n\n"
             + $"Give 3 to 5 IDEAS, up to 5 TERMS (the technical terms a student must learn, only ones the passage itself uses), up to {cards} CARDS and up to {questions} QUIZ question{(questions == 1 ? "" : "s")}. "
-            + "In each question exactly one choice is right, and no other choice may also be true; the other three are believable but wrong. Ask about what matters, never about the passage's wording.";
+            + "In each question exactly one choice is right, and no other choice may also be true; the other three are believable but wrong. Ask about what matters, never about the passage's wording."
+            + ExamForm;
     }
+
+    /// <summary>
+    /// What a student preparing for an exam needs besides: the words in a question that give its answer away, the
+    /// things easily mixed up and how to tell them apart, and sentences to write in the exam itself.
+    /// </summary>
+    private const string ExamForm =
+        "\n\nAfter the QUIZ, for a student preparing for an exam, add:\n\n"
+        + "SIGNALS:\n- words or a phrase a question may use = what they point to\n"
+        + "TRAPS:\n- one thing or the other? = how to tell them apart\n"
+        + "EXAM:\n- a short, complete sentence a student can write in an exam to answer about this\n\n"
+        + "Give up to 3 SIGNALS, only where words in a question would give the answer away; up to 2 TRAPS, about things from the passage a student easily confuses; and up to 2 EXAM sentences, with the passage's own facts.";
 
     /// <summary>The instruction for a purpose other than study: the same form of reply, its voice and reader its own.</summary>
     private static string Purposed(string language, string translating, int cards, int questions, StudyPurpose purpose)
@@ -358,6 +386,8 @@ public static partial class StudyFile
         sb.Append(asks
             ? $", up to 5 TERMS (the technical terms a reader must know, only ones the passage itself uses), up to {cards} CARDS and up to {questions} QUIZ question{(questions == 1 ? "" : "s")}. In each question exactly one choice is right, and no other choice may also be true; the other three are believable but wrong. Ask about what matters, never about the passage's wording."
             : " and up to 5 TERMS (the technical terms a reader must know, only ones the passage itself uses).");
+        if (purpose == StudyPurpose.Teach)
+            sb.Append(ExamForm);
         return sb.ToString();
     }
 
@@ -375,11 +405,21 @@ public static partial class StudyFile
 
     /// <summary>What a passage came to, read from the model's reply; <see cref="Nothing"/> when it said there is nothing to learn.</summary>
     internal sealed record Reply(string Title, List<string> Ideas, string Explanation, string Example, List<(string Term, string Meaning)> Terms,
-        List<(string Front, string Back)> Cards, List<(string Question, List<string> Options, int Correct, string Why)> Quiz, bool Nothing);
+        List<(string Front, string Back)> Cards, List<(string Question, List<string> Options, int Correct, string Why)> Quiz, bool Nothing)
+    {
+        /// <summary>Words a question may use, and what they point to.</summary>
+        public List<(string Words, string Answer)> Signals { get; init; } = [];
+
+        /// <summary>Things easily mixed up, and how to tell them apart.</summary>
+        public List<(string Which, string Apart)> Traps { get; init; } = [];
+
+        /// <summary>Sentences to write in an exam.</summary>
+        public List<string> Exam { get; init; } = [];
+    }
 
     private static readonly string[] Headings = ["TITLE", "IDEAS", "KEY IDEAS", "EXPLANATION", "EXAMPLE", "WORKED EXAMPLE", "TERMS", "CARDS", "QUIZ"];
 
-    [GeneratedRegex(@"^[\s#*_>]*(TITLE|KEY IDEAS|IDEAS|EXPLANATION|WORKED EXAMPLES?|EXAMPLES?|TERMS|CARDS|QUIZ)\b[\s*_]*:?[\s*_]*(.*)$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^[\s#*_>]*(TITLE|KEY IDEAS|IDEAS|EXPLANATION|WORKED EXAMPLES?|EXAMPLES?|TERMS|CARDS|QUIZ|SIGNALS|TRAPS|EXAM)\b[\s*_]*:?[\s*_]*(.*)$", RegexOptions.IgnoreCase)]
     private static partial Regex HeadingLine();
 
     [GeneratedRegex(@"^\s*(?:[-•*·▪–]|\d+[.)])\s+")]
@@ -427,7 +467,10 @@ public static partial class StudyFile
             example = "";
         var terms = Items(Part("TERMS"), pairs: true).Select(Pair).Where(p => p.Left.Length is > 0 and <= 80 && p.Right.Length > 2).Select(p => (p.Left, p.Right)).ToList();
         var cards = Items(Part("CARDS"), pairs: true).Select(Pair).Where(p => p.Left.Length > 2 && p.Right.Length > 0).Select(p => (p.Left, p.Right)).ToList();
-        return new Reply(title, ideas, explanation, example.Trim(), terms, cards, Quiz(Part("QUIZ")), false);
+        var signals = Items(Part("SIGNALS"), pairs: true).Select(Pair).Where(p => p.Left.Length is > 1 and <= 120 && p.Right.Length is > 0 and <= 160).Select(p => (p.Left, p.Right)).Take(4).ToList();
+        var traps = Items(Part("TRAPS"), pairs: true).Select(Pair).Where(p => p.Left.Length is > 3 and <= 160 && p.Right.Length is > 3 and <= 300).Select(p => (p.Left, p.Right)).Take(3).ToList();
+        var exam = Items(Part("EXAM")).Select(Plainly).Where(e => e.Length is > 8 and <= 300).Take(3).ToList();
+        return new Reply(title, ideas, explanation, example.Trim(), terms, cards, Quiz(Part("QUIZ")), false) { Signals = signals, Traps = traps, Exam = exam };
     }
 
     [GeneratedRegex(@"^\W*(?:none|no example|n/a|-+|لا يوجد|لا ينطبق|لا شيء|yok|aucun|ninguno|tidak ada|هیچ|ندارد|کوئی نہیں|نہیں)\W*$", RegexOptions.IgnoreCase)]
@@ -594,8 +637,15 @@ public static partial class StudyFile
     /// <param name="Activities">How many diagrams and activities each passage gives besides its explanation.</param>
     /// <param name="Purpose">What the file is for: the model's voice, and whether there are cards, questions and progress.</param>
     /// <param name="Scenes">How many hands-on scenes each passage gives.</param>
+    /// <param name="Designed">Whether the model designs and writes scenes of its own for each part (with the user's own API key).</param>
     public sealed record Options(string Into, StudyAmount Amount, string From, string Request = "", StudyActivities Activities = StudyActivities.Some,
-        StudyPurpose Purpose = StudyPurpose.Study, StudyScenes Scenes = StudyScenes.None);
+        StudyPurpose Purpose = StudyPurpose.Study, StudyScenes Scenes = StudyScenes.None, bool Designed = false);
+
+    /// <summary>Whether scenes of the model's own can be made: they need a model in the cloud, as one on this PC can't write them well.</summary>
+    public static bool CanDesign => CloudAi.CanWrite || TestWriter is not null;
+
+    private static string? DesignInstruction(Options options) =>
+        options.Designed && CanDesign ? StudyDesigner.Instruction(options.Into, options.From, options.Scenes == StudyScenes.None ? StudyScenes.Some : options.Scenes, options.Request, options.Purpose) : null;
 
     private static string ExtrasInstruction(Options options) => StudyExtrasReader.Instruction(options.Into, options.From, options.Activities, options.Request, options.Purpose);
 
@@ -665,6 +715,10 @@ public static partial class StudyFile
                 var visuals = new List<StudyVisual>();
                 var activities = new List<StudyActivity>();
                 var scenes = new List<StudyScene>();
+                var signals = new List<(string, string)>();
+                var traps = new List<(string, string)>();
+                var exam = new List<string>();
+                var said = new HashSet<string>(StringComparer.Ordinal);
                 for (int i = 0; i < part.Units.Count; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -705,10 +759,14 @@ public static partial class StudyFile
                     }
                     if (reply.Nothing)
                         continue;
-                    passages.Add(new StudyExplained(reply.Title, where, reply.Ideas, reply.Explanation, reply.Example));
+                    passages.Add(new StudyExplained(reply.Title, where, reply.Ideas, reply.Explanation, reply.Example) { Source = sameLanguage ? "" : unit.Text });
                     visuals.AddRange(extras.Visuals);
                     activities.AddRange(extras.Activities);
                     scenes.AddRange(played);
+                    // The same signal, trap or sentence from two passages of a part is said once.
+                    signals.AddRange(reply.Signals.Where(x => said.Add(Key(x.Words))));
+                    traps.AddRange(reply.Traps.Where(x => said.Add(Key(x.Which))));
+                    exam.AddRange(reply.Exam.Where(x => said.Add(Key(x))));
                     var known = Fold(unit.Text + "\n" + reply.Explanation + "\n" + reply.Example);
                     foreach (var (term, meaning) in reply.Terms)
                     {
@@ -744,7 +802,12 @@ public static partial class StudyFile
                 if (passages.Count == 0)
                     continue;
                 var heading = part.Title.Length > 0 ? part.Title : passages.FirstOrDefault(p => p.Title.Length > 0)?.Title ?? "";
-                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz) { Visuals = visuals, Activities = activities, Scenes = scenes });
+                // Scenes of the model's own, for the part as a whole: its explanation and its words.
+                var designed = DesignInstruction(options) is { } design
+                    ? await DesignAsync(design, StudyDesigner.Given(part.Chapter, heading, passages.Select(p => p.Explanation), string.Join("\n\n", part.Units.Select(u => u.Text)), 24000),
+                        options.Into, placeName(part.First, part.Last), cancellationToken).ConfigureAwait(false)
+                    : [];
+                made.Add(new StudyPart(part.Number, part.Chapter, heading, placeName(part.First, part.Last), passages, cards, quiz) { Visuals = visuals, Activities = activities, Scenes = scenes, Signals = signals, Traps = traps, Exam = exam, Designed = designed });
             }
             if (made.Count == 0)
                 throw new InvalidOperationException("The model didn't find anything to make notes from in this file.");
@@ -912,6 +975,37 @@ public static partial class StudyFile
             bool none = read.Count == 0 && Regex.IsMatch(reply.Trim(), @"^\W*NONE\W*$", RegexOptions.IgnoreCase);
             bool inLanguage = read.Count == 0 || InLanguage(string.Join(" ", read.Select(r => r.Said)), into);
             if (none || read.Count > 0 && inLanguage || attempt == 1)
+            {
+                Keep(cached, inLanguage ? reply : "NONE");
+                return inLanguage ? read : [];
+            }
+        }
+        return [];
+    }
+
+    /// <summary>
+    /// A part's scenes of the model's own, from what was kept or asked anew: once more when none came whole and safe, or
+    /// in another language; what came the second time is kept, so the file made again doesn't pay a third time.
+    /// </summary>
+    private static async Task<IReadOnlyList<DesignedScene>> DesignAsync(string instruction, string given, string into, string where, CancellationToken cancellationToken)
+    {
+        var cached = CachePath(instruction, given);
+        if (File.Exists(cached))
+            return StudyDesigner.Read(await File.ReadAllTextAsync(cached, cancellationToken).ConfigureAwait(false), where);
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            string reply;
+            try
+            {
+                reply = (await WriteAsync(instruction, given, 24000, attempt == 0 ? 0.7 : 0.5, cancellationToken).ConfigureAwait(false)).Replace("\r\n", "\n");
+            }
+            catch (CloudException) when (attempt == 0)
+            {
+                continue;
+            }
+            var read = StudyDesigner.Read(reply, where);
+            bool inLanguage = read.Count == 0 || InLanguage(string.Join(" ", read.Select(r => r.Title + " " + r.Idea)), into);
+            if (read.Count > 0 && inLanguage || attempt == 1)
             {
                 Keep(cached, inLanguage ? reply : "NONE");
                 return inLanguage ? read : [];
