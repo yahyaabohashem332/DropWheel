@@ -12,7 +12,7 @@ using M = Petal.Engines.Documents.Model;
 namespace Petal.Engines.Documents.Tests;
 
 /// <summary>1.24's books: Kindle's MOBI and AZW3 read, Kobo's KEPUB both ways, comic books to PDF, EPUB and CBZ.</summary>
-public sealed class MoreBooksTests
+public sealed class MoreBooksTests(Xunit.Abstractions.ITestOutputHelper output)
 {
     private static readonly DocumentEngineOptions NoOffice = new() { UseMicrosoftOffice = false, UseLibreOffice = false };
 
@@ -78,6 +78,20 @@ public sealed class MoreBooksTests
         var text = Mobi.Read(path).PlainText();
         Assert.Contains("The end of the book.", text, StringComparison.Ordinal);
         Assert.DoesNotContain("KF7", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Mobipocket_titles_set_in_large_type_are_headings()
+    {
+        var html = "<p height=\"6em\" align=\"center\"><font size=\"7\">CHAPTER I.</font><br></br><font size=\"7\"> Down the Rabbit-Hole</font></p>" +
+            "<p><font size=\"4\"><b>An edition</b></font></p><p><font size=\"2\">Small words.</font></p>" +
+            "<p><font size=\"7\">Big</font> and plain words.</p>";
+        var doc = HtmlReader.Parse(Mobi.FontHeadings(html));
+        var headings = doc.Blocks.OfType<Heading>().ToList();
+        Assert.Equal([1, 4], headings.Select(h => h.Level));
+        Assert.Equal("CHAPTER I.", headings[0].Inlines.OfType<TextRun>().First().Text.Trim());
+        Assert.Contains(headings[0].Inlines, i => i is LineBreak);
+        Assert.Equal(2, doc.Blocks.OfType<M.Paragraph>().Count());
     }
 
     [Fact]
@@ -225,5 +239,37 @@ public sealed class MoreBooksTests
         Assert.Equal(F.Epub, F.FromPath(@"C:\books\novel.epub"));
         Assert.Equal("novel", F.BaseName(@"C:\books\novel.kepub.epub"));
         Assert.Equal("kepub.epub", OutputNaming.ExtensionOf(@"C:\books\novel.kepub.epub"));
+    }
+
+    /// <summary>
+    /// Kindle books other tools made (PETAL_KINDLE: a folder of .mobi, .azw and .azw3 files, such as Project
+    /// Gutenberg's), each read whole and written as EPUB beside it in "out"; what was read is printed.
+    /// </summary>
+    [Fact]
+    public void Real_kindle_books_read_whole()
+    {
+        var folder = Environment.GetEnvironmentVariable("PETAL_KINDLE");
+        if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            return;
+        var outDir = Directory.CreateDirectory(Path.Combine(folder, "out")).FullName;
+        foreach (var path in Directory.EnumerateFiles(folder).Where(f => Path.GetExtension(f).ToLowerInvariant() is ".mobi" or ".azw" or ".azw3" or ".prc"))
+        {
+            var doc = Mobi.Read(path);
+            var text = doc.PlainText();
+            var headings = doc.Blocks.OfType<Heading>().Select(h => h.Inlines.PlainText().Trim()).ToList();
+            output.WriteLine($"{Path.GetFileName(path)}: \"{doc.Metadata.Title}\" by {doc.Metadata.Author} ({doc.Metadata.Language}); " +
+                $"{text.Length} characters, {doc.Blocks.Count} blocks, {headings.Count} headings, {doc.AllImages().Count()} pictures, " +
+                $"{doc.Blocks.Count(b => b is PageBreak)} page breaks, {doc.Blocks.OfType<M.Table>().Count()} tables");
+            output.WriteLine("  headings: " + string.Join(" | ", headings.Take(20)));
+            output.WriteLine("  starts: " + text[..Math.Min(400, text.Length)].ReplaceLineEndings(" / "));
+            output.WriteLine("  ends: " + text[Math.Max(0, text.Length - 300)..].ReplaceLineEndings(" / "));
+            Assert.True(text.Length > 1000, "Too little text");
+            Assert.DoesNotContain("kindle:", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("filepos", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("<", text, StringComparison.Ordinal);
+            var epub = Path.Combine(outDir, Path.GetFileNameWithoutExtension(path) + "-" + Path.GetExtension(path).TrimStart('.') + ".epub");
+            File.Delete(epub);
+            Epub.Write(doc, epub);
+        }
     }
 }

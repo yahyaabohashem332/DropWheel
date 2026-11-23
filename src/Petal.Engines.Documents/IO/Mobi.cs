@@ -125,6 +125,9 @@ internal static partial class Mobi
             var html = header.Encoding.GetString(text);
             html = PageBreakTag().Replace(html, "<div style=\"page-break-before: always\"></div>");
             html = RecIndex().Replace(html, m => " src=\"petal-resource:" + int.Parse(m.Groups[1].Value) + "\"");
+            // Mobipocket closes line breaks ("<br></br>"), which an HTML reader takes for two.
+            html = Regex.Replace(html, @"</br\s*>", "", RegexOptions.IgnoreCase);
+            html = FontHeadings(html);
             var model = HtmlReader.Parse(html, src => src.StartsWith("petal-resource:", StringComparison.Ordinal)
                 && int.TryParse(src["petal-resource:".Length..], out var n) ? Resource(n) : null);
             doc.Blocks.AddRange(model.Blocks);
@@ -134,8 +137,39 @@ internal static partial class Mobi
             doc.Blocks.RemoveAt(0);
         while (doc.Blocks.Count > 0 && doc.Blocks[^1] is PageBreak)
             doc.Blocks.RemoveAt(doc.Blocks.Count - 1);
+
+        // The cover (EXTH 201, counted from the first picture) opens the book, unless the text already shows it.
+        if (header.Exth.TryGetValue(201, out var cover) && cover[0].Length >= 4
+            && Resource((int)BinaryPrimitives.ReadUInt32BigEndian(cover[0]) + 1) is { } coverBytes
+            && ImageData.Create(coverBytes, "Cover") is { } coverImage
+            && !doc.AllImages().Any(i => i.Bytes.AsSpan().SequenceEqual(coverImage.Bytes)))
+        {
+            doc.Blocks.Insert(0, new ImageBlock(coverImage));
+            if (doc.Blocks.Count > 1)
+                doc.Blocks.Insert(1, new PageBreak());
+        }
         return doc;
     }
+
+    /// <summary>
+    /// Mobipocket files mark titles by type size, not as headings: a paragraph that is nothing but words in
+    /// &lt;font size="4"&gt; to "7" (and line breaks, bold, italics) becomes a heading, 7 the first level, 4 the fourth.
+    /// </summary>
+    internal static string FontHeadings(string html) => FontParagraph().Replace(html, m =>
+    {
+        var inner = m.Groups[2].Value;
+        var sizes = FontSize().Matches(inner).Select(f => int.Parse(f.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)).ToList();
+        if (sizes.Count == 0 || sizes.Min() < 4)
+            return m.Value;
+        // Only words inside the fonts, and few of them: nothing else is a heading's.
+        var bare = HeadingMarkup().Replace(inner, "");
+        var words = StripTags(bare).Trim();
+        if (FontRun().Replace(bare, "").Trim().Length > 0 || words.Length == 0 || words.Length > 200)
+            return m.Value;
+        var level = Math.Clamp(8 - sizes.Max(), 1, 6);
+        var content = FontTag().Replace(inner, "");
+        return $"<h{level}>{content}</h{level}>";
+    });
 
     private static Header ReadHeader(Book book, int at)
     {
@@ -588,6 +622,21 @@ internal static partial class Mobi
 
     [GeneratedRegex(@"kindle:(embed|flow|pos):([0-9A-Va-v]+)[^""')\s]*")]
     private static partial Regex KindleLinks();
+
+    [GeneratedRegex(@"<(p|div)\b[^>]*>(.*?)</\1>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex FontParagraph();
+
+    [GeneratedRegex(@"<font\b[^>]*\bsize\s*=\s*[""']?(\d)[""']?[^>]*>", RegexOptions.IgnoreCase)]
+    private static partial Regex FontSize();
+
+    [GeneratedRegex(@"<font\b[^>]*>[^<]*</font>", RegexOptions.IgnoreCase)]
+    private static partial Regex FontRun();
+
+    [GeneratedRegex(@"</?font\b[^>]*>", RegexOptions.IgnoreCase)]
+    private static partial Regex FontTag();
+
+    [GeneratedRegex(@"</?(?:br|b|i|u|strong|em)\b[^>]*>", RegexOptions.IgnoreCase)]
+    private static partial Regex HeadingMarkup();
 
     [GeneratedRegex(@"<mbp:pagebreak\s*/?>", RegexOptions.IgnoreCase)]
     private static partial Regex PageBreakTag();
