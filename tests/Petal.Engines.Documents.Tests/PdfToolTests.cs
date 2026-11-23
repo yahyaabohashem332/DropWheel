@@ -88,6 +88,116 @@ public sealed class PdfToolTests
         Assert.Equal("Second file start", merged.Outlines[1].Outlines[0].Title);
     }
 
+    /// <summary>Pages of the sizes given, each with "Page N" written 40 pt in from its bottom left corner.</summary>
+    private static string MixedPdf(string dir, string name, params (double W, double H)[] sizes)
+    {
+        var path = Path.Combine(dir, name);
+        using var doc = new PdfDocument();
+        for (var i = 0; i < sizes.Length; i++)
+        {
+            var page = doc.AddPage();
+            page.Width = XUnit.FromPoint(sizes[i].W);
+            page.Height = XUnit.FromPoint(sizes[i].H);
+            using var g = XGraphics.FromPdfPage(page);
+            g.DrawString($"Page {i + 1}", new XFont("Arial", 16), XBrushes.Black, 40, sizes[i].H - 40);
+        }
+        doc.Save(path);
+        return path;
+    }
+
+    [Theory]
+    [InlineData(PdfMergePageSize.A4, 595.276, 841.89)]
+    [InlineData(PdfMergePageSize.Letter, 612.0, 792.0)]
+    public async Task Merge_can_give_every_page_one_size_each_in_its_own_orientation(PdfMergePageSize size, double shortSide, double longSide)
+    {
+        var dir = Fixtures.Instance.NewOutputDir("merge-size-" + size);
+        var a = MixedPdf(dir, "a.pdf", (595.276, 841.89), (842, 595), (300, 400));
+        var b = MixedPdf(dir, "b.pdf", (612, 792), (1920, 1080), (200, 200));
+        var output = Path.Combine(dir, "merged.pdf");
+        Assert.Equal(6, await PdfPageTools.MergeAsync([a, b], output, new PdfMergeOptions(PageSize: size)));
+
+        var sizes = PdfInfo.GetPageSizes(output);
+        bool[] landscape = [false, true, false, false, true, false];
+        for (var i = 0; i < 6; i++)
+        {
+            var (w, h) = landscape[i] ? (longSide, shortSide) : (shortSide, longSide);
+            Assert.InRange(sizes[i].Width, w - 0.5, w + 0.5);
+            Assert.InRange(sizes[i].Height, h - 0.5, h + 0.5);
+        }
+        Assert.Equal(["Page1", "Page2", "Page3", "Page1", "Page2", "Page3"], PageTexts(output));
+
+        // The 300×400 page is scaled to fit and centred: "Page 3" moved and grew by the same scale.
+        var s = Math.Min(shortSide / 300, longSide / 400);
+        var (dx, dy) = ((shortSide - s * 300) / 2, (longSide - s * 400) / 2);
+        using var pig = UglyToad.PdfPig.PdfDocument.Open(output);
+        var first = pig.GetPage(3).Letters[0];
+        Assert.InRange(first.StartBaseLine.X, dx + s * 40 - 1, dx + s * 40 + 1);
+        Assert.InRange(first.StartBaseLine.Y, dy + s * 40 - 1, dy + s * 40 + 1);
+    }
+
+    [Fact]
+    public async Task Merge_like_the_first_page_and_a_rotated_page()
+    {
+        var dir = Fixtures.Instance.NewOutputDir("merge-like-first");
+        var a = MixedPdf(dir, "a.pdf", (612, 792));
+        var b = Path.Combine(dir, "b.pdf");
+        using (var doc = PdfReader.Open(MixedPdf(dir, "b-plain.pdf", (595.276, 841.89), (400, 300)), PdfDocumentOpenMode.Modify))
+        {
+            // Shown landscape (842 × 595) by its rotation, though its box is portrait.
+            doc.Pages[0].Rotate = 90;
+            doc.Save(b);
+        }
+        var output = Path.Combine(dir, "merged.pdf");
+        await PdfPageTools.MergeAsync([a, b], output, new PdfMergeOptions(PageSize: PdfMergePageSize.LikeFirst));
+        var sizes = PdfInfo.GetPageSizes(output);
+        Assert.Equal([(612.0, 792.0), (792.0, 612.0), (792.0, 612.0)], sizes.Select(p => (Math.Round(p.Width), Math.Round(p.Height))));
+        using var merged = PdfReader.Open(output, PdfDocumentOpenMode.Import);
+        Assert.Equal(90, merged.Pages[1].Rotate);
+        Assert.Equal(["Page1", "Page1", "Page2"], PageTexts(output));
+    }
+
+    [Fact]
+    public async Task Merge_to_one_size_keeps_what_a_crop_hid_hidden_and_moves_links()
+    {
+        var dir = Fixtures.Instance.NewOutputDir("merge-crop");
+        var input = Path.Combine(dir, "cropped.pdf");
+        using (var doc = new PdfDocument())
+        {
+            var page = doc.AddPage();
+            page.Width = XUnit.FromPoint(400);
+            page.Height = XUnit.FromPoint(600);
+            using (var g = XGraphics.FromPdfPage(page))
+            {
+                g.DrawRectangle(XBrushes.Black, 0, 0, 400, 100); // the top 100 pt, which the crop box leaves out
+                g.DrawString("Inside", new XFont("Arial", 16), XBrushes.Black, 40, 560);
+            }
+            page.Elements.SetRectangle("/CropBox", new PdfRectangle(new XRect(0, 0, 400, 500)));
+            page.AddWebLink(new PdfRectangle(new XPoint(40, 40), new XPoint(140, 70)), "https://example.com");
+            doc.Save(input);
+        }
+        var output = Path.Combine(dir, "merged.pdf");
+        await PdfPageTools.MergeAsync([input], output, new PdfMergeOptions(PageSize: PdfMergePageSize.A4));
+
+        // 400 × 500 shown scaled by 595.276 / 400 and centred: 49 pt of white above it, where the black band would be.
+        var bitmap = PdfInfo.RenderPage(output, 0, 595);
+        for (var y = 4; y < 40; y += 5)
+            for (var x = 20; x < 575; x += 37)
+            {
+                var at = y * bitmap.Stride + x * 4;
+                Assert.True(bitmap.Pixels[at] > 200 && bitmap.Pixels[at + 1] > 200 && bitmap.Pixels[at + 2] > 200, $"Dark at {x}, {y}");
+            }
+        Assert.Equal(["Inside"], PageTexts(output));
+
+        var s = 595.276 / 400;
+        var dy = (841.89 - s * 500) / 2;
+        using var merged = PdfReader.Open(output, PdfDocumentOpenMode.Import);
+        var rect = merged.Pages[0].Annotations[0]!.Rectangle;
+        Assert.InRange(rect.X1, s * 40 - 0.5, s * 40 + 0.5);
+        Assert.InRange(rect.Y1, dy + s * 40 - 0.5, dy + s * 40 + 0.5);
+        Assert.InRange(rect.X2, s * 140 - 0.5, s * 140 + 0.5);
+        Assert.False(merged.Pages[0].Elements.ContainsKey("/CropBox"));
+    }
+
     [Fact]
     public async Task Organize_reorders_rotates_duplicates_and_drops_pages()
     {

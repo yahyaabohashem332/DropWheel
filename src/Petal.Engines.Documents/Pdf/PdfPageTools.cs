@@ -14,9 +14,24 @@ public sealed record PdfPageOperation(int SourcePageIndex, int Rotation = 0);
 /// <param name="UniformWidth">"Make all pages the same width": pages are scaled proportionally to match the narrowest; heights may still differ.</param>
 public sealed record PdfOrganizeOptions(bool UniformWidth = false, string? Password = null);
 
+/// <summary>The size every page of a merged PDF is given.</summary>
+public enum PdfMergePageSize
+{
+    /// <summary>Each page keeps the size it had.</summary>
+    AsTheyAre,
+    /// <summary>Every page the size of the merged PDF's first page.</summary>
+    LikeFirst,
+    A4,
+    Letter,
+}
+
 /// <param name="KeepBookmarks">Carry each file's bookmarks over, pointing at the merged pages.</param>
 /// <param name="BookmarkEachFile">Add a top-level bookmark per source file (its bookmarks nest under it).</param>
-public sealed record PdfMergeOptions(bool KeepBookmarks = true, bool BookmarkEachFile = false);
+/// <param name="PageSize">
+/// One size for every page: each page is scaled, never cut, to fit it and centred on it, turned to the page's
+/// own orientation (a landscape slide becomes a landscape A4 page, a portrait letter a portrait one).
+/// </param>
+public sealed record PdfMergeOptions(bool KeepBookmarks = true, bool BookmarkEachFile = false, PdfMergePageSize PageSize = PdfMergePageSize.AsTheyAre);
 
 /// <summary>Split, merge and organize. Inputs are never modified; outputs appear only when complete.</summary>
 public static class PdfPageTools
@@ -98,6 +113,8 @@ public static class PdfPageTools
                 }
                 progress?.Report((f + 1.0) / inputs.Count);
             }
+            if (options.PageSize != PdfMergePageSize.AsTheyAre && merged.PageCount > 0)
+                MakeOneSize(merged, options.PageSize);
             // PDFsharp locks a document once saved, so count first.
             var count = merged.PageCount;
             SafeOutput.Write(output, temp => PdfSharpIO.Save(merged, temp));
@@ -187,6 +204,69 @@ public static class PdfPageTools
             if (width <= 0 || width - target < 0.5)
                 continue;
             ScalePage(page, target / width);
+        }
+    }
+
+    /// <summary>A4 and US Letter in points, short side first.</summary>
+    internal static readonly (double Short, double Long) A4 = (595.276, 841.89), Letter = (612, 792);
+
+    /// <summary>
+    /// Gives every page the same size (<see cref="PdfMergeOptions.PageSize"/>): its visible part scaled to fit
+    /// and centred, what lay outside it hidden as before, the page turned to its own orientation.
+    /// </summary>
+    internal static void MakeOneSize(PdfDocument document, PdfMergePageSize size)
+    {
+        var (shortSide, longSide) = size switch
+        {
+            PdfMergePageSize.A4 => A4,
+            PdfMergePageSize.Letter => Letter,
+            _ => ShortLong(Displayed(document.Pages[0])),
+        };
+        foreach (PdfPage page in document.Pages)
+        {
+            var (w, h) = Displayed(page);
+            var (width, height) = w > h ? (longSide, shortSide) : (shortSide, longSide);
+            if (Math.Abs(w - width) < 0.5 && Math.Abs(h - height) < 0.5)
+                continue;
+            FitPage(page, page.Rotate is 90 or 270 ? (height, width) : (width, height));
+        }
+    }
+
+    private static (double Width, double Height) Displayed(PdfPage page)
+    {
+        var box = PdfSharpIO.VisibleBox(page);
+        return page.Rotate is 90 or 270 ? (box.Height, box.Width) : (box.Width, box.Height);
+    }
+
+    private static (double, double) ShortLong((double W, double H) s) => s.W < s.H ? (s.W, s.H) : (s.H, s.W);
+
+    /// <summary>Puts the page's visible box, scaled to fit and centred, on a page of <paramref name="target"/> (unrotated user space).</summary>
+    private static void FitPage(PdfPage page, (double Width, double Height) target)
+    {
+        var box = PdfSharpIO.VisibleBox(page);
+        double x = box.X1, y = box.Y1, w = box.Width, h = box.Height;
+        var s = Math.Min(target.Width / w, target.Height / h);
+        var dx = (target.Width - s * w) / 2 - s * x;
+        var dy = (target.Height - s * h) / 2 - s * y;
+        var inv = CultureInfo.InvariantCulture;
+        string N(double v) => v.ToString("0.######", inv);
+        // The clip keeps what lay outside the visible box hidden, as it was.
+        page.Contents.PrependContent().CreateStream(Encoding.ASCII.GetBytes(
+            $"q {N(s)} 0 0 {N(s)} {N(dx)} {N(dy)} cm {N(x)} {N(y)} {N(w)} {N(h)} re W n\n"));
+        page.Contents.AppendContent().CreateStream(Encoding.ASCII.GetBytes("\nQ\n"));
+
+        page.Elements.SetRectangle("/MediaBox", new PdfRectangle(new XRect(0, 0, target.Width, target.Height)));
+        foreach (var key in new[] { "/CropBox", "/BleedBox", "/TrimBox", "/ArtBox" })
+            page.Elements.Remove(key);
+        if (!page.Elements.ContainsKey("/Annots"))
+            return;
+        foreach (var annotation in page.Annotations.OfType<PdfAnnotation>())
+        {
+            if (annotation.Elements.ContainsKey("/Rect"))
+            {
+                var r = annotation.Rectangle;
+                annotation.Rectangle = new PdfRectangle(new XPoint(r.X1 * s + dx, r.Y1 * s + dy), new XPoint(r.X2 * s + dx, r.Y2 * s + dy));
+            }
         }
     }
 

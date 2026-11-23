@@ -279,6 +279,15 @@ public sealed class FolderTests : IDisposable
         Assert.True(sizes[0].Width > sizes[0].Height);
         Assert.True(sizes[1].Width < sizes[1].Height);
         Assert.True(sizes[^1].Width > sizes[^1].Height);
+
+        // On A4 the folder's own PDF is A4 too, like the pictures around it.
+        var a4 = Path.Combine(_dir, "Trip A4.pdf");
+        await FolderPdf.CreateAsync(files, a4, new FolderPdfOptions { PageSize = Petal.Engines.Imaging.PdfPageSize.A4 });
+        Assert.All(Petal.Engines.Documents.Pdf.PdfInfo.GetPageSizes(a4), s =>
+        {
+            Assert.InRange(Math.Min(s.Width, s.Height), 594.5, 596);
+            Assert.InRange(Math.Max(s.Width, s.Height), 841, 842.5);
+        });
     }
 
     [Theory]

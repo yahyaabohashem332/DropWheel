@@ -1372,7 +1372,7 @@
  "tool:MergePdfs": {
   "category": "pdf",
   "summary": "Birkaç PDF'yi seçtiğin sırayla tek bir PDF'de birleştirir.",
-  "details": "PDF'leri Birleştir, bıraktığın her PDF'yi içeren Belge sırası başlıklı bir liste açar. Sırayı değiştirmek için bir satırı sürükle ya da yukarı ve aşağı oklarını kullan, sonra PDF'leri Birleştir'e bas. Sayfalar, listedeki ilk PDF'nin adını taşıyan tek bir dosyada birleştirilir, örneğin 'chapter 1 Merged.pdf', ve onun yanına kaydedilir. PDF'lerin içindeki yer imleri korunur ve yeni dosyada doğru sayfaları gösterir.",
+  "details": "PDF'leri Birleştir, bıraktığın her PDF'yi içeren Belge sırası başlıklı bir liste açar. Sırayı değiştirmek için bir satırı sürükle ya da yukarı ve aşağı oklarını kullan, sonra PDF'leri Birleştir'e bas. Sayfalar, listedeki ilk PDF'nin adını taşıyan tek bir dosyada birleştirilir, örneğin 'chapter 1 Merged.pdf', ve onun yanına kaydedilir. PDF'lerin içindeki yer imleri korunur ve yeni dosyada doğru sayfaları gösterir. Sayfa boyutu bölümünde Olduğu gibi her sayfayı kendi boyutunda bırakır; İlki gibi, A4 ve Letter ise bütün sayfalara aynı boyutu verir. Her sayfa sığacak şekilde ölçeklenip ortalanır, hiçbir yeri kesilmez ve kendi yönünü korur; yatay bir slayt yatay bir sayfa olur.",
   "how": "İki veya daha fazla PDF seç, onları sürükle, Ctrl'ye dokun ve PDF BİRLEŞTİR yaprağına bırak; sırayı ayarla ve PDF'leri Birleştir'e bas.",
   "worksOn": "İki veya daha fazla PDF.",
   "examples": [

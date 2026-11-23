@@ -379,6 +379,8 @@ internal static class DesignSnapshots
             ("cropimage", () => new Tools.Windows.CropImageWindow(T(Petal.Core.Tools.ToolId.CropImage), [file("figures.png")], jobs, at)),
             ("redactphoto", () => new Tools.Windows.RedactPhotoWindow(T(Petal.Core.Tools.ToolId.RedactPhoto), file("landscape.jpg"), jobs, at)),
             ("organizepdf", () => new Tools.Windows.OrganizePdfWindow(T(Petal.Core.Tools.ToolId.OrganizePdf), file("album.pdf"), jobs, at)),
+            ("mergepdfs", () => new Tools.Windows.MergePdfsWindow(T(Petal.Core.Tools.ToolId.MergePdfs), [file("album.pdf"), file("landscape.pdf")], jobs, at)),
+            ("mergepdfsa4", () => new Tools.Windows.MergePdfsWindow(T(Petal.Core.Tools.ToolId.MergePdfs), [file("album.pdf"), file("landscape.pdf")], jobs, at) { PageSize = Petal.Engines.Documents.Pdf.PdfMergePageSize.A4 }),
             ("resize", () => new Tools.Windows.ResizeImageWindow(T(Petal.Core.Tools.ToolId.ResizeImage), [file("landscape.jpg")], jobs, at)),
             ("resizebatch", () => new Tools.Windows.ResizeImageWindow(T(Petal.Core.Tools.ToolId.ResizeImage), [file("landscape.jpg"), file("figures.png")], jobs, at)),
             ("watermark", () => new Tools.Windows.WatermarkWindow(T(Petal.Core.Tools.ToolId.Watermark), [file("landscape.jpg")], jobs, at)),

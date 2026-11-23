@@ -63,7 +63,9 @@ public static class FolderPdf
                     progress?.Report(0.6 * end / files.Count);
                     i = end;
                 }
-                pages = await PdfPageTools.MergeAsync(parts, joined, new PdfMergeOptions(), Part(progress, 0.6, options.Searchable ? 0.7 : 1), cancellationToken);
+                // The folder's own PDFs take the page size the pictures were given.
+                var size = options.PageSize switch { PageSize.A4 => PdfMergePageSize.A4, PageSize.Letter => PdfMergePageSize.Letter, _ => PdfMergePageSize.AsTheyAre };
+                pages = await PdfPageTools.MergeAsync(parts, joined, new PdfMergeOptions(PageSize: size), Part(progress, 0.6, options.Searchable ? 0.7 : 1), cancellationToken);
             }
             if (options.Searchable)
             {

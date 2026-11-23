@@ -1393,7 +1393,7 @@
  "tool:MergePdfs": {
   "category": "pdf",
   "summary": "Menggabungkan beberapa PDF menjadi satu, sesuai urutan yang Anda pilih.",
-  "details": "Gabungkan PDF membuka daftar berjudul Urutan dokumen berisi setiap PDF yang Anda lepas. Seret sebuah baris, atau gunakan panah naik dan turunnya, untuk mengubah urutan, lalu tekan Gabungkan PDF. Halaman-halamannya digabung menjadi satu file yang dinamai sesuai PDF pertama dalam daftar, misalnya 'chapter 1 Merged.pdf', disimpan di sampingnya. Bookmark di dalam PDF dipertahankan dan menunjuk ke halaman yang benar di file baru.",
+  "details": "Gabungkan PDF membuka daftar berjudul Urutan dokumen berisi setiap PDF yang Anda lepas. Seret sebuah baris, atau gunakan panah naik dan turunnya, untuk mengubah urutan, lalu tekan Gabungkan PDF. Halaman-halamannya digabung menjadi satu file yang dinamai sesuai PDF pertama dalam daftar, misalnya 'chapter 1 Merged.pdf', disimpan di sampingnya. Bookmark di dalam PDF dipertahankan dan menunjuk ke halaman yang benar di file baru. Di Ukuran halaman, Apa adanya membiarkan setiap halaman seperti semula; Seperti pertama, A4 dan Letter memberi semua halaman satu ukuran yang sama. Setiap halaman diskalakan agar pas dan diletakkan di tengah, tidak pernah dipotong, dan tetap pada orientasinya sendiri, sehingga slide lanskap menjadi halaman lanskap.",
   "how": "Pilih dua PDF atau lebih, seret, ketuk Ctrl, lalu lepaskan di GABUNG PDF; atur urutannya dan tekan Gabungkan PDF.",
   "worksOn": "Dua PDF atau lebih.",
   "examples": [

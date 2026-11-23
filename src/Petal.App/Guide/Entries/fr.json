@@ -1365,7 +1365,7 @@
  "tool:MergePdfs": {
   "category": "pdf",
   "summary": "Assemble plusieurs PDF en un seul, dans l'ordre choisi.",
-  "details": "Fusionner des PDF ouvre une liste intitulée Ordre du document avec chaque PDF déposé. Faites glisser une ligne, ou utilisez ses flèches haut et bas, pour changer l'ordre, puis appuyez sur Fusionner des PDF. Les pages sont réunies dans un seul fichier au nom du premier PDF de la liste, par exemple « chapter 1 Merged.pdf », enregistré à côté de lui. Les signets des PDF sont conservés et pointent vers les bonnes pages du nouveau fichier.",
+  "details": "Fusionner des PDF ouvre une liste intitulée Ordre du document avec chaque PDF déposé. Faites glisser une ligne, ou utilisez ses flèches haut et bas, pour changer l'ordre, puis appuyez sur Fusionner des PDF. Les pages sont réunies dans un seul fichier au nom du premier PDF de la liste, par exemple « chapter 1 Merged.pdf », enregistré à côté de lui. Les signets des PDF sont conservés et pointent vers les bonnes pages du nouveau fichier. Dans Format de page, « Telles quelles » laisse chaque page comme elle était ; « Comme la première », « A4 » et « Lettre US » donnent à toutes les pages ce même format. Chaque page est mise à l’échelle pour tenir et centrée, sans rien couper, et garde sa propre orientation : une diapositive à l’italienne devient une page à l’italienne.",
   "how": "Sélectionnez deux PDF ou plus, faites-les glisser, appuyez sur Ctrl et déposez-les sur FUSION PDF ; réglez l'ordre et appuyez sur Fusionner des PDF.",
   "worksOn": "Deux PDF ou plus.",
   "examples": [

@@ -1383,7 +1383,7 @@
  "tool:MergePdfs": {
   "category": "pdf",
   "summary": "Une varios PDF en uno, en el orden que elijas.",
-  "details": "Unir PDF abre una lista titulada Orden del documento con todos los PDF que soltaste. Arrastra una fila, o usa sus flechas de subir y bajar, para cambiar el orden, y luego pulsa Unir PDF. Las páginas se juntan en un archivo con el nombre del primer PDF de la lista, como «chapter 1 Merged.pdf», guardado junto a él. Los marcadores de los PDF se conservan y apuntan a las páginas correctas en el archivo nuevo.",
+  "details": "Unir PDF abre una lista titulada Orden del documento con todos los PDF que soltaste. Arrastra una fila, o usa sus flechas de subir y bajar, para cambiar el orden, y luego pulsa Unir PDF. Las páginas se juntan en un archivo con el nombre del primer PDF de la lista, como «chapter 1 Merged.pdf», guardado junto a él. Los marcadores de los PDF se conservan y apuntan a las páginas correctas en el archivo nuevo. En Tamaño de página, Tal cual deja cada página como estaba; Como la primera, A4 y Carta dan a todas las páginas ese mismo tamaño. Cada página se ajusta a escala y se centra, sin recortar nada, y conserva su orientación, así que una diapositiva horizontal se convierte en una página horizontal.",
   "how": "Selecciona dos o más PDF, arrástralos, pulsa Ctrl y suéltalos sobre UNIR PDF; fija el orden y pulsa Unir PDF.",
   "worksOn": "Dos o más PDF.",
   "examples": [

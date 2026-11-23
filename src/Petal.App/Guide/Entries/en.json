@@ -1359,7 +1359,7 @@
  "tool:MergePdfs": {
   "category": "pdf",
   "summary": "Joins several PDFs into one, in the order you choose.",
-  "details": "Merge PDFs opens a list titled Document order with every PDF you dropped. Drag a row, or use its up and down arrows, to change the order, then press Merge PDFs. The pages are joined into one file named after the first PDF in the list, such as 'chapter 1 Merged.pdf', saved next to it. Bookmarks inside the PDFs are kept and point at the right pages in the new file.",
+  "details": "Merge PDFs opens a list titled Document order with every PDF you dropped. Drag a row, or use its up and down arrows, to change the order, then press Merge PDFs. The pages are joined into one file named after the first PDF in the list, such as 'chapter 1 Merged.pdf', saved next to it. Bookmarks inside the PDFs are kept and point at the right pages in the new file. Under Page size, As they are leaves every page as it was; Like the first, A4 and Letter give all the pages that one size. Each page is scaled to fit and centred, never cut, and keeps its own orientation, so a landscape slide becomes a landscape page.",
   "how": "Select two or more PDFs, drag them, tap Ctrl and drop on MERGE PDF; set the order and press Merge PDFs.",
   "examples": [
    "A CV, a cover letter and two certificates joined into one PDF for a job application.",

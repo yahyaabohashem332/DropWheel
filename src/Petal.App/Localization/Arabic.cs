@@ -3946,5 +3946,8 @@ internal static class Arabic
         ["Copy instead"] = "نسخ بدلاً من ذلك",
         ["Add “Convert with DropWheel” to File Explorer, and DropWheel to “Send to” for many files at once, to use the wheel without dragging."] = "إضافة “التحويل باستخدام DropWheel” إلى مستكشف الملفات، وDropWheel إلى “إرسال إلى” لملفات كثيرة معًا، لاستخدام العجلة دون سحب.",
         ["This PDF is too long for one picture. Make a picture of each page instead."] = "ملف PDF هذا أطول من أن يكون صورة واحدة. اجعل كل صفحة صورة بدلاً من ذلك.",
+        ["As they are"] = "كما هي",
+        ["Like the first"] = "مثل الأولى",
+        ["Every page is scaled to fit, never cut, and keeps its own orientation."] = "تُصغَّر كل صفحة أو تُكبَّر لتناسب المقاس دون أن يُقصّ منها شيء، وتبقى بوضعها الطولي أو العرضي.",
     };
 }

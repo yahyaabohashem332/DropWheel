@@ -117,6 +117,60 @@ public sealed class OrganizePdfWindow : ToolWindow
     }
 }
 
+/// <summary>Merge PDFs: the files in the order chosen, and one page size for all of them if wanted.</summary>
+public sealed class MergePdfsWindow : ToolWindow
+{
+    private readonly Segmented<PdfMergePageSize> _size = Segments<PdfMergePageSize>(
+        [(PdfMergePageSize.AsTheyAre, "As they are"), (PdfMergePageSize.LikeFirst, "Like the first"), (PdfMergePageSize.A4, "A4"), (PdfMergePageSize.Letter, "Letter")],
+        PdfMergePageSize.AsTheyAre);
+    private readonly TextBlock _note;
+
+    public MergePdfsWindow(ToolInfo tool, IReadOnlyList<string> files, JobRunner jobs, ScreenPoint at) : base(tool.Name, 400)
+    {
+        var order = new OrderList(files);
+        Body.Children.Add(SectionTitle("Document order"));
+        Body.Children.Add(new ScrollViewer { Content = order, MaxHeight = 320, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+        var title = SectionTitle("Page size");
+        title.Margin = new Thickness(0, 16, 0, 8);
+        Body.Children.Add(title);
+        _size.Stretch = true;
+        Body.Children.Add(_size);
+        _note = Text("Every page is scaled to fit, never cut, and keeps its own orientation.", "Petal.Caption");
+        _note.TextWrapping = TextWrapping.Wrap;
+        _note.Margin = new Thickness(0, 8, 0, 0);
+        Body.Children.Add(_note);
+        ShowNote();
+        _size.Changed += _ => ShowNote();
+
+        PrimaryButton.Content = L.T("Merge PDFs");
+        FooterNote = Path.GetFileName(OutputNaming.ForTool(files[0], tool));
+        PrimaryButton.Click += (_, _) =>
+        {
+            var items = order.Items.ToList();
+            var output = OutputNaming.ForTool(items[0], tool);
+            var options = new PdfMergeOptions(PageSize: _size.Value);
+            Close();
+            _ = jobs.RunAsync("Merging PDFs", "PDFs merged", [new WorkItem(items[0], L.P(items.Count, "{0} file", "{0} files"), async (p, ct) =>
+            {
+                await PdfPageTools.MergeAsync(items, output, options, p, ct);
+                return (IReadOnlyList<string>)[output];
+            })], at);
+        };
+    }
+
+    /// <summary>For snapshots: the page size chosen.</summary>
+    internal PdfMergePageSize PageSize
+    {
+        set
+        {
+            _size.Value = value;
+            ShowNote();
+        }
+    }
+
+    private void ShowNote() => _note.Visibility = _size.Value == PdfMergePageSize.AsTheyAre ? Visibility.Collapsed : Visibility.Visible;
+}
+
 /// <summary>PDF hooks into the shared tool plumbing.</summary>
 public static class PdfToolSetup
 {
@@ -135,12 +189,7 @@ public static class PdfToolSetup
                 await PdfStamper.ExtractImagesAsync(f, folder, null, p, ct);
                 return (IReadOnlyList<string>)[folder];
             })).ToList(), at));
-        ToolLauncher.RegisterWindow(ToolId.MergePdfs, (t, f, j, a) => new OrderedFilesWindow(t, f, j, a, "Document order", "Merge PDFs", "Merging PDFs", "PDFs merged",
-            async (inputs, output, p, ct) =>
-            {
-                await PdfPageTools.MergeAsync(inputs, output, new PdfMergeOptions(), p, ct);
-                return output;
-            }));
+        ToolLauncher.RegisterWindow(ToolId.MergePdfs, (t, f, j, a) => new MergePdfsWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.ReadAloud, (t, f, j, a) => new ReadAloudWindow(t, f[0], j, a));
         ToolLauncher.RegisterWindow(ToolId.RemoveNoise, (t, f, j, a) => new RemoveNoiseWindow(t, f, j, a));
         ToolLauncher.RegisterWindow(ToolId.SeparateVocals, (t, f, j, a) => new SeparateVocalsWindow(t, f, j, a));
