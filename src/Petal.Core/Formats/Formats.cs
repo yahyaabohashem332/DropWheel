@@ -165,7 +165,12 @@ public static class Formats
     public static readonly FileFormat Tar = new("tar", "TAR", FormatFamily.Archive, ["tar"]);
     public static readonly FileFormat Tgz = new("tgz", "TAR.GZ", FormatFamily.Archive, ["tar.gz", "tgz", "gz"]);
     public static readonly FileFormat Rar = new("rar", "RAR", FormatFamily.Archive, ["rar"], CanWrite: false);
-    public static readonly FileFormat SevenZip = new("7z", "7Z", FormatFamily.Archive, ["7z"], CanWrite: false);
+    public static readonly FileFormat SevenZip = new("7z", "7Z", FormatFamily.Archive, ["7z"]);
+    // Linux's other compressed tar files, Windows' cabinets and disc images (ISO 9660 and UDF).
+    public static readonly FileFormat Tbz2 = new("tbz2", "TAR.BZ2", FormatFamily.Archive, ["tar.bz2", "tbz2", "tbz"]);
+    public static readonly FileFormat Txz = new("txz", "TAR.XZ", FormatFamily.Archive, ["tar.xz", "txz"]);
+    public static readonly FileFormat Cab = new("cab", "CAB", FormatFamily.Archive, ["cab"]);
+    public static readonly FileFormat Iso = new("iso", "ISO", FormatFamily.Archive, ["iso"]);
 
     public static readonly IReadOnlyList<FileFormat> All =
     [
@@ -185,7 +190,7 @@ public static class Formats
         Xlsx, Xls, Ods, Csv, Tsv, Xlsm, Xltx,
         Json, Jsonl, Yaml, Toml, Xml, Vcf,
         Srt, Vtt, Ass, Ssa, Ttml, Sami, MicroDvd, Lrc,
-        Zip, Tar, Tgz, Rar, SevenZip,
+        Zip, Tar, Tgz, Rar, SevenZip, Tbz2, Txz, Cab, Iso,
     ];
 
     public static readonly IReadOnlyList<FileFormat> RasterImages = [Jpg, Png, Webp, Heic, Tiff, Avif, Bmp, Ico, Jxl];
@@ -215,6 +220,10 @@ public static class Formats
         var name = Path.GetFileName(path);
         if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
             return Tgz;
+        if (name.EndsWith(".tar.bz2", StringComparison.OrdinalIgnoreCase))
+            return Tbz2;
+        if (name.EndsWith(".tar.xz", StringComparison.OrdinalIgnoreCase))
+            return Txz;
         if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
             return Kepub;
         var ext = Path.GetExtension(name);
@@ -249,8 +258,10 @@ public static class Formats
     public static string BaseName(string path)
     {
         var name = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".tar.xz", StringComparison.OrdinalIgnoreCase))
             return name[..^7];
+        if (name.EndsWith(".tar.bz2", StringComparison.OrdinalIgnoreCase))
+            return name[..^8];
         if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
             return name[..^11];
         return Path.GetFileNameWithoutExtension(name);

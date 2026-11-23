@@ -237,6 +237,11 @@
               <uap:FileType>.gz</uap:FileType>
               <uap:FileType>.rar</uap:FileType>
               <uap:FileType>.7z</uap:FileType>
+              <uap:FileType>.tbz2</uap:FileType>
+              <uap:FileType>.tbz</uap:FileType>
+              <uap:FileType>.txz</uap:FileType>
+              <uap:FileType>.cab</uap:FileType>
+              <uap:FileType>.iso</uap:FileType>
               <uap:FileType>.indd</uap:FileType>
               <uap:FileType>.indt</uap:FileType>
               <uap:FileType>.idml</uap:FileType>

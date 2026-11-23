@@ -2,7 +2,10 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using Petal.Core.Formats;
 using SharpCompress.Archives;
+using SharpCompress.Common;
+using SharpCompress.Compressors.BZip2;
 using SharpCompress.Readers;
+using SharpCompress.Writers.SevenZip;
 using F = Petal.Core.Formats.Formats;
 
 namespace Petal.Engines.Files.Archives;
@@ -12,7 +15,11 @@ public sealed record ArchiveEntry(string Path, bool IsDirectory, DateTimeOffset?
 
 public sealed class EncryptedArchiveException() : Exception("Password-protected archives aren't supported yet.");
 
-/// <summary>Streams entries in and out of ZIP, TAR and TAR.GZ (native .NET) and RAR / 7Z (read-only, SharpCompress).</summary>
+/// <summary>
+/// Streams entries in and out of archives: ZIP, TAR and TAR.GZ (.NET), TAR.BZ2 and 7Z (SharpCompress), TAR.XZ
+/// (read by SharpCompress, written by liblzma), RAR (read only), CAB (Windows' Cabinet API in, our own writer out)
+/// and ISO (DiscUtils: UDF and ISO 9660 in, ISO 9660 with Joliet out).
+/// </summary>
 public static class ArchiveIO
 {
     /// <summary>Reads entries one by one; <paramref name="onBytesRead"/> reports how far through the archive file we are.</summary>
@@ -44,6 +51,45 @@ public static class ArchiveIO
                         yield return new ArchiveEntry(Normalize(e.Name), false, e.ModificationTime, e.Length, () => e.DataStream ?? Stream.Null);
                     // Links, devices and global headers are skipped.
                 }
+                break;
+            }
+            case "tbz2":
+            case "txz":
+            {
+                // A compressed tar, read as it streams.
+                using var reader = ReaderFactory.OpenReader(file, new ReaderOptions { LeaveStreamOpen = true });
+                while (reader.MoveToNextEntry())
+                {
+                    var e = reader.Entry;
+                    var r = reader;
+                    yield return new ArchiveEntry(Normalize(e.Key ?? ""), e.IsDirectory, e.LastModifiedTime, e.IsDirectory ? null : e.Size, () => r.OpenEntryStream());
+                }
+                break;
+            }
+            case "cab":
+            {
+                // Windows' Cabinet API extracts into a folder of its own, which goes when reading ends.
+                var folder = Path.Combine(Path.GetTempPath(), "petal-cab-" + Guid.NewGuid().ToString("N"));
+                try
+                {
+                    var files = Cabinet.Extract(path, folder);
+                    for (var i = 0; i < files.Count; i++)
+                    {
+                        var f = files[i];
+                        yield return new ArchiveEntry(f.Path, false, f.Modified, new FileInfo(f.FullPath).Length, () => File.OpenRead(f.FullPath));
+                        onProgress?.Invoke((i + 1.0) / files.Count);
+                    }
+                }
+                finally
+                {
+                    try { Directory.Delete(folder, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                }
+                break;
+            }
+            case "iso":
+            {
+                foreach (var e in DiscImage.Read(file))
+                    yield return e;
                 break;
             }
             default:
@@ -109,10 +155,42 @@ public static class ArchiveIO
                 }
                 break;
             }
+            case "7z":
+            {
+                // LZMA, one solid block, as 7-Zip makes them by default.
+                using var writer = new SevenZipWriter(output, new SevenZipWriterOptions(CompressionType.LZMA) { LeaveStreamOpen = true });
+                foreach (var e in entries)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var name = e.Path.Replace('\\', '/');
+                    if (e.IsDirectory)
+                    {
+                        writer.WriteDirectory(name.TrimEnd('/'), e.Modified?.UtcDateTime);
+                        continue;
+                    }
+                    using var source = e.Open();
+                    writer.Write(name, source, (e.Modified ?? DateTimeOffset.Now).UtcDateTime);
+                }
+                break;
+            }
+            case "cab":
+                Cabinet.Write(output, entries, cancellationToken);
+                break;
+            case "iso":
+                DiscImage.Write(output, entries, F.BaseName(path.EndsWith(".petal-tmp", StringComparison.Ordinal) ? path[..^10] : path), cancellationToken);
+                break;
             case "tar":
             case "tgz":
+            case "tbz2":
+            case "txz":
             {
-                Stream sink = format == F.Tgz ? new GZipStream(output, CompressionLevel.Optimal) : output;
+                Stream sink = format.Id switch
+                {
+                    "tgz" => new GZipStream(output, CompressionLevel.Optimal),
+                    "tbz2" => BZip2Stream.Create(output, SharpCompress.Compressors.CompressionMode.Compress, false, leaveOpen: true, false),
+                    "txz" => Xz.Compressing(output),
+                    _ => output,
+                };
                 using (sink)
                 using (var writer = new TarWriter(sink, TarEntryFormat.Pax, leaveOpen: true))
                 {

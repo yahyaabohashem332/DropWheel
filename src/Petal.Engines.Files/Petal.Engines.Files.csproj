@@ -11,6 +11,10 @@
   <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.50.7" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
+    <!-- Disc images: UDF (Windows and DVD discs) and ISO 9660 read, ISO 9660 with Joliet written. MIT. -->
+    <PackageReference Include="LTRData.DiscUtils.Udf" Version="1.0.91" />
+    <!-- .tar.xz written: liblzma (0BSD) through its MIT wrapper. -->
+    <PackageReference Include="Joveler.Compression.XZ" Version="5.0.2" />
   </ItemGroup>
 
   <PropertyGroup>

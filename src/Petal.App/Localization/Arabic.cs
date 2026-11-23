@@ -4053,5 +4053,9 @@ internal static class Arabic
         ["Comic book"] = "قصة مصوّرة",
         ["Comic book, RAR"] = "قصة مصوّرة، RAR",
         ["Comic book, 7z"] = "قصة مصوّرة، 7z",
+        ["Smaller compressed tar"] = "tar مضغوط أصغر",
+        ["Smallest compressed tar"] = "أصغر tar مضغوط",
+        ["For Windows setups"] = "لملفات إعداد Windows",
+        ["Disc image"] = "صورة قرص",
     };
 }

@@ -105,8 +105,10 @@ public static class OutputNaming
     public static string ExtensionOf(string path)
     {
         var name = Path.GetFileName(path);
-        if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".tar.xz", StringComparison.OrdinalIgnoreCase))
             return name[^6..];
+        if (name.EndsWith(".tar.bz2", StringComparison.OrdinalIgnoreCase))
+            return name[^7..];
         if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
             return name[^10..];
         var ext = Path.GetExtension(name);

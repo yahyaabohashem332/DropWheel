@@ -91,10 +91,15 @@ MIT:
 - Windows SDK projections for .NET (C#/WinRT), DocumentFormat.OpenXml (Open XML SDK), ONNX Runtime with
   DirectML: Copyright (c) Microsoft Corporation.
 - ClosedXML and ClosedXML.Parser: Copyright (c) ClosedXML contributors.
+- DiscUtils (LTRData.DiscUtils: disc images, ISO 9660 and UDF): Copyright (c) 2008-2011 Kenneth Bell,
+  Copyright (c) 2014 Quamotion, Copyright (c) 2011-2026 Olof Lagerkvist, LTR Data. LTRData.Extensions:
+  Copyright (c) 2011-2026 Olof Lagerkvist, LTR Data.
 - ExcelDataReader: Copyright (c) 2014 ExcelDataReader.
 - ExcelNumberFormat: Copyright (c) 2017 andersnm.
 - ExCSS (used by Svg.NET in the File Explorer extension, `shell\`): Copyright (c) Tyler Brinks.
 - HtmlAgilityPack: Copyright (c) ZZZ Projects Inc.
+- Joveler.Compression.XZ and Joveler.DynLoader (writing .tar.xz through liblzma): Copyright (c) 2018-present
+  Hajin Jang.
 - NAudio: Copyright (c) 2020 Mark Heath.
 - PDFsharp and MigraDoc: Copyright (c) 2005-2025 empira Software GmbH.
 - PDFtoImage: Copyright (c) 2019 David Sungaila.
@@ -131,6 +136,8 @@ Other licences:
 - Skia: Copyright (c) 2011 Google Inc. BSD-3-Clause.
 - DirectML (Microsoft.AI.DirectML): the Microsoft DirectML License, which allows it to be redistributed
   with apps; in `licenses\DirectML.txt`.
+- XZ Utils' liblzma 5.6.4 (`liblzma.dll`, which writes .tar.xz files): Copyright (C) The XZ Utils authors and
+  contributors. BSD Zero Clause License (0BSD), below.
 - Lucide icons: ISC. Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of
   Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
 
@@ -275,6 +282,19 @@ Applies to the Lucide icons, with the copyright notice given beside them.
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is
 hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+### 0BSD
+
+Applies to XZ Utils' liblzma.
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is
+hereby granted.
 
 THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
 INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE

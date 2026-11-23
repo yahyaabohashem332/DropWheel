@@ -11,7 +11,7 @@ public static class ConversionMatrix
 {
     private static readonly FileFormat[] DocumentOutputs = [Docx, Odt, Rtf, Pdf, Txt, Md, Html, Epub, Png, Jpg];
     private static readonly FileFormat[] SpreadsheetOutputs = [Xlsx, Ods, Csv, Tsv, Pdf, Json];
-    private static readonly FileFormat[] ArchiveOutputs = [Zip, Tar, Tgz];
+    private static readonly FileFormat[] ArchiveOutputs = [Zip, SevenZip, Tgz, Txz, Tbz2, Tar];
 
     private static readonly FrozenDictionary<FileFormat, FileFormat[]> Targets = Build();
 
@@ -97,8 +97,10 @@ public static class ConversionMatrix
         foreach (var subtitle in subtitles)
             map[subtitle] = [.. subtitles.Where(f => f != subtitle), Txt];
 
-        foreach (var archive in new[] { Zip, Tar, Tgz, Rar, SevenZip })
+        foreach (var archive in new[] { Zip, Tar, Tgz, Rar, SevenZip, Tbz2, Txz, Cab, Iso })
             map[archive] = [.. ArchiveOutputs.Where(f => f != archive)];
+        // A disc image or a Windows cabinet is made from a ZIP.
+        map[Zip] = [.. map[Zip], Iso, Cab];
 
         return map.ToFrozenDictionary();
     }

@@ -105,6 +105,140 @@ public class ArchiveTests : IDisposable
             Assert.Equal(data, File.ReadAllBytes(Path.Combine(result, name.Replace('/', Path.DirectorySeparatorChar))));
     }
 
+    /// <summary>Files in folders, with a name in Arabic, words and every byte value, and an empty file.</summary>
+    private static readonly (string Name, byte[] Data)[] Mixed =
+    [
+        ("project/readme.txt", System.Text.Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("Petal archive line. ", 4000)))),
+        ("project/data/binary.bin", [.. Enumerable.Range(0, 70000).Select(i => (byte)(i * 7 + i / 256))]),
+        ("project/docs/مرحبا.txt", System.Text.Encoding.UTF8.GetBytes("مرحبا بالعالم")),
+        ("project/empty.txt", []),
+    ];
+
+    private string MixedZip(string name, bool arabic = true)
+    {
+        var path = Path.Combine(_dir, name);
+        using var zip = ZipFile.Open(path, ZipArchiveMode.Create);
+        foreach (var (entry, data) in Mixed.Where(m => arabic || m.Name.All(c => c < 128)))
+        {
+            using var s = zip.CreateEntry(entry).Open();
+            s.Write(data);
+        }
+        zip.CreateEntry("project/nothing yet/");
+        return path;
+    }
+
+    private static Dictionary<string, byte[]> Files(string zip)
+    {
+        using var archive = ZipFile.OpenRead(zip);
+        return archive.Entries.Where(e => !e.FullName.EndsWith('/')).ToDictionary(e => e.FullName, e =>
+        {
+            using var s = e.Open();
+            using var copy = new MemoryStream();
+            s.CopyTo(copy);
+            return copy.ToArray();
+        });
+    }
+
+    // 1.24: 7Z, TAR.XZ and TAR.BZ2 written, and ISO and CAB made from a ZIP; each read back as written.
+    [Theory]
+    [InlineData("7z")]
+    [InlineData("txz")]
+    [InlineData("tbz2")]
+    [InlineData("iso")]
+    [InlineData("cab")]
+    public async Task Zip_becomes_each_new_kind_and_back_byte_for_byte(string targetId)
+    {
+        var zip = MixedZip("mixed.zip");
+        var target = F.FromId(targetId)!;
+        var converter = new ArchiveConverter();
+        Assert.True(ConversionMatrix.CanConvert(F.Zip, target));
+        var packed = OutputNaming.ForConversion(zip, target);
+        await converter.ConvertAsync(new ConversionJob(zip, F.Zip, target, packed, ConversionSettings.Default), null, default);
+        Assert.Equal(target, F.FromPath(packed));
+
+        var back = Path.Combine(_dir, "back-" + targetId + ".zip");
+        await converter.ConvertAsync(new ConversionJob(packed, target, F.Zip, back, ConversionSettings.Default), null, default);
+        var expected = Files(zip);
+        var actual = Files(back);
+        Assert.Equal(expected.Keys.Order(), actual.Keys.Order());
+        foreach (var (name, data) in expected)
+            Assert.Equal(data, actual[name]);
+    }
+
+    /// <summary>Windows' own tar (libarchive) reads what DropWheel writes, as any other program would.</summary>
+    [Theory]
+    [InlineData("7z")]
+    [InlineData("txz")]
+    [InlineData("tbz2")]
+    [InlineData("iso")]
+    [InlineData("cab")]
+    public async Task Windows_tar_reads_what_is_written(string targetId)
+    {
+        var tar = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "tar.exe");
+        if (!File.Exists(tar))
+            return;
+        // Windows' tar.exe can't name files outside the system's code page, so this sample keeps to ASCII.
+        var zip = MixedZip("ascii.zip", arabic: false);
+        var target = F.FromId(targetId)!;
+        var packed = OutputNaming.ForConversion(zip, target);
+        await new ArchiveConverter().ConvertAsync(new ConversionJob(zip, F.Zip, target, packed, ConversionSettings.Default), null, default);
+        var into = Directory.CreateDirectory(Path.Combine(_dir, "tar-" + targetId)).FullName;
+        var result = await Petal.Core.Util.ProcessRunner.RunAsync(tar, ["-x", "-f", Path.GetFileName(packed), "-C", "tar-" + targetId], workingDirectory: _dir);
+        Assert.True(result.ExitCode == 0, result.StandardError);
+        foreach (var (name, data) in Mixed.Where(m => m.Name.All(c => c < 128)))
+            Assert.Equal(data, File.ReadAllBytes(Path.Combine(into, name.Replace('/', Path.DirectorySeparatorChar))));
+    }
+
+    [Fact]
+    public async Task A_cabinet_Windows_made_with_LZX_is_read()
+    {
+        var makecab = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "makecab.exe");
+        if (!File.Exists(makecab))
+            return;
+        var source = Directory.CreateDirectory(Path.Combine(_dir, "cabsource")).FullName;
+        var words = string.Concat(Enumerable.Repeat("LZX keeps the history of the whole folder. ", 3000));
+        File.WriteAllText(Path.Combine(source, "one.txt"), words);
+        File.WriteAllBytes(Path.Combine(source, "two.bin"), [.. Enumerable.Range(0, 100000).Select(i => (byte)(i % 251))]);
+        File.WriteAllLines(Path.Combine(_dir, "files.ddf"),
+        [
+            ".OPTION EXPLICIT", ".Set CabinetNameTemplate=windows.cab", $".Set DiskDirectoryTemplate=\"{_dir}\"", ".Set Cabinet=on",
+            ".Set Compress=on", ".Set CompressionType=LZX", ".Set MaxDiskSize=0",
+            $"\"{Path.Combine(source, "one.txt")}\" \"text\\one.txt\"", $"\"{Path.Combine(source, "two.bin")}\" \"two.bin\"",
+        ]);
+        var made = await Petal.Core.Util.ProcessRunner.RunAsync(makecab, ["/F", "files.ddf"], workingDirectory: _dir);
+        Assert.Equal(0, made.ExitCode);
+        var cab = Path.Combine(_dir, "windows.cab");
+        var zip = Path.Combine(_dir, "from-cab.zip");
+        await new ArchiveConverter().ConvertAsync(new ConversionJob(cab, F.Cab, F.Zip, zip, ConversionSettings.Default), null, default);
+        var files = Files(zip);
+        Assert.Equal(["text/one.txt", "two.bin"], files.Keys.Order());
+        Assert.Equal(words, System.Text.Encoding.UTF8.GetString(files["text/one.txt"]));
+        Assert.Equal(File.ReadAllBytes(Path.Combine(source, "two.bin")), files["two.bin"]);
+    }
+
+    [Fact]
+    public async Task A_tar_xz_is_extracted_beside_itself()
+    {
+        var zip = MixedZip("site.zip");
+        var txz = Path.Combine(_dir, "site.tar.xz");
+        await new ArchiveConverter().ConvertAsync(new ConversionJob(zip, F.Zip, F.Txz, txz, ConversionSettings.Default), null, default);
+        var result = await ArchiveExtractor.ExtractAsync(txz, null, default);
+        Assert.Equal(Path.Combine(_dir, "project"), result);
+        Assert.Equal("مرحبا بالعالم", File.ReadAllText(Path.Combine(result, "docs", "مرحبا.txt")));
+        Assert.True(Directory.Exists(Path.Combine(result, "nothing yet")));
+    }
+
+    [Fact]
+    public void Compressed_tar_names_keep_both_extensions()
+    {
+        Assert.Equal(F.Txz, F.FromPath(@"C:\a\linux.tar.xz"));
+        Assert.Equal(F.Tbz2, F.FromPath(@"C:\a\linux.tar.bz2"));
+        Assert.Equal("linux", F.BaseName(@"C:\a\linux.tar.bz2"));
+        Assert.Equal("linux", F.BaseName(@"C:\a\linux.tar.xz"));
+        Assert.Equal("tar.bz2", OutputNaming.ExtensionOf(@"C:\a\linux.tar.bz2"));
+        Assert.EndsWith(".tar.xz", OutputNaming.ForConversion(Path.Combine(Path.GetTempPath(), "linux.zip"), F.Txz), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Extract_ignores_paths_that_escape_the_folder()
     {
