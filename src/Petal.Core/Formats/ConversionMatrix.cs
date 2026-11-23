@@ -56,7 +56,7 @@ public static class ConversionMatrix
             map[video] = [.. VideoFormats.Where(f => f != video && f.CanWrite), Gif, Mp3];
         map[Gif] = [.. VideoFormats.Where(f => f.CanWrite)];
 
-        map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, PdfLongJpg, PdfFirstJpg, PdfLongPng, PdfFirstPng, Epub, Txt, Md, Html];
+        map[Pdf] = [Docx, Odt, Pptx, Xlsx, Jpg, Png, PdfLongJpg, PdfFirstJpg, PdfLongPng, PdfFirstPng, Epub, Txt, Md, Html, Cbz];
 
         // A presentation becomes a show or a template, and they and presentations with macros a plain one again.
         map[Pptx] = [Pdf, Jpg, Png, Ppsx, Potx];
@@ -75,7 +75,14 @@ public static class ConversionMatrix
         map[Md] = [.. map[Md], Rst];
         map[Html] = [.. map[Html], Rst];
         map[Txt] = [Docx, Odt, Rtf, Pdf, Md, Html, Epub, Jpg, Png];
-        map[Epub] = [Pdf, Docx, Odt, Txt, Md, Html];
+        map[Epub] = [Pdf, Docx, Odt, Txt, Md, Html, Kepub];
+        // Kindle and Kobo books: to EPUB first, and to the document formats.
+        foreach (var book in new[] { Mobi, Azw3, Kepub })
+            map[book] = [Epub, Pdf, Docx, Odt, Txt, Md, Html];
+        // Comic books: to a PDF or a fixed-layout EPUB of their pages; RAR's and 7z's to ZIP's.
+        map[Cbz] = [Pdf, Epub];
+        map[Cbr] = [Cbz, Pdf, Epub];
+        map[Cb7] = [Cbz, Pdf, Epub];
 
         // Data: a tree of values in another notation, or a table of records.
         map[Json] = [Yaml, Toml, Xml, Csv, Xlsx, Jsonl];

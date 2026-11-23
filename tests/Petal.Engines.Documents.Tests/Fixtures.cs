@@ -84,6 +84,52 @@ public sealed class Fixtures
         _files["pptm"] = WithMacros(_files["pptx"], "sample.pptm");
         _files["mhtml"] = Save("sample.mhtml", Mhtml(File.ReadAllBytes(_files["png-image"])));
         _files["rst"] = Save("sample.rst", System.Text.Encoding.UTF8.GetBytes(Rst));
+
+        // 1.24's books: Kindle (made to the format here), Kobo, and comic archives of three pages.
+        var png = File.ReadAllBytes(_files["png-image"]);
+        _files["mobi"] = Save("sample.mobi", BookSamples.Mobi(MobiHtml, "Petal Kindle Book", "Petal Tests", png));
+        _files["azw3"] = Save("sample.azw3", BookSamples.Azw3("Petal KF8 Book", "Petal Tests", Kf8Files, png));
+        _files["kepub"] = Path.Combine(Dir, "sample.kepub.epub");
+        Kepub.FromEpub(_files["epub"], _files["kepub"]);
+        var pages = ComicPages();
+        _files["cbz"] = Save("sample.cbz", BookSamples.Zip([.. pages, ("ComicInfo.xml", System.Text.Encoding.UTF8.GetBytes(ComicInfo))]));
+        _files["cbr"] = Save("sample.cbr", BookSamples.Rar4(pages));
+        _files["cb7"] = Save("sample.cb7", BookSamples.SevenZip(pages));
+    }
+
+    public const string MobiHtml = "<html><head><guide><reference type=\"toc\" title=\"Contents\" filepos=0000000300 /></guide></head><body>" +
+        "<h1>Petal Kindle Book</h1><p>A Mobipocket book with <b>bold</b> words, a picture and Arabic: مرحبا بالعالم.</p>" +
+        "<p><img recindex=\"00001\" /></p><mbp:pagebreak/><h2>Second chapter</h2>" +
+        "<p>Repeated words, repeated words, repeated words, so that the compression has runs to copy.</p></body></html>";
+
+    private const string Kf8Skeleton = "<?xml version=\"1.0\" encoding=\"utf-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>Petal KF8 Book</title>" +
+        "<link href=\"kindle:flow:0001?mime=text/css\" rel=\"stylesheet\" type=\"text/css\"/></head><body aid=\"0\"></body></html>";
+
+    public static readonly (string Skeleton, string Body)[] Kf8Files =
+    [
+        (Kf8Skeleton, "<h1>Petal KF8 Book</h1><p>The first part, with a picture <img src=\"kindle:embed:0001?mime=image/png\" alt=\"cover\"/> and Arabic: مرحبا بالعالم.</p>" +
+            "<p><a href=\"kindle:pos:fid:0001:off:0000000000\">A link inside the book</a></p>"),
+        (Kf8Skeleton, "<h2>Second part</h2><p>The end of the book.</p>"),
+    ];
+
+    public const string ComicInfo = "<?xml version=\"1.0\"?><ComicInfo><Series>Petal Comics</Series><Number>3</Number><Title>The Wheel</Title>" +
+        "<Writer>Petal Tests</Writer><LanguageISO>ar</LanguageISO><Manga>YesAndRightToLeft</Manga></ComicInfo>";
+
+    /// <summary>Three pages, each a size of its own so their order shows, named so that only counting numbers puts them right.</summary>
+    public static List<(string Name, byte[] Data)> ComicPages()
+    {
+        var pages = new List<(string, byte[])>();
+        foreach (var (name, width, color) in new[] { ("pages/page 10.png", 640, SKColors.SteelBlue), ("pages/page 2.png", 620, SKColors.Orange), ("pages/page 1.png", 600, SKColors.SeaGreen) })
+        {
+            using var bitmap = new SKBitmap(width, 900);
+            using (var canvas = new SKCanvas(bitmap))
+                canvas.Clear(color);
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            pages.Add((name, data.ToArray()));
+        }
+        pages.Add(("__MACOSX/pages/._page 1.png", [0, 5, 22, 7]));
+        return pages;
     }
 
     private string Variant(string source, FileFormat to, string name)

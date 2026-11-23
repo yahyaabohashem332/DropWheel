@@ -107,6 +107,8 @@ public static class OutputNaming
         var name = Path.GetFileName(path);
         if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
             return name[^6..];
+        if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
+            return name[^10..];
         var ext = Path.GetExtension(name);
         return ext.Length > 1 ? ext[1..] : "";
     }

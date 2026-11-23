@@ -111,6 +111,15 @@ public static class Formats
     public static readonly FileFormat Mhtml = new("mhtml", "MHTML", FormatFamily.Document, ["mhtml", "mht"], CanWrite: false);
     // reStructuredText, Python's documentation format.
     public static readonly FileFormat Rst = new("rst", "RST", FormatFamily.Document, ["rst", "rest"]);
+    // Kindle books without DRM, read: Mobipocket (and older .azw, .prc) and KF8.
+    public static readonly FileFormat Mobi = new("mobi", "MOBI", FormatFamily.Ebook, ["mobi", "prc", "azw"], CanWrite: false);
+    public static readonly FileFormat Azw3 = new("azw3", "AZW3", FormatFamily.Ebook, ["azw3"], CanWrite: false);
+    // Kobo's EPUB, "name.kepub.epub": each sentence marked for its reader's page counts and highlights.
+    public static readonly FileFormat Kepub = new("kepub", "KEPUB", FormatFamily.Ebook, ["kepub.epub", "kepub"]);
+    // Comic books: their pages as pictures in a ZIP, a RAR or a 7z (the last two read only).
+    public static readonly FileFormat Cbz = new("cbz", "CBZ", FormatFamily.Ebook, ["cbz"]);
+    public static readonly FileFormat Cbr = new("cbr", "CBR", FormatFamily.Ebook, ["cbr"], CanWrite: false);
+    public static readonly FileFormat Cb7 = new("cb7", "CB7", FormatFamily.Ebook, ["cb7"], CanWrite: false);
 
     // Slides
     public static readonly FileFormat Pptx = new("pptx", "PPTX", FormatFamily.Slides, ["pptx"]);
@@ -171,6 +180,7 @@ public static class Formats
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif, Ts, ThreeGp, Flv,
         Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,
         Docx, Odt, Rtf, Md, Html, Txt, Epub, Doc, Docm, Dotx, Mhtml, Rst,
+        Mobi, Azw3, Kepub, Cbz, Cbr, Cb7,
         Pptx, Ppt, Ppsx, Potx, Pptm,
         Xlsx, Xls, Ods, Csv, Tsv, Xlsm, Xltx,
         Json, Jsonl, Yaml, Toml, Xml, Vcf,
@@ -205,6 +215,8 @@ public static class Formats
         var name = Path.GetFileName(path);
         if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
             return Tgz;
+        if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
+            return Kepub;
         var ext = Path.GetExtension(name);
         var format = ext.Length > 1 ? ByExtension.GetValueOrDefault(ext[1..]) : null;
         if (format == Ts && ext.Equals(".ts", StringComparison.OrdinalIgnoreCase) && !LooksLikeTransportStream(path))
@@ -239,6 +251,8 @@ public static class Formats
         var name = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
             return name[..^7];
+        if (name.EndsWith(".kepub.epub", StringComparison.OrdinalIgnoreCase))
+            return name[..^11];
         return Path.GetFileNameWithoutExtension(name);
     }
 }

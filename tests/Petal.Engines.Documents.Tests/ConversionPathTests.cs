@@ -15,7 +15,8 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
 {
     private static readonly FileFormat[] Sources =
         [F.Pdf, F.Docx, F.Odt, F.Rtf, F.Md, F.Html, F.Txt, F.Epub, F.Pptx, F.Ppt, F.Xlsx, F.Xls, F.Ods, F.Csv, F.Tsv,
-         F.Doc, F.Docm, F.Dotx, F.Mhtml, F.Rst, F.Ppsx, F.Potx, F.Pptm, F.Xlsm, F.Xltx];
+         F.Doc, F.Docm, F.Dotx, F.Mhtml, F.Rst, F.Ppsx, F.Potx, F.Pptm, F.Xlsm, F.Xltx,
+         F.Mobi, F.Azw3, F.Kepub, F.Cbz, F.Cbr, F.Cb7];
 
     public static IEnumerable<object[]> Paths() =>
         ConversionMatrix.AllPaths()
@@ -35,8 +36,9 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
             .Select(p => $"{p.From} → {p.To}")
             .ToList();
         Assert.Empty(missing);
-        // +5 in 1.24: every spreadsheet to JSON; +81 for DOC, DOCM, DOTX, MHTML, RST, PPSX, POTX, PPTM, XLSM and XLTX.
-        Assert.Equal(187, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
+        // +5 in 1.24: every spreadsheet to JSON; +81 for DOC, DOCM, DOTX, MHTML, RST, PPSX, POTX, PPTM, XLSM and XLTX;
+        // +31 for MOBI, AZW3, KEPUB and comic books.
+        Assert.Equal(218, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
     }
 
     [Fact]
@@ -79,9 +81,11 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
         Assert.NotEmpty(files);
         // "PNG (long)" and "JPG (first page)" write PNG and JPG files: pictures, read as such.
         var written = F.Written(to);
-        var text = string.Join("\n", files.Where(f => Path.GetExtension(f).TrimStart('.').Equals(to.WriteExtension, StringComparison.OrdinalIgnoreCase))
+        var text = string.Join("\n", files.Where(f => OutputNaming.ExtensionOf(f).Equals(to.WriteExtension, StringComparison.OrdinalIgnoreCase))
             .Select(f => OutputVerifier.TextOf(f, written)));
-        if (written != F.Png && written != F.Jpg)
+        // Comic books are pictures: their pages are checked by MoreBooksTests.
+        var comic = from == F.Cbz || from == F.Cbr || from == F.Cb7 || to == F.Cbz;
+        if (written != F.Png && written != F.Jpg && !comic)
             OutputVerifier.ContainsText(text, Fixtures.Token);
 
         // Strict checks, beyond what lenient readers accept: Office schemas, PDF structure.

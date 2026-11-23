@@ -178,6 +178,14 @@
               <uap:FileType>.text</uap:FileType>
               <uap:FileType>.log</uap:FileType>
               <uap:FileType>.epub</uap:FileType>
+              <uap:FileType>.mobi</uap:FileType>
+              <uap:FileType>.prc</uap:FileType>
+              <uap:FileType>.azw</uap:FileType>
+              <uap:FileType>.azw3</uap:FileType>
+              <uap:FileType>.kepub</uap:FileType>
+              <uap:FileType>.cbz</uap:FileType>
+              <uap:FileType>.cbr</uap:FileType>
+              <uap:FileType>.cb7</uap:FileType>
               <uap:FileType>.pptx</uap:FileType>
               <uap:FileType>.ppt</uap:FileType>
               <uap:FileType>.ppsx</uap:FileType>

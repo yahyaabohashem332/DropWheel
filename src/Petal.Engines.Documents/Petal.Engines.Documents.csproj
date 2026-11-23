@@ -34,6 +34,8 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
     <PackageReference Include="Tomlyn" Version="2.11.1" />
+    <!-- Comic books' RAR and 7z archives (read only); the same version the files engine reads archives with. -->
+    <PackageReference Include="SharpCompress" Version="0.50.7" />
     <!-- PDFsharp 6.2.4 pulls Pkcs 8.0.1, which has published advisories. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>

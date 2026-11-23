@@ -4047,5 +4047,11 @@ internal static class Arabic
         ["Slides with macros"] = "شرائح بوحدات ماكرو",
         ["Excel with macros"] = "Excel بوحدات ماكرو",
         ["Excel template"] = "قالب Excel",
+        ["Older Kindle books"] = "كتب Kindle القديمة",
+        ["Kindle books"] = "كتب Kindle",
+        ["For Kobo readers"] = "لقارئات Kobo",
+        ["Comic book"] = "قصة مصوّرة",
+        ["Comic book, RAR"] = "قصة مصوّرة، RAR",
+        ["Comic book, 7z"] = "قصة مصوّرة، 7z",
     };
 }

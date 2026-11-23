@@ -113,8 +113,8 @@ internal static class Epub
         WritePackage(path, title, doc.Metadata, toc, parts, fixedLayout: false, coverId: null);
     }
 
-    /// <summary>Fixed-layout EPUB: one page picture per page, keeping the original look exactly.</summary>
-    public static void WriteFixedLayout(IReadOnlyList<EpubPage> pages, string path, string title, DocMetadata metadata)
+    /// <summary>Fixed-layout EPUB: one page picture per page, keeping the original look exactly; manga read right to left.</summary>
+    public static void WriteFixedLayout(IReadOnlyList<EpubPage> pages, string path, string title, DocMetadata metadata, bool rightToLeft = false)
     {
         var parts = new List<(string Name, byte[] Data, string MediaType, string Id, string? Properties)>();
         var toc = new List<(string File, string Title)>();
@@ -141,7 +141,7 @@ internal static class Epub
             parts.Add(($"OEBPS/{file}", Encoding.UTF8.GetBytes(xhtml), "application/xhtml+xml", $"page{i + 1}", null));
             toc.Add((file, $"Page {i + 1}"));
         }
-        WritePackage(path, title, metadata, toc, parts, fixedLayout: true, coverId: "img1");
+        WritePackage(path, title, metadata, toc, parts, fixedLayout: true, coverId: "img1", rightToLeft);
     }
 
     private static List<List<Block>> SplitChapters(List<Block> blocks)
@@ -166,7 +166,7 @@ internal static class Epub
     }
 
     private static void WritePackage(string path, string title, DocMetadata metadata, List<(string File, string Title)> toc,
-        List<(string Name, byte[] Data, string MediaType, string Id, string? Properties)> parts, bool fixedLayout, string? coverId)
+        List<(string Name, byte[] Data, string MediaType, string Id, string? Properties)> parts, bool fixedLayout, string? coverId, bool rightToLeft = false)
     {
         var uid = "urn:uuid:" + Guid.NewGuid();
         var language = string.IsNullOrWhiteSpace(metadata.Language) ? "en" : metadata.Language!;
@@ -225,6 +225,8 @@ internal static class Epub
 
         var spine = new XElement(Opf + "spine", new XAttribute("toc", "ncx"),
             toc.Select(t => new XElement(Opf + "itemref", new XAttribute("idref", parts.First(p => p.Name == "OEBPS/" + t.File).Id))));
+        if (rightToLeft)
+            spine.Add(new XAttribute("page-progression-direction", "rtl"));
 
         var package = new XDocument(new XElement(Opf + "package",
             new XAttribute("version", "3.0"),

@@ -78,6 +78,26 @@ internal static class OutputVerifier
                 Assert.Equal("{\\rtf", head);
                 return RtfReader.Read(path).PlainText();
             }
+            case "kepub":
+            {
+                using (var zip = ZipFile.OpenRead(path))
+                {
+                    Assert.Equal("mimetype", zip.Entries[0].FullName);
+                    var pages = zip.Entries.Where(e => e.FullName.EndsWith(".xhtml", StringComparison.OrdinalIgnoreCase) && !e.FullName.EndsWith("nav.xhtml", StringComparison.OrdinalIgnoreCase));
+                    Assert.All(pages, e =>
+                    {
+                        using var reader = new StreamReader(e.Open());
+                        Assert.Contains("class=\"koboSpan\"", reader.ReadToEnd(), StringComparison.Ordinal);
+                    });
+                }
+                return Epub.Read(path).PlainText();
+            }
+            case "cbz":
+            {
+                using var zip = ZipFile.OpenRead(path);
+                Assert.Contains(zip.Entries, e => e.FullName.StartsWith("page", StringComparison.Ordinal));
+                return "";
+            }
             case "epub":
             {
                 using (var zip = ZipFile.OpenRead(path))

@@ -16,6 +16,7 @@ public static class DocumentEngine
         [
             new DesignPdfConverter(),
             new OfficePackageConverter(),
+            new EbookConverter(),
             new PdfConverter(options),
             new DocumentConverter(options),
             new SpreadsheetConverter(options),
