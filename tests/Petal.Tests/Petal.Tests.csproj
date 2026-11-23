@@ -23,6 +23,8 @@
   <!-- File Explorer's thumbnail reader, built for .NET Framework 4.8 in the app, tested here as source. -->
   <ItemGroup>
     <Compile Include="..\..\src\Petal.Shell\*.cs" LinkBase="Shell" />
+    <!-- RAR and 7z archives built byte by byte, shared with the documents tests' comic books. -->
+    <Compile Include="..\Petal.Engines.Documents.Tests\BookSamples.cs" Link="Archives\BookSamples.cs" />
     <PackageReference Include="Svg" Version="3.4.8" />
   </ItemGroup>
 

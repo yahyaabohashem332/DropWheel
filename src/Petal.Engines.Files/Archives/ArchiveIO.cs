@@ -51,16 +51,31 @@ public static class ArchiveIO
                 using var archive = ArchiveFactory.OpenArchive(new FileInfo(path), new ReaderOptions());
                 if (archive.IsEncrypted || archive.Entries.Any(e => e.IsEncrypted))
                     throw new EncryptedArchiveException();
-                using var reader = archive.ExtractAllEntries();
                 long total = Math.Max(1, archive.TotalUncompressedSize);
                 long done = 0;
-                while (reader.MoveToNextEntry())
+                // A solid archive (and any 7z) is read from start to end in one pass; SharpCompress refuses that for
+                // the others (most RARs: WinRAR doesn't make them solid unless asked), which open entry by entry.
+                if (archive.IsSolid || archive.Type == SharpCompress.Common.ArchiveType.SevenZip)
                 {
-                    var e = reader.Entry;
-                    var r = reader;
-                    yield return new ArchiveEntry(Normalize(e.Key ?? ""), e.IsDirectory, e.LastModifiedTime, e.IsDirectory ? null : e.Size, () => r.OpenEntryStream());
-                    done += e.Size;
-                    onProgress?.Invoke(Math.Min(1, (double)done / total));
+                    using var reader = archive.ExtractAllEntries();
+                    while (reader.MoveToNextEntry())
+                    {
+                        var e = reader.Entry;
+                        var r = reader;
+                        yield return new ArchiveEntry(Normalize(e.Key ?? ""), e.IsDirectory, e.LastModifiedTime, e.IsDirectory ? null : e.Size, () => r.OpenEntryStream());
+                        done += e.Size;
+                        onProgress?.Invoke(Math.Min(1, (double)done / total));
+                    }
+                }
+                else
+                {
+                    foreach (var e in archive.Entries)
+                    {
+                        var entry = e;
+                        yield return new ArchiveEntry(Normalize(e.Key ?? ""), e.IsDirectory, e.LastModifiedTime, e.IsDirectory ? null : e.Size, () => entry.OpenEntryStream());
+                        done += e.Size;
+                        onProgress?.Invoke(Math.Min(1, (double)done / total));
+                    }
                 }
                 break;
             }

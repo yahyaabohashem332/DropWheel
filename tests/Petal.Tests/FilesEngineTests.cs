@@ -64,6 +64,47 @@ public class ArchiveTests : IDisposable
         Assert.Equal(2, Directory.GetFiles(result).Length);
     }
 
+    /// <summary>Files with text and with every byte value, in a folder and at the top.</summary>
+    private static readonly (string Name, byte[] Data)[] Packed =
+    [
+        ("docs/readme.txt", System.Text.Encoding.UTF8.GetBytes("Petal archive, مرحبا")),
+        ("docs/binary.bin", [.. Enumerable.Range(0, 256).Select(i => (byte)i)]),
+        ("notes.txt", System.Text.Encoding.UTF8.GetBytes("Loose file at the top.")),
+    ];
+
+    // RAR archives WinRAR makes by default are not solid, which SharpCompress won't read in one pass.
+    [Theory]
+    [InlineData("rar")]
+    [InlineData("7z")]
+    public async Task Rar_and_7z_become_zip_with_every_file_whole(string fromId)
+    {
+        var from = F.FromId(fromId)!;
+        var path = Path.Combine(_dir, "packed." + fromId);
+        File.WriteAllBytes(path, fromId == "rar" ? Petal.Engines.Documents.Tests.BookSamples.Rar4(Packed) : Petal.Engines.Documents.Tests.BookSamples.SevenZip(Packed));
+        var zip = OutputNaming.ForConversion(path, F.Zip);
+        await new ArchiveConverter().ConvertAsync(new ConversionJob(path, from, F.Zip, zip, ConversionSettings.Default), null, default);
+        using var archive = ZipFile.OpenRead(zip);
+        Assert.Equal(Packed.Select(p => p.Name).Order(), archive.Entries.Where(e => !e.FullName.EndsWith('/')).Select(e => e.FullName).Order());
+        foreach (var (name, data) in Packed)
+        {
+            using var stream = archive.GetEntry(name)!.Open();
+            using var copy = new MemoryStream();
+            stream.CopyTo(copy);
+            Assert.Equal(data, copy.ToArray());
+        }
+    }
+
+    [Fact]
+    public async Task A_rar_is_extracted_into_its_folder()
+    {
+        var path = Path.Combine(_dir, "backup.rar");
+        File.WriteAllBytes(path, Petal.Engines.Documents.Tests.BookSamples.Rar4(Packed));
+        var result = await ArchiveExtractor.ExtractAsync(path, null, default);
+        Assert.Equal(Path.Combine(_dir, "backup"), result);
+        foreach (var (name, data) in Packed)
+            Assert.Equal(data, File.ReadAllBytes(Path.Combine(result, name.Replace('/', Path.DirectorySeparatorChar))));
+    }
+
     [Fact]
     public async Task Extract_ignores_paths_that_escape_the_folder()
     {
