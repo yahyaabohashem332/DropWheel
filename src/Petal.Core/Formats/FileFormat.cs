@@ -21,6 +21,8 @@ public enum FormatFamily
     Palette,
     /// <summary>Fonts, on the desktop and for the web.</summary>
     Font,
+    /// <summary>Structured data (JSON, JSON Lines, YAML, TOML, XML) and contacts (vCard).</summary>
+    Data,
 }
 
 /// <summary>A file format Petal knows how to read and/or write.</summary>

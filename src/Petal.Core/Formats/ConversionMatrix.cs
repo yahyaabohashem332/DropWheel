@@ -10,7 +10,7 @@ namespace Petal.Core.Formats;
 public static class ConversionMatrix
 {
     private static readonly FileFormat[] DocumentOutputs = [Docx, Odt, Rtf, Pdf, Txt, Md, Html, Epub, Png, Jpg];
-    private static readonly FileFormat[] SpreadsheetOutputs = [Xlsx, Ods, Csv, Tsv, Pdf];
+    private static readonly FileFormat[] SpreadsheetOutputs = [Xlsx, Ods, Csv, Tsv, Pdf, Json];
     private static readonly FileFormat[] ArchiveOutputs = [Zip, Tar, Tgz];
 
     private static readonly FrozenDictionary<FileFormat, FileFormat[]> Targets = Build();
@@ -62,6 +62,14 @@ public static class ConversionMatrix
             map[doc] = [.. DocumentOutputs.Where(f => f != doc)];
         map[Txt] = [Docx, Odt, Rtf, Pdf, Md, Html, Epub, Jpg, Png];
         map[Epub] = [Pdf, Docx, Odt, Txt, Md, Html];
+
+        // Data: a tree of values in another notation, or a table of records.
+        map[Json] = [Yaml, Toml, Xml, Csv, Xlsx, Jsonl];
+        map[Jsonl] = [Json, Csv, Xlsx];
+        map[Yaml] = [Json, Toml, Xml, Csv, Xlsx];
+        map[Toml] = [Json, Yaml, Xml];
+        map[Xml] = [Json, Yaml];
+        map[Vcf] = [Csv, Xlsx, Json];
 
         map[Srt] = [Vtt, Txt];
         map[Vtt] = [Srt, Txt];

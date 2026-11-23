@@ -95,6 +95,15 @@ public static class Formats
     public static readonly FileFormat Csv = new("csv", "CSV", FormatFamily.Spreadsheet, ["csv"]);
     public static readonly FileFormat Tsv = new("tsv", "TSV", FormatFamily.Spreadsheet, ["tsv", "tab"]);
 
+    // Data: converted to each other through one tree of values, and to and from tables.
+    public static readonly FileFormat Json = new("json", "JSON", FormatFamily.Data, ["json"]);
+    public static readonly FileFormat Jsonl = new("jsonl", "JSONL", FormatFamily.Data, ["jsonl", "ndjson"]);
+    public static readonly FileFormat Yaml = new("yaml", "YAML", FormatFamily.Data, ["yaml", "yml"]);
+    public static readonly FileFormat Toml = new("toml", "TOML", FormatFamily.Data, ["toml"]);
+    public static readonly FileFormat Xml = new("xml", "XML", FormatFamily.Data, ["xml"]);
+    // Contacts from a phone or an address book: read, and made into tables and JSON.
+    public static readonly FileFormat Vcf = new("vcf", "VCF", FormatFamily.Data, ["vcf", "vcard"], CanWrite: false);
+
     // Subtitles
     public static readonly FileFormat Srt = new("srt", "SRT", FormatFamily.Subtitle, ["srt"]);
     public static readonly FileFormat Vtt = new("vtt", "VTT", FormatFamily.Subtitle, ["vtt"]);
@@ -120,6 +129,7 @@ public static class Formats
         Docx, Odt, Rtf, Md, Html, Txt, Epub,
         Pptx, Ppt,
         Xlsx, Xls, Ods, Csv, Tsv,
+        Json, Jsonl, Yaml, Toml, Xml, Vcf,
         Srt, Vtt,
         Zip, Tar, Tgz, Rar, SevenZip,
     ];

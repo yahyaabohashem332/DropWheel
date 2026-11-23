@@ -19,6 +19,7 @@ public static class DocumentEngine
             new DocumentConverter(options),
             new SpreadsheetConverter(options),
             new SlidesConverter(options),
+            new Data.DataConverter(),
         ];
     }
 

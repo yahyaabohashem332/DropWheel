@@ -159,6 +159,15 @@
               <uap:FileType>.tab</uap:FileType>
               <uap:FileType>.srt</uap:FileType>
               <uap:FileType>.vtt</uap:FileType>
+              <uap:FileType>.json</uap:FileType>
+              <uap:FileType>.jsonl</uap:FileType>
+              <uap:FileType>.ndjson</uap:FileType>
+              <uap:FileType>.yaml</uap:FileType>
+              <uap:FileType>.yml</uap:FileType>
+              <uap:FileType>.toml</uap:FileType>
+              <uap:FileType>.xml</uap:FileType>
+              <uap:FileType>.vcf</uap:FileType>
+              <uap:FileType>.vcard</uap:FileType>
             </uap:SupportedFileTypes>
             <uap2:SupportedVerbs>
               <uap3:Verb Id="convert" Parameters="--wheel &quot;%1&quot;">ms-resource:ConvertVerb</uap3:Verb>

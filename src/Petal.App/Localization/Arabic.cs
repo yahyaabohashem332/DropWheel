@@ -4014,5 +4014,11 @@ internal static class Arabic
         ["Install it whenever it suits you."] = "ثبّته متى ناسبك.",
         ["Recommended update"] = "تحديث مستحسن",
         ["Recommended for everyone."] = "يُنصح به للجميع.",
+        ["Data for apps"] = "بيانات للتطبيقات",
+        ["One record a line"] = "سجل في كل سطر",
+        ["Settings, easy to read"] = "إعدادات سهلة القراءة",
+        ["Settings files"] = "ملفات إعدادات",
+        ["Tagged data"] = "بيانات بوسوم",
+        ["Phone contacts"] = "جهات اتصال الهاتف",
     };
 }

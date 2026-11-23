@@ -104,6 +104,7 @@ MIT:
 - SharpZipLib: Copyright (c) 2000-2018 SharpZipLib Contributors.
 - Whisper.net: Copyright (c) 2023 Sandro Hanea. whisper.cpp and ggml: Copyright (c) 2023-2026 The ggml
   authors.
+- YamlDotNet (YAML in the data conversions): Copyright (c) Antoine Aubry and contributors.
 
 Apache-2.0:
 - Magick.NET: Copyright Dirk Lemstra. DropWheel uses a **custom Magick.Native-Q8-x64 build** (Apache-2.0:
@@ -123,6 +124,7 @@ Apache-2.0:
 
 Other licences:
 - Markdig: Copyright (c) 2018-2019, Alexandre Mutel. BSD-2-Clause.
+- Tomlyn (TOML in the data conversions): Copyright (c) Alexandre Mutel. BSD-2-Clause.
 - Svg.NET (thumbnails and previews of SVG files in File Explorer, `shell\Svg.dll`): © Copyright 2009 Microsoft,
   © Copyright 2011 vvvv Group, © Copyright 2021 SVG.NET Contributors. Microsoft Public License (MS-PL); in
   `licenses\MS-PL.txt`.

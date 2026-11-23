@@ -98,7 +98,7 @@ public static partial class Organizer
             FormatFamily.Image or FormatFamily.Vector => FileCategory.Pictures,
             FormatFamily.Video => FileCategory.Videos,
             FormatFamily.Audio => FileCategory.Music,
-            FormatFamily.Pdf or FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook or FormatFamily.Slides or FormatFamily.Spreadsheet or FormatFamily.Project or FormatFamily.Palette => FileCategory.Documents,
+            FormatFamily.Pdf or FormatFamily.Document or FormatFamily.Text or FormatFamily.Ebook or FormatFamily.Slides or FormatFamily.Spreadsheet or FormatFamily.Project or FormatFamily.Palette or FormatFamily.Data => FileCategory.Documents,
             FormatFamily.Archive => FileCategory.Archives,
             _ => null,
         };

@@ -61,7 +61,7 @@ public sealed class SpreadsheetConverter(DocumentEngineOptions? options = null) 
         _ => throw new NotSupportedException($"Cannot read {format.Label} spreadsheets."),
     };
 
-    private static JobResult Write(WorkbookModel workbook, ConversionJob job, IProgress<double>? progress, CancellationToken ct)
+    internal static JobResult Write(WorkbookModel workbook, ConversionJob job, IProgress<double>? progress, CancellationToken ct)
     {
         workbook.Title ??= F.BaseName(job.InputPath);
         switch (job.To.Id)

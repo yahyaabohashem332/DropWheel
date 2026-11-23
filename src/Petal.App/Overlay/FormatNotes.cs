@@ -59,6 +59,12 @@ public static class FormatNotes
         ["7z"] = "Smallest archive",
         ["ase"] = "Adobe swatches",
         ["aco"] = "Photoshop swatches",
+        ["json"] = "Data for apps",
+        ["jsonl"] = "One record a line",
+        ["yaml"] = "Settings, easy to read",
+        ["toml"] = "Settings files",
+        ["xml"] = "Tagged data",
+        ["vcf"] = "Phone contacts",
     };
 
     /// <summary>The note in English (translated where it is shown), or null for a format without one.</summary>

@@ -22,7 +22,7 @@ for family, extensions in pattern.findall(source):
 groups = [
     ('petal.pictures', 'PicturesName', ['Image', 'Vector']),
     ('petal.media', 'MediaName', ['Audio', 'Video']),
-    ('petal.documents', 'DocumentsName', ['Pdf', 'Document', 'Text', 'Ebook', 'Slides', 'Spreadsheet', 'Subtitle']),
+    ('petal.documents', 'DocumentsName', ['Pdf', 'Document', 'Text', 'Ebook', 'Slides', 'Spreadsheet', 'Subtitle', 'Data']),
     ('petal.others', 'OthersName', ['Archive', 'Project', 'Palette', 'Font']),
 ]
 placed = {f for _, _, fs in groups for f in fs}

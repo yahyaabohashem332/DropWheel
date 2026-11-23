@@ -8,11 +8,12 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_354_paths()
+    public void Conversion_matrix_has_381_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
         // +4 in 1.22 for PDF long/first page image outputs.
-        Assert.Equal(354, ConversionMatrix.TotalPaths);
+        // +27 in 1.24 for data: JSON, JSON Lines, YAML, TOML, XML and vCard, and spreadsheets to JSON.
+        Assert.Equal(381, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

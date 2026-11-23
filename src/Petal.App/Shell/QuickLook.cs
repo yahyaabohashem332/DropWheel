@@ -362,6 +362,7 @@ internal sealed class QuickLookWindow : Window
             { Family: FormatFamily.Document or FormatFamily.Ebook or FormatFamily.Slides or FormatFamily.Spreadsheet } => LookKind.Document,
             { Family: FormatFamily.Text } => LookKind.Text,
             { Family: FormatFamily.Subtitle } => LookKind.Text,
+            { Family: FormatFamily.Data } => LookKind.Text,
             _ => LookKind.Other,
         };
     }

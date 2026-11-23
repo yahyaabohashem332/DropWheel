@@ -33,7 +33,8 @@ public sealed class ConversionPathTests(ITestOutputHelper output)
             .Select(p => $"{p.From} → {p.To}")
             .ToList();
         Assert.Empty(missing);
-        Assert.Equal(101, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
+        // +5 in 1.24: every spreadsheet to JSON.
+        Assert.Equal(106, ConversionMatrix.AllPaths().Count(p => Sources.Contains(p.From)));
     }
 
     [Fact]
