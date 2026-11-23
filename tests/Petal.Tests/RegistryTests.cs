@@ -8,7 +8,7 @@ namespace Petal.Tests;
 public class RegistryTests
 {
     [Fact]
-    public void Conversion_matrix_has_701_paths()
+    public void Conversion_matrix_has_737_paths()
     {
         // 363 until 1.20, when WMV and WMA became read only (13 paths wrote them).
         // +4 in 1.22 for PDF long/first page image outputs.
@@ -22,7 +22,8 @@ public class RegistryTests
         // +31 for books: MOBI, AZW3 and KEPUB to EPUB and the document formats, EPUB to KEPUB, comic books to PDF,
         // EPUB and CBZ, a PDF to CBZ.
         // +38 for archives: 7Z, TAR.XZ and TAR.BZ2 written, they and CAB and ISO read, a ZIP to ISO and CAB.
-        Assert.Equal(701, ConversionMatrix.TotalPaths);
+        // +36 for 3D models: STL, OBJ, PLY, 3MF, GLB and glTF to each other and to a PNG picture.
+        Assert.Equal(737, ConversionMatrix.TotalPaths);
     }
 
     [Fact]

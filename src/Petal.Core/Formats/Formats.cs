@@ -51,6 +51,14 @@ public static class Formats
     public static readonly FileFormat Numbers = new("numbers", "NUMBERS", FormatFamily.Project, ["numbers"], CanWrite: false);
     public static readonly FileFormat Keynote = new("key", "KEYNOTE", FormatFamily.Project, ["key"], CanWrite: false);
 
+    // 3D models.
+    public static readonly FileFormat Glb = new("glb", "GLB", FormatFamily.Model, ["glb"]);
+    public static readonly FileFormat Gltf = new("gltf", "GLTF", FormatFamily.Model, ["gltf"]);
+    public static readonly FileFormat Stl = new("stl", "STL", FormatFamily.Model, ["stl"]);
+    public static readonly FileFormat Obj = new("obj", "OBJ", FormatFamily.Model, ["obj"]);
+    public static readonly FileFormat ThreeMf = new("3mf", "3MF", FormatFamily.Model, ["3mf"]);
+    public static readonly FileFormat Ply = new("ply", "PLY", FormatFamily.Model, ["ply"]);
+
     public static readonly FileFormat Ttf = new("ttf", "TTF", FormatFamily.Font, ["ttf"]);
     public static readonly FileFormat Otf = new("otf", "OTF", FormatFamily.Font, ["otf"]);
     public static readonly FileFormat Woff = new("woff", "WOFF", FormatFamily.Font, ["woff"]);
@@ -181,6 +189,7 @@ public static class Formats
         Pages, Numbers, Keynote,
         Ase, Aco,
         Ttf, Otf, Woff, Woff2,
+        Glb, Gltf, Stl, Obj, ThreeMf, Ply,
         Mp3, M4a, Wav, Flac, Ogg, Opus, Aiff, Wma, M4b,
         Mp4, Mov, Mkv, Webm, Avi, Wmv, Gif, Ts, ThreeGp, Flv,
         Pdf, PdfLongPng, PdfFirstPng, PdfLongJpg, PdfFirstJpg,

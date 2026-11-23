@@ -23,6 +23,8 @@ public enum FormatFamily
     Font,
     /// <summary>Structured data (JSON, JSON Lines, YAML, TOML, XML) and contacts (vCard).</summary>
     Data,
+    /// <summary>3D models: for printing (STL, 3MF), from 3D programs (OBJ, PLY), for the web and AR (GLB, glTF).</summary>
+    Model,
 }
 
 /// <summary>A file format Petal knows how to read and/or write.</summary>

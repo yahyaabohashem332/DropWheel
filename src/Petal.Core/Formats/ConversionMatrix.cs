@@ -43,6 +43,11 @@ public static class ConversionMatrix
         foreach (var apple in new[] { Pages, Numbers, Keynote })
             map[apple] = [Pdf, Txt, Jpg];
 
+        // 3D models to each other and to a picture.
+        FileFormat[] models = [Glb, Stl, Obj, ThreeMf, Gltf, Ply];
+        foreach (var model in models)
+            map[model] = [.. models.Where(f => f != model), Png];
+
         map[Ttf] = [Woff2, Otf, Woff];
         map[Otf] = [Woff2, Ttf, Woff];
         map[Woff] = [Ttf, Otf, Woff2];

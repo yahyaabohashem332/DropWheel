@@ -106,6 +106,8 @@ MIT:
 - SkiaSharp: Copyright (c) 2015-2016 Xamarin, Inc. and Copyright (c) 2017-2025 Microsoft Corporation.
 - RBush: Copyright (c) 2017 viceroypenguin.
 - SharpCompress: Copyright (c) 2014 Adam Hathcock.
+- SharpGLTF (SharpGLTF.Core, SharpGLTF.Runtime and SharpGLTF.Toolkit; glTF and GLB 3D models): Copyright (c)
+  2018-2026 Vicente Penades.
 - SharpZipLib: Copyright (c) 2000-2018 SharpZipLib Contributors.
 - Whisper.net: Copyright (c) 2023 Sandro Hanea. whisper.cpp and ggml: Copyright (c) 2023-2026 The ggml
   authors.

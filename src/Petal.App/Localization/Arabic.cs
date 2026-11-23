@@ -4057,5 +4057,11 @@ internal static class Arabic
         ["Smallest compressed tar"] = "أصغر tar مضغوط",
         ["For Windows setups"] = "لملفات إعداد Windows",
         ["Disc image"] = "صورة قرص",
+        ["For the web and AR"] = "للويب والواقع المعزز",
+        ["3D for the web"] = "ثلاثي الأبعاد للويب",
+        ["For 3D printing"] = "للطباعة ثلاثية الأبعاد",
+        ["For every 3D app"] = "لكل برامج الأبعاد الثلاثة",
+        ["3D printing, in colour"] = "طباعة ثلاثية الأبعاد بالألوان",
+        ["3D scans"] = "مسح ثلاثي الأبعاد",
     };
 }

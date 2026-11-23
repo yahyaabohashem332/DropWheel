@@ -257,6 +257,12 @@
               <uap:FileType>.otf</uap:FileType>
               <uap:FileType>.woff</uap:FileType>
               <uap:FileType>.woff2</uap:FileType>
+              <uap:FileType>.glb</uap:FileType>
+              <uap:FileType>.gltf</uap:FileType>
+              <uap:FileType>.stl</uap:FileType>
+              <uap:FileType>.obj</uap:FileType>
+              <uap:FileType>.3mf</uap:FileType>
+              <uap:FileType>.ply</uap:FileType>
             </uap:SupportedFileTypes>
             <uap2:SupportedVerbs>
               <uap3:Verb Id="convert" Parameters="--wheel &quot;%1&quot;">ms-resource:ConvertVerb</uap3:Verb>

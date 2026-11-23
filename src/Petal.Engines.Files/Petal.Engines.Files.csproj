@@ -15,6 +15,10 @@
     <PackageReference Include="LTRData.DiscUtils.Udf" Version="1.0.91" />
     <!-- .tar.xz written: liblzma (0BSD) through its MIT wrapper. -->
     <PackageReference Include="Joveler.Compression.XZ" Version="5.0.2" />
+    <!-- 3D models: glTF and GLB read and written (MIT); the picture of a model is drawn with SkiaSharp. -->
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.7" />
+    <PackageReference Include="SkiaSharp" Version="4.150.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.150.1" />
   </ItemGroup>
 
   <PropertyGroup>
