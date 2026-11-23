@@ -169,10 +169,61 @@ public abstract class ToolWindow : Window
         void Tidy() => _footer.Visibility = PrimaryButton.Visibility == Visibility.Visible || ResetButton.Visibility == Visibility.Visible
             || _footerNote.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         Tidy();
-        var page = new StackPanel { Children = { Body, _footer } };
+        FrameworkElement page;
+        if (PageRoot is { } root)
+        {
+            // A page laid out for the page: it fills the height it is given, the footer under it.
+            var dock = new DockPanel { LastChildFill = true };
+            DockPanel.SetDock(_footer, Dock.Bottom);
+            dock.Children.Add(_footer);
+            dock.Children.Add(root);
+            page = dock;
+        }
+        else
+            page = new StackPanel { Children = { Body, _footer } };
         page.Loaded += (_, _) => Tidy();
         return _page = page;
     }
+
+    /// <summary>
+    /// A layout of the tool's own for its page, in place of <see cref="Body"/>: one that fills the page's height and
+    /// width (a guide with its list and an entry beside it, a history down to the bottom of the window).
+    /// </summary>
+    protected FrameworkElement? PageRoot { get; set; }
+
+    /// <summary>
+    /// The body's parts in two columns for a wide page (the first <paramref name="split"/> on the start side), one
+    /// under the other when the page is narrower than <paramref name="twoFrom"/>.
+    /// </summary>
+    protected FrameworkElement BodyInTwoColumns(int split, double twoFrom = 980, double gap = 36)
+    {
+        var parts = Body.Children.OfType<UIElement>().ToList();
+        Body.Children.Clear();
+        var first = new StackPanel();
+        var second = new StackPanel();
+        for (var i = 0; i < parts.Count; i++)
+            (i < split ? first : second).Children.Add(parts[i]);
+        var grid = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition() },
+            RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto } },
+            Children = { first, second },
+        };
+        void Arrange(double width)
+        {
+            var two = width >= twoFrom;
+            grid.ColumnDefinitions[1].Width = two ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            Grid.SetColumn(second, two ? 1 : 0);
+            Grid.SetRow(second, two ? 0 : 1);
+            second.Margin = two ? new Thickness(gap, 0, 0, 0) : new Thickness(0, 18, 0, 0);
+        }
+        grid.SizeChanged += (_, e) => Arrange(e.NewSize.Width);
+        Arrange(twoFrom);
+        return grid;
+    }
+
+    /// <summary>Whether its page gives it the whole height of the window rather than scrolling.</summary>
+    internal bool FillsPage => PageRoot is not null;
 
     /// <summary>Its page has come into view in the main window.</summary>
     internal void PageShown() => OnPageShown();

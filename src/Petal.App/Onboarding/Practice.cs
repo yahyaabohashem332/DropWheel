@@ -164,6 +164,15 @@ public sealed class PracticeWindow : ToolWindow
             PrimaryButton.Visibility = Visibility.Collapsed;
             Body.Children.RemoveAt(0);
             Body.Children.Insert(0, Text("Try the wheel here: nothing runs while this page is open. Each choice says what would have happened.", "Petal.Body"));
+            // What each choice would have done, in a card beside the photo, in larger type.
+            Body.Children.Remove(_said);
+            _said.FontSize = 15;
+            _said.Margin = new Thickness(0);
+            var said = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(20, 16, 20, 18), BorderThickness = new Thickness(1), MinHeight = 120, Child = _said };
+            said.SetResourceReference(Border.BackgroundProperty, "Petal.Surface");
+            said.SetResourceReference(Border.BorderBrushProperty, "Petal.ControlBorder");
+            Body.Children.Add(said);
+            PageRoot = BodyInTwoColumns(4, twoFrom: 860);
         }
     }
 

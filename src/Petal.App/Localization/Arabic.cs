@@ -4068,5 +4068,17 @@ internal static class Arabic
         ["Learn"] = "التعلّم",
         ["Try the wheel here: nothing runs while this page is open. Each choice says what would have happened."] = "جرّب العجلة هنا: لا يعمل شيء ما دامت هذه الصفحة مفتوحة. كل اختيار يخبرك بما كان سيحدث.",
         ["Drag it anywhere, tap Shift, and drop it on a format. While this page is open, nothing is made: you're practising."] = "اسحبها إلى أي مكان، واضغط Shift، ثم أفلتها على صيغة. ما دامت هذه الصفحة مفتوحة لا يُنشأ شيء: أنت تتدرّب.",
+        ["This week"] = "هذا الأسبوع",
+        ["Choose a tool to read about it here."] = "اختر أداةً لتقرأ عنها هنا.",
+        ["Phone"] = "هاتف",
+        ["SMS"] = "رسالة نصية",
+        ["Contact"] = "جهة اتصال",
+        ["Subject"] = "الموضوع",
+        ["Message"] = "الرسالة",
+        ["To"] = "إلى",
+        ["Phones that scan it open a new e-mail, ready to send."] = "الهواتف التي تمسحه تفتح رسالة بريد جديدة جاهزة للإرسال.",
+        ["Phones that scan it offer to call the number."] = "الهواتف التي تمسحه تعرض الاتصال بالرقم.",
+        ["Phones that scan it open a text message, ready to send."] = "الهواتف التي تمسحه تفتح رسالة نصية جاهزة للإرسال.",
+        ["Phones that scan it offer to save the contact."] = "الهواتف التي تمسحه تعرض حفظ جهة الاتصال.",
     };
 }

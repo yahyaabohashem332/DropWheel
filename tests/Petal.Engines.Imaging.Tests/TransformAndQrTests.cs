@@ -131,6 +131,22 @@ public sealed class QrTests
         Assert.Equal("WIFI:T:nopass;S:Guest;;", QrGenerator.WifiPayload("Guest", ""));
 
     [Fact]
+    public void An_email_a_number_a_message_and_a_contact_are_written_as_phones_read_them()
+    {
+        Assert.Equal("mailto:hello@example.com?subject=Room%20booking&body=Is%20Friday%20free%3F", QrGenerator.EmailPayload(" hello@example.com ", "Room booking", "Is Friday free?"));
+        Assert.Equal("mailto:hello@example.com", QrGenerator.EmailPayload("hello@example.com", "", ""));
+        // Arabic and Persian digits dial as Western ones; spaces, brackets and dashes go.
+        Assert.Equal("tel:+905321234567", QrGenerator.PhonePayload("+90 (532) 123-45-67"));
+        Assert.Equal("tel:0599123456", QrGenerator.PhonePayload("٠٥٩٩١٢٣٤٥٦"));
+        Assert.Equal("SMSTO:+12025550123:See you at 6", QrGenerator.SmsPayload("+1 202 555 0123", "See you at 6"));
+        var card = QrGenerator.ContactPayload("Sara; Ali", "+90 532 000 00 00", "sara@example.com");
+        Assert.Equal("BEGIN:VCARD\nVERSION:3.0\nN:;Sara\\; Ali;;;\nFN:Sara\\; Ali\nTEL;TYPE=CELL:+905320000000\nEMAIL:sara@example.com\nEND:VCARD", card);
+        // Each still fits a code.
+        foreach (var payload in new[] { card, QrGenerator.SmsPayload("123", "hi") })
+            Assert.True(QrGenerator.Encode(payload).GetLength(0) > 20);
+    }
+
+    [Fact]
     public void Empty_text_is_refused() =>
         Assert.Throws<ArgumentException>(() => QrGenerator.Encode(""));
 }

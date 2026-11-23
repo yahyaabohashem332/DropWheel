@@ -271,6 +271,39 @@ public sealed class MainWindowTests
     }, 0);
 
     [Fact]
+    public void The_guide_page_reads_the_chosen_tool_beside_its_list() => Run(window =>
+    {
+        window.GoToPage("Tools Guide");
+        window.UpdateLayout();
+        Settle();
+        var guide = (Petal.App.Guide.GuideWindow)window.ToolForTest("Tools Guide")!;
+        Assert.True(guide.ListedForTest.Count > 5);
+        // The first is read at once; Down reads the next.
+        Assert.Equal(guide.ListedForTest[0], guide.ShownForTest);
+        guide.StepForTest(1);
+        Assert.Equal(guide.ListedForTest[1], guide.ShownForTest);
+        guide.StepForTest(-5);
+        Assert.Equal(guide.ListedForTest[0], guide.ShownForTest);
+        // Words typed list what comes closest, and one of them is read.
+        guide.FindForTest("countdown");
+        Assert.Contains(guide.ShownForTest!, guide.ListedForTest);
+    }, 0);
+
+    [Theory]
+    [InlineData("Tools Guide")]
+    [InlineData("History")]
+    public void The_guide_and_the_history_fill_the_window(string title) => Run(window =>
+    {
+        window.GoToPage(title);
+        window.UpdateLayout();
+        Settle();
+        var content = window.ToolForTest(title)!.PageContent();
+        // Down to the bottom of the window, not a window's height somewhere in a page.
+        Assert.True(content.ActualHeight > window.ActualHeight * 0.6, $"{content.ActualHeight} of {window.ActualHeight}");
+        Assert.True(content.ActualWidth > 900, $"{content.ActualWidth}");
+    }, 0);
+
+    [Fact]
     public void Practice_is_on_only_while_its_page_is_in_view() => PdfEditorWindowTests.RunOnInterface(() =>
     {
         var window = (SettingsWindow)SettingsWindow.ForPage(0);

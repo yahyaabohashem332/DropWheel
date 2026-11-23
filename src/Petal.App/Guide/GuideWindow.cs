@@ -19,7 +19,7 @@ namespace Petal.App.Guide;
 /// in your own words ("a countdown", "أريد أداة للعدّ التنازلي", "make this PDF smaller"): the closest tools come
 /// at once, and Enter asks the AI model on this PC, which answers from the guide and links the tools it names.
 /// </summary>
-public sealed class GuideWindow : ToolWindow
+public sealed partial class GuideWindow : ToolWindow
 {
     private readonly TextBox _request = new() { FontSize = 15, MinHeight = 38, VerticalContentAlignment = VerticalAlignment.Center };
     private readonly TextBlock _placeholder;
@@ -93,31 +93,34 @@ public sealed class GuideWindow : ToolWindow
         DockPanel.SetDock(_askButton, Dock.Right);
         requestRow.Children.Add(_askButton);
         requestRow.Children.Add(new Grid { Children = { _request, _placeholder } });
-        Body.Children.Add(requestRow);
-        Body.Children.Add(_answer);
-        Body.Children.Add(_model);
         _model.Ready += async () => await AskAsync();
-
-        // The sections down the side, their entries beside them.
-        // On its page there is room for more of the list.
-        var columns = new Grid { Margin = new Thickness(0, 14, 0, 0), Height = asPage ? 640 : 470 };
-        columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(178) });
-        columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var sectionsScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _sections, Margin = new Thickness(0, 0, 12, 0) };
-        columns.Children.Add(sectionsScroll);
         _listTitle = Text("", "Petal.Label");
         _listTitle.Margin = new Thickness(2, 0, 0, 8);
         _listScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _list };
-        var right = new DockPanel();
-        DockPanel.SetDock(_listTitle, Dock.Top);
-        right.Children.Add(_listTitle);
-        right.Children.Add(_listScroll);
-        Grid.SetColumn(right, 1);
-        columns.Children.Add(right);
-        Body.Children.Add(columns);
-
+        var sectionsScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = _sections, Margin = new Thickness(0, 0, 12, 0) };
         foreach (var section in GuideBook.Categories.Where(c => GuideBook.Keys.Any(k => GuideBook.Get(k)?.Category == c)))
             _sections.Children.Add(SectionButton(section));
+
+        if (asPage)
+            PageRoot = PageLayout(requestRow, sectionsScroll);
+        else
+        {
+            Body.Children.Add(requestRow);
+            Body.Children.Add(_answer);
+            Body.Children.Add(_model);
+            // The sections down the side, their entries beside them.
+            var columns = new Grid { Margin = new Thickness(0, 14, 0, 0), Height = 470 };
+            columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(178) });
+            columns.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            columns.Children.Add(sectionsScroll);
+            var right = new DockPanel();
+            DockPanel.SetDock(_listTitle, Dock.Top);
+            right.Children.Add(_listTitle);
+            right.Children.Add(_listScroll);
+            Grid.SetColumn(right, 1);
+            columns.Children.Add(right);
+            Body.Children.Add(columns);
+        }
 
         _typing = new DispatcherTimer(TimeSpan.FromMilliseconds(180), DispatcherPriority.Input, (_, _) => { _typing!.Stop(); Filter(); }, Dispatcher);
         _typing.Stop();
@@ -160,7 +163,7 @@ public sealed class GuideWindow : ToolWindow
             Padding = new Thickness(10, 6, 10, 6),
             Margin = new Thickness(0, 0, 0, 2),
             Tag = section,
-            Content = new TextBlock { Text = GuideBook.CategoryName(section), TextWrapping = TextWrapping.Wrap },
+            Content = IsPage ? SectionLabel(section) : new TextBlock { Text = GuideBook.CategoryName(section), TextWrapping = TextWrapping.Wrap },
         };
         button.Click += (_, _) =>
         {
@@ -185,6 +188,8 @@ public sealed class GuideWindow : ToolWindow
                 t.FontWeight = on ? FontWeights.SemiBold : FontWeights.Normal;
         }
         _listTitle.Text = GuideBook.CategoryName(section);
+        if (IsPage)
+            PickSection(section);
         FillList(GuideBook.Keys.Where(k => GuideBook.Get(k)?.Category == section).OrderBy(GuideBook.Name, StringComparer.CurrentCulture));
     }
 
@@ -199,6 +204,8 @@ public sealed class GuideWindow : ToolWindow
             _list.Children.Add(row);
         }
         _listScroll.ScrollToTop();
+        if (IsPage)
+            PageRefold();
     }
 
     /// <summary>Opens an entry where it is listed: its section, unfolded, scrolled to.</summary>
@@ -216,6 +223,8 @@ public sealed class GuideWindow : ToolWindow
 
     private FrameworkElement Row(string key)
     {
+        if (IsPage)
+            return CompactRow(key);
         var e = GuideBook.Get(key)!;
         var card = new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10, 12, 10), Margin = new Thickness(0, 0, 4, 6), Tag = key };
         card.SetResourceReference(Border.BackgroundProperty, "Petal.Control");
@@ -258,6 +267,11 @@ public sealed class GuideWindow : ToolWindow
     /// <summary>Unfolds the open entry and folds the rest.</summary>
     private void Refold()
     {
+        if (IsPage)
+        {
+            PageRefold();
+            return;
+        }
         foreach (var (key, row) in _rows)
         {
             if (row is not Border { Child: StackPanel inside })

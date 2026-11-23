@@ -56,7 +56,7 @@ public sealed class WelcomeWindow : ToolWindow
             PrimaryButton.Visibility = ResetButton.Visibility = Visibility.Collapsed;
         FooterNote = "DropWheel lives in the notification area.";
 
-        var stage = PreviewPanel(_demo, 270);
+        var stage = PreviewPanel(_demo, asPage ? 340 : 270);
         stage.Margin = new Thickness(0, 0, 0, 18);
         Body.Children.Add(stage);
 
@@ -75,6 +75,9 @@ public sealed class WelcomeWindow : ToolWindow
 
         Body.Children.Add(TryIt());
         Body.Children.Add(Exercise());
+        // On a wide page: the demo and the steps beside what to try.
+        if (asPage)
+            PageRoot = BodyInTwoColumns(4);
         // While this window is open (or its page is in view) the wheel only says what it would do: practice changes nothing.
         if (!asPage)
         {

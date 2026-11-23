@@ -54,7 +54,7 @@ internal sealed class CardColumns : Panel
 public sealed partial class SettingsWindow
 {
     /// <summary>A page; one that is a tool's (the guide, the history…) makes the tool when first opened, into <see cref="Holder"/>.</summary>
-    private sealed record Page(string Title, string Icon, FrameworkElement Content, Button Button, Func<ToolWindow>? Make = null, ContentControl? Holder = null);
+    private sealed record Page(string Title, string Icon, FrameworkElement Content, Button Button, Func<ToolWindow>? Make = null, ContentControl? Holder = null, bool Fill = false);
 
     private static int _lastPage;
     private readonly List<Page> _pages = [];
@@ -74,8 +74,8 @@ public sealed partial class SettingsWindow
     {
         AddPage("Home", "appWindow", HomePage());
         // What the home page's tiles open: each a page here, not a window of its own.
-        AddToolPage("Tools Guide", "book", "Every tool explained, and your questions answered.", Guide.GuideWindow.ForPage, 1120);
-        AddToolPage("History", "history", "What DropWheel made, and undoing it.", Tools.Windows.HistoryWindow.ForPage, 780);
+        AddToolPage("Tools Guide", "book", "Every tool explained, and your questions answered.", Guide.GuideWindow.ForPage, 1760, fill: true);
+        AddToolPage("History", "history", "What DropWheel made, and undoing it.", Tools.Windows.HistoryWindow.ForPage, 1320, fill: true);
         Group("The Wheel");
         AddPage("Keys & Behaviour", "keyboard", CardsPage("Keys & Behaviour", "What opens the wheel, and how it behaves.",
             Card("Keys", "Start dragging a file, then tap one of these keys. The wheel stays open until you drop.", KeysSection()),
@@ -100,7 +100,7 @@ public sealed partial class SettingsWindow
         AddPage("Conversions", "sliders", CardsPage("Conversions", "Where results go, and their quality.",
             Card("Results", null, OutputSection()),
             Card("Quality", "Defaults used by conversions. Tools have their own settings in their windows.", QualitySection())));
-        AddToolPage("Create QR Code", "qr", "From a link or any text.", Tools.Windows.QrWindow.ForPage, 520);
+        AddToolPage("Create QR Code", "qr", "From a link or any text.", Tools.Windows.QrWindow.ForPage, 1120);
         Group("App");
         AddPage("Saved Files", "folderOpen", CardsPage("Saved Files", "Where each thing DropWheel makes is saved. Open any folder from here, or copy its path.",
             Card("What You Make", "Change any folder: new files go there, and what is already saved stays where it is.", _placesMade),
@@ -111,8 +111,8 @@ public sealed partial class SettingsWindow
             Card("Backup", "All your settings, wheels, favourites, recipes, automations and petals in one file: to keep, or to bring to another PC.", BackupSection()),
             Card("Updates", null, UpdatesSection())));
         Group("Learn");
-        AddToolPage("How it works", "info", "A short look at the wheel.", Onboarding.WelcomeWindow.ForPage, 760);
-        AddToolPage("Practice", "target", "Try the wheel on a sample file.", Onboarding.PracticeWindow.ForPage, 620);
+        AddToolPage("How it works", "info", "A short look at the wheel.", Onboarding.WelcomeWindow.ForPage, 1200);
+        AddToolPage("Practice", "target", "Try the wheel on a sample file.", Onboarding.PracticeWindow.ForPage, 1120);
         Closed += (_, _) => EndTools();
 
         var side = new DockPanel();
@@ -159,13 +159,46 @@ public sealed partial class SettingsWindow
     }
 
     /// <summary>A tool as a page: its title and what it is for at the top, the tool under them, no wider than it reads well.</summary>
-    private void AddToolPage(string title, string icon, string subtitle, Func<ToolWindow> make, double width)
+    /// <summary>
+    /// A tool as a page: its title and what it is for at the top, the tool under them, as wide as the window lets it be
+    /// up to <paramref name="width"/>. One that fills (the guide, the history) is given the window's height and
+    /// scrolls inside itself; the rest scroll with the page.
+    /// </summary>
+    private void AddToolPage(string title, string icon, string subtitle, Func<ToolWindow> make, double width, bool fill = false)
     {
-        var holder = new ContentControl { Focusable = false, MaxWidth = width, HorizontalAlignment = HorizontalAlignment.Left, HorizontalContentAlignment = HorizontalAlignment.Stretch };
-        AddPage(title, icon, Titled(title, subtitle, holder), make, holder);
+        var holder = new ContentControl
+        {
+            Focusable = false, MaxWidth = width, HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = fill ? VerticalAlignment.Stretch : VerticalAlignment.Top,
+        };
+        FrameworkElement content;
+        if (fill)
+        {
+            var heading = Text(title, "Petal.Title");
+            heading.FontSize = 24;
+            var grid = new Grid { Margin = new Thickness(28, 22, 28, 18), RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Auto }, new RowDefinition() } };
+            grid.Children.Add(heading);
+            var under = Text(subtitle, "Petal.Caption").WithMargin(0, 4, 0, 16);
+            Grid.SetRow(under, 1);
+            grid.Children.Add(under);
+            Grid.SetRow(holder, 2);
+            holder.HorizontalAlignment = HorizontalAlignment.Left;
+            grid.Children.Add(holder);
+            // As wide as the page is, up to its widest.
+            grid.SizeChanged += (_, e) => holder.Width = Math.Min(width, Math.Max(0, e.NewSize.Width - 56));
+            content = grid;
+        }
+        else
+        {
+            // From the page's start edge, as wide as the page is up to its widest (a box limited in width would centre itself).
+            content = Titled(title, subtitle, holder);
+            holder.HorizontalAlignment = HorizontalAlignment.Left;
+            content.SizeChanged += (_, e) => holder.Width = Math.Min(width, Math.Max(0, e.NewSize.Width - 56));
+        }
+        AddPage(title, icon, content, make, holder, fill);
     }
 
-    private void AddPage(string title, string icon, FrameworkElement content, Func<ToolWindow>? make = null, ContentControl? holder = null)
+    private void AddPage(string title, string icon, FrameworkElement content, Func<ToolWindow>? make = null, ContentControl? holder = null, bool fill = false)
     {
         var glyph = ThemedIcon(icon, 17, "Petal.TextSecondary");
         glyph.Margin = new Thickness(0, 0, 10, 0);
@@ -181,7 +214,7 @@ public sealed partial class SettingsWindow
             Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { glyph, words } },
         };
         System.Windows.Automation.AutomationProperties.SetName(button, L.T(title));
-        var page = new Page(title, icon, content, button, make, holder);
+        var page = new Page(title, icon, content, button, make, holder, fill);
         button.Click += (_, _) => Go(page);
         _pages.Add(page);
         _nav.Children.Add(button);
@@ -208,6 +241,8 @@ public sealed partial class SettingsWindow
             ((System.Windows.Shapes.Path)row.Children[0]).SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, on ? "Petal.Accent" : "Petal.TextSecondary");
             ((TextBlock)row.Children[1]).FontWeight = on ? FontWeights.SemiBold : FontWeights.Normal;
         }
+        // A page that fills is given the window's height and scrolls inside itself.
+        _scroll.VerticalScrollBarVisibility = page.Fill ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
         _scroll.Content = page.Content;
         _scroll.ScrollToTop();
         if (page.Title == "Saved Files")

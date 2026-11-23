@@ -60,6 +60,51 @@ public static class QrGenerator
         return $"WIFI:T:{security};S:{Escape(network)};{(password.Length > 0 ? $"P:{Escape(password)};" : "")}{(hidden ? "H:true;" : "")};";
     }
 
+    /// <summary>An e-mail to write ("mailto:…?subject=…&amp;body=…"): phones open it in their mail app, ready to send.</summary>
+    public static string EmailPayload(string to, string subject, string body)
+    {
+        var query = new List<string>();
+        if (subject.Length > 0)
+            query.Add("subject=" + Uri.EscapeDataString(subject));
+        if (body.Length > 0)
+            query.Add("body=" + Uri.EscapeDataString(body));
+        return "mailto:" + to.Trim() + (query.Count > 0 ? "?" + string.Join("&", query) : "");
+    }
+
+    /// <summary>A number to call ("tel:+90…"), with only what dials kept: digits, and + * # at their places.</summary>
+    public static string PhonePayload(string number) => "tel:" + Dialable(number);
+
+    /// <summary>A text message to send ("SMSTO:number:message"), as phone cameras read it.</summary>
+    public static string SmsPayload(string number, string message) => $"SMSTO:{Dialable(number)}:{message}";
+
+    /// <summary>A contact to save (vCard 3.0): a name, a number and an e-mail address, each only when given.</summary>
+    public static string ContactPayload(string name, string phone, string email)
+    {
+        static string Escape(string s) => new StringBuilder(s.Trim()).Replace("\\", "\\\\").Replace(";", "\\;").Replace(",", "\\,").Replace("\r\n", "\\n").Replace("\n", "\\n").ToString();
+        var card = new StringBuilder("BEGIN:VCARD\nVERSION:3.0\n");
+        card.Append("N:;").Append(Escape(name)).Append(";;;\n");
+        card.Append("FN:").Append(Escape(name)).Append('\n');
+        if (phone.Trim().Length > 0)
+            card.Append("TEL;TYPE=CELL:").Append(Dialable(phone)).Append('\n');
+        if (email.Trim().Length > 0)
+            card.Append("EMAIL:").Append(Escape(email)).Append('\n');
+        return card.Append("END:VCARD").ToString();
+    }
+
+    /// <summary>A number as it is dialled: its digits (any script's, as Western digits), with + first and * # kept.</summary>
+    private static string Dialable(string number)
+    {
+        var sb = new StringBuilder();
+        foreach (var c in number.Trim())
+        {
+            if (char.IsDigit(c))
+                sb.Append((char)('0' + (int)char.GetNumericValue(c)));
+            else if (c == '+' && sb.Length == 0 || c is '*' or '#')
+                sb.Append(c);
+        }
+        return sb.ToString();
+    }
+
     /// <summary>A PNG with <paramref name="quietZone"/> light modules around the code.</summary>
     public static byte[] ToPng(bool[,] modules, int pixelsPerModule, MagickColor dark, MagickColor light, int quietZone = 4)
     {
