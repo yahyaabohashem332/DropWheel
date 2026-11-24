@@ -70,11 +70,12 @@ Store edition; other copies download them from the addresses above the first tim
 FFmpeg and four of the libraries inside it (LAME, soxr, FriBidi and libiconv) are under the GNU Lesser General
 Public License, version 2.1 or later; DropWheel runs FFmpeg as a separate program, and its DLLs are files you
 may replace with your own build. Their exact source code, with the scripts that built them, comes with
-DropWheel: `licenses\sources\ffmpeg-n9.0.2-dropwheel-win64-source.tar.gz`. DropWheel's **custom
-Magick.Native-Q8-x64 build** contains libraries under the GNU Lesser General Public License (fribidi, libiconv,
-libxml2, zlib, liblzma, bzip2, freetype, harfbuzz, fribidi, and others from ImageMagick's dependency tree);
-their complete source code and build scripts come with DropWheel:
-`licenses\sources\magick-native-q8-x64-dropwheel-source.tar.gz` (from the dropwheel-magick release). espeak-ng,
+DropWheel: `licenses\sources\ffmpeg-n9.0.2-dropwheel-win64-source.tar.gz`. DropWheel's own
+Magick.Native-Q8-x64 build holds libraries under the GNU Lesser General Public License (libheif and liblqr,
+version 3 or later; GLib, gdk-pixbuf, FriBidi, LibRaw and liblzma as ImageMagick lists it, version 2.1 or later;
+libcroco and librsvg, version 2 or later; Pango, version 2) and cairo, under the Mozilla Public License 1.1. Their
+exact source code, with ImageMagick's, Magick.Native's and the script that built them, comes with DropWheel:
+`licenses\sources\magick-native-15.0.0-dropwheel-win64-source.tar.gz`. espeak-ng,
 which Piper uses, is under the GNU General Public License version 3, and DropWheel runs Piper as a separate
 program. Its complete source code is available from https://github.com/espeak-ng/espeak-ng at the version
 included in Piper 2023.11.14-2. For three years from the date you received DropWheel, the developer will also
@@ -119,14 +120,41 @@ MIT:
 - YamlDotNet (YAML in the data conversions): Copyright (c) Antoine Aubry and contributors.
 
 Apache-2.0:
-- Magick.NET: Copyright Dirk Lemstra. DropWheel uses a **custom Magick.Native-Q8-x64 build** (Apache-2.0:
-  ImageMagick License, Copyright ImageMagick Studio LLC) **without libheif, libde265, or openh264** — the
-  patented HEIF/HEVC/H.264 libraries. HEIC is read by Windows WIC (WindowsHeif.cs) and written through
-  FFmpeg's hevc_mf (HeifWriter.cs), under Microsoft's Windows licence. The native library is the file
-  Magick.Native-Q8-x64.dll, fetched from https://github.com/yahyaabohashem332/dropwheel-magick at release
-  v1.0.0-dropwheel-magick, built from dlemstra/Magick.Native sources with those libraries excluded. Its
-  complete source, with build scripts, is available from that repository. The libraries inside it, each with
-  its licence, are listed in `licenses\magick\licenses` in DropWheel's install folder.
+- Magick.NET: Copyright Dirk Lemstra. Its native library, Magick.Native-Q8-x64.dll, is DropWheel's own build of
+  Magick.Native 15.0.0 (ImageMagick, Copyright ImageMagick Studio LLC, under the ImageMagick License), made on
+  GitHub from the same sources as Magick.NET's own, without libde265 (HEVC) and OpenH264 (H.264), whose formats
+  are still under patent: https://github.com/yahyaabohashem332/dropwheel-magick, release v15.0.0-dropwheel.9.
+  libheif stays for AVIF, through aom; Windows reads HEIC photos and FFmpeg's hevc_mf writes them, under
+  Microsoft's Windows licence. Each library's version, licence and commit are in
+  `licenses\magick\libraries.txt`, and its licence file, with its copyright notice, in `licenses\magick\licenses`:
+  - aom, Copyright (c) the Alliance for Open Media. BSD-2-Clause, with the Alliance for Open Media Patent
+    License 1.0.
+  - libheif, Copyright (c) Struktur AG. LGPL-3.0-or-later.
+  - libjpeg-turbo, Copyright (c) the libjpeg-turbo project and the Independent JPEG Group. BSD-3-Clause and
+    the IJG License.
+  - libjxl and Highway, Copyright (c) the JPEG XL and Highway authors (Google). BSD-3-Clause and Apache-2.0.
+  - libpng, Copyright (c) the PNG Reference Library authors. libpng-2.0.
+  - libtiff, Copyright (c) Sam Leffler and Silicon Graphics, Inc. libtiff.
+  - libwebp, Copyright (c) Google. BSD-3-Clause.
+  - OpenJPEG and OpenJPH, Copyright (c) their authors. BSD-2-Clause.
+  - OpenEXR and Imath, Copyright (c) Contributors to the OpenEXR Project. BSD-3-Clause.
+  - LibRaw, Copyright (c) LibRaw LLC. LGPL-2.1-or-later (or CDDL-1.0).
+  - Little CMS, Copyright (c) Marti Maria Saguer. MIT.
+  - librsvg and libcroco, Copyright (c) their authors. LGPL-2.0-or-later.
+  - cairo, Copyright (c) the cairo authors. MPL-1.1 (or LGPL-2.1).
+  - Pango, Copyright (c) the Pango authors. LGPL-2.0-only.
+  - GLib and gdk-pixbuf, Copyright (c) their authors. LGPL-2.1-or-later.
+  - pixman, libffi, raqm, Brotli and libxml2, Copyright (c) their authors. MIT.
+  - HarfBuzz, Copyright (c) the HarfBuzz authors. MIT ("Old MIT").
+  - FriBidi, Copyright (c) the FriBidi authors. LGPL-2.1-or-later.
+  - FreeType, Copyright (c) The FreeType Project. The FreeType License: portions of this software are
+    copyright (c) The FreeType Project (www.freetype.org). All rights reserved.
+  - liblqr, Copyright (c) Carlo Baldassi. LGPL-3.0-or-later.
+  - liblzma (XZ Utils), by Lasse Collin and others; listed by ImageMagick as LGPL-2.1-or-later.
+  - bzip2, Copyright (c) Julian Seward. bzip2-1.0.6.
+  - libzip, Copyright (c) Dieter Baron and Thomas Klausner. BSD-3-Clause.
+  - zlib, Copyright (c) Jean-loup Gailly and Mark Adler. zlib.
+  - Zstandard, Copyright (c) Meta Platforms, Inc. BSD-3-Clause.
 - SQLitePCLRaw: Copyright (c) SourceGear, LLC. SQLite itself is in the public domain.
 - PdfPig: Copyright (c) UglyToad and contributors.
 - SixLabors.Fonts 1.0.1: Copyright (c) Six Labors.

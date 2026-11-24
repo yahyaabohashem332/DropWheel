@@ -109,22 +109,18 @@ New-Item -ItemType Directory -Force $sources | Out-Null
 Copy-Item (Join-Path $root 'tools\bin\ffmpeg-source\*.tar.gz') $sources
 if (-not (Get-ChildItem $sources -Filter '*-source.tar.gz')) { throw "FFmpeg's source is missing: run fetch-tools.ps1" }
 
-# Magick.Native: DropWheel's custom Q8-x64 build without libheif/libde265/openh264 (patented codecs).
-# Its licences (Apache-2.0 for ImageMagick, LGPL for fribidi/libiconv/zlib/etc.) and exact source.
-$magickLicences = Join-Path $root 'tools\bin\magick'
-if (-not (Test-Path (Join-Path $magickLicences 'Magick.Native-Q8-x64.dll'))) { throw "Magick.Native is missing: run fetch-tools.ps1 (after the dropwheel-magick release is published)" }
-Copy-Item (Join-Path $magickLicences 'Magick.Native-Q8-x64.dll') (Join-Path $publish 'Magick.Native-Q8-x64.dll') -Force
-Copy-Item (Join-Path $magickLicences 'Magick.Native-Q8-x64.pdb') (Join-Path $publish 'Magick.Native-Q8-x64.pdb') -Force
-$magickLicencesDir = Join-Path $licences 'magick'
-New-Item -ItemType Directory -Force $magickLicencesDir | Out-Null
-# The licence files are in the magick folder (fetched from the release)
-if (Test-Path (Join-Path $magickLicences 'LICENSE.txt')) {
-    Copy-Item (Join-Path $magickLicences 'LICENSE.txt') (Join-Path $magickLicencesDir 'ImageMagick.txt')
-}
-if (Test-Path (Join-Path $magickLicences 'licenses')) {
-    Copy-Item (Join-Path $magickLicences 'licenses') $magickLicencesDir -Recurse -Force
-}
-Copy-Item (Join-Path $root 'tools\bin\magick-source\*.tar.gz') $sources -ErrorAction SilentlyContinue
+# Magick.Native: DropWheel's own Q8-x64 build, without libde265 or OpenH264 (fetch-tools.ps1 takes it from the
+# dropwheel-magick release). Every library inside it has its licence file in licenses\magick; the exact sources of
+# ImageMagick, Magick.Native and its LGPL and MPL libraries go to licenses\sources. No debug symbols ship.
+$magickDll = Join-Path $root 'tools\bin\magick\Magick.Native-Q8-x64.dll'
+$magickLicences = Join-Path $root 'tools\bin\magick-licenses'
+if (-not (Test-Path $magickDll) -or -not (Test-Path (Join-Path $magickLicences 'libraries.txt'))) { throw "Magick.Native or its licences are missing: run fetch-tools.ps1" }
+Copy-Item $magickDll (Join-Path $publish 'Magick.Native-Q8-x64.dll') -Force
+Remove-Item (Join-Path $publish 'Magick.Native-Q8-x64.pdb') -ErrorAction SilentlyContinue
+Copy-Item $magickLicences (Join-Path $licences 'magick') -Recurse
+$magickSource = @(Get-ChildItem (Join-Path $root 'tools\bin\magick-source') -Filter '*-source.tar.gz' -ErrorAction SilentlyContinue)
+if (-not $magickSource) { throw "Magick.Native's source is missing: run fetch-tools.ps1" }
+$magickSource | Copy-Item -Destination $sources
 Copy-Item (Join-Path $root 'tools\bin\exiftool\README.txt') (Join-Path $licences 'ExifTool.txt') -ErrorAction SilentlyContinue
 # Where NuGet keeps packages on this PC.
 $nuget = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
@@ -141,10 +137,13 @@ $ffmpegVersion | Set-Content (Join-Path $licences 'FFmpeg-version.txt')
 
 # Verify Magick.Native is DropWheel's custom build: no HEVC or H.264 codec inside (libde265, openh264, x265,
 # kvazaar). libheif itself stays: it only reads and writes the HEIF/AVIF container, and decodes AVIF with
-# aom/dav1d. The libraries are linked into the DLL, so their names and API symbols are looked for in its bytes.
+# aom. The libraries are linked into the DLL, so their names and API symbols are looked for in its bytes.
+# libheif's message for a picture it has no decoder for names "libde265" and "openh264", each a string of its own,
+# as decoders to install: those two whole strings are text, not code, and are not counted.
 $magickDllPath = Join-Path $publish 'Magick.Native-Q8-x64.dll'
 if (-not (Test-Path $magickDllPath)) { throw "Magick.Native-Q8-x64.dll not found in build output" }
-$magickContent = [System.Text.Encoding]::Latin1.GetString([System.IO.File]::ReadAllBytes($magickDllPath))
+$magickContent = [System.Text.Encoding]::Latin1.GetString([System.IO.File]::ReadAllBytes($magickDllPath)).
+    Replace("`0libde265`0", "`0`0").Replace("`0openh264`0", "`0`0")
 $codecMarks = [ordered]@{
     'libde265' = @('libde265', 'de265_')
     'openh264' = @('openh264', 'WelsCreate')

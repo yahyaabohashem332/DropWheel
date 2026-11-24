@@ -5,9 +5,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- DropWheel custom Magick.Native-Q8-x64: built without libheif/libde265/openh264 (patented codecs).
-         HEIC read via Windows WIC (WindowsHeif.cs), HEIC write via FFmpeg hevc_mf (HeifWriter.cs).
-         Fetched by tools/scripts/fetch-tools.ps1 from GitHub release v1.0.0-dropwheel-magick. -->
+    <!-- DropWheel's own Magick.Native-Q8-x64: built without libde265 and OpenH264 (patented codecs); libheif stays
+         for AVIF. HEIC read via Windows WIC (WindowsHeif.cs), HEIC write via FFmpeg hevc_mf (HeifWriter.cs).
+         Fetched by tools/scripts/fetch-tools.ps1 from a dropwheel-magick release, pinned by SHA-256. -->
     <None Include="..\..\tools\bin\magick\Magick.Native-Q8-x64.dll">
       <Link>Magick.Native-Q8-x64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

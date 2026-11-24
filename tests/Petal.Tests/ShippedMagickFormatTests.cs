@@ -60,6 +60,43 @@ public sealed class ShippedMagickFormatTests : IDisposable
     }
 
     [Fact]
+    public void Avif_is_written_and_read_by_the_shipped_libheif_with_aom()
+    {
+        var avif = Path.Combine(_dir, "two.avif");
+        using (var image = new MagickImage(new MagickColor(220, 40, 40), 64, 48))
+        {
+            image.Draw(new ImageMagick.Drawing.Drawables().FillColor(new MagickColor(40, 70, 200)).Rectangle(32, 0, 64, 48));
+            image.Quality = 90;
+            image.Write(avif, MagickFormat.Avif);
+        }
+        Assert.Equal("ftypavif"u8.ToArray(), File.ReadAllBytes(avif).AsSpan(4, 8).ToArray());
+        using var read = new MagickImage(avif);
+        Assert.Equal((64u, 48u), (read.Width, read.Height));
+        using var pixels = read.GetPixels();
+        Assert.InRange((int)pixels.GetPixel(8, 24).ToColor()!.R, 200, 240);
+        Assert.InRange((int)pixels.GetPixel(56, 24).ToColor()!.B, 180, 220);
+    }
+
+    [Fact]
+    public void The_shipped_magick_native_has_no_hevc_decoder()
+    {
+        // A real iPhone-style HEIC: libheif reads its container, and has nothing to decode the HEVC picture with.
+        // DropWheel reads such photos through Windows instead (WindowsHeif).
+        var heic = TestData("landscape.heic");
+        Assert.Equal("ftypheic"u8.ToArray(), File.ReadAllBytes(heic).AsSpan(4, 8).ToArray());
+        var refused = Assert.ThrowsAny<MagickException>(() => new MagickImage(heic, MagickFormat.Heic));
+        Assert.Contains("HEVC", refused.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string TestData(string name)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "testdata")))
+            dir = dir.Parent;
+        return Path.Combine(dir!.FullName, "testdata", name);
+    }
+
+    [Fact]
     public async Task A_gimp_file_becomes_a_png()
     {
         // GIMP 2's layout: one RGB layer of 8×8, its tiles RLE-compressed.

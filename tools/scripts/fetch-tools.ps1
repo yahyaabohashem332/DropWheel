@@ -7,6 +7,8 @@
   FFmpeg is DropWheel's own LGPL build (https://github.com/yahyaabohashem332/dropwheel-ffmpeg): no decoder or
   encoder of any format still under patent; Windows decodes and encodes those. Its release holds the build and
   the exact sources the LGPL asks for, which go to tools\bin\ffmpeg-licenses and tools\bin\ffmpeg-source.
+  Magick.Native is DropWheel's own build too (https://github.com/yahyaabohashem332/dropwheel-magick), without
+  libde265 or OpenH264; its licences and sources go to tools\bin\magick-licenses and tools\bin\magick-source.
 
 .EXAMPLE
   pwsh tools\scripts\fetch-tools.ps1
@@ -18,7 +20,12 @@ param(
     [string]$FfmpegRepository = 'yahyaabohashem332/dropwheel-ffmpeg',
     [string]$FfmpegRelease = 'ffmpeg-n9.0.2-dropwheel-win64',
     [string]$FfmpegZipSha256 = 'd85c5cb454572eacae0c9e878e0b2ce2761272defa29146634900efa865171ae',
-    [string]$FfmpegSourceSha256 = '7a28f54f50df2a33f1fd79f78d213279e56794a99644bb66c4383bd3a18a60bf'
+    [string]$FfmpegSourceSha256 = '7a28f54f50df2a33f1fd79f78d213279e56794a99644bb66c4383bd3a18a60bf',
+    [string]$MagickRepository = 'yahyaabohashem332/dropwheel-magick',
+    [string]$MagickRelease = 'v15.0.0-dropwheel.9',
+    [string]$MagickPackage = 'magick-native-15.0.0-dropwheel-win64',
+    [string]$MagickZipSha256 = '0abea9ab6036cb2262cc503646c2b18c7bafd9b7a55d352037dde9fa83b2a34a',
+    [string]$MagickSourceSha256 = '54580ef4a818a0621b31b3553d8d07faa27857a8c5782355268cb4222cc8ede9'
 )
 $ErrorActionPreference = 'Stop'
 $Destination = [IO.Path]::GetFullPath($Destination)
@@ -97,44 +104,45 @@ $version = & $ffExe -hide_banner -version | Select-Object -First 1
 if ($version -notmatch 'dropwheel') { throw "tools\bin\ffmpeg isn't DropWheel's FFmpeg build: $version" }
 Write-Host "FFmpeg: $version"
 
-# Magick.Native: DropWheel's custom Q8-x64 build without libheif/libde265/openh264 (patented codecs).
-# HEIC is handled through Windows WIC (read) and FFmpeg's hevc_mf (write).
+# Magick.Native: DropWheel's own Q8-x64 build (https://github.com/yahyaabohashem332/dropwheel-magick), the native
+# library of Magick.NET 15.0.0 without libde265 (HEVC) or OpenH264 (H.264); libheif stays for AVIF. Windows reads
+# HEIC (WindowsHeif) and FFmpeg's hevc_mf writes it. The release's package holds the DLL and every library's
+# licence file, which go to tools\bin\magick and tools\bin\magick-licenses; its source archive holds the exact
+# sources of ImageMagick, Magick.Native and the LGPL and MPL libraries inside it, kept whole in
+# tools\bin\magick-source for build.ps1 to ship.
 $magickDir = Join-Path $Destination 'magick'
+$magickLicences = Join-Path $Destination 'magick-licenses'
+$magickSource = Join-Path $Destination 'magick-source'
 $magickDll = Join-Path $magickDir 'Magick.Native-Q8-x64.dll'
-$magickPdb = Join-Path $magickDir 'Magick.Native-Q8-x64.pdb'
-$magickRelease = 'v1.0.0-dropwheel-magick'
-$magickRepo = 'yahyaabohashem332/dropwheel-magick'
-# SHA-256 will be set after the release is published on the other machine
-$magickDllSha256 = '1DA3C46DADBE5B56C4B20F77A454CB969288D4640D933C9CC6D1443AB0E48CB2'
-$magickPdbSha256 = '45EE465B8614D5077BEAFD15764A63D1CF8E95C2226C4BDE038466C64D051472'
-$currentDll = if (Test-Path $magickDll) { (Get-FileHash $magickDll -Algorithm SHA256).Hash } else { '' }
-$currentPdb = if (Test-Path $magickPdb) { (Get-FileHash $magickPdb -Algorithm SHA256).Hash } else { '' }
-if ($currentDll -ne $magickDllSha256.ToUpper() -or $currentPdb -ne $magickPdbSha256.ToUpper()) {
-    if ($magickDllSha256 -eq 'PLACEHOLDER_DLL_SHA256' -or $magickPdbSha256 -eq 'PLACEHOLDER_PDB_SHA256') {
-        Write-Warning "Magick.Native SHA-256 placeholders not yet updated. Skipping download."
-    } else {
-        Write-Host "Downloading Magick.Native from $magickRepo release $magickRelease"
-        New-Item -ItemType Directory -Force $magickDir | Out-Null
-        if (Get-Command gh -ErrorAction SilentlyContinue) {
-            & gh release download $magickRelease -R $magickRepo -p 'Magick.Native-Q8-x64.dll' -D $magickDir --clobber
-            & gh release download $magickRelease -R $magickRepo -p 'Magick.Native-Q8-x64.pdb' -D $magickDir --clobber
-        }
-        if (-not (Test-Path $magickDll)) {
-            & curl.exe -sSL --ssl-no-revoke -o $magickDll "https://github.com/$magickRepo/releases/download/$magickRelease/Magick.Native-Q8-x64.dll"
-            & curl.exe -sSL --ssl-no-revoke -o $magickPdb "https://github.com/$magickRepo/releases/download/$magickRelease/Magick.Native-Q8-x64.pdb"
-        }
-        $actualDll = (Get-FileHash $magickDll -Algorithm SHA256).Hash
-        $actualPdb = (Get-FileHash $magickPdb -Algorithm SHA256).Hash
-        if ($actualDll -ne $magickDllSha256.ToUpper()) { throw "Checksum mismatch for Magick.Native-Q8-x64.dll (got $actualDll)" }
-        if ($actualPdb -ne $magickPdbSha256.ToUpper()) { throw "Checksum mismatch for Magick.Native-Q8-x64.pdb (got $actualPdb)" }
-        Get-ChildItem $magickDir -Recurse -File | ForEach-Object { $_.LastWriteTime = Get-Date }
+$magickZipName = "$MagickPackage.zip"
+$magickSourceName = "$MagickPackage-source.tar.gz"
+$keptSource = Join-Path $magickSource $magickSourceName
+$current = (Test-Path $magickDll) -and (Test-Path (Join-Path $magickLicences 'libraries.txt')) -and
+    (Test-Path $keptSource) -and (Get-FileHash $keptSource -Algorithm SHA256).Hash -eq $MagickSourceSha256.ToUpper()
+if (-not $current) {
+    $zip = Join-Path $downloads $magickZipName
+    $source = Join-Path $downloads $magickSourceName
+    foreach ($file in @(@($zip, $magickZipName, $MagickZipSha256), @($source, $magickSourceName, $MagickSourceSha256))) {
+        $path, $name, $sha = $file
+        Get-Verified "https://github.com/$MagickRepository/releases/download/$MagickRelease/$name" $path $sha
     }
+    $tmp = Join-Path $downloads 'magick-x'
+    if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }
+    Expand-Archive $zip -DestinationPath $tmp -Force
+    $root = Get-ChildItem $tmp -Directory | Select-Object -First 1
+    foreach ($dir in @($magickDir, $magickLicences, $magickSource)) {
+        if (Test-Path $dir) { Remove-Item $dir -Recurse -Force }
+        New-Item -ItemType Directory -Force $dir | Out-Null
+    }
+    Copy-Item (Join-Path $root.FullName 'Magick.Native-Q8-x64.dll') $magickDir -Force
+    Copy-Item (Join-Path $root.FullName 'licenses') $magickLicences -Recurse -Force
+    Copy-Item (Join-Path $root.FullName '*.txt') $magickLicences -Force
+    Copy-Item $source $keptSource -Force
+    Remove-Item $tmp -Recurse -Force
+    # Made new, as FFmpeg's files are, so they replace an older copy beside the app or the tests.
+    Get-ChildItem $magickDir, $magickLicences, $magickSource -Recurse -File | ForEach-Object { $_.LastWriteTime = Get-Date }
 }
-if (Test-Path $magickDll) {
-    Write-Host "Magick.Native: $(Get-Item $magickDll).Length bytes, SHA256=$(Get-FileHash $magickDll -Algorithm SHA256).Hash.Substring(0,16)..."
-} else {
-    Write-Warning "Magick.Native not found - build will use NuGet fallback (not allowed for Store release)"
-}
+Write-Host "Magick.Native: $MagickRelease, SHA256 $((Get-FileHash $magickDll -Algorithm SHA256).Hash)"
 
 # Real-ESRGAN general x4v3 (BSD-3-Clause), Qualcomm AI Hub's ONNX export: the AI enlargement model.
 $esrganDir = Join-Path $Destination 'models\realesrgan-x4v3'

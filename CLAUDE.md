@@ -400,9 +400,22 @@ The user ruled out the "Encoders only" option (BtbN's LGPL FFmpeg as-is).
 - Notices, terms (they replace the Store's standard terms, as Partner Center does when the field is filled,
   and allow what the LGPL asks), privacy policy and Settings' FFmpeg line are updated.
 
-**Still to do:** Magick.Native without libde265/openh264 (files ready in `D:\.dropwheel-sdk\repos\dropwheel-magick`;
-publishing a workflow needs the `workflow` scope, `gh auth refresh -h github.com -s workflow`, which only the user
-can grant); WMV/WMA writing through a Media Foundation Sink Writer if wanted; the support e-mail in the store texts.
+**Magick.Native (done 2026-11-24):** built by GitHub Actions in the public repository `dropwheel-magick`
+(`build.ps1` + `.github/workflows/build.yml`); every run publishes its own release `v15.0.0-dropwheel.<run>` with
+`SHA256SUMS.txt`, and `fetch-tools.ps1` pins one (now `.9`: DLL SHA-256 `A35CABF9…`). What the build learned:
+- libheif's `Config.txt` loses `HAVE_LIBDE265`, `HAVE_OpenH264_DECODER` and the two references; only plugin
+  files that exist may be excluded (ImageMagick's Configure stops on a missing one; 1.23.6 has no OpenH264 encoder).
+- Magick.Native links each library by name in `src/Magick.Native/Stdafx.h` (`MAGICK_NATIVE_LINK_LIB`): de265 and
+  openh264 are taken out there, or the link fails on `CORE_RL_de265_.lib`.
+- libheif 1.23.6 names "libde265" and "openh264" as standalone strings in its missing-decoder message: the
+  codec checks (there and in DropWheel's `build.ps1`) let exactly those two strings through, nothing else.
+- Licences and LGPL/MPL sources are gathered before the hour-long compile; a library without its licence file
+  or under the GPL stops the run. 34 libraries; LGPL: heif, lqr, glib, gdk-pixbuf, fribidi, raw, lzma, croco,
+  rsvg, pango; MPL: cairo. `build.ps1` ships `licenses\magick` and the source archive, and no PDB.
+- `v1.0.0-dropwheel-magick` keeps the DLL DropWheel 1.23.1 shipped (built on a PC; its package had no licences).
+- Tests on the shipped DLL: `ShippedMagickFormatTests` (AVIF both ways; a real HEIC refused for want of HEVC).
+
+**Still to do:** WMV/WMA writing through a Media Foundation Sink Writer if wanted; the support e-mail in the store texts.
 
 **Planned design** (written before the work; kept for its reasoning):
 1. **Windows decoding bridge**, new code in Engines.Media:
