@@ -228,6 +228,52 @@ public class UpdateTests : IDisposable
         Assert.Null(Updates.ArmFeed(@"\\server\share\petal", System.Runtime.InteropServices.Architecture.Arm64));
     }
 
+    [Fact]
+    public void With_no_address_set_dropwheel_looks_at_its_own_releases_on_github()
+    {
+        const string own = "https://github.com/yahyaabohashem332/DropWheel/releases/latest/download/update.json";
+        Assert.Equal(own, Updates.DefaultFeed);
+        Assert.Equal(own, Updates.Feed(null));
+        Assert.Equal(own, Updates.Feed(""));
+        Assert.Equal(own, Updates.Feed("   "));
+        Assert.Equal(@"\\server\share\update.json", Updates.Feed(@"  \\server\share\update.json "));
+        // An ARM64 PC looks for the ARM64 feed of the newest release first, and falls back to this one.
+        Assert.Equal("https://github.com/yahyaabohashem332/DropWheel/releases/latest/download/update-arm64.json",
+            Updates.ArmFeed(own, System.Runtime.InteropServices.Architecture.Arm64));
+    }
+
+    [Fact]
+    public void An_installer_named_in_github_s_latest_feed_comes_from_that_feed_s_own_release()
+    {
+        // Downloaded a day later, after 1.25.0 came out, the installer is still 1.24.1's, the one the checksum is for.
+        var feed = new Uri(Updates.DefaultFeed);
+        Assert.Equal("https://github.com/yahyaabohashem332/DropWheel/releases/download/v1.24.1/DropWheel-Setup-1.24.1.exe",
+            new Uri(Updates.InstallerBase(feed, "1.24.1"), "DropWheel-Setup-1.24.1.exe").AbsoluteUri);
+        // An absolute address in the feed is used as it is.
+        Assert.Equal("https://example.com/x.exe", new Uri(Updates.InstallerBase(feed, "1.24.1"), "https://example.com/x.exe").AbsoluteUri);
+        // Any other feed: beside the feed, as before.
+        foreach (var other in new[] { "https://example.com/petal/update.json", "https://github.com/someone/else/releases/download/v1.0.0/update.json" })
+            Assert.Equal(new Uri(other), Updates.InstallerBase(new Uri(other), "1.24.1"));
+    }
+
+    /// <summary>
+    /// DropWheel's own feed on GitHub, as an installed copy reads it: the newest release, signed with DropWheel's key,
+    /// its installer where the feed says. Set PETAL_UPDATE_LIVE=1 to run it (it needs the internet).
+    /// </summary>
+    [Fact]
+    public async Task The_real_feed_on_github_offers_a_signed_installer_that_is_there()
+    {
+        if (Environment.GetEnvironmentVariable("PETAL_UPDATE_LIVE") != "1")
+            return;
+        Updates.TrustedKey = Updates.PetalKey;
+        var update = await Updates.CheckAsync(Updates.DefaultFeed, new Version(1, 0, 0), _http);
+        Assert.NotNull(update);
+        Assert.StartsWith($"https://github.com/yahyaabohashem332/DropWheel/releases/download/v{update.Version}/", update.InstallerUri!.AbsoluteUri);
+        using var head = await _http.SendAsync(new HttpRequestMessage(HttpMethod.Head, update.InstallerUri), HttpCompletionOption.ResponseHeadersRead);
+        Assert.True(head.IsSuccessStatusCode, $"{update.InstallerUri}: {(int)head.StatusCode}");
+        Assert.Equal((long?)update.Size, head.Content.Headers.ContentLength);
+    }
+
     private sealed class SynchronousProgress(Action<double> report) : IProgress<double>
     {
         public void Report(double value) => report(value);

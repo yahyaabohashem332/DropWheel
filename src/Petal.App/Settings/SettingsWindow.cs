@@ -914,7 +914,7 @@ public sealed partial class SettingsWindow : ToolWindow
             Save();
         };
         panel.Children.Add(Row("Update address", feed, 150, 12));
-        panel.Children.Add(Text("Where DropWheel looks for new versions: an update.json over https, or in a shared folder. Leave it empty and DropWheel never looks. Only updates signed by DropWheel's maker are offered, and each installer is checked before it runs.", "Petal.Caption").WithMargin(150, 4, 0, 0));
+        panel.Children.Add(Text("Where DropWheel looks for new versions. Empty: DropWheel's own releases on GitHub. Or another address: an update.json over https, or in a shared folder. Only updates signed by DropWheel's maker are offered, and each installer is checked before it runs.", "Petal.Caption").WithMargin(150, 4, 0, 0));
         panel.Children.Add(Switch("Check once a day", "Show a small card when a new version is out. Nothing is installed without asking.", _s.CheckForUpdates, v => _s.CheckForUpdates = v));
         var status = Text("", "Petal.Caption");
         status.TextWrapping = TextWrapping.Wrap;
@@ -924,11 +924,6 @@ public sealed partial class SettingsWindow : ToolWindow
             _s.UpdateFeed = feed.Text.Trim();
             Save();
             status.ClearValue(TextBlock.ForegroundProperty);
-            if (_s.UpdateFeed.Length == 0)
-            {
-                status.Text = L.T("No update address is set, so there is nowhere to look.");
-                return;
-            }
             check.IsEnabled = false;
             status.Text = L.T("Checking…");
             try

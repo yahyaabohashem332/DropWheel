@@ -13,8 +13,9 @@ using Petal.Core.Util;
 namespace Petal.App.Shell;
 
 /// <summary>
-/// Looks for a newer Petal on the update feed set in Settings (none by default), and installs it
-/// when the user agrees. The installer is checked against the feed's SHA-256 before it runs.
+/// Looks for a newer Petal on the update feed set in Settings, or DropWheel's own releases on GitHub when none is
+/// set, and installs it when the user agrees. The installer is checked against the feed's SHA-256 before it runs.
+/// The Microsoft Store's copy never looks: the Store updates it.
 /// </summary>
 public static class UpdateService
 {
@@ -30,7 +31,7 @@ public static class UpdateService
     public static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Petal", "updates");
 
     public static Task<UpdateManifest?> CheckAsync(CancellationToken cancellationToken = default) =>
-        Updates.CheckAsync(SettingsStore.Current.UpdateFeed, Current, Http, cancellationToken);
+        Updates.CheckAsync(Updates.Feed(SettingsStore.Current.UpdateFeed), Current, Http, cancellationToken);
 
     /// <summary>A newer version found and not skipped, waiting to be installed; the tray icon shows a dot meanwhile.</summary>
     public static UpdateManifest? Waiting { get; private set; }
@@ -54,10 +55,11 @@ public static class UpdateService
     public static async Task CheckFromTrayAsync()
     {
         var s = SettingsStore.Current;
-        if (string.IsNullOrWhiteSpace(s.UpdateFeed))
+        // The Store updates its own copy: an installer of DropWheel's own setup is never offered over it.
+        if (Packaged.IsPackaged)
         {
-            var empty = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
-            empty.Fail(L.T("No update address is set"), L.T("Set one in Settings › Updates."));
+            var store = HudCard.ShowAt(HudCard.CornerPoint(), "", "");
+            store.Succeed(L.F("This is DropWheel {0}.", CurrentText), L.T("The Microsoft Store keeps DropWheel up to date."), null);
             return;
         }
         try
@@ -88,7 +90,7 @@ public static class UpdateService
         // The Store updates its own copy.
         if (Packaged.IsPackaged)
             return;
-        if (!s.CheckForUpdates || string.IsNullOrWhiteSpace(s.UpdateFeed) || s.LastUpdateCheck is { } last && DateTime.UtcNow - last < TimeSpan.FromDays(1))
+        if (!s.CheckForUpdates || s.LastUpdateCheck is { } last && DateTime.UtcNow - last < TimeSpan.FromDays(1))
             return;
         await Task.Delay(TimeSpan.FromSeconds(45));
         try

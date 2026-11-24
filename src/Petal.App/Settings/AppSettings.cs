@@ -114,7 +114,10 @@ public sealed class AppSettings
     /// <summary>The folders chosen for what DropWheel saves, by <see cref="SavedKind"/>; what isn't here goes to its usual folder.</summary>
     public Dictionary<string, string> SavedFolders { get; set; } = [];
 
-    /// <summary>An update feed (update.json over https, or a file path). Empty: no updates are looked for.</summary>
+    /// <summary>
+    /// An update feed (update.json over https, or a file path). Empty: DropWheel's own releases on GitHub
+    /// (<see cref="Petal.Core.Util.Updates.DefaultFeed"/>); <see cref="CheckForUpdates"/> off stops the daily look.
+    /// </summary>
     public string UpdateFeed { get; set; } = "";
     public bool CheckForUpdates { get; set; } = true;
     public DateTime? LastUpdateCheck { get; set; }

@@ -102,6 +102,15 @@ public static class Updates
     /// <summary>The key a feed must be signed with: Petal's, or a test's own.</summary>
     public static string TrustedKey { get; set; } = PetalKey;
 
+    /// <summary>
+    /// DropWheel's own feed: the update.json of the newest release on GitHub. A copy from DropWheel's own setup looks
+    /// here when Settings name no other address.
+    /// </summary>
+    public const string DefaultFeed = "https://github.com/yahyaabohashem332/DropWheel/releases/latest/download/update.json";
+
+    /// <summary>The feed to look at: the address set in Settings, or DropWheel's own when none is.</summary>
+    public static string Feed(string? setting) => string.IsNullOrWhiteSpace(setting) ? DefaultFeed : setting.Trim();
+
     /// <summary>Most changes a feed may list, and the longest one.</summary>
     public const int MostChanges = 50, LongestChange = 400;
 
@@ -226,7 +235,7 @@ public static class Updates
             return null;
         if (!IsSigned(manifest))
             throw new UpdateException("The update isn't signed by DropWheel's maker, so it isn't offered.");
-        var installer = Uri.TryCreate(feedUri, manifest.Url, out var resolved) ? resolved : null;
+        var installer = Uri.TryCreate(InstallerBase(feedUri, manifest.Version), manifest.Url, out var resolved) ? resolved : null;
         if (installer is null || !(installer.Scheme == Uri.UriSchemeHttps || installer.IsFile))
             throw new UpdateException("The update feed points to an address that isn't secure.");
         return manifest with { InstallerUri = installer };
@@ -309,6 +318,20 @@ public static class Updates
     }
 
     /// <summary>An https address, or a local or network file path.</summary>
+    /// <summary>
+    /// What an installer named in the feed is found beside. GitHub's "latest" address follows the newest release, so
+    /// an installer named in a feed read from it is taken from that feed's own release (tagged v and its version):
+    /// one downloaded after a newer release came out is still there, and still the one the feed's checksum is for.
+    /// </summary>
+    public static Uri InstallerBase(Uri feed, string version)
+    {
+        const string latest = "/releases/latest/download/";
+        int at = feed.AbsolutePath.IndexOf(latest, StringComparison.Ordinal);
+        if (!feed.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase) || at < 0)
+            return feed;
+        return new UriBuilder(feed) { Path = feed.AbsolutePath[..at] + $"/releases/download/v{version}/" + feed.AbsolutePath[(at + latest.Length)..], Query = "" }.Uri;
+    }
+
     private static Uri Address(string feed)
     {
         feed = feed.Trim();
