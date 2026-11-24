@@ -184,6 +184,11 @@ public class ArchiveTests : IDisposable
         await new ArchiveConverter().ConvertAsync(new ConversionJob(zip, F.Zip, target, packed, ConversionSettings.Default), null, default);
         var into = Directory.CreateDirectory(Path.Combine(_dir, "tar-" + targetId)).FullName;
         var result = await Petal.Core.Util.ProcessRunner.RunAsync(tar, ["-x", "-f", Path.GetFileName(packed), "-C", "tar-" + targetId], workingDirectory: _dir);
+        // Windows 10's tar (bsdtar 3.8.9) is built without LZMA and says so for any 7z ("tar.exe: LZMA codec is
+        // unsupported"): there it can't tell whether the archive is right, as when it isn't installed at all.
+        // Windows 11's reads them. Any other refusal still fails.
+        if (targetId == "7z" && result.ExitCode != 0 && result.StandardError.Contains("LZMA codec is unsupported", StringComparison.Ordinal))
+            return;
         Assert.True(result.ExitCode == 0, result.StandardError);
         foreach (var (name, data) in Mixed.Where(m => m.Name.All(c => c < 128)))
             Assert.Equal(data, File.ReadAllBytes(Path.Combine(into, name.Replace('/', Path.DirectorySeparatorChar))));
